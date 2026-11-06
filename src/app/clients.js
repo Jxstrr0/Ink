@@ -165,7 +165,7 @@ function clQuickSession(q){
   const res=INK_SIM.finishSession(S,q.id,{design:q.design,out,heal:null});if(!res)return;
   if(S.board.item===q.id)S.board.item=res.next?res.next.id:null;
   save();renderHeader();renderClients();INK_SOUND.tick();
-  toast(res.piece?`Finished: ${res.piece.name}. ${fmtMoney(res.paid)} paid.`:`Sitting ${q.sessionNo||1} of ${q.sessions||1} done, ${fmtMoney(res.paid)} paid. Next sitting week ${res.next.w}.`);}
+  toast(res.piece?`Finished: ${res.piece.name}. ${fmtMoney(res.paid)} paid.`:`Sitting ${q.sessionNo||1} of ${q.sessions||1} done, ${fmtMoney(res.paid)} paid. Next sitting week ${res.next.w}.`,res.piece?"piece":null);}
 
 /* ---- the client list and a client's card ---- */
 const CL_FILTERS=[["all","All"],["regular","Regulars"],["booked","Booked"],["walked","Walked"]];

@@ -5,7 +5,9 @@
    and hand-made backups have) still loads; buSlotData (app/savecode.js) reads either.
    New career: the start screen on a first visit, and Settings › Save › New career after that. Two ways in: as Arkady's
    apprentice in week 1 of 2000 (Act 1, the tutorial), or "Skip the broom" (plan Q3): week 1 of 2003 in a rented chair
-   with basic skills (INK_SIM.skipBroom). Settings and the last-backup time carry over; nothing else does. */
+   with basic skills (INK_SIM.skipBroom). Settings and the last-backup time carry over; nothing else does, except the help
+   tips (0.1.13.0): Skip the broom is for players who know the ropes, so it starts with tips off; a full start turns them
+   on. Settings › Help turns them on or off either way. */
 function slMeta(i){const o=buStored(slotKey(i));if(!o)return null;
   return{i,savedAt:o.savedAt||0,week:o.week||1,year:o.year||2000,stage:o.stage||(o.studio&&o.studio.stage)||"apprentice",pieces:typeof o.pieces==="number"?o.pieces:Array.isArray(o.pieces)?o.pieces.length:null};}
 function slHtml(){
@@ -46,7 +48,7 @@ ${first?`<p class="hint">Played before on another phone? <button class="btn sm" 
 function slStart(skip,first){
   if(!first&&!confirm(skip?"Start a new career in a rented chair (2003)? The current one is replaced.":"Start a new career as an apprentice (2000)? The current one is replaced."))return;
   const keep={settings:S.settings,bkAt:S.bkAt};
-  S=freshState();S.settings=keep.settings;S.bkAt=keep.bkAt||0;
+  S=freshState();S.settings=Object.assign({},keep.settings,{tips:!skip});S.bkAt=keep.bkAt||0;
   if(skip&&SIMOK("skipBroom"))INK_SIM.skipBroom(S);
   slReset();save();closeSheet();if(typeof caStage==="function")caStage();
   if(typeof showTab==="function")showTab("career");
