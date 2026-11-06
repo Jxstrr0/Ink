@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.13.0";
+const VERSION="0.1.13.1";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
