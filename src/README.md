@@ -41,6 +41,7 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 |---|---|
 | `html/head.html` | doctype, inline critical style, `<title>`, the `#boot` loading splash and its loader (`__ld`, `__ldGo`, `__ldDone`), Google Fonts (Space Grotesk, Oswald), the `<style>` line |
 | `css/ui-design.css` | the Design tab: body diagram, cream board, toolbar, drawer, capsule with deltas and aging strip, stress report, flash wall (PR 2) |
+| `css/ui-clients.css` | the Clients and Career tabs: this week's cards, the consult chat, the client list and card, the board's booking bar, the Next button (PR 3) |
 | `css/style.css` | theme tokens (dark default, `html[data-theme=light]`), the app frame (header, `#panel`, bottom `#tabs`), cards, buttons, segmented controls, the sheet, toast, the update bar, the cream `.board`, reduced motion / transparency |
 | `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
 | `html/ld-libs.html`, `ld-sim.html`, `ld-vis.html` | one-line `<script>__ld(fraction,"message")</script>` loading-bar steps after the block they report |
@@ -51,11 +52,11 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `sim/design.js` | `scoreDesign`, `SKIN_CONTRAST`, `COMBOS` stress report (PR 1); `FLASH_DISCOUNT` and the board helpers `footprintOf`, `inkReads`, `elementBox`, `flowAt` (PR 2) |
 | `sim/flash.js` | `FLASH`: the pre-composed flash wall designs (data only, PR 2) |
 | `sim/aging.js` | `age(tattoo, years)`, `COLOUR_FADE`, `PLACEMENT_WEAR` (PR 1) |
-| `sim/clients.js` | client generation, consult, memory, returns (PR 3) |
-| `sim/calendar.js` | `advanceWeek(S)`, `WEEK` (PR 3) |
+| `sim/clients.js` | `CLIENT_TRAITS`, `NAMES`, `JOBS`, `BRIEFS`, `HIDDEN_WANTS`, `BAD_IDEAS`, `CONSULT_QUESTIONS`, `QUOTE`, `LOYALTY`, `REVIEWS`, `RETURN_RULES`, `REFERRAL`; `makeClient`, the consult state machine (`consultStart`/`Options`/`Choose`/`Commit`), `addPiece`, `scheduleReturns`, `referral`, `writeReview`, `findClient` (PR 3) |
+| `sim/calendar.js` | `WEEK`, `WEEK_HOOKS`/`WEEK_ORDER`, `advanceWeek(S)` (the only thing that moves time), `nextStop(S)`, `finishSession`, `careerOver` (PR 3) |
 | `sim/session.js` | the session scoring and client meters (PR 4) |
 | `sim/kit.js` | `MACHINES`, `NEEDLES`, `INKS` (PR 4) |
-| `sim/market.js` | walk-ins, `PRICE_INDEX` (PR 3); closes the IIFE, `</script>` |
+| `sim/market.js` | `PRICE_INDEX` (PR 1), `WALKINS`, `WALKIN_SEASON`, `generateWalkins` (PR 3); closes the IIFE, `</script>` |
 | **INK_SOUND** | |
 | `sound/synth.js` | the whole block: audio context on first tap, `tick()`; the machine buzz in PR 4 |
 | **INK_VIS** | |
@@ -72,8 +73,8 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `app/studio.js` | `renderStudio` |
 | `app/design.js` | `renderDesign`: the design board (Body, Board, Flash views), `DZ_SAMPLE_CLIENTS`, the working model `DZ`, undo/redo, drawer, capsule, stress report, flash wall (PR 2) |
 | `app/session.js` | `renderSession` (empty state when nobody is booked) |
-| `app/clients.js` | `renderClients` |
-| `app/career.js` | `renderCareer` |
+| `app/clients.js` | `renderClients`: This week (walk-ins, booked consults, sittings due, coming up) and the client list with filters and a client card (pieces as they look today, history); the consult view; `clDesignFor` and the board's booking bar (`clBookingBar`); `clSession` (PR 4's `sessionStartBooked` if present, else `clQuickSession`) (PR 3) |
+| `app/career.js` | `renderCareer`: the Next button (`crNext` → `INK_SIM.nextStop`, warns once if people are waiting), the stop's log, `STAGE_NAMES` (PR 3) |
 | `app/bodymap.js` | `bmSvg`: the front/back body diagram with a tappable zone per placement (PR 2) |
 | `app/help.js` | help overlays (PR 9); closes the app script |
 | `html/tail.html` | `<script>__ldGo(start)</script></body></html>` (no trailing newline) |
@@ -97,7 +98,7 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`. `h
 | `queue` | array | booked sessions, including later sessions of multi-session pieces (PR 3, PR 4) |
 | `studio` | object | `{stage: "apprentice"\|"chair"\|"studio"\|"legacy", staff:[]}` (PR 7) |
 | `goals` | object | `GOALS` done, id → `{w, y}` (PR 8) |
-| `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id until PR 3) |
+| `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id, or a real client id from PR 3), `item` (PR 3: the `S.queue` session item being designed for, or null) |
 | `flash` | array | your own flash, saved from the board: `{id, name, design, w, y}`, at most `FLASH_MINE_CAP` (40) (PR 2) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
 | `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced` |
