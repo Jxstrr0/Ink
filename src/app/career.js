@@ -33,6 +33,7 @@ ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
+  if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
   if(crWaiting().n&&!CR.arm){CR.arm=1;clearTimeout(CR.armT);CR.armT=setTimeout(()=>{CR.arm=0;if(curTab==="career")renderCareer();},4000);INK_SOUND.tick();renderCareer();return;}
   CR.arm=0;clearTimeout(CR.armT);
   if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}

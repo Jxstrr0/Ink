@@ -96,9 +96,10 @@ longest side, x/y/scale are normalised to it and pos is the footprint centre ove
 
 ```
 SIM.age(tattoo, years) -> { blur (mm), fade (0..1 lost), spread (mm), readability (0..1 today) }
-tattoo = { design, out: { lineQuality, depthQuality, saturation, trauma } (0..1; defaults 0.75 if missing),
+tattoo = { design, out: { lineQuality, depthQuality, saturation, trauma } (0..1; quality defaults 0.75 if missing, trauma 0.25),
            heal: HEAL_GRADES id or null, ink: INKS tier id or null, skinTone, sun (client's sun-exposure trait) }
-Tables: COLOUR_FADE, PLACEMENT_WEAR, HEAL_GRADES (crisp, soft, patchy, blownout, infected), INK_TIERS (if kit.js is empty: budget, standard, premium)
+Tables: COLOUR_FADE, PLACEMENT_WEAR, HEAL_GRADES (crisp, soft, patchy, blownout, infected). Ink tiers come from sim/kit.js
+INKS (read at call time; SIM.INK_TIERS is the same object); an unknown or missing ink counts as standard.
 ```
 
 ## `sim/market.js`
@@ -265,3 +266,52 @@ No PR 3 function adds a top-level S field.
 
 - The synthetic 30-year run (one artist, no staff, auto-play) ends with ~5,500 client records and ~5,600 pieces; S as JSON is ~10 MB (~1.5 KB a client, ~0.4 KB a piece). That is past localStorage's ~5 MB long before year 30, so PR 7's `CLIENT_CAP` compaction (and probably leaner piece records) is required, not optional.
 - `advanceWeek` at year 30 runs ~7 ms in node (budget 50 ms).
+
+# PR 4: the session and the kit
+
+## Outputs
+
+`out = {lineQuality, depthQuality, saturation, trauma, sessionsUsed, blowouts, joins}`. The first three are 0..1, higher is better. **`trauma` is 0..1 and LOWER is better** (skin damage: rushing, lingering, blowouts, overworking a zone, a hard-hitting kit); it feeds the heal grade in PR 5, not aging directly. A piece made by the session also carries, at the top level: `heal: null`, `healDue: {w, y}` (two weeks on, `SE_HEAL_WEEKS`), `sessionsUsed`, `blowouts`, `joins`, `ink` (INKS id), `machine` (MACHINES id).
+
+## `sim/kit.js`
+
+```
+kit = {machine, needles:[ids on the tray], ink, voltage, stroke, owned:{machines:[], needles:[], inks:[]}}   (S.kit, KIT_DEFAULT)
+SIM.kitBands(kit, skills, settings{assist}, {liner}?) -> {paceBand, accFrac, pace, hit, depthTol, trauma, pain, shade, colour,
+  liner, liners:[{id, rl, lo, hi}], lineBand:[lo, hi] (the liner in use), lineAll:[lo, hi] (the tray), lineMm:[lo, hi],
+  fade, spread, sat (the ink), buzz {wave, hz, cut, rough}, machine, ink, assist}
+SIM.kitDeltas(a, b, skills?, settings?) -> {band, pace, shade, trauma, fade (ratios - 1), lineLo, lineHi (LINE_WEIGHTS steps)}
+SIM.kitPrice(kind "machine"|"needle"|"ink", id, year) -> rubles that year;  SIM.kitClean(kit) -> a valid kit;  SIM.kitDefault()
+```
+
+Tables: `MACHINES` (`coil_used`, `coil`, `rotary`, `pen` from 2014: band, trauma, depth, pain, price in 2000 rubles, buzz), `NEEDLES` (liners `1RL`..`14RL` with `rl` and `reach`, mags `7M1`, `9M1`, `13RM`, `15RM`; `shade`), `INKS` (`budget`, `standard`, `premium`: fade, spread, sat), `VOLTAGE`, `STROKE`, `KIT_TUNE`, `ASSIST`, `KIT_DEFAULT`, `KIT_TRAY_MAX`.
+
+## `sim/session.js`
+
+```
+sess = SIM.sessionNew({design, client, skills, kit, settings:{assist}, bodyShape, skinTone, kind:"practice"|"sample"|"booked",
+                       itemId, part, partsTotal, progress, year, week})     numbers and short strings only: it saves as JSON
+SIM.sessionPlan(sess) -> {box, strokes, zones, items:[{k:"line"|"shade"|"colour", i, w (hours), cw}], hours, work, parts}  (cached)
+SIM.sessionBands(sess) -> kitBands + {paceMmS, accMm, view}
+SIM.stencilCheck(design, client, skills) -> {flow, issues: stress entries crease, crease_near, too_wide, too_long, against_flow, against_shape}
+SIM.sessionPlace(sess, {x, y})   SIM.sessionStart(sess)   SIM.sessionResume(sess)   SIM.sessionItem(sess) -> item + {stroke | zone} | null
+SIM.penDown / penMove / penUp(sess, tMs, xMm, yMm) -> {ok, why?, r (pace / target), d (mm off), rushed, blow, join, sat, over, inside,
+                                                     pain, fatigue, clock, stop, done, lineDone}
+SIM.sessionSetLiner(sess, id)   SIM.sessionNextItem(sess)   SIM.sessionAction(sess, "break"|"numb"|"chat") -> {ok, why, eff, cost, talk}
+SIM.sessionFinish(sess) -> {done, early, stop ("done"|"pain"|"fatigue"|"artist"), out, sitting {lineQuality, depthQuality, blowouts,
+   joins, trauma, hours, items, pain, fatigue}, progress {next, zsat, acc, cur}, part, partsTotal, sessionsUsed, nextPart, left}
+SIM.sessionXp(result, sess, skills) -> {linework, shading, colour, speed, styles:{id: +x}}  (added to S.skills, capped at 10)
+SIM.sessionSynth(sess, {speed, noise, wave, stopAt, stopMs, lift}), SIM.sessionTrace(sess, contacts)   for tests
+```
+
+Coordinates are millimetres on the placement box (`placementBox(placement, bodyShape)`), the same transform the board draws with. A piece of N sittings splits its work list at 1/N, 2/N... of the hours; a sitting that ends early leaves the rest to the next. Multi-session progress lives on the booked `S.queue` session item as `item.progress` (the `progress` object above); `finishSession` copies it to the next sitting's item.
+
+Tables: `STENCIL`, `PACE`, `ACC`, `DEPTH`, `BLOW`, `JOIN`, `LW_FIT`, `ZONE`, `COLOUR_PACK` (`COLOUR` inside the file), `TRAUMA`, `PAIN`, `FATIGUE`, `BREAK`, `NUMB`, `CHAT`, `CLOCK`, `SKILL_XP`. Extra exports: `SIM.flattenPath`, `SIM.pointAt`, `SIM.insideZone`. Nothing in the session is random.
+
+## Which S fields PR 4 adds
+
+`kit` (filled), `session` (`{live, next}` or null), `settings.handed`, `settings.assist`; `cash` starts at 3,000. The sim functions above touch only `sess`; `app/session.js` writes `S.session`, `S.skills`, `S.cash` (numbing cream, sample pay), `S.pieces` (via `addPiece` / `finishSession`) and `item.progress`.
+
+## Tests
+
+`node tools/session-test.js`: the flattener, the stencil plan, steady against rushed, blowouts, joins, Assist, the liner fit, ribs against forearm pain, numbing, breaks, chat, practice, shading overwork, a multi-session back piece, the pain limit, outputs and XP.

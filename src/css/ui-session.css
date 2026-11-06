@@ -1,0 +1,135 @@
+/* ===================== Ink: the Session tab and the Studio kit panel (PR 4) =====================
+   The chair (.se): the top card with the client and the pain/fatigue meters (bars with notches, a hatch or dot pattern and
+   an icon, so they read without colour), the stage (the care rail on the free hand's side and the four stacked canvases),
+   the steady-hand gauge, the zone meter, liner chips and the results card. The kit panel (.kp): the summary and option
+   rows with ▲/▼ deltas. Light theme overrides and reduced motion at the bottom. Skin is skin in both themes. */
+.se .clK{display:block}
+.seTop{padding:10px 12px}
+.seTopT{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.seTopT .clK{width:100%}
+.seTopT b{font-size:16px}
+.seProg{margin-left:auto;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.seMeters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.seMeter{display:grid;grid-template-columns:18px auto 1fr auto;align-items:center;gap:6px;font-size:12.5px;color:var(--mute);position:relative}
+.seMI svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;display:block}
+.seMeter.pain .seMI{color:var(--red2)}
+.seMeter.fatigue .seMI{color:var(--teal)}
+.seMB{position:relative;height:12px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.seMB i{position:absolute;left:0;top:0;bottom:0;border-radius:6px 0 0 6px;transition:width .15s}
+.seMeter.pain .seMB i{background:repeating-linear-gradient(135deg,var(--red) 0 4px,var(--red2) 4px 7px)}
+.seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.35) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
+.seMB s{position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(25% - 1px),var(--bg) calc(25% - 1px) 25%,transparent 25% calc(50% - 1px),var(--bg) calc(50% - 1px) 50%,transparent 50% calc(75% - 1px),var(--bg) calc(75% - 1px) 75%,transparent 75%);opacity:.7}
+.seMV{font-variant-numeric:tabular-nums;min-width:2ch;text-align:right;color:var(--text);font-weight:600}
+.seWarn{display:none;position:absolute;right:-2px;top:-9px;width:16px;height:14px;font-size:10px;font-weight:800;line-height:15px;text-align:center;color:#fff;background:var(--crit);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.seMeter.hi .seWarn{display:block}
+.seMeter.hi .seMV{color:var(--crit)}
+
+/* the stage: rail on the free hand's side */
+.seStage{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.se[data-hand="left"] .seStage{flex-direction:row-reverse}
+.seRail{flex:0 0 52px;display:flex;flex-direction:column;gap:6px}
+.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:58px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:600;cursor:pointer}
+.seAct svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.seAct em{font-style:normal;font-size:9.5px;color:var(--mute);font-weight:500}
+.seAct:hover{border-color:var(--faint)}
+.seAct:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+#seStop{margin-top:auto;color:var(--red2)}
+.seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none}
+.seWrap canvas{position:absolute;left:0;top:0;display:block}
+#seOver{touch-action:none;cursor:crosshair}
+.seDot{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #2f7f77;background:rgba(47,127,119,.25);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.seDot::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(47,127,119,.6);animation:sePulse 1.4s ease-out infinite}
+.seDot.still::after{animation:none;border-style:dashed}
+.seDot.nudge{animation:seNudge .35s}
+@keyframes sePulse{from{transform:scale(.6);opacity:1}to{transform:scale(1.3);opacity:0}}
+@keyframes seNudge{0%,100%{margin-left:0}25%{margin-left:-5px}75%{margin-left:5px}}
+
+/* under the stage: gauge, status, tools */
+.seUnder{display:flex;flex-direction:column;gap:6px}
+.seGauge,.seZone{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+.seGL{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.seGT,.seZT{position:relative;height:18px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+.seGT .band{position:absolute;top:2px;bottom:2px;border-radius:6px;background:rgba(111,191,138,.35);border:1.5px solid var(--ok)}
+.seGT .rush{position:absolute;top:0;bottom:0;right:0;border-radius:0 9px 9px 0;background:repeating-linear-gradient(135deg,rgba(224,87,79,.45) 0 3px,transparent 3px 7px)}
+.seGT i{position:absolute;top:-5px;width:0;height:0;margin-left:-7px;border:7px solid transparent;border-top:10px solid var(--text);border-bottom:0;transition:left .06s linear}
+.seGT i::after{content:"";position:absolute;left:-1px;top:-1px;width:2px;height:22px;background:var(--text)}
+.seGT i.rush{border-top-color:var(--crit)}
+.seGT i.rush::after{background:var(--crit)}
+.seZT{overflow:visible}
+.seZT i{position:absolute;left:0;top:0;bottom:0;border-radius:9px 0 0 9px;opacity:.9}
+.seZT .tgt{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--text);border-radius:2px}
+.seZT .over{position:absolute;top:0;bottom:0;right:0;border-radius:0 9px 9px 0;background:repeating-linear-gradient(135deg,rgba(224,87,79,.45) 0 3px,transparent 3px 7px)}
+.seStatus{margin:0;min-height:1.4em;font-size:13.5px;color:var(--text)}
+.seTools .row{gap:10px}
+.seLiners{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:44px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.seChipL svg{grid-row:1/3;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.seChipL b{font-size:13.5px}
+.seChipL span{font-size:11px;color:var(--mute)}
+.seChipL.on{border-color:var(--red);box-shadow:inset 0 -3px 0 var(--red);background:var(--panel2)}
+.seChipL.hint{border-style:dashed;border-color:var(--gold)}
+.seChipL:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.seLw{margin:0;font-size:12.5px;color:var(--mute)}
+.seLw.bad{color:var(--warn)}
+.seLw.ok span{color:var(--ok)}
+
+/* placement */
+.sePlaceWrap{display:flex;justify-content:center;background:var(--panel2);border-radius:10px;padding:8px;margin:6px 0 8px}
+.sePlace{width:100%;max-height:min(52vh,460px);touch-action:none;cursor:grab}
+.seFlow polyline{fill:none;stroke:rgba(60,40,20,.28);stroke-width:.6;stroke-dasharray:2 2}
+.seCrease{stroke:rgba(150,40,30,.6);stroke-width:.7;stroke-dasharray:3 2}
+.seCreaseT{fill:rgba(120,30,20,.75);font-family:var(--ui)}
+.seChk{margin:0 0 8px}
+.seChkFlow{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--panel2);margin-bottom:4px}
+.seIss{margin:3px 0;font-size:13.5px}
+.seIss.crit span{color:var(--crit)}
+.seIss.warn span,.seIss.minor span{color:var(--warn)}
+.seIss.ok span{color:var(--ok)}
+
+/* lobby and results */
+.seDue{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.seDue:first-of-type{border-top:0}
+.seDueT{flex:1;display:flex;flex-direction:column;min-width:0}
+.seGrow{flex:1 1 180px}
+.seGrow select{width:100%}
+.seKitLine{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.seKitLine p{margin:0;flex:1 1 200px;font-size:13.5px}
+.seNextB,.seResB{display:flex;gap:12px;align-items:flex-start}
+.seRen{flex:0 0 auto;width:112px;height:112px;border-radius:10px;border:1px solid var(--line)}
+.seNextB p{margin:0 0 4px}
+.seResMsg{color:var(--warn);font-weight:600;margin:4px 0}
+.seRes .kv{flex:1;font-size:13.5px}
+.seRes .kv .hint{display:block;font-size:11.5px;margin:0}
+.seRes .clChips{margin:10px 0 4px}
+
+/* the kit panel */
+.kpSum{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin:4px 0 12px}
+.kpSum div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column}
+.kpSum span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.kpSum b{font-size:16px;font-variant-numeric:tabular-nums}
+.kpSum em{font-style:normal;font-size:11px;color:var(--mute)}
+.kp .seg{margin-bottom:10px;display:flex}
+.kp .seg button{flex:1;padding:0 6px}
+.kpRow{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.kpRow:first-child{border-top:0}
+.kpRow.on .kpRT b::after{content:" ✓";color:var(--ok)}
+.kpRT{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kpRT .hint{margin:0;font-size:12.5px}
+.kpRB{flex:0 0 auto}
+.kpUse{font-size:12.5px;font-weight:700;color:var(--ok)}
+.kpDs{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.kpD{font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}
+.kpD.up{color:var(--ok);border-color:currentColor}
+.kpD.dn{color:var(--crit);border-color:currentColor;border-style:dashed}
+.kpD.n{color:var(--mute)}
+.kpSl{display:flex;flex-direction:column;gap:4px;width:100%;font-size:13px;color:var(--text);margin-top:4px}
+.kpSl span{display:flex;justify-content:space-between}
+.kpSl input{width:100%;accent-color:var(--red);min-height:32px}
+.kpVs{margin:10px 0 0;font-size:12.5px;color:var(--mute)}
+#kpReset{margin-top:10px}
+
+@media (max-width:380px){.seMeters{grid-template-columns:1fr}.seRen{width:88px;height:88px}}
+@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}}
+html[data-theme=light] .seMB s{opacity:.9}
+html[data-theme=light] .seGT .band{background:rgba(47,138,82,.18)}
+html[data-theme=light] .seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.5) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}

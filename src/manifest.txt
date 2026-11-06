@@ -3,6 +3,7 @@ html/head.html
 css/style.css
 css/ui-design.css
 css/ui-clients.css
+css/ui-session.css
 html/body.html
 html/ld-libs.html
 sim/rng.js

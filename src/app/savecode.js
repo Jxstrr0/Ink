@@ -83,6 +83,14 @@ function buSaveOk(o){
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
   if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
+  if("kit" in o){const k=o.kit;if(!buObj(k))return false;   // PR 4: an old save's kit:{} is fine (hydrate fills the starter kit)
+    if("needles" in k&&!(Array.isArray(k.needles)&&k.needles.every(n=>typeof n==="string")))return false;
+    for(const f of ["voltage","stroke"])if(f in k&&!buNum(k[f]))return false;
+    for(const f of ["machine","ink"])if(f in k&&typeof k[f]!=="string")return false;
+    if("owned" in k){if(!buObj(k.owned))return false;for(const f of ["machines","needles","inks"])if(f in k.owned&&!Array.isArray(k.owned[f]))return false;}}
+  if("session" in o&&o.session!=null){const s=o.session;if(!buObj(s))return false;   // PR 4: the chair, numbers only
+    for(const f of ["live","next"])if(s[f]!=null&&(!buObj(s[f])||!buObj(s[f].design)||!Array.isArray(s[f].design.elements)))return false;
+    if(s.live&&!buNum(s.live.next))return false;}
   return buTry(o);}
 /* load a copy the way the game would (hydrate), then put the running game back exactly as it was */
 function buTry(o){const keepS=S;let ok=false;
