@@ -212,17 +212,25 @@ def hem(v, t, n):
 # ---- the sculpt pass: gentle anatomy on the smooth skin, as Gaussian pushes along the surface normal ----
 # (game metres; s = 1 is the figure's left, +x). kind "pt" = a point, "seg" = a line; amp in m (+ out, - in); sigma in m;
 # dir = the way the skin must face to be pushed (so a bump on the front of the knee leaves the back alone). Each centre is
-# snapped to the skin first. Kept small (2 to 6 mm), so the surface stays within a few mm of the coded body's.
+# snapped to the skin first. 0.1.12.0 made it stronger where the eye reads a build (shoulders, waist, knees, calves: up to
+# 9 mm) and kept the rest at 2 to 5 mm; still smooth, faceless and neutral, and the islands still cover the reference.
 BRUSHES = [
-    ("trapezius", "seg", [(0.05, 1.15, -0.02), (0.15, 1.10, -0.02)], 0.005, 0.018, (0, 1, -0.3)),
-    ("collarbone", "seg", [(0.025, 1.11, 0.06), (0.14, 1.095, 0.05)], 0.0025, 0.007, (0, 0.3, 1)),
-    ("chest", "pt", [(0.085, 1.0, 0.13)], 0.004, 0.04, (0, 0, 1)),
-    ("sternum", "seg", [(0.0, 1.08, 0.12), (0.0, 0.96, 0.13)], -0.0015, 0.008, (0, 0, 1)),
-    ("shoulder blade", "pt", [(0.085, 1.0, -0.12)], 0.004, 0.035, (0, 0, -1)),
-    ("spine", "seg", [(0.0, 1.10, -0.10), (0.0, 0.64, -0.10)], -0.003, 0.010, (0, 0, -1)),
-    ("deltoid", "pt", [(0.235, 1.04, 0.0)], 0.003, 0.035, (1, 0.3, 0)),
+    ("trapezius", "seg", [(0.05, 1.15, -0.02), (0.15, 1.10, -0.02)], 0.006, 0.018, (0, 1, -0.3)),
+    ("collarbone", "seg", [(0.025, 1.11, 0.06), (0.14, 1.095, 0.05)], 0.003, 0.007, (0, 0.3, 1)),
+    ("chest", "pt", [(0.085, 1.0, 0.13)], 0.005, 0.04, (0, 0, 1)),
+    ("sternum", "seg", [(0.0, 1.08, 0.12), (0.0, 0.96, 0.13)], -0.002, 0.008, (0, 0, 1)),
+    ("shoulder blade", "pt", [(0.085, 1.0, -0.12)], 0.005, 0.035, (0, 0, -1)),
+    ("spine", "seg", [(0.0, 1.10, -0.10), (0.0, 0.64, -0.10)], -0.0035, 0.010, (0, 0, -1)),
+    ("deltoid", "pt", [(0.235, 1.04, 0.0)], 0.007, 0.032, (1, 0.4, 0)),
+    ("deltoid front", "pt", [(0.215, 1.03, 0.045)], 0.004, 0.022, (0.3, 0.2, 1)),
+    ("waist", "seg", [(0.14, 0.80, 0.0), (0.142, 0.74, 0.0)], -0.008, 0.026, (1, 0, 0)),
+    ("waist front", "seg", [(0.10, 0.80, 0.09), (0.10, 0.74, 0.09)], -0.003, 0.02, (0.5, 0, 1)),
     ("elbow", "pt", [(0.29, 0.78, -0.01)], 0.004, 0.012, (0, -0.5, -1)),
-    ("kneecap", "pt", [(0.11, 0.565, 0.485)], 0.005, 0.022, (0, 0.3, 1)),
+    ("kneecap", "pt", [(0.11, 0.565, 0.485)], 0.008, 0.02, (0, 0.3, 1)),
+    ("knee sides in", "pt", [(0.075, 0.53, 0.45)], -0.003, 0.016, (-1, 0, 0)),
+    ("knee sides out", "pt", [(0.15, 0.53, 0.45)], -0.003, 0.016, (1, 0, 0)),
+    ("calf", "seg", [(0.118, 0.45, 0.40), (0.118, 0.34, 0.405)], 0.009, 0.03, (0, 0, -1)),
+    ("calf in", "pt", [(0.09, 0.42, 0.42)], 0.004, 0.025, (-1, 0, -0.5)),
     ("ankle out", "pt", [(0.148, 0.10, 0.45)], 0.003, 0.009, (1, 0, 0)),
     ("ankle in", "pt", [(0.082, 0.105, 0.45)], 0.003, 0.009, (-1, 0, 0)),
     ("neck muscle", "seg", [(0.03, 1.235, -0.015), (0.014, 1.15, 0.04)], 0.0025, 0.008, (0, 0, 1)),
@@ -412,15 +420,7 @@ def main():
         pb.to_mesh(me)
         pb.free()
         bm.from_mesh(me)
-    # the coded foot floats about 2 cm under the end of the shin (nothing in the game looks there): bridge each ankle
-    for s in (1, -1):
-        ab = bmesh.new()
-        bmesh.ops.create_cone(ab, cap_ends=True, segments=16, radius1=0.031, radius2=0.032, depth=0.09)
-        bmesh.ops.translate(ab, verts=ab.verts, vec=Vector(K.g2b([0.115 * s, 0.1, 0.45])))
-        me = bpy.data.meshes.new("ankle")
-        ab.to_mesh(me)
-        ab.free()
-        bm.from_mesh(me)
+    # (0.1.12.0: the coded shin now runs on into the top of the foot, so the ankle bridges this used to add are gone)
     me = bpy.data.meshes.new("union")
     bm.to_mesh(me)
     bm.free()

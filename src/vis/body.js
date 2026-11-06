@@ -16,7 +16,9 @@
    Zones: BD_ZONES places each PLACEMENTS box on its island: which way round the ring its centre sits (frac of the ring,
    0 = the face line), any sideways offset, and the joint it hangs from (the same crease the board draws). bdZone(id)
    resolves left/right and gives the centre line, so decals.js and the stencil drag share one mapping. ===== */
-const BD_FORM={neutral:{sh:0.19,waist:1,hip:1,depth:1},masc:{sh:0.207,waist:1.05,hip:0.99,depth:1.06},femme:{sh:0.173,waist:0.88,hip:1.07,depth:0.95}};
+/* the torso's form per shape (0.1.12.0: pushed apart so Broad, Average and Slight read at a glance from the consult camera):
+   sh = shoulder half width (m), waist / hip = width multipliers on those rings, depth = front-to-back multiplier */
+const BD_FORM={neutral:{sh:0.19,waist:1,hip:1,depth:1},masc:{sh:0.226,waist:1.12,hip:1.05,depth:1.14},femme:{sh:0.162,waist:0.85,hip:0.95,depth:0.87}};
 const BD_SHAPES=["neutral","masc","femme"];
 /* pixels-per-mm weight per island in the texture atlas */
 const BD_ISLAND_W={arm_l:1.4,arm_r:1.4,leg_l:0.72,leg_r:0.72,back:1,chest:1.2,side_l:1,side_r:1,neck:1.1,hand_l:1.15,hand_r:1.15,foot_l:0.85,foot_r:0.85,blank:1};
@@ -110,15 +112,19 @@ const BD_TORSO_TH=(()=>{const d=Math.PI/180,t=[];const seg=(a,b,n)=>{for(let i=0
 /* every part for one body shape. Left limbs are on +x (the figure's left), the figure faces +z */
 function bdSpec(shape){
   /* girth from BODY_SHAPES; the chest width leans on the back multiplier (the shoulders already widen with sh) */
-  const f0=BD_FORM[shape]||BD_FORM.neutral,f=Object.assign({},f0,{neck:bdWrap(shape,"neck"),chest:lerpV(1,bdWrap(shape,"back"),0.6),arm:bdWrap(shape,"arm"),
+  const f0=BD_FORM[shape]||BD_FORM.neutral,f=Object.assign({},f0,{neck:bdWrap(shape,"neck"),chest:lerpV(1,bdWrap(shape,"back"),0.35),arm:bdWrap(shape,"arm"),
     leg:bdWrap(shape,"leg"),hand:bdWrap(shape,"hand"),foot:bdWrap(shape,"foot")});
   const out=[],sh=f.sh,rings=bdTorsoRings(f);
+  /* the arm swings out as the chest and the arm thicken, so it clears the torso by the same few mm in every shape
+     (0 for Average: torso half width 0.184 at the upper arm, arm radius 0.052, 6 mm of overlap); the legs spread a little
+     with their girth so the thighs never meet */
+  const aX=0.184*(sh/0.19)*f.chest+0.052*f.arm-0.006-sh-0.04,lX=(f.leg-1)*0.07;
   out.push({id:"torso",kind:"torso",G:bdEllipses(rings,BD_TORSO_TH),marks:{top:0,armpit:6,waist:11},
     patches:[{isl:"chest",i0:0,i1:7,j0:0,j1:8,jc:4},{isl:"blank",i0:7,i1:19,j0:0,j1:8,jc:4},{isl:"side_r",i0:0,i1:19,j0:8,j1:14,jc:11},
       {isl:"back",i0:0,i1:19,j0:14,j1:24,jc:19},{isl:"side_l",i0:0,i1:19,j0:24,j1:30,jc:27}]});
   for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
     /* the arm: shoulder dome, upper arm hanging, elbow bent, forearm forward on the armrest (face line up) */
-    const aK=[[sh-0.012,1.083,-0.008],[sh+0.04,1.0,0],[sh+0.1,0.8,0.035],[sh+0.105,0.745,0.27]].map(X);
+    const aK=[[sh-0.012,1.083-(f.arm-1)*0.04,-0.008],[sh+0.04+aX,1.0,0],[sh+0.1+aX,0.8,0.035],[sh+0.105+aX,0.745,0.27]].map(X);
     const aUs=bdRings(22,true,false);
     out.push({id:"arm_"+L,kind:"tube",G:bdTube({keys:aK,us:aUs,thetas:bdThetas(14,Math.PI),face:[0,0,1],g:f.arm,
       prof:[[0,.006,.006],[.02,.03,.03],[.05,.045,.046],[.1,.052,.052],[.2,.049,.048],[.35,.046,.044],[.5,.042,.040],[.566,.040,.041],[.62,.039,.044],[.72,.036,.042],[.85,.029,.036],[.95,.022,.031],[1,.021,.030]]}),
@@ -131,11 +137,13 @@ function bdSpec(shape){
     out.push({id:"thumb_"+L,kind:"tube",G:bdTube({keys:[bdAdd(w,X([-0.026,-0.006,0.03])),bdAdd(w,X([-0.044,-0.012,0.07])),bdAdd(w,X([-0.047,-0.016,0.098]))],
       us:bdRings(6,false,true),thetas:bdThetas(8,Math.PI),face:[0,1,0],g:f.hand,prof:[[0,.011,.012],[.5,.0095,.010],[.9,.007,.007],[1,.002,.002]]}),marks:{},patches:[{isl:"blank",jc:4}]});
     /* the leg: thigh forward on the seat, knee bent, shin down, foot flat; face line up the thigh and down the shin */
-    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
-    const lUs=bdRings(24,false,false);
-    out.push({id:"leg_"+L,kind:"tube",G:bdTube({keys:lK,us:lUs,thetas:bdThetas(16,s>0?Math.PI/2:-Math.PI/2),face:[0,1,0],g:f.leg,
-      prof:[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072],[.55,.056,.058],[.62,.054,.056],[.7,.056,.058],[.8,.048,.047],[.92,.037,.036],[1,.034,.034]]}),
-      marks:{hip:0,knee:bdNear(lUs,0.55),ankle:lUs.length-1},patches:[{isl:"leg_"+L,jc:s>0?12:4}]});
+    /* 0.1.12.0: the shin runs on past the ankle ring, tapering, into the top of the foot, so the foot no longer floats
+       under it. The first 25 rings and the profile keep their place along the leg (u scaled by k = the old length's share) */
+    const lK=bdLegKeys(X,lX),lKx=lK.concat([X([0.115+lX,0.072,0.449])]),k=bdSpline(lK).L/bdSpline(lKx).L;
+    const lUs=bdRings(24,false,false).map(u=>u*k).concat([k+(1-k)*0.5,1]);
+    out.push({id:"leg_"+L,kind:"tube",G:bdTube({keys:lKx,us:lUs,thetas:bdThetas(16,s>0?Math.PI/2:-Math.PI/2),face:[0,1,0],g:f.leg,
+      prof:[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072],[.55,.056,.058],[.62,.054,.056],[.7,.056,.058],[.8,.048,.047],[.92,.037,.036],[1,.034,.034]].map(p=>[p[0]*k,p[1],p[2]]).concat([[1,.027,.027]])}),
+      marks:{hip:0,knee:bdNear(lUs,0.55*k),ankle:lUs.length-3},patches:[{isl:"leg_"+L,jc:s>0?12:4}]});
     const A=lK[4],fK=[bdAdd(A,X([0,-0.065,-0.055])),bdAdd(A,X([0,-0.066,0.02])),bdAdd(A,X([0.004,-0.08,0.12])),bdAdd(A,X([0.008,-0.086,0.2]))];
     const fUs=bdRings(13,true,true);
     out.push({id:"foot_"+L,kind:"tube",G:bdTube({keys:fK,us:fUs,thetas:bdThetas(12,Math.PI),face:[0,1,0],g:f.foot,
@@ -152,11 +160,13 @@ function bdSpec(shape){
   const shR=[.70,.665,.63,.595,.56,.53,.505,.49,.484].map(y=>bdTorsoAt(rings,y));
   out.push({id:"shorts",kind:"cloth",mat:"shorts",G:bdEllipses(shR,BD_TORSO_TH,0.006),patches:[{isl:"blank",jc:4}],open:true});
   for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
-    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
+    const lK=bdLegKeys(X,lX);
     const u1=0.24,us=[0,u1*0.25,u1*0.5,u1*0.75,u1*0.92,u1];
     const lp=[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072]];
     out.push({id:"shortsleg_"+L,kind:"cloth",mat:"shorts",G:bdTube({keys:lK,us,thetas:bdThetas(16,0),face:[0,1,0],g:f.leg,inflate:0.007,prof:lp}),patches:[{isl:"blank",jc:8}],open:true});}
   return out;}
+/* the leg's spine (hip, seat, knee, shin, ankle), spread sideways by lX for the shape */
+function bdLegKeys(X,lX){return[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(v=>X([v[0]+lX,v[1],v[2]]));}
 function bdNear(us,u){let b=0;for(let i=1;i<us.length;i++)if(Math.abs(us[i]-u)<Math.abs(us[b]-u))b=i;return b;}
 
 /* outward normals by finite differences round each ring and along each column */
