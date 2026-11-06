@@ -1432,10 +1432,12 @@ SIM.elementById=id=>ELEMENT_INDEX.get(id)||null;
 /* the UV islands the 3D body unwraps into (PR 6); every placement lives on exactly one */
 const ISLANDS=["arm_l","arm_r","leg_l","leg_r","back","chest","side_l","side_r","neck","hand_l","hand_r","foot_l","foot_r"];
 
-/* wrap width multipliers per region: a bigger arm has more room before the design turns the corner */
+/* wrap width multipliers per region: a bigger arm has more room before the design turns the corner. The 3D mannequin
+   (vis/body.js) takes its limb and torso girth from these same numbers. 0.1.12.0 pushed Broad and Slight further apart
+   (they were 1.14 / 0.88 on the arm) so the three builds read at a glance; the ids stay masc / femme for old saves */
 const BODY_SHAPES={
-  masc:{name:"Broad",wrap:{arm:1.14,leg:1.08,back:1.12,chest:1.12,side:1.06,neck:1.12,hand:1.10,foot:1.08,shoulder:1.14}},
-  femme:{name:"Slight",wrap:{arm:0.88,leg:1.03,back:0.90,chest:0.92,side:0.94,neck:0.90,hand:0.90,foot:0.92,shoulder:0.88}},
+  masc:{name:"Broad",wrap:{arm:1.24,leg:1.14,back:1.18,chest:1.18,side:1.10,neck:1.16,hand:1.12,foot:1.08,shoulder:1.24}},
+  femme:{name:"Slight",wrap:{arm:0.82,leg:0.90,back:0.86,chest:0.88,side:0.90,neck:0.88,hand:0.88,foot:0.92,shoulder:0.84}},
   neutral:{name:"Average",wrap:{arm:1,leg:1,back:1,chest:1,side:1,neck:1,hand:1,foot:1,shoulder:1}}
 };
 
@@ -6200,7 +6202,9 @@ function vsUp(ev){
    Zones: BD_ZONES places each PLACEMENTS box on its island: which way round the ring its centre sits (frac of the ring,
    0 = the face line), any sideways offset, and the joint it hangs from (the same crease the board draws). bdZone(id)
    resolves left/right and gives the centre line, so decals.js and the stencil drag share one mapping. ===== */
-const BD_FORM={neutral:{sh:0.19,waist:1,hip:1,depth:1},masc:{sh:0.207,waist:1.05,hip:0.99,depth:1.06},femme:{sh:0.173,waist:0.88,hip:1.07,depth:0.95}};
+/* the torso's form per shape (0.1.12.0: pushed apart so Broad, Average and Slight read at a glance from the consult camera):
+   sh = shoulder half width (m), waist / hip = width multipliers on those rings, depth = front-to-back multiplier */
+const BD_FORM={neutral:{sh:0.19,waist:1,hip:1,depth:1},masc:{sh:0.226,waist:1.12,hip:1.05,depth:1.14},femme:{sh:0.162,waist:0.85,hip:0.95,depth:0.87}};
 const BD_SHAPES=["neutral","masc","femme"];
 /* pixels-per-mm weight per island in the texture atlas */
 const BD_ISLAND_W={arm_l:1.4,arm_r:1.4,leg_l:0.72,leg_r:0.72,back:1,chest:1.2,side_l:1,side_r:1,neck:1.1,hand_l:1.15,hand_r:1.15,foot_l:0.85,foot_r:0.85,blank:1};
@@ -6294,15 +6298,19 @@ const BD_TORSO_TH=(()=>{const d=Math.PI/180,t=[];const seg=(a,b,n)=>{for(let i=0
 /* every part for one body shape. Left limbs are on +x (the figure's left), the figure faces +z */
 function bdSpec(shape){
   /* girth from BODY_SHAPES; the chest width leans on the back multiplier (the shoulders already widen with sh) */
-  const f0=BD_FORM[shape]||BD_FORM.neutral,f=Object.assign({},f0,{neck:bdWrap(shape,"neck"),chest:lerpV(1,bdWrap(shape,"back"),0.6),arm:bdWrap(shape,"arm"),
+  const f0=BD_FORM[shape]||BD_FORM.neutral,f=Object.assign({},f0,{neck:bdWrap(shape,"neck"),chest:lerpV(1,bdWrap(shape,"back"),0.35),arm:bdWrap(shape,"arm"),
     leg:bdWrap(shape,"leg"),hand:bdWrap(shape,"hand"),foot:bdWrap(shape,"foot")});
   const out=[],sh=f.sh,rings=bdTorsoRings(f);
+  /* the arm swings out as the chest and the arm thicken, so it clears the torso by the same few mm in every shape
+     (0 for Average: torso half width 0.184 at the upper arm, arm radius 0.052, 6 mm of overlap); the legs spread a little
+     with their girth so the thighs never meet */
+  const aX=0.184*(sh/0.19)*f.chest+0.052*f.arm-0.006-sh-0.04,lX=(f.leg-1)*0.07;
   out.push({id:"torso",kind:"torso",G:bdEllipses(rings,BD_TORSO_TH),marks:{top:0,armpit:6,waist:11},
     patches:[{isl:"chest",i0:0,i1:7,j0:0,j1:8,jc:4},{isl:"blank",i0:7,i1:19,j0:0,j1:8,jc:4},{isl:"side_r",i0:0,i1:19,j0:8,j1:14,jc:11},
       {isl:"back",i0:0,i1:19,j0:14,j1:24,jc:19},{isl:"side_l",i0:0,i1:19,j0:24,j1:30,jc:27}]});
   for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
     /* the arm: shoulder dome, upper arm hanging, elbow bent, forearm forward on the armrest (face line up) */
-    const aK=[[sh-0.012,1.083,-0.008],[sh+0.04,1.0,0],[sh+0.1,0.8,0.035],[sh+0.105,0.745,0.27]].map(X);
+    const aK=[[sh-0.012,1.083-(f.arm-1)*0.04,-0.008],[sh+0.04+aX,1.0,0],[sh+0.1+aX,0.8,0.035],[sh+0.105+aX,0.745,0.27]].map(X);
     const aUs=bdRings(22,true,false);
     out.push({id:"arm_"+L,kind:"tube",G:bdTube({keys:aK,us:aUs,thetas:bdThetas(14,Math.PI),face:[0,0,1],g:f.arm,
       prof:[[0,.006,.006],[.02,.03,.03],[.05,.045,.046],[.1,.052,.052],[.2,.049,.048],[.35,.046,.044],[.5,.042,.040],[.566,.040,.041],[.62,.039,.044],[.72,.036,.042],[.85,.029,.036],[.95,.022,.031],[1,.021,.030]]}),
@@ -6315,11 +6323,13 @@ function bdSpec(shape){
     out.push({id:"thumb_"+L,kind:"tube",G:bdTube({keys:[bdAdd(w,X([-0.026,-0.006,0.03])),bdAdd(w,X([-0.044,-0.012,0.07])),bdAdd(w,X([-0.047,-0.016,0.098]))],
       us:bdRings(6,false,true),thetas:bdThetas(8,Math.PI),face:[0,1,0],g:f.hand,prof:[[0,.011,.012],[.5,.0095,.010],[.9,.007,.007],[1,.002,.002]]}),marks:{},patches:[{isl:"blank",jc:4}]});
     /* the leg: thigh forward on the seat, knee bent, shin down, foot flat; face line up the thigh and down the shin */
-    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
-    const lUs=bdRings(24,false,false);
-    out.push({id:"leg_"+L,kind:"tube",G:bdTube({keys:lK,us:lUs,thetas:bdThetas(16,s>0?Math.PI/2:-Math.PI/2),face:[0,1,0],g:f.leg,
-      prof:[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072],[.55,.056,.058],[.62,.054,.056],[.7,.056,.058],[.8,.048,.047],[.92,.037,.036],[1,.034,.034]]}),
-      marks:{hip:0,knee:bdNear(lUs,0.55),ankle:lUs.length-1},patches:[{isl:"leg_"+L,jc:s>0?12:4}]});
+    /* 0.1.12.0: the shin runs on past the ankle ring, tapering, into the top of the foot, so the foot no longer floats
+       under it. The first 25 rings and the profile keep their place along the leg (u scaled by k = the old length's share) */
+    const lK=bdLegKeys(X,lX),lKx=lK.concat([X([0.115+lX,0.072,0.449])]),k=bdSpline(lK).L/bdSpline(lKx).L;
+    const lUs=bdRings(24,false,false).map(u=>u*k).concat([k+(1-k)*0.5,1]);
+    out.push({id:"leg_"+L,kind:"tube",G:bdTube({keys:lKx,us:lUs,thetas:bdThetas(16,s>0?Math.PI/2:-Math.PI/2),face:[0,1,0],g:f.leg,
+      prof:[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072],[.55,.056,.058],[.62,.054,.056],[.7,.056,.058],[.8,.048,.047],[.92,.037,.036],[1,.034,.034]].map(p=>[p[0]*k,p[1],p[2]]).concat([[1,.027,.027]])}),
+      marks:{hip:0,knee:bdNear(lUs,0.55*k),ankle:lUs.length-3},patches:[{isl:"leg_"+L,jc:s>0?12:4}]});
     const A=lK[4],fK=[bdAdd(A,X([0,-0.065,-0.055])),bdAdd(A,X([0,-0.066,0.02])),bdAdd(A,X([0.004,-0.08,0.12])),bdAdd(A,X([0.008,-0.086,0.2]))];
     const fUs=bdRings(13,true,true);
     out.push({id:"foot_"+L,kind:"tube",G:bdTube({keys:fK,us:fUs,thetas:bdThetas(12,Math.PI),face:[0,1,0],g:f.foot,
@@ -6336,11 +6346,13 @@ function bdSpec(shape){
   const shR=[.70,.665,.63,.595,.56,.53,.505,.49,.484].map(y=>bdTorsoAt(rings,y));
   out.push({id:"shorts",kind:"cloth",mat:"shorts",G:bdEllipses(shR,BD_TORSO_TH,0.006),patches:[{isl:"blank",jc:4}],open:true});
   for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
-    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
+    const lK=bdLegKeys(X,lX);
     const u1=0.24,us=[0,u1*0.25,u1*0.5,u1*0.75,u1*0.92,u1];
     const lp=[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072]];
     out.push({id:"shortsleg_"+L,kind:"cloth",mat:"shorts",G:bdTube({keys:lK,us,thetas:bdThetas(16,0),face:[0,1,0],g:f.leg,inflate:0.007,prof:lp}),patches:[{isl:"blank",jc:8}],open:true});}
   return out;}
+/* the leg's spine (hip, seat, knee, shin, ankle), spread sideways by lX for the shape */
+function bdLegKeys(X,lX){return[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(v=>X([v[0]+lX,v[1],v[2]]));}
 function bdNear(us,u){let b=0;for(let i=1;i<us.length;i++)if(Math.abs(us[i]-u)<Math.abs(us[b]-u))b=i;return b;}
 
 /* outward normals by finite differences round each ring and along each column */
@@ -6592,7 +6604,7 @@ function dcStencil(design,shape,tone){
    vsRoom() returns {grp, stages, lights, armrests, props, mats}; vsStage(stage) shows the props for apprentice | chair |
    studio | legacy (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 3k
    triangles. Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build.
-   PR 10: every prop is a named group in `props` (chair, station, machine, lamp, stool, shelves, bench, flashframe, sign,
+   PR 10: every prop is a named group in `props` (chair, station, machine, rotary (0.1.12.0: the rotary pen beside the coil), lamp, stool, shelves, bench, flashframe, sign,
    plant, plant2 (PR 11: the legacy studio's second plant), photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
    photo textures on them and swap a Blender model in for a coded prop on Full and Ultra. Lite never sees either. ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
@@ -6638,8 +6650,17 @@ function vrPlanks(){const t=vrCanvas(256,256,(g,w,h)=>{const r=vrRng(77);
     g.fillStyle="rgba(0,0,0,.35)";g.fillRect(0,y,w,1.5);const cut=r.range(20,230);g.fillRect(cut,y,1.5,h/8);
     g.fillStyle="rgba(255,230,190,.05)";for(let k=0;k<5;k++)g.fillRect(0,y+r.range(3,h/8-3),w,1);}});
   t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,4);return t;}
-function vrSign(){return vrCanvas(512,128,(g,w,h)=>{g.fillStyle="#1b120c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a35e";g.lineWidth=4;g.strokeRect(8,8,w-16,h-16);
-  g.fillStyle="#f0c674";g.font="600 54px Oswald, 'Arial Narrow', sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText("TATTOO",w/2,h/2+2);});}
+/* the studio sign: ИГЛА ("needle", an invented Mostograd shop word), spaced letters in Oswald. The page's Google Fonts CSS
+   only fetches Oswald's Cyrillic subset when Cyrillic is used, so the sign asks for it and repaints once it is in; until
+   then (or offline) the letters fall back to a system sans, which has Cyrillic too */
+const VR_SIGN="ИГЛА",VR_SIGN_FONT="600 80px Oswald, 'Arial Narrow', sans-serif";
+function vrSignPaint(g,w,h){g.fillStyle="#1b120c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a35e";g.lineWidth=4;g.strokeRect(8,8,w-16,h-16);
+  g.fillStyle="#f0c674";g.font=VR_SIGN_FONT;g.textAlign="center";g.textBaseline="middle";
+  const n=VR_SIGN.length;for(let i=0;i<n;i++)g.fillText(VR_SIGN[i],w/2+(i-(n-1)/2)*88,h/2+4);}
+function vrSign(){const t=vrCanvas(512,128,vrSignPaint);
+  try{if(document.fonts&&document.fonts.load)document.fonts.load(VR_SIGN_FONT,VR_SIGN).then(f=>{if(!f||!f.length)return;
+    const c=t.image;vrSignPaint(c.getContext("2d"),c.width,c.height);t.needsUpdate=true;V.dirty=true;draw();}).catch(()=>{});}catch(e){}
+  return t;}
 
 function vsRoom(){
   const T=TIER[V.tier],grp=new THREE.Group(),st={};for(const s of VR_STAGES)st[s]=new THREE.Group();
@@ -6680,11 +6701,17 @@ function vsRoom(){
     const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.12,0.03,14),M.steel);g.add(foot);
     armrests[s]={g,tilt,post,foot};}
   /* your station: trolley, machine, ink caps, paper roll, angle lamp, stool */
-  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine");
+  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine"),PR=pg("rotary");
   for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz],PS);
   box(0.46,0.02,0.36,M.steel,[tx,0.8,tz],PS);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz],PS);
   const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05],PM);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
   box(0.05,0.03,0.035,M.brass,[tx-0.02,0.83,tz+0.03],PM);
+  /* 0.1.12.0: a rotary pen beside it, lying along the tray's back-left corner: grip, body, a stroke ring, the needle cartridge */
+  {const rq=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-0.3),ax=new THREE.Vector3(-1,0,0).applyQuaternion(rq),c=new THREE.Vector3(tx-0.07,0.823,tz-0.1);
+    const seg=(r1,r2,a,b,mat)=>{const m=cyl(r1,r2,b-a,12,mat,c.clone().addScaledVector(ax,(a+b)/2).toArray(),PR);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ax);return m;};
+    const body=vsMat("#2e3b3f",{r:0.45,m:0.5});
+    seg(0.0115,0.012,-0.068,-0.03,body);seg(0.013,0.013,-0.03,0.0,body);seg(0.0145,0.0145,0.0,0.008,vsMat("#7a2a22",{r:0.5,m:0.3}));
+    seg(0.011,0.011,0.008,0.048,M.steel);seg(0.006,0.01,0.048,0.064,vsMat("#cfd6d8",{r:0.3}));seg(0.0012,0.005,0.064,0.078,M.steel);}
   ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03],PS));
   cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09],PS);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09],PS);
   cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1],PS);
@@ -6774,6 +6801,7 @@ const ASSETS={
     chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:true},
     station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:true},
     machine:{file:"models/ink-machine-coil.glb",at:[0.78,0.81,0.37],rot:0.4,on:true},
+    rotary:{file:"models/ink-machine-rotary.glb",at:[0.79,0.81,0.22],rot:-0.3,on:true},   // 0.1.12.0: the rotary pen beside the coil
     lamp:{file:"models/ink-lamp.glb",at:[1.05,0,-0.45],rot:0,on:true},
     stool:{file:"models/ink-stool.glb",at:[0.95,0,0.86],rot:0,on:true},
     shelves:{file:"models/ink-shelves.glb",at:[-2.66,0,-0.6],rot:Math.PI/2,on:true},
@@ -9637,7 +9665,7 @@ ${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, no
    shows it on the viewer's left. Geometry is in a 200 x 420 box. */
 /* zones drawn on one view only (the rest are on both) */
 const BM_BACK_ONLY=/^(upperback|fullback|nape|calf_[lr])$/,BM_FRONT_ONLY=/^(shin_[lr]|foot_[lr]|neck_[lr]|ribs_[lr]|chest_[lr]|sternum)$/;
-const BM_SHAPES={masc:{sh:52,wa:33,hp:30,lm:1.12},femme:{sh:44,wa:28,hp:34,lm:0.9},neutral:{sh:48,wa:31,hp:32,lm:1}};
+const BM_SHAPES={masc:{sh:54,wa:35,hp:31,lm:1.2},femme:{sh:42,wa:26,hp:30,lm:0.84},neutral:{sh:48,wa:31,hp:32,lm:1}};   // 0.1.12.0: further apart, as the 3D shapes
 /* skin tint stops for tone 0..1 (fill, outline) */
 const BM_SKIN=[[0,"#f5dcc5","#b48a6c"],[0.33,"#dba57c","#9c6c4a"],[0.66,"#9b6442","#5f3a24"],[1,"#4d2f21","#24150d"]];
 const BM_CLOTH={top:"#5e6e6b",shorts:"#3d4350",seam:"rgba(0,0,0,.25)"};
