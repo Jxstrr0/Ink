@@ -1,6 +1,6 @@
 # tools/blender: the Blender batch, by script
 
-These scripts make every file the game loads from `models/` on Full and Ultra graphics: the client mannequin (`models/ink-mannequin.glb`) and the thirteen shop props (`models/ink-chair.glb` and the rest). They are plain Python that drives Blender through its `bpy` module. Each one builds its model from numbers in the script, exports a glTF and packs it with `tools/pack-model.py`. A rerun gives the same files. Nothing here runs in the game or in the checks; the `.glb` files are committed.
+These scripts make every file the game loads from `models/` on Full and Ultra graphics: the client mannequin (`models/ink-mannequin.glb`) and the fourteen shop props (`models/ink-chair.glb` and the rest). They are plain Python that drives Blender through its `bpy` module. Each one builds its model from numbers in the script, exports a glTF and packs it with `tools/pack-model.py`. A rerun gives the same files. Nothing here runs in the game or in the checks; the `.glb` files are committed.
 
 `docs/BLENDER.md` is the brief they follow: pose, UV islands, shape keys, names, budgets, origins. If you make a model in Blender by hand, the brief is still the contract, and your file simply replaces the scripted one (see "Replacing a model" below).
 
@@ -18,7 +18,7 @@ python3.13 -m venv ~/bpyenv
 ## Run (repo root)
 
 ```
-~/bpyenv/bin/python tools/blender/props.py                 # all thirteen props
+~/bpyenv/bin/python tools/blender/props.py                 # all fourteen props
 ~/bpyenv/bin/python tools/blender/props.py chair lamp      # just these slots
 ~/bpyenv/bin/python tools/blender/mannequin.py             # the mannequin (a few minutes: voxel remesh, UV transfer)
 ~/bpyenv/bin/python tools/blender/check_mannequin.py       # check models/ink-mannequin.glb against the contract

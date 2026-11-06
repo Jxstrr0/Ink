@@ -9,7 +9,8 @@
    renting a chair; Act 2's split and the lease; Act 3's shop summary; Act 4's waiting list, projects and apprentices),
    invites (conventions, guest spots, the TV offer, Arkady's nudge), last week's money, skills and your signature, and
    the Legacy button. A full-screen scene (the shop closing, the end of the thirty years) is app/legacy.js. Every stage
-   change goes through caStage(), which tells the 3D shop (INK_VIS.setStudio, PR 6). */
+   change goes through caStage(), which tells the 3D shop (INK_VIS.setStudio, PR 6; since 0.1.15.0 through app/studio.js
+   stRoom: which shop the chair is in, the kit's machine and your flash for the walls). */
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
 const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
@@ -21,7 +22,8 @@ function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
 /* a stage change: the header, and the 3D shop's stage (PR 6) */
-function caStage(){if(typeof INK_VIS!=="undefined"&&typeof INK_VIS.setStudio==="function")try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice");}catch(e){}if(typeof stMachine==="function")stMachine();
+function caStage(){if(typeof stRoom==="function")stRoom();
+  else if(typeof INK_VIS!=="undefined"&&typeof INK_VIS.setStudio==="function")try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice");}catch(e){}
   if(typeof ST!=="undefined")ST.key="";renderHeader();}
 function crMine(){let n=0;for(const p of S.pieces)if(!p.by)n++;return n;}
 function renderCareer(){

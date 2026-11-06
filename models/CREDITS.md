@@ -39,6 +39,7 @@ All original, © 2026 Kelbo / Longlight Interactive, made for Ink by the scripts
 | `ink-station.glb` | Work station trolley | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-machine-coil.glb` | Coil machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-machine-rotary.glb` | Rotary machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` (0.1.12.0) |
+| `ink-machine-pen.glb` | Wireless pen machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` (0.1.15.0) |
 | `ink-lamp.glb` | Floor lamp | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-stool.glb` | Artist's stool | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-shelves.glb` | Ink shelves | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |

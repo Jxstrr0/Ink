@@ -1,29 +1,46 @@
 /* ===== vis/studio.js: the shop interiors (PR 6; a room per career stage since 0.1.14.0) =====
-   Four rooms built from primitives, one per career stage, and only the current one shows (vsStage):
-     apprentice  Arkady Sedov's back room: small, low and worn. Dingy green paint with the brick showing through, cardboard
+   Five rooms built from primitives, one per career stage (two for the rented chair), and only the current one shows (vsStage):
+     apprentice  Arkady's back room: small, low and worn. Dingy green paint with the brick showing through, cardboard
                  boxes, cluttered shelves, a mop and bucket, the broom, a practice table with fake skin, his old flash pinned
                  on a corkboard, a bare bulb on a cord and a small high window onto the canal.
-     chair       your rented chair in a busy shop (Arkady's or another): high ceiling, checkered lino, white tiles to shoulder height,
+     chair       your rented chair in a busy shop across town: high ceiling, checkered lino, white tiles to shoulder height,
                  strip lights, the shop's flash wall behind you, a partition with a few of your own sheets taped to it and
                  the next artist's lamp and chair beyond it.
+     sedov       0.1.15.0: the rented chair when you left Arkady on good terms (his chair at the friend's split): the public
+                 front room of Sedov's on Kanatnaya Street. The back room's family of look, warmer and kept: green paint over
+                 a varnished dado, worn planks, a tall window onto the canal with a half curtain, his old-school flash
+                 covering the back wall, his own chair and trolley, a third chair, the glass counter by the door, the
+                 curtained doorway to the back room, a clock and a green enamel pendant.
      studio      your own studio: warm plaster over a dark dado, parquet, a rug, the big canal window, your flash wall,
                  the ИГЛА sign above the chair, the plant, shelves, the waiting bench, a brass pendant.
      legacy      the studio grown up: bigger, deep green walls over a tall oak wainscot with a brass rail, a patterned rug,
                  the trophy cabinet, framed photos of healed work, two plants, two brass pendants and a second artist's
                  station by the window.
+   The room for a stage is vrKey(stage, shop): shop "sedov" turns the chair stage into Sedov's front room. The app decides
+   (INK_VIS.setStudio(stage, shop)); nothing here reads the save.
+   Your flash on your walls (0.1.15.0): the studio's and the legacy studio's flash walls, and the sheets taped to the rented
+   chair's partition, show your own flash sheets (INK_VIS.setFlash: S.flash, newest first, drawn from the curated element
+   library like every other sheet, with the name the Flash tab gives them). Frames past your last sheet get the shop's
+   generic flash. All of it is one shared canvas (vrOwnPaint: the wall's 5 x 2 sheets on the top half, the partition's
+   3 sheets under it; 512 px square on Lite, 1024 on Full and Ultra), repainted only when the list changes. Arkady's rooms
+   keep his old-school sheets.
    Shared by every room (built once): the tattoo chair, its two armrests (moved under the client's forearms per body shape),
-   your station (trolley, ink caps, paper roll; the coil machine and the rotary pen on the tray: vsMachine puts the one the
-   kit uses up front and the other at the back corner), the angle lamp on its stand and your stool. The client sits at the
-   origin facing +z; the back wall is at -z. The camera's box (core.js ROOM) follows the room on every stage change.
-   vsRoom() returns {grp, stages, lights, armrests, props, mats, stageMats, texScale}; vsStage(stage) shows one room.
-   Every prop is a named group in `props` (chair, station, machine, rotary, lamp, stool, shelves, bench, flashframe, sign,
-   plant, plant2, photos, trophies), built at its home spot (ASSETS.props[k].at in vis/assets.js) and moved per stage as a
-   whole group by VR_PLACE (an origin and a turn round it), so a Blender model that vis/assets.js swaps into the group
-   moves with it. Each room's floor, walls and dado have their own materials (`stageMats[stage]`, the studio's are also
-   `mats.floor`/`plaster`/`dado`) so vis/assets.js can put the photo textures on them, tinted per stage.
+   your station (trolley, ink caps, paper roll; the coil machine, the rotary and the wireless pen: vsMachine puts the one the
+   kit uses up front on the tray, a spare at the back corner and hides the third), the angle lamp on its stand and your
+   stool. The client sits at the origin facing +z; the back wall is at -z. The camera's box (core.js ROOM) follows the room
+   on every stage change.
+   vsRoom() returns {grp, stages (by room key), lights, armrests, props, mats, stageMats, texScale, flash}; vsStage(stage) shows one room.
+   Every prop is a named group in `props` (chair, station, machine, rotary, pen, lamp, stool, shelves, bench, flashframe,
+   sign, plant, plant2, photos, trophies), built at its home spot (ASSETS.props[k].at in vis/assets.js) and moved per room
+   as a whole group by VR_PLACE (an origin and a turn round it), so a Blender model that vis/assets.js swaps into the group
+   moves with it. Each room's floor, walls and dado have their own materials (`stageMats[room]`, the studio's are also
+   `mats.floor`/`plaster`/`dado`) so vis/assets.js can put the photo textures on them, tinted per room.
    Lite: Lambert materials, no shadows, about 2.5k to 3k triangles a room. Full / Ultra: Standard materials and one
-   shadow-casting lamp. Canvas textures are drawn once per build. ===== */
+   shadow-casting lamp. Canvas textures are drawn once per build (the own-flash canvas again when your flash changes). ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
+/* every room, by key (the chair stage has two) */
+const VR_KEYS=["apprentice","chair","sedov","studio","legacy"];
+function vrKey(stage,shop){const s=VR_STAGES[Math.max(0,VR_STAGES.indexOf(stage))];return s==="chair"&&shop==="sedov"?"sedov":s;}
 /* each room: walls (x and z extents, height), colours, the window on the back wall [x, y, w, h], the door's x on the front
    wall, and its light: hemisphere sky/ground/intensity, the pendant light's colour, intensity and height, the moonlight */
 const VR_ROOMS={
@@ -31,17 +48,20 @@ const VR_ROOMS={
     win:[0.2,1.7,0.6,0.45],door:1.1,light:{sky:"#e4dcc2",ground:"#1d1a14",hemi:0.52,pend:"#ffcd84",pi:0.85,py:1.98,moon:0.12}},
   chair:{x:[-3.2,2.9],z:[-2.6,2.5],h:3.0,wall:"#9ba395",dado:"tile",dadoH:1.2,rail:"#4b4f4a",ceil:"#bdbcb3",floor:"checker",
     win:[-2.35,1.85,0.95,1.2],door:1.6,light:{sky:"#eef3f2",ground:"#3a3631",hemi:0.74,pend:"#eef3ff",pi:0.62,py:2.85,moon:0.1}},
+  sedov:{x:[-3.0,2.6],z:[-2.4,2.45],h:2.9,wall:"#6f7655",dado:"#3e2a1b",dadoH:1.0,rail:"#24190f",ceil:"#3a3326",floor:"planks",floorTint:"#a08268",
+    win:[-2.05,1.55,1.0,1.55],door:1.2,light:{sky:"#f1e2c4",ground:"#2a1e14",hemi:0.6,pend:"#ffd18f",pi:0.8,py:2.25,moon:0.16}},
   studio:{x:[-2.8,2.8],z:[-2.35,2.55],h:2.8,wall:"#86664d",dado:"#3a2618",dadoH:0.9,rail:"#151210",ceil:"#2a211b",floor:"planks",floorTint:"#ffffff",
     win:[-1.85,1.62,1.05,1.3],door:1.6,light:{sky:"#f3e4d2",ground:"#2a1c12",hemi:0.62,pend:"#ffdcae",pi:0.7,py:2.1,moon:0.22}},
   legacy:{x:[-3.4,3.4],z:[-2.9,2.6],h:3.1,wall:"#3d5143",dado:"#4a2e1c",dadoH:1.15,rail:"#b48a46",ceil:"#231a14",floor:"planks",floorTint:"#b0927a",
     win:[-1.85,1.72,1.05,1.5],door:1.9,light:{sky:"#f7dcbe",ground:"#2a160c",hemi:0.6,pend:"#ffc987",pi:0.85,py:2.3,moon:0.18}}};
 /* where each named prop stands in each room: absent = not in that room; {} = its home spot (ASSETS.props[k].at);
    {at, turn} = its origin moved to `at` and turned by `turn` round the up axis (on top of its ASSETS rot). The machine
-   and the rotary pen are placed by vsMachine (the kit), not here; they are in every room. */
-const VR_BASE={chair:{},station:{},machine:{},rotary:{},lamp:{},stool:{}};
+   machines (coil, rotary, wireless pen) are placed by vsMachine (the kit), not here; they are in every room. */
+const VR_BASE={chair:{},station:{},machine:{},rotary:{},pen:{},lamp:{},stool:{}};
 const VR_PLACE={
   apprentice:Object.assign({},VR_BASE,{shelves:{at:[-1.12,0,-1.43],turn:-Math.PI/2}}),
   chair:Object.assign({},VR_BASE,{flashframe:{at:[0.05,1.72,-2.56]},bench:{}}),
+  sedov:Object.assign({},VR_BASE,{flashframe:{at:[0.6,1.6,-2.36]},bench:{at:[-1.35,0,2.2]}}),
   studio:Object.assign({},VR_BASE,{flashframe:{at:[1.0,1.72,-2.31]},sign:{at:[-0.62,2.02,-2.32],turn:Math.PI/2},plant:{at:[-2.4,0,-1.95]},shelves:{},bench:{}}),
   legacy:Object.assign({},VR_BASE,{flashframe:{at:[2.0,1.72,-2.86]},sign:{at:[-0.85,2.12,-2.87],turn:Math.PI/2},photos:{at:[-0.02,1.5,-2.87],turn:Math.PI/2},
     trophies:{at:[-2.95,0,-2.74],turn:-Math.PI/2},plant:{at:[3.0,0,-2.5]},plant2:{at:[-3.05,0,-1.55]},shelves:{at:[-3.26,0,-0.4]},bench:{at:[-1.3,0,2.33]}})};
@@ -68,24 +88,43 @@ function vrNight(){return vrCanvas(512,384,(g,w,h)=>{const r=vrRng(1703);
   const wat=g.createLinearGradient(0,base+6,0,h);wat.addColorStop(0,"#0d1628");wat.addColorStop(1,"#05080f");g.fillStyle=wat;g.fillRect(0,base+6,w,h-base-6);
   for(let i=0;i<70;i++){const fx=r.range(0,w),fy=r.range(base+10,h),len=r.range(6,22);g.fillStyle=r.chance(0.6)?"rgba(242,196,106,.35)":"rgba(200,210,240,.18)";g.fillRect(fx,fy,len,1.5);}
   g.fillStyle="#3a3f48";g.fillRect(0,h-16,w,16);});}
-/* a flash sheet board: sheets with flash from INK_SIM.FLASH on them. o: {n, from (first FLASH entry), cols, rows, w, h,
-   bg (the board), paper, pins (pin colour), tilt} */
-function vrFlash(o){o=Object.assign({n:10,from:0,cols:5,rows:2,w:1024,h:512,bg:"#3b2b1f",paper:"#f3ead8",pins:"#7a1f17",tilt:1},o||{});
-  return vrCanvas(o.w,o.h,(g,w,h)=>{
-  g.fillStyle=o.bg;g.fillRect(0,0,w,h);
-  const F=(typeof INK_SIM!=="undefined"&&INK_SIM.FLASH)||[],cols=o.cols,rows=o.rows,sw=w/cols,sh=h/rows;
-  for(let i=0;i<cols*rows;i++){if(i>=o.n)break;const cx=(i%cols)*sw,cy=Math.floor(i/cols)*sh,f=F[(i+o.from)%Math.max(1,F.length)];
+/* a flash sheet board: sheets with flash on them. o: {n, from (first FLASH entry), cols, rows, w, h, bg (the board),
+   paper, pins (pin colour), tilt, list (0.1.15.0: the designs to draw, one per sheet, instead of INK_SIM.FLASH from `from`)} */
+const VR_FLASH0={n:10,from:0,cols:5,rows:2,w:1024,h:512,bg:"#3b2b1f",paper:"#f3ead8",pins:"#7a1f17",tilt:1};
+function vrFlash(o){o=Object.assign({},VR_FLASH0,o||{});return vrCanvas(o.w,o.h,(g,w,h)=>vrFlashPaint(g,0,0,w,h,o));}
+/* paint a board into the w x h box at (x0, y0) of a canvas. A design is {name, sizeMm, elements} (a FLASH entry, or one
+   of your sheets as the app hands it over); every motif is a curated element's path (dcPath), never free text */
+function vrFlashPaint(g,x0,y0,w,h,o){
+  g.save();g.translate(x0,y0);g.fillStyle=o.bg;g.fillRect(0,0,w,h);
+  const F=o.list||(typeof INK_SIM!=="undefined"&&INK_SIM.FLASH)||[],cols=o.cols,rows=o.rows,sw=w/cols,sh=h/rows;
+  for(let i=0;i<cols*rows;i++){if(i>=o.n)break;const cx=(i%cols)*sw,cy=Math.floor(i/cols)*sh,f=o.list?F[i]:F[(i+o.from)%Math.max(1,F.length)];
     g.save();g.translate(cx+sw/2,cy+sh/2);g.rotate(((i*37+o.from*11)%7-3)*0.006*o.tilt);
     g.fillStyle=o.paper;g.fillRect(-sw*0.42,-sh*0.43,sw*0.84,sh*0.86);
-    g.fillStyle=o.pins;g.beginPath();g.arc(0,-sh*0.4,4,0,7);g.fill();
-    if(f){const fp=INK_SIM.footprintOf(f),k=sh*0.62/Math.max(f.sizeMm,1);g.save();g.translate(0,sh*0.02);g.scale(k,k);
+    g.fillStyle=o.pins;g.beginPath();g.arc(0,-sh*0.4,Math.max(2,sh*0.016),0,7);g.fill();
+    if(f&&Array.isArray(f.elements)&&f.elements.length){const fp=INK_SIM.footprintOf(f),k=sh*0.62/Math.max(f.sizeMm,1);g.save();g.translate(0,sh*0.02);g.scale(k,k);
       for(const e of f.elements){const P=dcPath(e.id);if(!P)continue;const b=P.b,ek=(e.scale*f.sizeMm)/Math.max(b.w,b.h,1e-6);
         g.save();g.translate((e.x-fp.cx)*f.sizeMm,(e.y-fp.cy)*f.sizeMm);g.rotate((e.rot||0)*Math.PI/180);g.scale(ek,ek);g.translate(-(b.x+b.w/2),-(b.y+b.h/2));
         if(P.f&&e.fill>0){g.globalAlpha=Math.min(1,e.fill);g.fillStyle=e.colour?dcHex(e.colour):DC_INK;g.fill(P.f);g.globalAlpha=1;}
         g.strokeStyle=DC_INK;g.lineWidth=Math.max(1.2/k,INK_SIM.lineMm(e.lineWeight||7))/ek;g.lineCap=g.lineJoin="round";g.stroke(P.d);g.restore();}
       g.restore();
-      g.fillStyle="#2a1d14";g.font=`600 ${Math.round(sh*0.06)}px Oswald, 'Arial Narrow', sans-serif`;g.textAlign="center";g.fillText(String(f.name||"").toUpperCase().slice(0,22),0,sh*0.38);}
-    g.restore();}});}
+      /* the sheet's name, as the Flash tab shows it, shrunk to fit the paper */
+      const nm=String(f.name||"").toUpperCase().slice(0,34);let fs=Math.round(sh*0.06);g.font=`600 ${fs}px Oswald, 'Arial Narrow', sans-serif`;
+      const tw=g.measureText(nm).width;if(tw>sw*0.78){fs=Math.max(6,Math.floor(fs*sw*0.78/tw));g.font=`600 ${fs}px Oswald, 'Arial Narrow', sans-serif`;}
+      g.fillStyle="#2a1d14";g.textAlign="center";g.fillText(nm,0,sh*0.38);}
+    g.restore();}
+  g.restore();}
+/* 0.1.15.0: your own flash on your walls. One shared canvas: the wall's 5 x 2 sheets on the top half, the partition's
+   3 x 1 strip under it (the strip is the partition plane's shape, 0.96 x 0.38). `list` is your sheets, newest first,
+   as {name, sizeMm, elements}; frames past the end get the shop's generic flash (FLASH from `from`) */
+const VR_OWN={wall:{cols:5,rows:2,from:3},strip:{cols:3,rows:1,from:3,h:0.396,bg:"#d6d2c6",paper:"#f6efe0",pins:"#c9a35e",tilt:2},size:{lite:512,full:1024,ultra:1024}};
+function vrOwnList(list,n,from){const F=(typeof INK_SIM!=="undefined"&&INK_SIM.FLASH)||[],out=(list||[]).slice(0,n);
+  for(let i=0;out.length<n&&F.length;i++)out.push(F[(from+i)%F.length]);return out;}
+function vrOwnPaint(g,w,h,list){const A=VR_OWN.wall,B=VR_OWN.strip;
+  g.fillStyle="#1a140f";g.fillRect(0,0,w,h);
+  vrFlashPaint(g,0,0,w,h/2,Object.assign({},VR_FLASH0,{n:A.cols*A.rows,cols:A.cols,rows:A.rows,from:A.from,list:vrOwnList(list,A.cols*A.rows,A.from)}));
+  vrFlashPaint(g,0,h/2,w,h*B.h,Object.assign({},VR_FLASH0,B,{n:B.cols,list:vrOwnList(list,B.cols,B.from)}));}
+/* a plane's uv square squeezed onto one rectangle of a texture (u0..u1, v0..v1; v runs up from the canvas bottom) */
+function vrUV(geo,u0,v0,u1,v1){const a=geo.attributes.uv;for(let i=0;i<a.count;i++)a.setXY(i,u0+a.getX(i)*(u1-u0),v0+a.getY(i)*(v1-v0));a.needsUpdate=true;return geo;}
 function vrPlanks(){const t=vrCanvas(256,256,(g,w,h)=>{const r=vrRng(77);
   for(let i=0;i<8;i++){const y=i*h/8,l=r.range(0.82,1);g.fillStyle=`rgb(${Math.round(104*l)},${Math.round(70*l)},${Math.round(46*l)})`;g.fillRect(0,y,w,h/8);
     g.fillStyle="rgba(0,0,0,.35)";g.fillRect(0,y,w,1.5);const cut=r.range(20,230);g.fillRect(cut,y,1.5,h/8);
@@ -127,7 +166,7 @@ function vrPlace(g,k,q){const h=vrHome(k),at=q.at||h,turn=q.turn||0,v=new THREE.
   g.rotation.set(0,turn,0);g.position.set(at[0]-v.x,at[1]-v.y,at[2]-v.z);}
 
 function vsRoom(){
-  const T=TIER[V.tier],grp=new THREE.Group(),st={};for(const s of VR_STAGES){st[s]=new THREE.Group();st[s].name="room:"+s;}
+  const T=TIER[V.tier],grp=new THREE.Group(),st={};for(const s of VR_KEYS){st[s]=new THREE.Group();st[s].name="room:"+s;}
   const add=(m,p,parent)=>{m.position.set(p[0],p[1],p[2]);m.castShadow=m.receiveShadow=T.shadows;(parent||grp).add(m);return m;};
   const box=(w,h,d,mat,p,par)=>add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat),p,par);
   const cyl=(r1,r2,h,seg,mat,p,par)=>add(new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),mat),p,par);
@@ -144,7 +183,7 @@ function vsRoom(){
     fake:vsMat("#e2b391",{r:0.7}),tube:vsMat("#f2f6ff",{emissive:"#e6eeff",ei:1.2}),red:vsMat("#5a1f1c",{r:0.5})};
   const night=vrNight(),planks=vrPlanks(),SM={},TS={};
   /* ---- the four shells: floor, ceiling, walls, dado and rail, the window onto the canal, the door ---- */
-  for(const s of VR_STAGES){const C=VR_ROOMS[s],P=st[s],W=C.x[1]-C.x[0],D=C.z[1]-C.z[0],cx=(C.x[0]+C.x[1])/2,cz=(C.z[0]+C.z[1])/2,H=C.h;
+  for(const s of VR_KEYS){const C=VR_ROOMS[s],P=st[s],W=C.x[1]-C.x[0],D=C.z[1]-C.z[0],cx=(C.x[0]+C.x[1])/2,cz=(C.z[0]+C.z[1])/2,H=C.h;
     const fmap=(C.floor==="checker"?vrChecker():planks.clone());fmap.needsUpdate=true;
     if(C.floor==="checker")fmap.repeat.set(W/0.9,D/0.9);else fmap.repeat.set(4*W/5.6,4*D/4.9);
     let dmap=null;if(C.dado==="tile"){dmap=vrTiles();dmap.repeat.set(W/0.6,C.dadoH/0.3);}
@@ -178,7 +217,7 @@ function vsRoom(){
     const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.12,0.03,14),M.steel);g.add(foot);
     armrests[s]={g,tilt,post,foot};}
   /* your station: trolley, machine, ink caps, paper roll, angle lamp, stool */
-  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine"),PR=pg("rotary");
+  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine"),PR=pg("rotary"),PN=pg("pen");
   for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz],PS);
   box(0.46,0.02,0.36,M.steel,[tx,0.8,tz],PS);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz],PS);
   const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05],PM);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
@@ -189,6 +228,14 @@ function vsRoom(){
     const body=vsMat("#2e3b3f",{r:0.45,m:0.5});
     seg(0.0115,0.012,-0.068,-0.03,body);seg(0.013,0.013,-0.03,0.0,body);seg(0.0145,0.0145,0.0,0.008,vsMat("#7a2a22",{r:0.5,m:0.3}));
     seg(0.011,0.011,0.008,0.048,M.steel);seg(0.006,0.01,0.048,0.064,vsMat("#cfd6d8",{r:0.3}));seg(0.0012,0.005,0.064,0.078,M.steel);}
+  /* 0.1.15.0: the wireless pen, at the same spot as the rotary (only one of the two lies at a time): a slim body, the
+     battery collar at the back with its charge light, a stroke dial, a rubber grip, the cartridge and the needle; no cord */
+  {const rq=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-0.3),ax=new THREE.Vector3(-1,0,0).applyQuaternion(rq),c=new THREE.Vector3(tx-0.07,0.8235,tz-0.1);
+    const seg=(r1,r2,a,b,mat)=>{const m=cyl(r1,r2,b-a,12,mat,c.clone().addScaledVector(ax,(a+b)/2).toArray(),PN);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ax);return m;};
+    const collar=vsMat("#a8733f",{r:0.35,m:0.7}),body=vsMat("#25282d",{r:0.4,m:0.4});
+    seg(0.0135,0.0135,-0.074,-0.05,collar);seg(0.0105,0.0105,-0.05,0.004,body);seg(0.0122,0.0122,0.004,0.011,vsMat("#4a4f55",{r:0.5,m:0.5}));
+    seg(0.0108,0.0108,0.011,0.05,vsMat("#3b3e42",{r:0.85}));seg(0.006,0.0098,0.05,0.066,vsMat("#cfd6d8",{r:0.3}));seg(0.0012,0.005,0.066,0.08,M.steel);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.005,0.003,0.005),vsMat("#7fe0a0",{emissive:"#5fd88a",ei:1.2})),c.clone().addScaledVector(ax,-0.062).add(new THREE.Vector3(0,0.0135,0)).toArray(),PN);}
   ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03],PS));
   cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09],PS);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09],PS);
   cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1],PS);
@@ -222,8 +269,10 @@ function vsRoom(){
   box(0.01,1.78,0.66,M.wood,[ty[0]-0.145,0.9,ty[2]],PY);for(const y of [0.09,0.51,0.93,1.35,1.79])box(0.28,0.02,0.66,M.wood,[ty[0],y,ty[2]],PY);
   for(const [y,dz,s] of [[1.36,-0.15,1.25],[1.36,0.14,0.95],[0.1,0.16,1.1]]){cyl(0.03*s,0.012*s,0.12*s,8,gold,[ty[0],y+0.08*s,ty[2]+dz],PY);box(0.07*s,0.04*s,0.07*s,M.dark,[ty[0],y+0.02*s,ty[2]+dz],PY);}
   /* the flash sheets inside the frame, per room (the frame's spot from VR_PLACE, the sheets 2 cm behind its centre) */
-  const sheets=(tex,s,w,h)=>{const q=VR_PLACE[s].flashframe;const m=plane(w||2.0,h||1.0,vsMat("#ffffff",{map:tex,r:0.9}),[q.at[0],q.at[1],q.at[2]-0.02],0,st[s]);return m;};
-  const yours=vrFlash({from:3});
+  const sheets=(tex,s,mat)=>{const q=VR_PLACE[s].flashframe;const m=plane(2.0,1.0,mat||vsMat("#ffffff",{map:tex,r:0.9}),[q.at[0],q.at[1],q.at[2]-0.02],0,st[s]);return m;};
+  /* 0.1.15.0: your own flash, one canvas for the studio's wall, the legacy wall and the rented chair's partition (vsFlash repaints it) */
+  const OS=VR_OWN.size[V.tier]||512,own=vrCanvas(OS,OS,(g,w,h)=>vrOwnPaint(g,w,h,V.flash)),ownMat=vsMat("#ffffff",{map:own,r:0.9});
+  const yours=s=>vrUV(sheets(null,s,ownMat).geometry,0,0.5,1,1);
   /* ---- apprentice: Arkady's back room ---- */
   {const A=st.apprentice,z0=VR_ROOMS.apprentice.z[0];
     /* his old flash, yellowed, pinned on a corkboard; brick through the plaster under the window */
@@ -250,7 +299,7 @@ function vsRoom(){
     /* the partition between you and the next artist, with a few of your own sheets taped to it */
     box(0.04,1.5,1.8,vsMat("#d6d2c6",{r:0.8}),[-1.3,0.83,-1.1],C);box(0.06,0.05,1.84,M.dark,[-1.3,1.6,-1.1],C);
     for(const z of [-1.95,-0.25])box(0.3,0.04,0.06,M.dark,[-1.3,0.02,z],C);
-    plane(0.96,0.38,vsMat("#ffffff",{map:vrFlash({n:3,from:3,cols:3,rows:1,w:512,h:200,bg:"#d6d2c6",paper:"#f6efe0",pins:"#c9a35e",tilt:2}),r:0.9}),[-1.277,1.2,-1.1],Math.PI/2,C);
+    vrUV(plane(0.96,0.38,ownMat,[-1.277,1.2,-1.1],Math.PI/2,C).geometry,0,0.5-VR_OWN.strip.h,1,0.5);
     /* the next station over: their chair, their lamp leaning over the partition */
     box(0.5,0.09,0.46,M.red,[-2.2,0.43,-0.8],C);cyl(0.045,0.05,0.34,8,M.steel,[-2.2,0.2,-0.8],C);cyl(0.26,0.28,0.04,12,M.steel,[-2.2,0.02,-0.8],C);
     cyl(0.015,0.015,1.8,6,M.dark,[-2.0,0.9,-1.5],C);rod(0.011,[-2.0,1.8,-1.5],[-1.6,1.86,-1.2],6,M.dark,C);
@@ -258,13 +307,44 @@ function vsRoom(){
     add(new THREE.Mesh(new THREE.SphereGeometry(0.025,6,4),M.bulb),[-1.57,1.78,-1.18],C);
     /* strip lights */
     for(const z of [0.3,-1.5]){box(1.3,0.05,0.12,M.steel,[0.1,2.97,z],C);box(1.2,0.035,0.06,M.tube,[0.1,2.935,z],C);}}
+  /* ---- sedov: your chair in the front room of Arkady's shop (0.1.15.0) ---- */
+  {const F=st.sedov,z0=VR_ROOMS.sedov.z[0],xr=VR_ROOMS.sedov.x[1],cork="#8a6a48";
+    /* his old-school flash over the back wall: the framed board, a row pinned above it, a narrow board beside it */
+    sheets(vrFlash({from:5,bg:"#4a3626",paper:"#eadbb4",tilt:2}),"sedov");
+    plane(2.3,0.5,vsMat("#ffffff",{map:vrFlash({n:5,from:9,cols:5,rows:1,w:1024,h:224,bg:cork,paper:"#e4d2a6",pins:"#2f3a5a",tilt:4}),r:0.95}),[0.6,2.5,z0+0.012],0,F);
+    plane(0.7,1.0,vsMat("#ffffff",{map:vrFlash({n:4,from:1,cols:2,rows:2,w:448,h:640,bg:cork,paper:"#e8d8b0",pins:"#7a1f17",tilt:3}),r:0.95}),[2.1,1.6,z0+0.012],0,F);
+    /* the half curtain on a brass rod across the canal window */
+    const [wx,wy,ww,wh]=VR_ROOMS.sedov.win;plane(ww,wh*0.4,vsMat("#2f4a36",{r:1}),[wx,wy-wh*0.3,z0+0.08],0,F);rod(0.008,[wx-ww/2-0.05,wy-wh*0.1,z0+0.09],[wx+ww/2+0.05,wy-wh*0.1,z0+0.09],6,M.brass,F);
+    /* the clock between the window and the flash */
+    const ck=cyl(0.17,0.17,0.03,18,M.dark,[-1.0,2.25,z0+0.02],F);ck.rotation.x=Math.PI/2;const cf=cyl(0.15,0.15,0.034,18,M.cream,[-1.0,2.25,z0+0.022],F);cf.rotation.x=Math.PI/2;
+    box(0.012,0.1,0.01,M.dark,[-1.0,2.29,z0+0.045],F);const mh=box(0.01,0.13,0.01,M.dark,[-0.97,2.24,z0+0.047],F);mh.rotation.z=-2.0;
+    /* Arkady's own chair, trolley and lamp on the left */
+    box(0.5,0.09,0.46,M.red,[-1.8,0.43,-0.6],F);box(0.52,0.025,0.48,M.dark,[-1.8,0.375,-0.6],F);cyl(0.045,0.05,0.34,8,M.steel,[-1.8,0.2,-0.6],F);cyl(0.26,0.28,0.04,12,M.steel,[-1.8,0.02,-0.6],F);
+    box(0.4,0.02,0.32,M.steel,[-2.5,0.8,-1.15],F);box(0.4,0.02,0.32,M.steel,[-2.5,0.3,-1.15],F);
+    for(const [dx,dz] of [[-0.18,-0.14],[0.18,-0.14],[-0.18,0.14],[0.18,0.14]])cyl(0.012,0.012,0.8,4,M.steel,[-2.5+dx,0.4,-1.15+dz],F);
+    ["#16120e","#9a1d1d","#2f7a3a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[-2.6+i*0.03,0.817,-1.2],F));
+    cyl(0.12,0.13,0.03,12,M.dark,[-2.6,0.015,-1.7],F);cyl(0.015,0.015,1.6,6,M.dark,[-2.6,0.8,-1.7],F);rod(0.011,[-2.6,1.6,-1.7],[-2.05,1.5,-0.95],6,M.dark,F);
+    const al=add(new THREE.Mesh(new THREE.ConeGeometry(0.08,0.12,12,1,true),M.lampshade),[-2.02,1.45,-0.92],F);al.rotation.x=0.4;
+    /* the third chair, empty, in the back corner */
+    box(0.5,0.09,0.46,M.leather,[1.95,0.43,-1.6],F);cyl(0.045,0.05,0.34,8,M.steel,[1.95,0.2,-1.6],F);cyl(0.26,0.28,0.04,12,M.steel,[1.95,0.02,-1.6],F);
+    cyl(0.16,0.16,0.05,12,M.leather,[1.4,0.55,-1.2],F);cyl(0.02,0.02,0.5,6,M.steel,[1.4,0.27,-1.2],F);
+    /* the curtained doorway to the back room, in the right wall */
+    plane(0.9,2.05,vsMat("#5a2420",{r:1}),[xr-0.02,1.025,-0.4],-Math.PI/2,F);
+    box(0.06,0.08,1.06,M.wood,[xr-0.03,2.09,-0.4],F);
+    for(const z of [-0.89,0.09])box(0.06,2.13,0.08,M.wood,[xr-0.03,1.065,z],F);
+    /* the glass counter by the door, with the till */
+    box(0.5,0.75,1.2,M.wood,[xr-0.33,0.375,1.5],F);const gl=vsMat("#cfe0dc",{r:0.1});gl.transparent=true;gl.opacity=0.35;box(0.5,0.2,1.2,gl,[xr-0.33,0.85,1.5],F);
+    box(0.52,0.02,1.22,M.wood,[xr-0.33,0.96,1.5],F);box(0.28,0.16,0.24,M.dark,[xr-0.35,1.05,1.75],F);box(0.2,0.004,0.14,M.paper,[xr-0.33,0.972,1.25],F);
+    /* the green enamel pendant */
+    cyl(0.004,0.004,0.6,4,M.dark,[0,2.6,0.3],F);add(new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),M.bulb),[0,2.21,0.3],F);
+    const gs=add(new THREE.Mesh(new THREE.ConeGeometry(0.22,0.15,18,1,true),vsMat("#2f5a3a",{r:0.4,m:0.2,side:THREE.DoubleSide})),[0,2.28,0.3],F);gs.castShadow=false;}
   /* ---- studio: your own ---- */
-  {const S2=st.studio;sheets(yours,"studio");
+  {const S2=st.studio;yours("studio");
     const rug=add(new THREE.Mesh(new THREE.CircleGeometry(1.05,36),M.rug),[0,0.004,0.25],S2);rug.rotation.x=-Math.PI/2;rug.castShadow=false;
     cyl(0.004,0.004,0.6,4,M.dark,[0,2.5,0.3],S2);add(new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),M.bulb),[0,2.18,0.3],S2);
     const ps=add(new THREE.Mesh(new THREE.ConeGeometry(0.2,0.16,20,1,true),M.brass.clone()),[0,2.24,0.3],S2);ps.material.side=THREE.DoubleSide;}
   /* ---- legacy: the established studio ---- */
-  {const L=st.legacy;sheets(yours,"legacy");
+  {const L=st.legacy;yours("legacy");
     const rug=add(new THREE.Mesh(new THREE.PlaneGeometry(3.0,2.2),vsMat("#ffffff",{map:vrRug(),r:1})),[0,0.004,0.3],L);rug.rotation.x=-Math.PI/2;rug.castShadow=false;
     const shade=M.brass.clone();shade.side=THREE.DoubleSide;
     for(const [x,z] of [[0,0.3],[-1.9,-1.6]]){cyl(0.004,0.004,0.75,4,M.dark,[x,2.72,z],L);add(new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),M.bulb),[x,2.28,z],L);
@@ -275,7 +355,7 @@ function vsRoom(){
     for(const [dx,dz] of [[-0.18,-0.14],[0.18,-0.14],[-0.18,0.14],[0.18,0.14]])cyl(0.012,0.012,0.8,4,M.steel,[-1.2+dx,0.4,-2.2+dz],L);
     cyl(0.12,0.13,0.03,12,M.dark,[-2.55,0.015,-2.3],L);cyl(0.015,0.015,1.6,6,M.dark,[-2.55,0.8,-2.3],L);rod(0.011,[-2.55,1.6,-2.3],[-2.1,1.55,-1.95],6,M.dark,L);
     const ls=add(new THREE.Mesh(new THREE.ConeGeometry(0.08,0.12,12,1,true),M.lampshade),[-2.07,1.5,-1.93],L);ls.rotation.x=0.4;}
-  for(const s of VR_STAGES)grp.add(st[s]);
+  for(const s of VR_KEYS)grp.add(st[s]);
   /* light: a hemisphere, the work lamp, the pendant (its colour, strength and height per room), a little cold moonlight */
   const hemi=new THREE.HemisphereLight(vsCol("#f3e4d2"),vsCol("#2a1c12"),0.6);grp.add(hemi);
   let lamp;
@@ -285,23 +365,39 @@ function vsRoom(){
   lamp.position.set(LH[0]-0.02,LH[1]-0.07,LH[2]+0.02);grp.add(lamp);
   const pend=new THREE.PointLight(vsCol("#ffdcae"),0.7,7,1);pend.position.set(0,2.1,0.3);grp.add(pend);
   const moon=new THREE.DirectionalLight(vsCol("#7d95c4"),0.22);moon.position.set(-1.5,2.2,-2);grp.add(moon);
-  return{grp,stages:st,armrests,props,mats:Object.assign(M,{floor:SM.studio.floor,plaster:SM.studio.plaster,dado:SM.studio.dado,ceil:SM.studio.ceil}),stageMats:SM,texScale:TS,lights:{hemi,lamp,pend,moon}};}
-/* show one room: its shell and dressing, the props VR_PLACE puts in it (moved to their spots there), its light, the camera's box */
-function vsStage(stage){
-  const R=V.room;if(!R)return;const i=Math.max(0,VR_STAGES.indexOf(stage)),s=VR_STAGES[i],C=VR_ROOMS[s],P=VR_PLACE[s],T=TIER[V.tier];V.stage=s;
-  for(const k of VR_STAGES)R.stages[k].visible=k===s;
-  for(const k in R.props){const g=R.props[k],q=P[k];g.visible=!!q;if(q&&k!=="machine"&&k!=="rotary")vrPlace(g,k,q);}
+  return{grp,stages:st,armrests,props,mats:Object.assign(M,{floor:SM.studio.floor,plaster:SM.studio.plaster,dado:SM.studio.dado,ceil:SM.studio.ceil}),stageMats:SM,texScale:TS,flash:own,lights:{hemi,lamp,pend,moon}};}
+/* show one room: its shell and dressing, the props VR_PLACE puts in it (moved to their spots there), its light, the camera's box.
+   shop (0.1.15.0): "sedov" makes the chair stage Arkady's front room; undefined keeps the last one */
+function vsStage(stage,shop){
+  if(shop!==undefined)V.shop=shop||null;
+  const R=V.room;const s=VR_STAGES[Math.max(0,VR_STAGES.indexOf(stage))];V.stage=s;if(!R)return;
+  const key=vrKey(s,V.shop),C=VR_ROOMS[key],P=VR_PLACE[key],T=TIER[V.tier];
+  for(const k of VR_KEYS)R.stages[k].visible=k===key;
+  for(const k in R.props){const g=R.props[k],q=P[k];g.visible=!!q;if(q&&!VR_MACHINE_OF[k])vrPlace(g,k,q);}
   const L=R.lights,l=C.light;
   L.hemi.color.copy(vsCol(l.sky));L.hemi.groundColor.copy(vsCol(l.ground));L.hemi.intensity=l.hemi*(T.std?0.97:1);
   L.pend.color.copy(vsCol(l.pend));L.pend.intensity=l.pi*(T.std?1:0.8);L.pend.position.set(0,l.py,0.3);L.moon.intensity=l.moon;
   ROOM.x[0]=C.x[0]+0.18;ROOM.x[1]=C.x[1]-0.18;ROOM.z[0]=C.z[0]+0.13;ROOM.z[1]=C.z[1]-0.13;ROOM.y[1]=C.h-0.2;
   vsMachine(V.machine);if(V.cam&&V.renderer)vsApplyCam();V.dirty=true;}
-/* the machine the kit uses goes up front on the tray, the other one to the back corner: kind is a MACHINES kind
-   (coil, rotary, pen; the wireless pen shows as the rotary until it has a model of its own) */
-function vsMachine(kind){
-  V.machine=kind==="rotary"||kind==="pen"?"rotary":"coil";const R=V.room;if(!R)return;
-  const spot=(k,w)=>{const t=VR_TRAY[w],h=ASSETS.props[k];vrPlace(R.props[k],k,{at:[t[0],t[1],t[2]],turn:t[3]-((h&&h.rot)||0)});};
-  spot("machine",V.machine==="coil"?"front":"back");spot("rotary",V.machine==="rotary"?"front":"back");V.dirty=true;}
+/* the machines on the tray: a MACHINES kind -> its prop group, and the group -> its kind */
+const VR_MACHINE={coil:"machine",rotary:"rotary",pen:"pen"},VR_MACHINE_OF={machine:"coil",rotary:"rotary",pen:"pen"};
+/* the machine the kit uses (kind: coil, rotary or pen) goes up front on the tray, a spare to the back corner (spare: the
+   kind the app names, else the coil, or the rotary when the coil is in use) and the third is put away */
+function vsMachine(kind,spare){
+  V.machine=VR_MACHINE[kind]?kind:"coil";if(spare!==undefined)V.spare=VR_MACHINE[spare]?spare:null;
+  const R=V.room;if(!R)return;
+  const sp=V.spare&&V.spare!==V.machine?V.spare:V.machine==="coil"?"rotary":"coil";
+  for(const k in VR_MACHINE){const g=R.props[VR_MACHINE[k]],w=k===V.machine?"front":k===sp?"back":null;if(!g)continue;g.visible=!!w;if(!w)continue;
+    const t=VR_TRAY[w],h=ASSETS.props[VR_MACHINE[k]];vrPlace(g,VR_MACHINE[k],{at:[t[0],t[1],t[2]],turn:t[3]-((h&&h.rot)||0)});}
+  V.dirty=true;}
+/* 0.1.15.0: your flash sheets for your walls, newest first: [{name, sizeMm, elements}] (at most 10 are used). Repaints the
+   shared canvas only when the list changed; returns whether it did */
+function vsFlash(list){
+  const L=(Array.isArray(list)?list:[]).filter(f=>f&&Array.isArray(f.elements)&&f.elements.length).slice(0,VR_OWN.wall.cols*VR_OWN.wall.rows)
+    .map(f=>({name:String(f.name||""),sizeMm:+f.sizeMm||60,elements:f.elements}));
+  const sig=JSON.stringify(L);if(sig===V.flashSig)return false;V.flash=JSON.parse(sig);V.flashSig=sig;
+  const R=V.room;if(R&&R.flash){const c=R.flash.image;vrOwnPaint(c.getContext("2d"),c.width,c.height,V.flash);R.flash.needsUpdate=true;V.dirty=true;}
+  return true;}
 /* move the armrests under the forearms for the current shape mix */
 function vsArmrests(w){
   const R=V.room;if(!R)return;
