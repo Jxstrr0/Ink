@@ -9,8 +9,8 @@ const VERSION="0.1.1.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-/* money display. The currency is open (plan Q15: Lombard's Mostograd currency or plain dollars); only this table changes */
-const MONEY={sym:"$",before:true};
+/* money display: rubles, matching Lombard (plan Q15). Only this table changes the symbol */
+const MONEY={sym:"₽",before:false};
 const fmtMoney=n=>{const s=Math.round(Math.abs(n)).toLocaleString("en-CA");return(n<0?"-":"")+(MONEY.before?MONEY.sym+s:s+" "+MONEY.sym);};
 
 /* ---- the state object ---- */
