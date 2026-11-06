@@ -2,6 +2,14 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.10.0: free assets and the Blender slots (Full and Ultra)
+
+- **A finished-looking shop on Full and Ultra.** The back room gets photo textures from Poly Haven (CC0): a herringbone parquet floor, painted plaster walls (with a little relief from a normal map) and dark planks on the dado, tinted to the room's warm colours. They load after the room is up, a few hundred KB, once, and stay in the offline cache. Lite looks exactly as before and loads none of it.
+- **Slots for the Blender props.** Every prop in the shop (chair, trolley, machine, lamp, stool, shelves, bench, flash frame, the studio sign, the plant, the legacy photo frames, and a new trophy cabinet for the legacy studio) has a named slot. When Kelbo's model for a slot is in the game, it replaces the coded stand-in on Full and Ultra, in the stage the stand-in belongs to; if the file is missing or fails, the coded prop stays and nothing is said. The slots ship switched off, so the game asks for no file that isn't there.
+- **UI sounds.** Taps on tabs and buttons play a soft click from Kenney's Interface Sounds (CC0), and a toast plays a short chime; the synth click stays as the fallback and the machine buzz is still synthesised. They load after your first tap (about 30 KB) and follow Settings › Sound.
+- **The Blender brief.** `docs/BLENDER.md` is Kelbo's step-by-step: the CC0 base mesh (pistachio's Human Basemeshes, in `models/base-mesh/`), the coded mannequin exported as a pose, scale and UV guide in its three shapes (`tools/body-ref.js`), the zones in millimetres, the clothes, the shape keys, the props with their sizes, places and triangle budgets, signage rules, and how to pack (`tools/pack-model.py`, adapted from Prairie Engine Works: it now reads Blender's .glb, keeps shape keys and reports size, origin and triangles) and credit them.
+- **Still to come:** the Blender batch itself (pending Kelbo). The mannequin swap is written once his file exists. Settings › About credits the textures and sounds.
+
 ## 0.1.9.0: help, share cards, settings, polish
 
 - **Tips on the apprenticeship.** Act 1 is still the tutorial; on top of it, five short tips appear the first time you meet something: Arkady's shop (the act card), practice on fake skin (Session tab), drawing a flash sheet (Design tab), your friend's free piece (Clients tab) and the first heal (the reveal). The page dims with a spotlight on the real control and a card beside it: Got it (or a tap anywhere, or Escape) puts it away for good, No more tips turns them all off. Settings › Help has Tips on/off and **Show tips again**. A new career shows them again; a career started with Skip the broom gets only the heal tip.

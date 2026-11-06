@@ -118,10 +118,12 @@ function swSource(page) {
   return SW_TEMPLATE.replace("__CACHE__", () => "ink-shell-v" + ver + "-" + hash).replace("__MEDIA__", () => "ink-media-v1-" + soundsHash()).replace("__PRECACHE__", () => JSON.stringify(list)).replace("__CDN__", () => JSON.stringify(cdn));
 }
 /* sounds/ and models/ are cached as they are fetched; the cache name carries a hash of the listings (names + sizes) so a replaced or added file retires the old cache.
-   Sounds alone hash as they always did, so adding models/ only changes the name once. */
+   Sounds alone hash as they always did, so adding models/ only changes the name once. PR 10: models/textures/ (the Full / Ultra
+   photo textures) is hashed too; models/base-mesh/ is not (the CC0 base mesh for Blender, never fetched by the game). */
+const MEDIA_DIRS = ["sounds", "models", "models/textures"];
 function soundsHash() {
   const h = require("crypto").createHash("sha256");
-  for (const dir of ["sounds", "models"]) {   /* models/ (Full / Ultra props) is cached the same way */
+  for (const dir of MEDIA_DIRS) {
     const d = path.join(ROOT, dir);
     if (fs.existsSync(d)) for (const n of fs.readdirSync(d).sort()) { const st = fs.statSync(path.join(d, n)); if (st.isFile()) h.update((dir === "sounds" ? "" : dir + "/") + n + "\0" + st.size + "\0"); }
   }

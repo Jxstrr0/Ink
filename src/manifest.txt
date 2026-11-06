@@ -30,6 +30,7 @@ vis/core.js
 vis/body.js
 vis/decals.js
 vis/studio.js
+vis/assets.js
 vis/api.js
 html/ld-vis.html
 app/state.js
