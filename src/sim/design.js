@@ -60,7 +60,9 @@ const READ={
   letterWeight:2,            // lettering counts double: if the words go, the piece goes
   minBlend:0.3,              // overall = mean*(1-minBlend) + worst element*minBlend
   crowdOk:0.6,crowdBad:1.2,crowdHit:0.4,   // room the motifs need / room they have (2+ motifs): fine .. mud, and the most it costs
-  closed:0.3                 // stroke gaps under this have "closed up" (for the stress report's years)
+  closed:0.3,                // stroke gaps under this have "closed up" (for the stress report's years)
+  shapeHold:0.5,shapeExp:2   // once the gaps close, a simple shape still reads as its outline: the gap factor never drops
+                             // below shapeHold*(1-detail)^shapeExp (motifs and ornament; lettering gets nothing: closed letters are gone)
 };
 /* flow knobs */
 const FLOW={
@@ -249,7 +251,7 @@ function dzElemRead(e,tone,wear,tol){
   const sp=wear?wear.spread:0,bl=wear?wear.blur:0,fd=wear?wear.fade:0;
   const ratio=e.mm/(e.minMm*(1-(tol||0)));
   const sizeF=ratio>=1?1:Math.pow(Math.max(0,ratio),READ.sizeExp);
-  const gapF=dzGap(e,sp,bl);
+  const gapF=Math.max(dzGap(e,sp,bl),e.fam==="lettering"?0:READ.shapeHold*Math.pow(1-clamp(e.detail,0,1),READ.shapeExp));
   const con0=e.colShare>=1?dzContrast(e.light,tone):lerp(dzContrast(dzColour("black").light||0.06,tone),dzContrast(e.light,tone),e.colShare);
   const con=con0*(1-READ.fadeHit*fd);
   let lineV=1;

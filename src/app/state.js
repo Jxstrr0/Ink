@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.7.0";
+const VERSION="0.1.8.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -42,8 +42,13 @@ function freshState(){return{
                      // the career (PR 7, sim/career.js careerFresh): mentor {goodwill, left, loan}, Act 1 steps/chores/practice/
                      // friends, sig (signature counts), money {cur, prev, total} ledger, broke weeks, fails, scene (a full-screen
                      // scene waiting: broke | legacy), invites, conv (conventions entered), guest (a guest spot running), offers
-                     // (Act 4), apprentices, alumni, rivals (PR 8 hook), reached {chair, studio, legacy: {w,y}}, books, skipped, insp
-  goals:{},          // GOALS done, id -> {w,y} (PR 8)
+                     // (Act 4), apprentices, alumni, rivals (PR 8: rival shops), reached {chair, studio, legacy: {w,y}}, books,
+                     // skipped, insp; PR 8: closed {until, w, y, why} (shut by the inspector), inspLast, inspFails, lastFail
+  goals:{},          // GOALS done, id -> {w,y} (PR 8, sim/events.js GOALS)
+  world:SIMOK("worldFresh")?INK_SIM.worldFresh():null,
+                     // events, social media and reckonings (PR 8, sim/events.js worldFresh): fired {reckoning id: {w,y,...}},
+                     // plan, pending [events waiting for a choice], nextEv, mods {rate, fresh}, social {on, followers, posts
+                     // [[piece no, week index, reach]], viral, booked, bad, gained}
   board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
@@ -96,6 +101,8 @@ function hydrate(o){
   if(!o.studio||typeof o.studio!=="object"||Array.isArray(o.studio))S.studio=freshState().studio;
   if(SIMOK("unpackSave"))INK_SIM.unpackSave(S);
   if(SIMOK("careerEnsure"))INK_SIM.careerEnsure(S);
+  if(!o.world||typeof o.world!=="object"||Array.isArray(o.world))S.world=null;   // PR 8: worldEnsure fills it
+  if(SIMOK("worldEnsure"))INK_SIM.worldEnsure(S);
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}

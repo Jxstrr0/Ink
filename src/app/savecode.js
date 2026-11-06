@@ -86,7 +86,15 @@ function buSaveOk(o){
   if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
   if("career" in o&&o.career!=null){const c=o.career;if(!buObj(c))return false;   // PR 7: the career (sim/career.js careerFresh)
     for(const f of ["invites","apprentices","alumni","friends","conv"])if(f in c&&!Array.isArray(c[f]))return false;
-    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;}
+    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;
+    if("rivals" in c&&!(Array.isArray(c.rivals)&&c.rivals.every(buObj)))return false;   // PR 8: rival shops
+    if(c.closed!=null&&!(buObj(c.closed)&&buNum(c.closed.until)))return false;}
+  if("goals" in o&&!buObj(o.goals))return false;   // PR 8: id -> {w, y}
+  if("world" in o&&o.world!=null){const w=o.world;if(!buObj(w))return false;   // PR 8: sim/events.js worldFresh
+    for(const f of ["fired","plan","mods"])if(f in w&&!buObj(w[f]))return false;
+    if("pending" in w&&!(Array.isArray(w.pending)&&w.pending.every(e=>buObj(e)&&typeof e.id==="string")))return false;
+    if("social" in w){const so=w.social;if(!buObj(so))return false;if("followers" in so&&!buNum(so.followers))return false;
+      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
