@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.2.0";
+const VERSION="0.1.3.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -30,7 +30,7 @@ function freshState(){return{
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
-  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office"},   // the design board (PR 2): the working design
+  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
