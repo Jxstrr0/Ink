@@ -77,7 +77,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.4.0, November 2026)
+## Current status (0.1.5.0, November 2026)
+
+- PR 5 built: heals two weeks after a piece (`sim/heal.js` `healPiece`, `HEAL`: crisp, slightly soft, patchy, blown out, infected from the session outputs and the client's aftercare), loyalty, reviews and a free fix after an infection; the three reputation tracks (`REP_TRACKS`, `REP`, 0..100 in `S.rep`, gating `WALKINS.seg` segments); the reveal on the Career tab (`S.reveals`, fresh against healed with the stencil ghost, reaction, review, portfolio prompt); the body of work as the Clients tab's Work view (`app/gallery.js`, renders cached per piece and whole year). Shapes: `docs/SIM-CONTRACT.md` PR 5.
 
 - PR 4 built: the kit (`sim/kit.js`: machines, needles, inks, voltage and stroke, `kitBands`/`kitDeltas`; the build panel on the Studio tab) and the session (`sim/session.js`, `app/session.js`): stencil placement, trace-and-rhythm linework, shading and colour zones, pain and fatigue with break, numbing cream and chat, multi-session pieces (progress on the queue item), practice on fake skin, results and XP, the machine buzz. Handedness and Assist in Settings. New S fields: `kit` (starter kit), `session`, `settings.handed`, `settings.assist`; a new career starts with 3,000 ₽. Session tests: `node tools/session-test.js`.
 

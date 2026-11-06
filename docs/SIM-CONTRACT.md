@@ -160,7 +160,7 @@ The PR 1 shape above, plus everything the game remembers. All clients are adults
 | `review` | `piece`, `stars` 1..5, `text` |
 | `referral` | `client` (who they sent) |
 | `note` | `text` (e.g. gave up waiting for a consult) |
-| `heal` | PR 5: `piece`, `grade` |
+| `heal` | PR 5: `piece`, `grade` (a HEAL_GRADES id) |
 
 **Job cover.** `JOBS` names keep the `design.js` `JOB_COVER` keywords, and `tools/sim-test.js` checks every job's explicit `cover` is within 0.25 of what `JOB_COVER` reads from the name, so scoring agrees today. `client.cover` is the explicit field; `design.js` can switch `dzJobCover(client.job)` to `client.cover ?? dzJobCover(client.job)` when the lead next touches it (design.js is outside PR 3's files).
 
@@ -315,3 +315,68 @@ Tables: `STENCIL`, `PACE`, `ACC`, `DEPTH`, `BLOW`, `JOIN`, `LW_FIT`, `ZONE`, `CO
 ## Tests
 
 `node tools/session-test.js`: the flattener, the stencil plan, steady against rushed, blowouts, joins, Assist, the liner fit, ribs against forearm pain, numbing, breaks, chat, practice, shading overwork, a multi-session back piece, the pain limit, outputs and XP.
+
+# PR 5: the heal, the reveal, reputation
+
+File: `sim/heal.js` (after `calendar.js` in the manifest: it wraps `WEEK_HOOKS.heals`). The app side is `app/gallery.js` (the reveal and the body of work) and the reputation bars in `app/career.js`.
+
+## The heal
+
+`SIM.healPiece(S, piece, r, log)` -> the grade. `calendar.js` `calHeals` calls it for each piece finished `WEEK.healWeeks` (2) weeks ago with no heal yet; the rng is the week's `heals` fork, and `healPiece` forks `"grade:<piece id>"` and `"review:<piece id>"` from it. A piece heals **exactly once**: a piece with `heal` set returns that grade and changes nothing. Practice never makes a piece, so it never heals.
+
+The grade (a `HEAL_GRADES` id in `aging.js`, which then feeds `SIM.age`), from `SIM.healOdds(piece, aftercare)` -> `{infect, blow, score}` and `SIM.healGrade(piece, aftercare, r)`; the draws are always in the order infection, blowout, score:
+
+- **infected**: chance `HEAL.infect.max x (trauma - 0.55) / 0.45 x (0.45 - aftercare) / 0.45`, so it needs trauma over 0.55 *and* aftercare under 0.45. Low trauma never infects.
+- **blownout**: chance `HEAL.blow.max x (1 - e^(-blowouts / HEAL.blow.k))` (blowouts from `piece.blowouts`, else `out.blowouts`). No blowouts, never.
+- otherwise the heal score `0.28 line + 0.32 depth + 0.18 saturation + 0.22 (1 - trauma) + 0.3 (aftercare - 0.55) - 0.012 x joins (at most 0.08)` plus `normal(0, 0.05)`: **crisp** from 0.76, **soft** from 0.6, else **patchy**.
+
+Aftercare is `client.traits.aftercare`. For a piece whose client isn't in `S.clients` (a sample walk-in from the Design tab) `healPiece` asks `SIM.guestClient(id) -> {traits, loyalty, skinTone}` if the app set it, else uses `HEAL.careDefault` (0.6).
+
+What `healPiece` writes:
+
+| where | what |
+|---|---|
+| `piece` | `heal` (the grade), `healW`, `healY` (the week it healed); for a sample walk-in only, `review: {stars, text}` |
+| the client | a `heal` history entry `{w, y, kind:"heal", piece, grade}`, `loyaltyBump(client, grade)` (`LOYALTY.crisp` ... `infected`), and through `writeReview` maybe a `review` entry (`REVIEW_CHANCE` by grade) |
+| `S.rep` | `repHealDelta(S, piece)`, then the review's stars (below) |
+| `S.queue` | on an infection, for a client on the books: a free fix `{kind:"session", price:0, deposit:0, hours (HEAL.fix: 0.02 h per mm, 1..4), sessions:1, design (a copy), fix: piece id, ret:{rule:"touchup", piece}}` due `HEAL.fix.weeksAfter` (3) weeks on. Finishing it goes through `finishSession` like any sitting (and makes a touch-up piece) |
+| `S.reveals` | the piece id is pushed when `S.reveals` is an array (the app's `freshState` has it; the node tests' bare S does not), keeping the newest `REVEAL_CAP` (12) |
+| the log | `{k:"heal", text, piece, client, grade, review: stars or null}`; an infection's text names the free fix's week |
+
+`SIM.healReaction(piece, loyalty)` (from `HEAL_REACTIONS[grade][low|mid|high]`, bands from `REVIEW_BANDS`) and `SIM.healApology(piece)` (`HEAL_APOLOGY`) pick a line stably per piece id (`hash`), so a reveal reads the same every time. `SIM.pieceReview(S, piece)` -> the review (the client's history entry, or `piece.review`) or null.
+
+Referrals still skip patchy, blown-out and infected heals (`calendar.js`).
+
+## Reputation
+
+`S.rep = {walkins, collectors, peers}`, each 0..100 (`REP.full`; `WALKINS.repFull` reads the same scale).
+
+| track | what moves it | client segments it unlocks (`unlocks`: the value a `WALKINS.seg` segment starts pulling at) | events (`events`, for PR 8) |
+|---|---|---|---|
+| `walkins` (speed and price) | a heal: crisp +0.3, soft +0.18, patchy -0.2, blown out -0.6, infected -1.5; a flash piece +0.12; a piece 60 mm or smaller +0.08; a review +0.25 per star from 3 | `walk_in` 0, `first_timer` 0, `students` 15, `trades` 25 | `flash_day` 40, `friday_13` 60 |
+| `collectors` (custom work and style) | a custom (not flash) piece when it heals: (0.15 + 0.003 per mm up to 250 mm, + 0.06 in a style you hold at 6+) x the grade (crisp 1, soft 0.7, patchy 0.2, blown out -0.6, infected -1.2); a review +0.12 per star from 3; the portfolio +0.5 (and -0.5 taking it out) | `creatives` 10, `memorial` 15, `collector` 25, `large_scale` 45 | `waiting_list` 50, `magazine` 75 |
+| `peers` (clean heals) | a heal: crisp +0.3, soft +0.08, patchy -0.3, blown out -1, infected -2.5; a review +0.05 per star from 3 | `old_school` 20, `cover_up` 35 | `guest_spot` 30, `convention` 55, `award` 85 |
+
+- A piece moves reputation when it **heals**, not when it's finished (every piece heals two weeks on).
+- `SIM.repAdd(S, track, delta)`: a gain is multiplied by `1 - REP.soft x track / 100` (`soft` 0.85), so a track fills slower as it rises; a loss is taken whole; the result is clamped to 0..100.
+- `SIM.repWeek(S)`: every track loses `REP.decayWeek` (0.15%) of itself each week (the heals hook calls it after the heals), so a reputation has to be kept up.
+- `SIM.setPortfolio(S, piece, on)`: healed pieces only; sets or removes `piece.portfolio` and moves collectors by `REP.portfolio.collectors` with no soft cap, so taking it out gives back exactly what putting it in gave.
+- `SIM.repUnlocked(S, track, id)` (a segment or event id), `SIM.repNext(S, track) -> {id, kind:"segment"|"event", at}` or null.
+- `market.js` `mkSegBoost`: each track's `WALKINS.seg` weights x the track / 100, except that a segment under its unlock pulls nothing.
+
+## Which S fields PR 5 adds or writes
+
+`reveals` (new: piece ids), `rep` (now moved), and on pieces `heal`, `healW`, `healY`, `portfolio`, `review` (sample walk-ins). `healPiece` writes `pieces`, `clients` (history, loyalty), `rep`, `queue` (the free fix) and `reveals`; `repWeek` writes `rep`; `setPortfolio` writes the piece and `rep`.
+
+## Tables added in PR 5
+
+`heal.js`: `HEAL`, `REVEAL_CAP`, `HEAL_REACTIONS`, `HEAL_APOLOGY`, `REP_TRACKS`, `REP`. All on `SIM`.
+
+## Tests
+
+`tools/sim-test.js`, block "PR 5: heals and the reputation tracks": good outputs with good aftercare heal crisp; high trauma with bad aftercare can get infected, low trauma never does; blowouts lead to blown-out heals; a piece heals exactly once, two weeks on, and lands in `S.reveals`; the heal feeds aging; reviews are sometimes written; loyalty and every track move the right way; gains soften, tracks decay, the portfolio nudge comes back off; segment unlocks. The 30-year run now heals every piece and still times `advanceWeek` (budget 50 ms).
+
+## Notes from PR 5
+
+- In the 30-year auto-play (default outputs 0.8 / trauma 0.4, aftercare as drawn) about 58% of pieces heal crisp, 41% soft and 1% patchy. The run's referrals rise from about 1,000 to 1,200 because every piece now heals and crisp heals raise loyalty.
+- The gallery's renders are never saved: `app/gallery.js` caches them in memory per piece id + whole years of age + heal + skin tone.

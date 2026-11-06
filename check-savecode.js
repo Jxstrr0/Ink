@@ -165,6 +165,10 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
     { v: 1, save: game({ session: "chair" }), slots: [] },                           // session not an object
     { v: 1, save: game({ session: { live: { next: 2, design: null } } }), slots: [] },   // a sitting without a design
     { v: 1, save: game({ session: { live: { next: "a", design: { elements: [] } } } }), slots: [] },   // a sitting with no position
+    { v: 1, save: game({ reveals: "p1" }), slots: [] },                             // reveals not a list
+    { v: 1, save: game({ reveals: [1, 2] }), slots: [] },                            // reveals that aren't piece ids
+    { v: 1, save: game({ rep: [10, 20, 30] }), slots: [] },                          // rep not an object
+    { v: 1, save: game({ rep: { walkins: "lots" } }), slots: [] },                   // a track that isn't a number
     { v: 2, save: game(), slots: [] },
     { v: 1, save: [game()], slots: [] },
     [game()], "just a string", 42, null
@@ -175,6 +179,8 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
   const sessOk = { live: { next: 3, kind: "practice", design: { elements: [] }, m: { pain: 0 } }, next: null };
   assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: kitOk, session: sessOk }), slots: [] })), "ok", "a kit and a sitting in progress pass");
   assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: {}, session: null }), slots: [] })), "ok", "an older save's empty kit passes");
+  const healed = game({ reveals: ["p1"], rep: { walkins: 12.5, collectors: 3, peers: 40 }, pieces: [Object.assign({}, game().pieces[0], { heal: "crisp", healW: 16, healY: 2003, portfolio: true })] });
+  assert.strictEqual(msg(a, pack(a, { v: 1, save: healed, slots: [] })), "ok", "a save with heals, reveals, rep and a portfolio piece passes");
   assert.deepStrictEqual(a.localStorage.dump(), before);
 });
 check("a write that fails half way (storage full) puts every key back the way it was", () => {
@@ -208,6 +214,18 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   const u = plain(a.__get()); assert.strictEqual(u.kit.ink, "budget"); assert.strictEqual(u.kit.voltage, 7); assert.deepStrictEqual(u.kit.owned.machines, ["coil_used"]);
   assert(a.hydrate({ week: 8, kit: { machine: "rotary", owned: { machines: ["coil_used", "rotary"] } }, session: "x" }));
   const v = plain(a.__get()); assert.strictEqual(v.kit.machine, "rotary"); assert.deepStrictEqual(v.kit.owned.inks, ["budget"], "owned lists not in the save keep the starter ones"); assert.strictEqual(v.session, null);
+});
+check("PR 5: reveals, rep and healed pieces round trip, and hydrate tidies them", () => {
+  const a = load();
+  const g = game({ reveals: ["p1"], rep: { walkins: 12.5, collectors: 3, peers: 40 }, pieces: [Object.assign({}, game().pieces[0], { heal: "patchy", healW: 16, healY: 2003, portfolio: true, review: { stars: 3, text: "Fine." } })] });
+  live(a, g); const r = a.buRead(a.buCode());
+  assert.deepStrictEqual(plain(r.data.save), g);
+  assert(a.hydrate({ week: 5 })); let s = plain(a.__get());
+  assert.deepStrictEqual(s.reveals, [], "an older save gets an empty reveal list"); assert.deepStrictEqual(s.rep, { walkins: 0, collectors: 0, peers: 0 });
+  assert(a.hydrate({ week: 5, reveals: ["p2", 7, null, "p3"], rep: { walkins: 250, collectors: -4 } })); s = plain(a.__get());
+  assert.deepStrictEqual(s.reveals, ["p2", "p3"], "junk ids dropped"); assert.deepStrictEqual(s.rep, { walkins: 100, collectors: 0, peers: 0 }, "tracks clamped to 0..100, missing ones 0");
+  assert(a.hydrate({ week: 5, reveals: "x", rep: "y" })); s = plain(a.__get());
+  assert.deepStrictEqual(s.reveals, []); assert.deepStrictEqual(s.rep, { walkins: 0, collectors: 0, peers: 0 });
 });
 check("packing survives big, varied saves (LZW dictionary fills up)", () => {
   const a = load();

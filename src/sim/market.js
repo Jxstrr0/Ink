@@ -14,9 +14,9 @@ SIM.priceIndex=year=>{
 /* ---- walk-ins (PR 3) ----
    SIM.generateWalkins(S, r) -> [client]: who comes through the door this week. How many: WALKINS.base for the studio stage,
    times the season (WALKIN_SEASON: the White Nights bring the city out, January is dead), times the reputation tracks
-   (S.rep, read on a 0..WALKINS.repFull scale until PR 5 sets REP_TRACKS), capped by WEEK walk-in slots. What they want:
+   (S.rep on 0..WALKINS.repFull = 100, the REP_TRACKS scale in sim/heal.js), capped by WEEK walk-in slots. What they want:
    the brief and style are weighted by this year's style demand (STYLES[*].demandCurve; PR 8's trend wave multiplies in
-   through SIM.trendMult(style, year) when it exists) and by client segments the reputation tracks attract (WALKINS.seg).
+   through SIM.trendMult(style, year) when it exists) and by client segments the reputation tracks attract (WALKINS.seg, each from its REP_TRACKS unlock).
    The stage limits size (an apprentice only gets small flash). Booked clients come from returns and referrals, not here. */
 const WALKINS={
   base:{apprentice:0.5,chair:2.2,studio:3.4,legacy:2.4},     // expected walk-ins a week, before season and reputation
@@ -35,9 +35,11 @@ function mkSeason(w){
   return t[t.length-1][1];
 }
 function mkRep(S,k){return clamp(((S.rep&&S.rep[k])||0)/WALKINS.repFull,0,1);}
+/* the segments each track pulls in, scaled by the track; a segment under its REP_TRACKS unlock (sim/heal.js) pulls nothing */
 function mkSegBoost(S){
-  const out={};
-  for(const k in WALKINS.seg){const m=mkRep(S,k);for(const s in WALKINS.seg[k])out[s]=(out[s]||0)+WALKINS.seg[k][s]*m;}
+  const out={},T=typeof REP_TRACKS!=="undefined"?REP_TRACKS:null;
+  for(const k in WALKINS.seg){const m=mkRep(S,k),v=m*WALKINS.repFull,u=T&&T[k]?T[k].unlocks:null;
+    for(const s in WALKINS.seg[k]){if(u&&u[s]!=null&&v<u[s])continue;out[s]=(out[s]||0)+WALKINS.seg[k][s]*m;}}
   return out;
 }
 function mkPoisson(r,lambda){const L=Math.exp(-lambda);let k=0,p=1;do{k++;p*=r();}while(p>L&&k<50);return k-1;}

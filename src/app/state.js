@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.4.0";
+const VERSION="0.1.5.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -22,7 +22,7 @@ function freshState(){return{
   year:2000,         // 2000..2030
   cash:3000,         // money on hand; an apprentice starts with a little saved for needles and ink (PR 4)
   rate:0,            // your hourly rate (PR 7: RATE_BY_REP x PRICE_INDEX); 0 while an apprentice
-  rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks (REP_TRACKS, PR 5)
+  rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks, each 0..100 (sim/heal.js REP_TRACKS, PR 5)
   skills:{styles:{},consult:0,linework:0,shading:0,colour:0,speed:0},   // levels 0..10; styles keyed by STYLES id (SKILLS, PR 7)
   kit:{machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}},
                      // the kit (PR 4, sim/kit.js KIT_DEFAULT): machine, the needle groupings on the tray, ink tier, voltage (V),
@@ -30,7 +30,9 @@ function freshState(){return{
   session:null,      // the chair (PR 4): null, or {live: the sitting in progress (INK_SIM.sessionNew's object, numbers only)
                      // or null, next: a sample walk-in's piece waiting for its next sitting or null}
   clients:[],        // client records (PR 3); full for the CLIENT_CAP most recent/loyal, compacted after (PR 7)
-  pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5)
+  pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4); PR 5 adds heal,
+                     // healW/healY, portfolio (true or absent) and, for a sample walk-in, review {stars, text}
+  reveals:[],        // ids of healed pieces whose reveal you haven't seen yet, oldest first (PR 5, sim/heal.js REVEAL_CAP)
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
@@ -57,6 +59,9 @@ function hydrate(o){
   S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
+  if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
+  for(const k of ["walkins","collectors","peers"])S.rep[k]=Math.max(0,Math.min(100,+S.rep[k]||0));
   if(S.session!=null&&(typeof S.session!=="object"||Array.isArray(S.session)))S.session=null;
   if(typeof INK_SIM!=="undefined"&&INK_SIM.kitClean)S.kit=INK_SIM.kitClean(S.kit);   // unknown ids dropped, sliders clamped
   S.v=SAVE_V;
