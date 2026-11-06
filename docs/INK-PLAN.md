@@ -319,7 +319,7 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 ## Checklist
 
 - [x] PR 0: Scaffold, tabs, PWA, CLAUDE.md with content rules, save-code check
-- [ ] PR 1: Seeded rng, element library, placements, design scoring with skin contrast, aging model, state shape, node tests
+- [x] PR 1: Seeded rng, element library, placements, design scoring with skin contrast, aging model, state shape, node tests
 - [ ] PR 2: Body diagram SVG, design board with placement picker, deltas, flash wall
 - [ ] PR 3: Week clock with Next, market, clients, consult, memory, returns
 - [ ] PR 4: Kit, session mechanic, handedness and assist, client meters, multi-session
