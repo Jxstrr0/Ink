@@ -59,9 +59,9 @@ const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",stude
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
 /* the next thing a track opens. Segments all bring walk-ins; every REP_TRACKS event is in the game (0.1.13.0: flash days,
-   Friday the 13th, Igla and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
+   Friday the 13th, Kontur and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
 const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list (Act 4, in your own studio)",
-  magazine:"a feature in Igla (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
+  magazine:"a feature in Kontur (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
 function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
   const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
   for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");

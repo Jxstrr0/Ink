@@ -13,7 +13,7 @@
      GOALS         the career's goals (S.goals: id -> {w, y}); checkGoals marks them
      EVENTS        the event sheets: how long a choice waits, and every line they say
      REP_EVENTS    the reputation events REP_TRACKS names (0.1.13.0): flash days, the Friday 13th special, a feature in
-                   Igla (an invented Mostograd magazine) and the Drawbridge Prize (the Guild's yearly award, healed work)
+                   Kontur (an invented Mostograd magazine) and the Drawbridge Prize (the Guild's yearly award, healed work)
    S.world (worldFresh): {fired {reckoning id: {w, y, ...}}, plan {first_year: week index}, pending [events waiting for a
    choice], nextEv, mods {rate: {mult, until}, fresh: until}, social {on {w,y} | null, followers, posts [[piece no, week
    index, reach]], viral {piece, w, y} | null, booked, bad, gained}, repEv (REP_EVENTS' history, below)}. Rivals live in S.career.rivals; a closed shop in
@@ -147,7 +147,8 @@ const GOALS=[
   {id:"five_pieces",name:"A client with five of your pieces",says:"one person wears five pieces of yours"},
   {id:"survive_rival",name:"Survive a rival",says:"outlast a rival shop: it closes, or three years pass without losing yours"},
   {id:"twenty_reads",name:"Twenty years and it still reads",says:"a piece of yours twenty years old that still reads",slow:true},
-  {id:"apprentice_shop",name:"An apprentice opens a shop",says:"someone you trained goes out on their own"}
+  {id:"apprentice_shop",name:"An apprentice opens a shop",says:"someone you trained goes out on their own"},
+  {id:"drawbridge",name:"Win the Drawbridge Prize",says:"take first place at the Mostograd Tattoo Guild's yearly prize"}   // 0.1.13.1: REP_EVENTS.award
 ];
 const EVENTS={wait:3,
   undercut:{text:"{rival} {where} has dropped its prices well under yours. Walk-ins are noticing.",
@@ -180,7 +181,7 @@ const EVENTS={wait:3,
      flash_day   a day of small, cheap pieces off your own flash wall: many quick sittings, walk-ins and peers notice
      friday_13   the old Friday-the-13th flash special, only in a week that really holds a Friday the 13th (calendar
                  weeks are days 1-7, 8-14, ... of the year, so the date is exact; week 52 runs to 30 or 31 December)
-     magazine    Igla, Mostograd's tattoo quarterly (invented), features you once your collectors and portfolio are there
+     magazine    Kontur, Mostograd's tattoo quarterly (invented; "outline"), features you once your collectors and portfolio are there
      award       the Drawbridge Prize, the Mostograd Tattoo Guild's yearly award, judged on your best healed pieces
    S.world.repEv (worldFresh): {flash_day {last, n, sittings}, friday_13 {last, n, sittings}, magazine [{w, y, at (week index), piece, yes}],
    award [{y, place, score, pieces [ids]}]}; last is the week index the card was last offered */
@@ -197,13 +198,13 @@ const REP_EVENTS={
     choices:[["run","Run the Friday 13th special"],["skip","Keep a normal week"]],dflt:"skip",
     says:{run:"The queue starts before you've unlocked the door. {n} small pieces by midnight, thirteens and black cats mostly. {pay} after supplies, and half the embankment knows your name.",
       skip:"You let the date pass. Somebody else's shop has the queue this year."}},
-  magazine:{track:"collectors",head:"Igla magazine",name:"Igla",portfolio:4,chance:0.04,cool:260,max:3,wait:4,
+  magazine:{track:"collectors",head:"Kontur magazine",name:"Kontur",portfolio:4,chance:0.04,cool:260,max:3,wait:4,
     rep:{yes:{collectors:4,walkins:2,peers:1},no:{peers:0.3}},
-    text:"Igla, the city's tattoo quarterly, wants to feature you: an interview in the shop and a photographer for your healed portfolio. They'd lead with {piece}.",
+    text:"Kontur, the city's tattoo quarterly, wants to feature you: an interview in the shop and a photographer for your healed portfolio. They'd lead with {piece}.",
     choices:[["yes","Do the interview"],["no","Turn it down"]],dflt:"no",
     says:{yes:"The issue comes out with {piece} across two pages and you squinting at the camera on Kanatnaya Street. Collectors start quoting it at you.",
       no:"You tell them you'd rather the work did the talking. A few artists hear about it and approve."},
-    met:"I read about you in Igla. I've kept the page."},
+    met:"I read about you in Kontur. I've kept the page."},
   award:{track:"peers",head:"The Drawbridge Prize",name:"the Drawbridge Prize",by:"the Mostograd Tattoo Guild",week:48,pieces:3,minPieces:2,wait:2,
     score:{healed:1,sig:0.1},sd:0.05,places:[0.66,0.58,0.5],prize:[30000,15000,7000],
     rep:{peers:[3,2,1,0.3],collectors:[2.5,1.5,0.8,0]},
@@ -617,7 +618,7 @@ function evRepWeek(S,ctx){
   const T=REP_EVENTS.friday_13,fr=RE.friday_13,f13=friday13Weeks(S.year).find(x=>x.w===S.week);
   if(f13&&evRepOk(S,"friday_13")&&walkinsOpen(S)&&!busy("friday_13")&&fr.last!==now){
     fr.last=now;evPush(S,ctx,{kind:"friday_13",repEv:true,date:f13.date,choices:T.choices,dflt:T.dflt,wait:T.wait},evFill(T.text,{date:f13.date}));}
-  /* Igla: collectors at REP_TRACKS, a portfolio worth a photographer, at most max features, years apart */
+  /* Kontur: collectors at REP_TRACKS, a portfolio worth a photographer, at most max features, years apart */
   const M=REP_EVENTS.magazine,mg=RE.magazine,lastM=mg.length?mg[mg.length-1].at:null;
   if(evRepOk(S,"magazine")&&mg.length<M.max&&!busy("magazine")&&(lastM==null||now-lastM>=M.cool)&&ctx.r.fork("rev:magazine").chance(M.chance)){
     const pf=evPortfolio(S,M.portfolio);
@@ -681,7 +682,8 @@ const EV_GOAL_CHECK={
   survive_rival:S=>{const now=evNow(S),lf=S.career.lastFail?weekIndex(S.career.lastFail.w,S.career.lastFail.y):-1;
     return evRivals(S).some(rv=>rv.status==="gone"||(rv.opened&&now-weekIndex(rv.opened.w,rv.opened.y)>=156&&caStage(S)!=="apprentice"&&lf<weekIndex(rv.opened.w,rv.opened.y)));},
   twenty_reads:S=>{for(const p of S.pieces){if(p.y>S.year-20)break;if(p.by||!p.heal)continue;if(S.year-p.y+(S.week-p.w)/WEEKS_PER_YEAR>=20&&caReads(S,p)>=LEGACY.reads)return true;}return false;},
-  apprentice_shop:S=>S.career.apprentices.some(a=>a.status==="rival")
+  apprentice_shop:S=>S.career.apprentices.some(a=>a.status==="rival"),
+  drawbridge:S=>((S.world&&S.world.repEv&&S.world.repEv.award)||[]).some(a=>a.place===1)   // first place only; first_award stays conventions
 };
 /* checkGoals(S, slow) -> [goal ids reached now] (S.goals[id] = {w, y}); slow checks only when slow is true */
 function checkGoals(S,slow){
