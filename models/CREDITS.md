@@ -18,7 +18,7 @@ A herringbone parquet floor and painted plaster over a planked dado is what the 
 
 ## The mannequin base mesh (`models/base-mesh/`)
 
-Not loaded by the game: it is the starting point for Kelbo's Blender mannequin (PR 10, plan Q5: Claude Code sources a CC0 base mesh, Kelbo retopologises and dresses it).
+Not loaded by the game, and not used by the scripted mannequin (0.1.11.0), which is built from the reference export below instead. It stays as a starting point if Kelbo models the mannequin by hand (PR 10, plan Q5).
 
 | File | Asset | Author | Licence | Source |
 |---|---|---|---|---|
@@ -30,11 +30,24 @@ Why this one: it is CC0 (checked on the OpenGameArt page, 2026-11-06); it is a s
 
 ## Models (`models/*.glb`)
 
-None yet. Each one Kelbo makes goes here, packed with `tools/pack-model.py`, with a row like this:
+All original, © 2026 Kelbo / Longlight Interactive, made for Ink by the scripts in `tools/blender/` (Blender 5.2 through its Python module, packed with `tools/pack-model.py`). No outside model is in any of them. Rebuild or change one with `tools/blender/README.md`; a hand-made replacement takes the same file name and its own row here.
 
 | File | Model | Author | Licence | Source |
 |---|---|---|---|---|
-| `ink-chair.glb` (example) | Tattoo chair | Kelbo | Original (© year Kelbo / Longlight Interactive) | Blender, made for Ink |
-| `ink-mannequin.glb` (example) | The client mannequin | Kelbo, from pistachio's Human Basemeshes | Original work on a CC0 base | Blender; base mesh above |
+| `ink-mannequin.glb` | The client mannequin (body, bandeau, shorts; shape keys `masc`, `femme`) | Kelbo / Longlight Interactive | Original | `tools/blender/mannequin.py`, built from the coded body's reference export above (not from the pistachio base mesh) |
+| `ink-chair.glb` | Tattoo chair | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-station.glb` | Work station trolley | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-machine-coil.glb` | Coil machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-lamp.glb` | Floor lamp | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-stool.glb` | Artist's stool | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-shelves.glb` | Ink shelves | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-bench.glb` | Waiting bench | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-flash-frame.glb` | Flash wall frames | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-sign.glb` | "TATTOO" sign | Kelbo / Longlight Interactive | Original | `tools/blender/props.py`; letters from Blender's built-in font (Bfont, which in Blender 5.2 is Inter by Rasmus Andersson, SIL Open Font License 1.1), turned into mesh, so no font file is distributed |
+| `ink-plant.glb` | Potted plant (also the legacy studio's second plant, smaller) | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-photos.glb` | Framed photos | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-trophies.glb` | Trophy cabinet | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+
+The wooden parts of the props use `textures/dado-planks.jpg` (Poly Haven, CC0, above), embedded in each file at a smaller size.
 
 CC0 needs no credit, but we give it anyway. A CC-BY asset must be listed here with its author and a link, and the same line goes in Settings › About.
