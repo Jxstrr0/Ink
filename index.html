@@ -106,6 +106,7 @@ pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12
 
 /* ---- design board: cream in both themes ---- */
 .board{background:var(--board);color:var(--boardInk);border:1px solid var(--boardLine);border-radius:var(--r)}
+html[data-theme=light] .board{border-color:#c4b28c;box-shadow:0 1px 3px rgba(60,40,20,.12)}   /* PR 9: cream on a cream page needs a firmer edge */
 
 /* ---- sheet (Settings, Back up, Restore) ---- */
 #scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:70}
@@ -121,8 +122,12 @@ textarea.code{width:100%;min-height:120px;padding:10px;border-radius:8px;border:
 .buerr{color:var(--crit);min-height:1.2em}
 
 /* ---- toast ---- */
-#toast{position:fixed;left:50%;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:80;max-width:calc(100% - 32px);padding:10px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#toast{position:fixed;left:50%;width:max-content;text-align:center;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:80;max-width:calc(100% - 32px);padding:10px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+/* PR 9: with a sheet open the toast drops in from the top, so it never sits over the sheet's buttons */
+html.sheetOn #toast,html.helpOn #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;transform:translate(-50%,-12px)}
+html.sheetOn #toast.on,html.helpOn #toast.on{transform:translate(-50%,0)}
+html[data-theme=light] #toast{background:#2a231c}
 
 /* ---- "New version ready" bar (app/boot.js, PEW's pwa.js pattern) ---- */
 #pwaBar{position:fixed;left:50%;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);z-index:75;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100% - 24px);padding:8px 8px 8px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
@@ -130,12 +135,45 @@ textarea.code{width:100%;min-height:120px;padding:10px;border-radius:8px;border:
 #pwaBar .btn{min-height:44px}
 #pwaBar .pwalater{min-height:44px;min-width:44px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:#b6ac9b;font-weight:500;cursor:pointer}
 
+/* ---- help overlays (PR 9, app/help.js): a spotlight on the real control and a short card ---- */
+#help{position:fixed;inset:0;z-index:60}
+#help[hidden]{display:none}
+#helpSpot{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(10,8,6,.62);border:2px solid var(--gold);pointer-events:none;transition:all .25s ease}
+#helpBox{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));max-width:440px;margin:0 auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);transition:top .25s ease,bottom .25s ease}
+#helpBox h3{font-size:17px;margin:2px 0 4px}
+#helpBox p{margin:0 0 10px;font-size:14.5px;line-height:1.45}
+#helpBox .row{justify-content:flex-end}
+#helpBox .clK{color:var(--gold)}
+
+/* ---- Settings rows (PR 9) ---- */
+.setS .setR{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:8px 0;border-top:1px solid var(--line)}
+.setS .setR:first-of-type{border-top:0;padding-top:0}
+.setL{display:flex;flex-direction:column;font-weight:600;min-width:0;flex:1 1 140px}
+.setL .clMeta{font-weight:400}
+.setS .row{margin-top:8px}
+
+/* ---- share cards (PR 9, app/share.js) ---- */
+.shBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- short screens: a phone on its side (PR 9). A slimmer header and a tab bar with the label beside the icon ---- */
+@media (max-height:500px) and (orientation:landscape){
+  :root{--tabh:44px;--hdr:40px}
+  #hdr{padding-top:calc(env(safe-area-inset-top,0px) + 2px);padding-bottom:2px}
+  #hdr .brand{font-size:20px}
+  #hdr .when{flex-direction:row;gap:8px;align-items:baseline}
+  #tabs button{flex-direction:row;gap:6px;font-size:12.5px}
+  #tabs button svg{width:20px;height:20px}
+  #panel{padding-top:10px}
+  #sheet{max-height:94vh}
+  #studioView{height:min(56vh,260px)}
+}
+
 /* ---- wide screens ---- */
 @media (min-width:900px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
 /* ---- accessibility preferences ---- */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
-@media (prefers-reduced-transparency:reduce){#scrim{background:rgba(0,0,0,.8)}#studioView .cap{background:#0f0c09}}
+@media (prefers-reduced-transparency:reduce){#scrim{background:rgba(0,0,0,.8)}#studioView .cap{background:#0f0c09}#helpSpot{box-shadow:0 0 0 9999px rgba(10,8,6,.86)}}
 html.noanim *,html.noanim *::before,html.noanim *::after{transition:none!important;animation:none!important}
 /* ===================== Ink: the Design tab (PR 2) =====================
    The body diagram, the cream design board (cream with black ink in both themes; only the chrome around it follows the
@@ -219,7 +257,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzCreaseT{fill:#a04a33;font-weight:600}
 .dzFoot{fill:none;stroke:#8c7655;stroke-opacity:.5;stroke-width:.4;stroke-dasharray:1.5 1.5}
 .dzFootT{font-weight:600}
-.dzEmpty{font-family:var(--disp);fill:#a08a66;letter-spacing:.06em;text-transform:uppercase}
+.dzEmpty{font-family:var(--disp);fill:#6f5a3a;letter-spacing:.06em;text-transform:uppercase;stroke:#f3ead8;stroke-width:4px;stroke-linejoin:round;paint-order:stroke}   /* PR 9: darker, with a cream halo so it reads over the ruler and flow lines */
 .dzEmpty.sub{font-family:var(--ui);text-transform:none;letter-spacing:0}
 .dzEl{cursor:grab;outline:none}
 .dzEl .hit{fill:transparent}
@@ -278,7 +316,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzCap.shut .dzAge{display:none}
 .dzAge{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
 .dzAgeL{flex:0 0 auto;width:46px;font-size:10px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
-.dzAgeNone{font-size:12.5px;color:var(--faint)}
+.dzAgeNone{font-size:12.5px;color:var(--mute)}
 .dzAgeF{flex:1;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
 .dzAgeI{width:44px;height:44px;border-radius:8px;background:var(--board);border:1px solid var(--boardLine);overflow:hidden}
 .dzAgeI svg{width:44px;height:44px;display:block}
@@ -678,7 +716,7 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 .caSteps{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:var(--mute)}
 .caSteps li{display:flex;gap:8px;align-items:baseline}
 .caSteps li::before{content:"";flex:0 0 auto;width:9px;height:9px;border:1.5px solid var(--faint);border-radius:50%;transform:translateY(1px)}
-.caSteps li.done{color:var(--faint);text-decoration:line-through}
+.caSteps li.done{color:var(--mute);text-decoration:line-through}
 .caSteps li.done::before{background:var(--ok);border-color:var(--ok)}
 .caSteps li.now{color:var(--text);font-weight:600}
 .caSteps li.now::before{border-color:var(--red);background:var(--red)}
@@ -769,7 +807,11 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 .evGoals h2 .clMeta{font-weight:400;margin-left:6px}
 .evGoalL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .evGoalL li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
-.evGoalL li>span:nth-child(2){display:flex;flex-direction:column}
+.evGoalL li>span:nth-child(2){display:flex;flex-direction:column;flex:1 1 auto;min-width:0}
+.evGoalL li .shBtn{flex:0 0 auto;margin-left:auto}
+.evGoalNow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px}
+.evGoalNow .clK{flex-basis:100%}
+.evGoalNow b{flex:1 1 auto}
 .evTick{flex:0 0 auto;width:16px;height:16px;margin-top:2px;border:1.5px solid var(--faint);border-radius:50%}
 .evGoalL li.done .evTick{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--panel)}
 .evGoalL li:not(.done) b{color:var(--mute);font-weight:600}
@@ -842,6 +884,7 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
   <div class="sh"><h2 id="sheetTitle">Settings</h2><button class="ibtn" id="sheetClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div id="sheetBody"></div>
 </div>
+<div id="help" hidden><div id="helpSpot"></div><div id="helpBox" role="dialog" aria-labelledby="helpT" aria-describedby="helpX"><span class="clK" id="helpK">Tip</span><h3 id="helpT"></h3><p id="helpX"></p><div class="row"><button type="button" class="btn sm" id="helpOff">No more tips</button><button type="button" class="btn sm pri" id="helpOk">Got it</button></div></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="bkFileIn" accept=".txt,text/plain" hidden>
 
@@ -4976,14 +5019,13 @@ function legacySummary(S){
     staff:S.studio.staff.map(s=>({name:s.name,pieces:s.pieces||0})),alumni:C.alumni.length,
     earned:C.money.total.in,spent:C.money.total.out,cash:S.cash,fails:C.fails,mentor:C.mentor,signature:signatureOf(S),
     rep:Object.assign({},S.rep),shopRep:S.studio.rep||0,tv:C.offers.tv||null};}
-const SHARE_CARD=null;   // PR 9: the Legacy screen's share card
 
 WEEK_HOOKS.costs=careerWeek;
 SIM.ACTS=ACTS;SIM.MENTOR=MENTOR;SIM.APPRENTICE_STEPS=APPRENTICE_STEPS;SIM.CHORES=CHORES;SIM.FRIENDS=FRIENDS;SIM.CHAIR_SPLIT=CHAIR_SPLIT;
 SIM.RATE_BY_REP=RATE_BY_REP;SIM.SUPPLIES=SUPPLIES;SIM.LEASE=LEASE;SIM.MARKETING=MARKETING;SIM.STUDIO_STAGES=STUDIO_STAGES;SIM.VIBES=VIBES;
 SIM.STAFF=STAFF;SIM.NOSHOW=NOSHOW;SIM.INSPECTION=INSPECTION;SIM.BROKE=BROKE;SIM.SIGNATURE=SIGNATURE;SIM.SKILLS=SKILLS;
 SIM.CONVENTIONS=CONVENTIONS;SIM.CONV_SCORE=CONV_SCORE;SIM.GUEST_SPOTS=GUEST_SPOTS;SIM.GUEST=GUEST;SIM.LEGACY_OFFERS=LEGACY_OFFERS;
-SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;SIM.SHARE_CARD=SHARE_CARD;
+SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;
 SIM.careerFresh=careerFresh;SIM.studioFresh=studioFresh;SIM.careerEnsure=careerEnsure;SIM.cashIn=cashIn;SIM.cashOut=cashOut;SIM.rateFor=rateFor;
 SIM.skillGain=skillGain;SIM.skillNextUnlock=skillNextUnlock;SIM.signatureOf=signatureOf;SIM.sigApply=sigApply;
 SIM.apprenticeSteps=apprenticeSteps;SIM.apprenticeGoal=apprenticeGoal;SIM.walkinsOpen=walkinsOpen;SIM.mentorLine=mentorLine;
@@ -6647,7 +6689,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.8.0";
+const VERSION="0.1.9.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -6696,7 +6738,8 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6)
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9)
+  help:{},           // help overlays already seen (PR 9, app/help.js HELP_TIPS): tip id -> {w, y}; a new career starts with none
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();
@@ -6732,6 +6775,7 @@ function hydrate(o){
   S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  if(!S.help||typeof S.help!=="object"||Array.isArray(S.help))S.help={};   // PR 9
   S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
   if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
   for(const k of ["walkins","collectors","peers"])S.rep[k]=Math.max(0,Math.min(100,+S.rep[k]||0));
@@ -6873,6 +6917,8 @@ function buSaveOk(o){
   if(!buObj(o))return false;
   if("settings" in o&&!buObj(o.settings))return false;
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
+  if(buObj(o.settings)&&"tips" in o.settings&&typeof o.settings.tips!=="boolean")return false;   // PR 9
+  if("help" in o&&o.help!=null&&!buObj(o.help))return false;   // PR 9: tip id -> {w, y}
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
   if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
@@ -7020,7 +7066,8 @@ function showTab(t){if(!TABS.includes(t))t="studio";const pn=$("panel");tabScrol
   document.querySelectorAll("#tabs button").forEach(b=>{const on=b.dataset.tab===t;b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   document.querySelectorAll(".tabpage").forEach(p=>p.classList.toggle("on",p.id==="tab-"+t));
   renderTab(t);pn.scrollTop=tabScroll[t]||0;
-  if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();}
+  if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();
+  if(typeof helpSoon==="function")helpSoon();}
 function renderTab(t){({studio:renderStudio,design:renderDesign,session:renderSession,clients:renderClients,career:renderCareer})[t]();}
 function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);
   const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;}
@@ -7028,25 +7075,29 @@ function renderAll(){renderHeader();renderTab(curTab);}
 
 /* ---- the sheet ---- */
 let sheetBack=null;
-function openSheet(title,html){sheetBack=document.activeElement;$("sheetTitle").textContent=title;$("sheetBody").innerHTML=html;$("sheet").classList.add("on");$("scrim").classList.add("on");$("sheetBody").scrollTop=0;}
-function closeSheet(){$("sheet").classList.remove("on");$("scrim").classList.remove("on");if(sheetBack&&sheetBack.focus)try{sheetBack.focus({preventScroll:true});}catch(e){}sheetBack=null;}
+function openSheet(title,html){if(typeof helpOff==="function")helpOff();sheetBack=document.activeElement;$("sheetTitle").textContent=title;$("sheetBody").innerHTML=html;$("sheet").classList.add("on");$("scrim").classList.add("on");document.documentElement.classList.add("sheetOn");$("sheetBody").scrollTop=0;}
+function closeSheet(){if(typeof helpSoon==="function")setTimeout(helpSoon,0);$("sheet").classList.remove("on");$("scrim").classList.remove("on");document.documentElement.classList.remove("sheetOn");if(sheetBack&&sheetBack.focus)try{sheetBack.focus({preventScroll:true});}catch(e){}sheetBack=null;}
 function sheetOn(){return $("sheet").classList.contains("on");}
 
 /* ---- Settings ---- */
 function segHtml(id,opts,cur){return `<div class="seg" id="${id}" role="group">${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${String(v)===String(cur)?"on":""}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join("")}</div>`;}
+/* Settings, grouped (PR 9): Display, Graphics, Sound, Session, Help, Save, App, About. One labelled row per control */
+function setRow(label,ctl,sub){return`<div class="setR"><span class="setL">${label}${sub?`<span class="clMeta">${sub}</span>`:""}</span>${ctl}</div>`;}
 function openSettings(){
   const st=S.settings;
   openSheet("Settings",`
-<section><h3>Look</h3><div class="row">${segHtml("setTheme",[["dark","Dark"],["light","Light"],["auto","Auto"]],st.theme)}</div>
-<div class="row" style="margin-top:8px">${segHtml("setReduced",[["0","Effects on"],["1","Reduced"]],st.reduced?1:0)}</div></section>
-<section><h3>Graphics</h3><div class="row">${segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||"")}</div>
-<div class="row" style="margin-top:8px">${segHtml("setGfxAuto",[["1","Auto-adjust on"],["0","Off"]],st.gfxAuto===false?0:1)}</div>
-<p class="hint">Lite is the phone default. Auto-adjust steps down a tier if the studio stutters.</p></section>
-<section><h3>Session</h3><div class="row">${segHtml("setHand",[["right","Right-handed"],["left","Left-handed"]],st.handed==="left"?"left":"right")}</div>
-<div class="row" style="margin-top:8px">${segHtml("setAssist",[["0","Assist off"],["1","Assist on"]],st.assist?1:0)}</div>
-<p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
-<section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
-<section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
+<section class="setS"><h3>Display</h3>${setRow("Theme",segHtml("setTheme",[["dark","Dark"],["light","Light"],["auto","Auto"]],st.theme))}
+${setRow("Effects",segHtml("setReduced",[["0","On"],["1","Reduced"]],st.reduced?1:0),"Reduced turns off camera moves and animations")}</section>
+<section class="setS"><h3>Graphics</h3>${setRow("Tier",segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||""))}
+${setRow("Auto-adjust",segHtml("setGfxAuto",[["1","On"],["0","Off"]],st.gfxAuto===false?0:1),"Steps down a tier if the studio stutters")}
+<p class="hint">Lite is the phone default.</p></section>
+<section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"The machine buzz and taps")}</section>
+<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side")}
+${setRow("Assist",segHtml("setAssist",[["0","Off"],["1","On"]],st.assist?1:0),"A slower marker and a wider steady band, from the next sitting")}
+${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}</section>
+<section class="setS"><h3>Help</h3>${setRow("Tips",segHtml("setTips",[["1","On"],["0","Off"]],st.tips===false?0:1),"Short notes the first time you meet something in Act 1")}
+<div class="row"><button class="btn" id="setTipsAgain">Show tips again</button></div></section>
+<section class="setS"><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
 <div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div>
 ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtml()}`:""}</section>
 <section id="set-app" hidden><h3>App</h3><div class="row"><button class="btn pri" id="pwaInstall" hidden>Install app</button></div>
@@ -7062,6 +7113,9 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
   seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
   seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
+  seg("setFlat",v=>{st.flatStencil=v==="1";});
+  seg("setTips",v=>{st.tips=v==="1";if(!st.tips&&typeof helpOff==="function")helpOff();});
+  $("setTipsAgain").addEventListener("click",()=>{if(typeof helpReset==="function")helpReset();$("setTips").querySelectorAll("button").forEach(x=>{const on=x.dataset.v==="1";x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});toast("Tips will show again as you meet each thing");});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
   if(typeof slWire==="function")slWire();
@@ -8575,16 +8629,25 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});
   for(const id of ["crLegacy","crLegacy2"]){const l=$(id);if(l)l.addEventListener("click",()=>{if(typeof lgOpen==="function")lgOpen();});}
   if(C){caActWire(st);caInvitesWire();}
-  if(typeof evWire==="function")evWire();}
+  if(typeof evWire==="function")evWire();
+  if(typeof helpSoon==="function")helpSoon();}
 /* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
+/* PR 9: the next thing a track opens, as the game has it today. Segments all bring walk-ins; of REP_TRACKS' events only
+   these two happen (guest spots at GUEST.peers, the capital's convention at its peers number), so the bars name only those */
+const CR_LIVE={guest_spot:"guest spot invitations",convention:"the big convention in the capital"};
+function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
+  const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
+  for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
+  for(const id in t.events||{})if(CR_LIVE[id])try1(id,t.events[id],"event");
+  return best;}
 function crRep(){
   const T=INK_SIM.REP_TRACKS;if(!T)return"";
-  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=INK_SIM.repNext(S,k);
+  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=crRepNext(k);
     return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
-<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(CR_SEG[n.id]||n.id.replace(/_/g," "))}${n.kind==="event"?" (later update)":""}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
+<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," "))}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
@@ -8670,7 +8733,7 @@ function caActWire(st){
     toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment");
     CR.last={weeks:0,line:`${INK_SIM.MENTOR.first}: “${r.line}”`,log:[]};renderCareer();});
   on("caLease",()=>{const n=INK_SIM.leaseNeed(S);if(!confirm(`Sign a lease? ${fmtMoney(n.cost)} deposit now, then rent and upkeep every week.`))return;
-    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
+    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
   on("caShop",()=>showTab("studio"));
   on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now");renderCareer();});
   on("caApp",()=>{const r=INK_SIM.takeApprentice(S);if(!r.ok){toast(r.why==="stage"?"You need your own studio first":"One apprentice at a time");return;}
@@ -8707,6 +8770,7 @@ function caInvitesWire(){
     const inv=S.career.invites.find(i=>i.id===b.dataset.inv);
     if(inv&&inv.kind==="conv"&&b.dataset.yes==="1"&&typeof evConvOpen==="function"){evConvOpen(inv.id);return;}
     const st0=S.studio.stage,r=INK_SIM.enterInvite(S,b.dataset.inv,b.dataset.yes==="1");if(!r||!r.ok)return;
+    if(typeof evGoalsNow==="function")evGoalsNow();
     let msg="";
     if(r.kind==="conv")msg=r.place?`${["","First","Second","Third"][r.place]} place at ${r.name}!`:`No placing at ${r.name} this year. Peers saw your work, though.`;
     else if(r.kind==="guest"&&r.yes!==false)msg=`Off to ${r.spot.name} for ${r.spot.weeks} weeks`;
@@ -8802,7 +8866,7 @@ function shopWire(){
     if(!r||r.ok===false){toast("Not enough cash");return;}toast(`${INK_SIM.STUDIO_STAGES[k].name}: ${INK_SIM.STUDIO_STAGES[k].levels[(S.studio.build[k]||1)-1]}`);re();}));
   body.querySelectorAll("[data-hire]").forEach(b=>b.addEventListener("click",()=>{const r=INK_SIM.hireStaff(S,b.dataset.hire);
     if(!r.ok){toast(r.why==="cash"?"Not enough cash for the hiring fee":r.why==="stations"?"No free station":"They've taken another job");return;}
-    SH.hire=false;toast(`${r.staff.name} starts at your shop`);re();}));
+    SH.hire=false;if(typeof evGoalsNow==="function")evGoalsNow();toast(`${r.staff.name} starts at your shop`);re();}));
   body.querySelectorAll("[data-cut]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.cut);if(!s)return;
     INK_SIM.setStaffCut(S,s.id,Math.round((s.cut+(+b.dataset.d))*100)/100);INK_SOUND.tick();re();}));
   body.querySelectorAll("[data-letgo]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.letgo);if(!s)return;
@@ -8816,8 +8880,8 @@ function shopWire(){
    tab until you tap through, so a closed sheet never loses it.
    lgOpen(): the Legacy screen (INK_SIM.legacySummary): the oldest piece that still reads, the client with the most
    pieces, pieces per decade, the best heal, conventions, apprentices and the shop. It opens from the Career tab once you
-   have a studio, and by itself at the end. The save stays playable afterwards. The share card is PR 9
-   (INK_SIM.SHARE_CARD stays null until then). */
+   have a studio, and by itself at the end. The save stays playable afterwards. PR 9: Share card draws it as a picture
+   (app/share.js shLegacyCard). */
 const LG={shown:""};
 function lgScene(){return S.career&&S.career.scene||null;}
 function lgSceneKey(sc){return sc?sc.kind+":"+sc.w+":"+sc.y:"";}
@@ -8860,8 +8924,8 @@ ${L.conv.list.length?`<ul class="caPast">${L.conv.list.map(c=>`<li>${c.y} · ${e
 ${L.staff.length?`<p class="hint">On your staff now: ${L.staff.map(s=>`${esc(s.name)} (${s.pieces} pieces)`).join(", ")}.</p>`:""}
 ${L.fails?`<p class="hint">You lost a shop ${L.fails===1?"once":L.fails+" times"} and kept going.</p>`:""}${L.tv?`<p class="hint">The TV show: ${L.tv==="yes"?"you did it.":"you said no."}</p>`:""}</section>
 <section><p class="hint">${end?"The thirty years are done, but the shop isn't. Your save stays open: keep working, look back through your clients, or start a new career from Settings › Save.":"Everything here is worked out from your save as it stands today."}</p>
-<div class="row"><button class="btn pri" id="lgClose" style="flex:1">Back to the shop</button></div></section></div>`);
-  $("lgClose").addEventListener("click",closeSheet);
+<div class="row"><button class="btn shBtn" id="lgCard">${SH_ICON}Share card</button><button class="btn pri" id="lgClose" style="flex:1">Back to the shop</button></div></section></div>`);
+  $("lgClose").addEventListener("click",closeSheet);$("lgCard").addEventListener("click",shLegacyCard);
   const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();if(typeof gvOpen==="function")gvOpen(f.dataset.gp);}};
   $("lgBody").addEventListener("click",go);$("lgBody").addEventListener("keydown",go);}
 /* ===================== app/events.js: events, trends, social media, rivals, goals, conventions, reckonings (PR 8) =====================
@@ -8915,17 +8979,24 @@ function evRivalsHtml(){
 ${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name))+(r.gone?" ("+r.gone.y+")":"")).join(", ")}.</p>`:""}</div>`;}
 function evGoalsHtml(){
   const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
-  return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span></li>`).join("")}</ul></div>`;}
+  return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span>${g.done&&typeof shGoalCard==="function"?`<button class="btn sm shBtn" data-gcard="${esc(g.id)}" aria-label="Share card: ${esc(g.name)}">${SH_ICON}Card</button>`:""}</li>`).join("")}</ul></div>`;}
 function evLowerHtml(){
   if(!evOn())return"";INK_SIM.worldEnsure(S);
   return evTrendHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
 function evWire(){
   document.querySelectorAll(".evCard").forEach(card=>card.addEventListener("click",e=>{const b=e.target.closest("[data-evc]");if(!b)return;
-    const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;
+    const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;evGoalsNow();
     if(S.studio.stage!==st0&&typeof caStage==="function")caStage();
     save();renderHeader();INK_SOUND.tick();if(r.text)openSheet("What happens",`<p>${esc(r.text)}</p><div class="row"><button class="btn pri" id="evOk">OK</button></div>`);
     const ok=$("evOk");if(ok)ok.addEventListener("click",closeSheet);renderCareer();}));
-  const p=$("evPost");if(p)p.addEventListener("click",evPostSheet);}
+  const p=$("evPost");if(p)p.addEventListener("click",evPostSheet);
+  document.querySelectorAll("[data-gcard]").forEach(b=>b.addEventListener("click",()=>shGoalCard(b.dataset.gcard)));}
+/* PR 9: goals reached by something you just did (a convention placing, a lease, a hire) tick now, not on the next Next.
+   Returns the goals reached; quiet=true leaves the toast to the caller */
+function evGoalsNow(quiet){
+  if(!SIMOK("checkGoals"))return[];const ids=INK_SIM.checkGoals(S,false);if(!ids.length)return ids;save();
+  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`),2700);}
+  return ids;}
 /* goals reached after Next: one toast */
 function evAfterLog(log){
   const g=(log||[]).filter(l=>l.k==="goal");if(!g.length)return;
@@ -8964,7 +9035,7 @@ ${row("healed",cand.healed,"Healed work","A year old or more. Judged on how it r
   body.querySelectorAll(".evPick").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest(".evPk");if(!b)return;EV.pick[g.dataset.kind]=b.dataset.pid||null;
     g.querySelectorAll(".evPk").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});INK_SOUND.tick();}));
   $("evConvNo").addEventListener("click",()=>{INK_SIM.enterInvite(S,invId,false);save();closeSheet();renderCareer();});
-  $("evConvGo").addEventListener("click",()=>{const r=INK_SIM.enterInvite(S,invId,true,EV.pick);if(!r||!r.ok)return;save();renderHeader();evConvResult(r);renderCareer();});}
+  $("evConvGo").addEventListener("click",()=>{const r=INK_SIM.enterInvite(S,invId,true,EV.pick);if(!r||!r.ok)return;r.goals=evGoalsNow(true);save();renderHeader();evConvResult(r);renderCareer();});}
 function evConvResult(r){
   const pl=n=>n?["","First place","Second place","Third place"][n]:"No placing";
   const cat=(c,l)=>c?`<div class="evRes p${c.place}"><span class="clK">${l}</span><b>${pl(c.place)}</b><span class="clMeta">${esc(gvCap(c.name||""))} · scored ${Math.round(c.score*100)}${c.prize?" · "+fmtMoney(c.prize):""}</span></div>`:"";
@@ -8972,8 +9043,10 @@ function evConvResult(r){
 <dl class="kv"><dt>Booth sales</dt><dd class="in">+${fmtMoney(r.booth)}</dd></dl>
 ${r.metClient?`<p>${esc(r.metClient.name)} stood at your booth for half an hour and booked a consult for week ${r.metClient.w}.</p>`:`<p class="clMeta">Plenty of people stopped at the booth. Nobody booked on the spot.</p>`}
 ${r.rivals&&r.rivals.length?`<section><h3>Other shops from Mostograd</h3><ul class="caPast">${r.rivals.map(x=>`<li>${esc(x.line)}</li>`).join("")}</ul></section>`:""}
+${(r.goals||[]).map(id=>{const g=INK_SIM.GOALS.find(x=>x.id===id);return g?`<div class="evGoalNow"><span class="clK">Goal reached</span><b>${esc(g.name)}</b><button class="btn sm shBtn" data-gcard="${esc(id)}">${SH_ICON}Share card</button></div>`:"";}).join("")}
 <div class="row"><button class="btn pri" id="evOk">Back to the shop</button></div>`);
-  $("evOk").addEventListener("click",closeSheet);}
+  $("evOk").addEventListener("click",closeSheet);
+  $("sheetBody").querySelectorAll("[data-gcard]").forEach(b=>b.addEventListener("click",()=>shGoalCard(b.dataset.gcard)));}
 
 /* ---- reckonings: the old piece, then and now (no bandage peel: it healed years ago, so "now" shows at once) ---- */
 function evReckonOpen(q){
@@ -9104,7 +9177,8 @@ function gvEl(e,style,spread,mode,extra){
   else{if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
     h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((lw+spread)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
   return h+"</g>";}
-/* gvSvg(p, o) -> {svg, a}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls */
+/* gvSvg(p, o) -> {svg, a, vb, box, skin}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls,
+   o.bare (no skin background: the share card draws the limb itself) */
 function gvSvg(p,o){
   o=o||{};const d=p.design||{},c=gvClient(p),tone=c.skinTone!=null?c.skinTone:0.3;
   const yrs=o.years!=null?o.years:gvAgeYears(p);
@@ -9132,7 +9206,8 @@ function gvSvg(p,o){
     body+=`<g filter="url(#${id}h)" opacity="${dzR2(g==="blownout"?0.5:0.28)}">${m.els.map(e=>gvEl(e,m.style,0,"halo",0.9+sp*2.2)).join("")}</g>`;}
   body+=`<g${inkAttr} opacity="${dzR2(1-fd*0.72)}">${m.els.map(e=>gvEl(e,m.style,o.fresh?0:sp,"ink")).join("")}</g>`;
   if(o.ghost)body+=`<g class="gvGhost" opacity=".8">${m.els.map(e=>gvEl(e,m.style,0,"ghost")).join("")}</g>`;
-  return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="${dzR2(x0)} ${dzR2(y0)} ${dzR2(W)} ${dzR2(W)}" style="background:${skin}" aria-hidden="true">${defs?`<defs>${defs}</defs>`:""}${body}</svg>`,a};}
+  return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="${dzR2(x0)} ${dzR2(y0)} ${dzR2(W)} ${dzR2(W)}"${o.bare?"":` style="background:${skin}"`} aria-hidden="true">${defs?`<defs>${defs}</defs>`:""}${body}</svg>`,a,
+    vb:{x:x0,y:y0,w:W},box,skin};}   // vb and box: where the piece sits on its placement in mm (PR 9's piece card)
 /* today's render for the gallery, cached by piece + whole years + heal + skin */
 function gvToday(p){
   const c=gvClient(p),yr=Math.floor(gvAgeYears(p)),key=p.id+"|"+yr+"|"+(p.heal||"-")+"|"+(c.skinTone!=null?c.skinTone:"")+"|"+(p.design&&p.design.sizeMm);
@@ -9165,13 +9240,14 @@ ${react?`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c
 ${g==="infected"?`<p class="rvNote">${fix?`Free fix booked for week ${fix.w}, ${fix.y}. Reputation took a hit.`:"Reputation took a hit."}</p>`:""}
 ${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc(c.first)} left a review`}</span>${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}
 <div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
-:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>${typeof evPostBtn==="function"&&evPostBtn(p)?`<p class="clMeta rvPost">Or share it: <button class="btn sm" data-rv="post">Post it</button></p>`:""}`}</div>
+:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div><p class="clMeta rvPost">${typeof evPostBtn==="function"&&evPostBtn(p)?`Or share it: <button class="btn sm" data-rv="post">Post it</button> `:""}${typeof shPieceCard==="function"?`<button class="btn sm shBtn" data-rv="card">${SH_ICON}Share card</button>`:""}</p>`}</div>
 </article>`;}
 function rvWire(after){
   const card=$("rvCard");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
     const p=rvPending();if(!p)return;
     if(b.dataset.rv==="post"){if(typeof evPost==="function")evPost(p.id);b.disabled=true;return;}   // PR 8: posting doesn't close the reveal
+    if(b.dataset.rv==="card"){shPieceCard(p.id);return;}   // PR 9: nor does making its card
     if(b.dataset.rv==="yes"){INK_SIM.setPortfolio(S,p,true);toast("In your portfolio");}
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
@@ -9235,12 +9311,13 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}</div></section>`:""}
+${p.heal?`<section><div class="row">${p.by?"":`<button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}`}${typeof shPieceCard==="function"?`<button class="btn shBtn" id="gvCard">${SH_ICON}Share card</button>`:""}</div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
 ${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
   const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));
+  const cd=$("gvCard");if(cd)cd.addEventListener("click",()=>shPieceCard(p.id));   // PR 9
   if(typeof evPostWire==="function")evPostWire(()=>{if(!$("evOk"))gvOpen(p.id);});}
 /* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================
    An original front/back drawing of the neutral, stylized mannequin (smooth capsule limbs, no face, no anatomical detail),
@@ -9343,7 +9420,202 @@ function bmSvg(view,sel,shape,tone){
   h+=`<g class="bmZones">${zs.join("")}</g>`;
   h+=`<text class="bmLbl" x="100" y="418" text-anchor="middle">${fr?"FRONT":"BACK"}</text></svg>`;
   return h;}
-/* ===================== app/help.js: help overlays on the apprenticeship (PR 9). Last app file: closes the script. ===================== */
+/* ===================== app/share.js: share cards (PR 9) =====================
+   Three picture cards, all drawn on a plain 2D canvas (cheap on a Lite phone, no WebGL needed):
+     shPieceCard(id)   a healed piece on its limb as it looks today, with the design's name, the placement and the year
+     shGoalCard(id)    a trophy card for one of the career's GOALS (sim/events.js)
+     shLegacyCard()    the Legacy screen's summary (INK_SIM.legacySummary)
+   Every card is cream paper with black ink, like a flash sheet, and carries the credit line "© year Kelbo / Longlight
+   Interactive". Pieces come from gvSvg (app/gallery.js), so the card is the same render as the body of work: nothing is
+   saved, everything is drawn again from the sim. Names on the cards are the game's own invented ones.
+   One share path, Prairie Engine Works' phoSave pattern (shSave): the phone's share sheet with the PNG file where the
+   browser can share files, else a download; the toast says which one happened. */
+const SHARE={w:1080,h:1350,pad:72,
+  paper:"#f3ead8",ink:"#16120e",mute:"#6b6255",line:"#d8ccb4",red:"#b3432c",
+  disp:'600 {px}px Oswald,"Arial Narrow",Impact,sans-serif',ui:'{w} {px}px "Space Grotesk",-apple-system,"Segoe UI",sans-serif',
+  piece:{top:240,h:740,limb:0.62,minShare:0.24,maxZoom:2.4},   // the limb window: where it sits, how wide the limb is drawn, and
+                                                              // how far a small piece on a big zone is zoomed in (to minShare)
+  credit:()=>`© ${new Date().getFullYear()} Kelbo / Longlight Interactive`};
+const SHR={busy:false};   // one card at a time
+const SH_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg>';   // the Share card buttons' icon
+const shFont=(k,px,w)=>SHARE[k].replace("{px}",px).replace("{w}",w||500);
+const shSlug=s=>String(s||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"card";
+/* shSave(canvas, file name, title): the share sheet with the file if this browser can share files, else a download */
+async function shSave(c,fn,title){
+  let blob=null;try{blob=await new Promise(r=>c.toBlob(r,"image/png"));}catch(e){blob=null;}
+  if(!blob){toast("Couldn't make the picture here");return false;}
+  let file=null;try{file=new File([blob],fn,{type:"image/png"});}catch(e){}
+  if(file&&navigator.share&&navigator.canShare){let can=false;try{can=navigator.canShare({files:[file]});}catch(e){}
+    if(can){try{await navigator.share({files:[file],title});toast("Card shared");return true;}
+      catch(e){if(e&&e.name==="AbortError"){toast("Share cancelled");return false;}}}}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),8000);toast("Card downloaded (this browser can't share pictures)");return true;}
+/* the canvas, with the fonts loaded first (they're the page's Google Fonts; a card drawn before they arrive falls back) */
+async function shCanvas(){
+  try{if(document.fonts&&document.fonts.load)await Promise.all([document.fonts.load(shFont("disp",40)),document.fonts.load(shFont("ui",30,500)),document.fonts.load(shFont("ui",30,700))]);}catch(e){}
+  const c=document.createElement("canvas");c.width=SHARE.w;c.height=SHARE.h;const x=c.getContext("2d");
+  x.fillStyle=SHARE.paper;x.fillRect(0,0,c.width,c.height);
+  x.strokeStyle=SHARE.line;x.lineWidth=4;x.strokeRect(28,28,c.width-56,c.height-56);
+  return{c,x};}
+function shFit(x,s,max){s=String(s==null?"":s);while(s.length>3&&x.measureText(s).width>max)s=s.slice(0,-2)+"…";return s;}
+function shWrap(x,s,max){const out=[];let line="";for(const w of String(s||"").split(/\s+/)){const t=line?line+" "+w:w;if(x.measureText(t).width>max&&line){out.push(line);line=w;}else line=t;}if(line)out.push(line);return out;}
+function shText(x,s,X,Y,font,col,align){x.font=font;x.fillStyle=col||SHARE.ink;x.textAlign=align||"left";x.textBaseline="alphabetic";x.fillText(s,X,Y);}
+/* the brand at the top, the credit line at the foot */
+function shFrame(x,kicker){const P=SHARE.pad,W=SHARE.w,H=SHARE.h;
+  shText(x,"INK",P,P+60,shFont("disp",64),SHARE.ink);x.font=shFont("disp",64);const bw=x.measureText("INK").width;shText(x,".",P+bw+2,P+60,shFont("disp",64),SHARE.red);
+  if(kicker)shText(x,shFit((x.font=shFont("ui",26,600),x),kicker.toUpperCase(),W-2*P-200),W-P,P+52,shFont("ui",26,600),SHARE.mute,"right");
+  x.fillStyle=SHARE.line;x.fillRect(P,P+92,W-2*P,3);
+  x.fillStyle=SHARE.line;x.fillRect(P,H-P-58,W-2*P,3);
+  shText(x,SHARE.credit(),P,H-P,shFont("ui",26,500),SHARE.mute);
+  shText(x,"Mostograd",W-P,H-P,shFont("ui",26,500),SHARE.mute,"right");}
+/* an SVG string to an image at a pixel size */
+function shImg(svg,w,h){return new Promise(res=>{
+  const s=svg.replace("<svg ",`<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(w)}" height="${Math.round(h)}" `).replace(/ class="[^"]*"/,"");
+  const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s);});}
+function shRound(x,X,Y,w,h,r){r=Math.min(r,w/2,h/2);x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
+/* one piece on its limb in a window: the placement's box as skin (rounded like the board's limb, shaded at the sides so it
+   reads as round), the piece drawn on it today, zoomed in when the piece is small on a big zone */
+async function shLimb(x,p,X,Y,W,H){
+  const t=gvSvg(p,{bare:true}),box=t.box||{wrapMm:100,lengthMm:200},vb=t.vb;
+  const L=SHARE.piece;let k=Math.min(W*L.limb/box.wrapMm,H*0.96/box.lengthMm);
+  if(vb&&vb.w*k<W*L.minShare)k=Math.min(W*L.minShare/vb.w,k*L.maxZoom);
+  const cx=vb?vb.x+vb.w/2:box.wrapMm/2,cy=vb?vb.y+vb.w/2:box.lengthMm/2;
+  /* the window's mm origin: centre on the piece, but keep the limb in view where it fits */
+  const vw=W/k,vh=H/k;let ox=cx-vw/2,oy=cy-vh/2;
+  if(vw>=box.wrapMm)ox=(box.wrapMm-vw)/2;else ox=clamp(ox,-vw*0.08,box.wrapMm-vw*0.92);
+  if(vh>=box.lengthMm)oy=(box.lengthMm-vh)/2;else oy=clamp(oy,-vh*0.08,box.lengthMm-vh*0.92);
+  const mx=v=>X+(v-ox)*k,my=v=>Y+(v-oy)*k;
+  x.save();x.beginPath();x.rect(X,Y,W,H);x.clip();
+  const lx=mx(0),ly=my(0),lw=box.wrapMm*k,lh=box.lengthMm*k,r=Math.min(lw,lh)*0.22;
+  shRound(x,lx,ly,lw,lh,r);x.fillStyle=t.skin||"#d9b38c";x.fill();
+  x.save();shRound(x,lx,ly,lw,lh,r);x.clip();
+  if(vb){const im=await shImg(t.svg,vb.w*k,vb.w*k);if(im)x.drawImage(im,mx(vb.x),my(vb.y),vb.w*k,vb.w*k);}
+  const g=x.createLinearGradient(lx,0,lx+lw,0);g.addColorStop(0,"rgba(40,22,10,.28)");g.addColorStop(0.18,"rgba(40,22,10,0)");g.addColorStop(0.5,"rgba(255,248,235,.06)");g.addColorStop(0.82,"rgba(40,22,10,0)");g.addColorStop(1,"rgba(40,22,10,.3)");
+  x.fillStyle=g;x.fillRect(lx,ly,lw,lh);x.restore();
+  shRound(x,lx,ly,lw,lh,r);x.strokeStyle="rgba(22,18,14,.25)";x.lineWidth=3;x.stroke();
+  x.restore();
+  return t;}
+async function shRun(fn){if(SHR.busy)return;SHR.busy=true;try{await fn();}catch(e){toast("Couldn't make the picture here");}finally{SHR.busy=false;}}
+
+/* ---- the piece card ---- */
+function shPieceCard(id){return shRun(async()=>{
+  const p=S.pieces.find(q=>q.id===id);if(!p){toast("That piece isn't here");return;}
+  const{c,x}=await shCanvas(),P=SHARE.pad,W=SHARE.w,L=SHARE.piece,d=p.design||{};
+  const pl=(INK_SIM.PLACEMENTS[d.placement]||{}).name||"",st=(INK_SIM.STYLES[d.style]||{}).name||"";
+  shFrame(x,p.by?"From the shop":"From the body of work");
+  const t=await shLimb(x,p,P,L.top,W-2*P,L.h);
+  const yrs=Math.floor(gvAgeYears(p)),grade=p.heal?(GV_WORDS[p.heal]||p.heal):"Healing";
+  let Y=L.top+L.h+86;x.font=shFont("disp",68);
+  shText(x,shFit(x,gvCap(p.label||"tattoo").toUpperCase(),W-2*P),P,Y,shFont("disp",68));
+  Y+=54;shText(x,shFit((x.font=shFont("ui",34,600),x),[gvCap(pl),st,String(p.y)].filter(Boolean).join(" · "),W-2*P),P,Y,shFont("ui",34,600));
+  Y+=46;shText(x,`Healed ${grade.toLowerCase()} · ${yrs<1?"fresh":yrs+(yrs===1?" year":" years")+" on the skin"} · reads ${Math.round((t.a.readability||0)*100)} today`,P,Y,shFont("ui",28,500),SHARE.mute);
+  await shSave(c,`ink-${shSlug(p.label)}-${p.y}.png`,gvCap(p.label||"Tattoo"));});}
+
+/* ---- the trophy card for a goal ---- */
+function shGoalCard(gid){return shRun(async()=>{
+  const g=(INK_SIM.GOALS||[]).find(q=>q.id===gid),done=S.goals&&S.goals[gid];if(!g||!done){toast("Not reached yet");return;}
+  const{c,x}=await shCanvas(),P=SHARE.pad,W=SHARE.w,cx=W/2,cy=560;
+  shFrame(x,"Goal reached");
+  /* the badge: two rings, a star, notches round the edge (the shape reads without colour) */
+  x.save();x.translate(cx,cy);x.lineWidth=10;x.strokeStyle=SHARE.ink;x.beginPath();x.arc(0,0,230,0,Math.PI*2);x.stroke();
+  x.lineWidth=4;x.beginPath();x.arc(0,0,196,0,Math.PI*2);x.stroke();
+  for(let i=0;i<36;i++){const a=i/36*Math.PI*2;x.beginPath();x.moveTo(Math.cos(a)*238,Math.sin(a)*238);x.lineTo(Math.cos(a)*262,Math.sin(a)*262);x.lineWidth=6;x.stroke();}
+  x.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?62:150;x.lineTo(Math.cos(a)*r,Math.sin(a)*r);}x.closePath();x.fillStyle=SHARE.red;x.fill();x.lineWidth=8;x.strokeStyle=SHARE.ink;x.stroke();
+  x.restore();
+  let Y=cy+360;x.font=shFont("disp",76);
+  for(const ln of shWrap(x,g.name.toUpperCase(),W-2*P).slice(0,2)){shText(x,ln,cx,Y,shFont("disp",76),SHARE.ink,"center");Y+=88;}
+  x.font=shFont("ui",34,500);for(const ln of shWrap(x,gvCap(g.says)+".",W-2*P-40).slice(0,2)){shText(x,ln,cx,Y,shFont("ui",34,500),SHARE.mute,"center");Y+=46;}
+  const st=(S.studio&&S.studio.stage)||"apprentice";
+  shText(x,`Week ${done.w}, ${done.y}`,cx,Y+40,shFont("ui",34,700),SHARE.ink,"center");
+  shText(x,`A tattoo career in Mostograd · ${typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st}`,cx,Y+88,shFont("ui",28,500),SHARE.mute,"center");
+  await shSave(c,`ink-goal-${shSlug(g.name)}.png`,g.name);});}
+
+/* ---- the Legacy card ---- */
+function shLegacyCard(){return shRun(async()=>{
+  if(!SIMOK("legacySummary"))return;
+  const L=INK_SIM.legacySummary(S),{c,x}=await shCanvas(),P=SHARE.pad,W=SHARE.w,yrs=Math.floor(L.years);
+  shFrame(x,"Legacy");
+  let Y=P+210;shText(x,`${yrs} YEAR${yrs===1?"":"S"} AT THE NEEDLE`,P,Y,shFont("disp",84));
+  Y+=58;shText(x,`${L.pieces.toLocaleString("en-CA")} pieces on ${L.clients.toLocaleString("en-CA")} people${L.shopPieces?` · ${L.shopPieces.toLocaleString("en-CA")} more from the shop`:""}`,P,Y,shFont("ui",34,600));
+  /* two pieces side by side: the oldest still reading, the best heal */
+  const fw=(W-2*P-40)/2,fh=430,fy=Y+44;
+  const fig=async(id,X,cap1,cap2)=>{const p=id&&S.pieces.find(q=>q.id===id);
+    x.strokeStyle=SHARE.line;x.lineWidth=3;x.strokeRect(X,fy,fw,fh);
+    if(p)await shLimb(x,p,X+3,fy+3,fw-6,fh-6);else shText(x,"Nothing yet",X+fw/2,fy+fh/2,shFont("ui",30,500),SHARE.mute,"center");
+    x.font=shFont("ui",28,700);shText(x,shFit(x,cap1,fw),X,fy+fh+44,shFont("ui",28,700));
+    x.font=shFont("ui",26,500);shText(x,shFit(x,cap2,fw),X,fy+fh+80,shFont("ui",26,500),SHARE.mute);};
+  const lbl=o=>{const p=o&&S.pieces.find(q=>q.id===o.piece);return p?`${gvCap(p.label||"tattoo")}, ${p.y}`:"";};   // the design's name, not the client's
+  await fig(L.oldest&&L.oldest.piece,P,"Oldest that still reads",lbl(L.oldest));
+  await fig(L.best&&L.best.piece,P+fw+40,"The best heal",lbl(L.best));
+  /* pieces by decade, then a few lines */
+  Y=fy+fh+130;const decs=Object.keys(L.decades).sort(),dmax=Math.max(1,...decs.map(d=>L.decades[d]));
+  const bw=(W-2*P)/Math.max(3,decs.length);
+  decs.forEach((d,i)=>{const bx=P+i*bw,h=Math.max(6,L.decades[d]/dmax*110);x.fillStyle=SHARE.ink;x.fillRect(bx+18,Y+110-h,bw-36,h);
+    shText(x,`${d}s · ${L.decades[d]}`,bx+bw/2,Y+150,shFont("ui",26,600),SHARE.mute,"center");});
+  Y+=196;const stN=id=>(INK_SIM.STYLES[id]||{}).name||id;
+  const lines=[L.signature.ready?`Known for ${stN(L.signature.style).toLowerCase()}`:"",L.conv.entered?`Conventions: entered ${L.conv.entered}, won ${L.conv.won}`:"",
+    L.most&&L.most.n>1?`One client wears ${L.most.n} pieces`:"",L.apprentices.length?`${L.apprentices.length} apprentice${L.apprentices.length===1?"":"s"} trained`:""].filter(Boolean);
+  x.font=shFont("ui",30,500);for(const ln of shWrap(x,lines.join(" · "),W-2*P).slice(0,2)){shText(x,ln,P,Y,shFont("ui",30,500));Y+=40;}
+  await shSave(c,`ink-legacy-${S.year}.png`,"Ink: Legacy");});}
+/* ===================== app/help.js: help overlays on the apprenticeship (PR 9). Last app file: closes the script. =====================
+   There is no separate tutorial: Act 1 (sim/career.js) is the tutorial, one goal at a time on the Career tab. These tips sit
+   on top of it, Prairie Engine Works' help.js pattern: a dimmed page with a spotlight on the real control and a short card.
+   Each tip shows once (S.help: id -> {w, y}, reset by a new career) and goes away with Got it, a tap anywhere or Escape.
+   Settings › Help turns tips off (S.settings.tips) or shows them all again. helpSoon() is called after a tab draws; it
+   looks for the first tip whose moment has come on the tab you're on. */
+const HELP_TIPS=[
+  {id:"act",tab:"career",sel:".caAct .caGoal",when:()=>helpAct1(),
+    title:"Arkady's shop",text:"This is your apprenticeship, and it's the tutorial too. Arkady sets one goal at a time here. Each chore takes a week; Next moves the calendar on to the next person or heal."},
+  {id:"practice",tab:"session",sel:"#sePracCard",when:()=>helpAct1()&&helpGoal("practice"),
+    title:"Practice on fake skin",text:"A rubber pad: no client, no pain, no money. Start on the dot and follow each stencil line at the marker's pace. Too fast blows the line out; stopping leaves a join."},
+  {id:"flash",tab:"design",sel:"#dzBoard",when:()=>helpAct1()&&helpGoal("flash"),
+    title:"Draw a flash sheet",text:"Add elements from the drawer, or start from the Flash wall at the top. The capsule under the board scores how it reads and how it will age. When you like it, Save to my flash."},
+  {id:"friend",tab:"clients",sel:()=>{const q=S.queue.find(i=>i.friend);return q?document.querySelector(`#clientsBody [data-dz="${q.id}"]`):null;},when:()=>S.queue.some(i=>i.friend),
+    title:"Your first piece, free",text:"A friend is in the chair this week. Design it for them first (keep it small and simple), then start the session. It heals two weeks after you finish."},
+  {id:"heal",tab:"career",sel:"#rvCard",when:()=>typeof rvPending==="function"&&!!rvPending(),
+    title:"The bandage comes off",text:"Every piece heals two weeks after its last sitting. Crisp, soft, patchy or blown out comes from how you worked and how the client looked after it. The purple dashes are your stencil: where the lines were meant to go."}
+];
+const HELP={on:null,t:0};
+function helpAct1(){const C=S.career;return!!C&&!C.old&&!C.skipped&&(S.studio&&S.studio.stage)==="apprentice";}
+function helpGoal(id){const g=SIMOK("apprenticeGoal")?INK_SIM.apprenticeGoal(S):null;return!!g&&g.id===id;}
+function helpSeen(){if(!S.help||typeof S.help!=="object"||Array.isArray(S.help))S.help={};return S.help;}
+function helpTarget(tip){const el=typeof tip.sel==="function"?tip.sel():document.querySelector(tip.sel);return el&&el.getClientRects().length?el:null;}
+/* after a tab draws: show the first tip whose moment has come (one at a time, never over a sheet) */
+function helpSoon(){clearTimeout(HELP.t);HELP.t=setTimeout(helpCheck,350);}
+function helpCheck(){
+  if(HELP.on)helpPlace();
+  if(HELP.on||S.settings.tips===false||sheetOn())return;const seen=helpSeen();
+  for(const tip of HELP_TIPS){if(seen[tip.id]||tip.tab!==curTab)continue;let ok=false;try{ok=tip.when();}catch(e){}
+    if(!ok)continue;const el=helpTarget(tip);if(!el)continue;helpShow(tip,el);return;}}
+function helpShow(tip,el){
+  HELP.on=tip;const pn=$("panel");
+  if(pn.contains(el)){const pr=pn.getBoundingClientRect(),r=el.getBoundingClientRect();pn.scrollTop+=r.top-pr.top-Math.max(12,pr.height*0.12);}
+  $("helpK").textContent="Tip";$("helpT").textContent=tip.title;$("helpX").textContent=tip.text;
+  $("help").hidden=false;document.documentElement.classList.add("helpOn");helpPlace();requestAnimationFrame(helpPlace);
+  try{$("helpOk").focus({preventScroll:true});}catch(e){}}
+/* the spotlight round the control, the card below it if there's room, else above */
+function helpPlace(){
+  const tip=HELP.on;if(!tip)return;const el=helpTarget(tip),spot=$("helpSpot"),box=$("helpBox"),vh=innerHeight,vw=innerWidth;
+  if(!el||tip.tab!==curTab||S.settings.tips===false){helpHide();return;}   // its control has gone (a new career, another tab): put it away unseen
+  const r=el.getBoundingClientRect(),pad=6,top=Math.max(4,r.top-pad),bot=Math.min(vh-4,r.bottom+pad);
+  spot.style.display="";spot.style.left=Math.max(4,r.left-pad)+"px";spot.style.top=top+"px";spot.style.width=Math.max(20,Math.min(vw-8,r.right+pad)-Math.max(4,r.left-pad))+"px";spot.style.height=Math.max(20,bot-top)+"px";
+  const bh=box.offsetHeight||180,tabs=$("tabs").getBoundingClientRect().top;
+  if(bot+12+bh<tabs){box.style.top=(bot+12)+"px";box.style.bottom="auto";}
+  else if(top-12-bh>0){box.style.top=(top-12-bh)+"px";box.style.bottom="auto";}
+  else{box.style.top="auto";box.style.bottom=(vh-tabs+12)+"px";}}
+function helpHide(){HELP.on=null;$("help").hidden=true;document.documentElement.classList.remove("helpOn");}
+function helpClose(off){
+  const tip=HELP.on;if(!tip)return;helpHide();
+  helpSeen()[tip.id]={w:S.week,y:S.year};if(off)S.settings.tips=false;save();
+  if(off)toast("Tips off. Settings › Help turns them back on.");else helpSoon();}
+function helpOff(){if(HELP.on)helpHide();}
+function helpReset(){S.help={};S.settings.tips=true;save();helpSoon();}
+$("helpOk").addEventListener("click",e=>{e.stopPropagation();helpClose(false);});
+$("helpOff").addEventListener("click",e=>{e.stopPropagation();helpClose(true);});
+$("help").addEventListener("click",e=>{if(!$("helpBox").contains(e.target))helpClose(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&HELP.on){helpClose(false);e.preventDefault();}});
+addEventListener("resize",()=>{if(HELP.on)helpPlace();});
+$("panel").addEventListener("scroll",()=>{if(HELP.on)helpPlace();},{passive:true});
 </script>
 <script>__ldGo(start)</script>
 </body></html>

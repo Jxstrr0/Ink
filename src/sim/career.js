@@ -623,14 +623,13 @@ function legacySummary(S){
     staff:S.studio.staff.map(s=>({name:s.name,pieces:s.pieces||0})),alumni:C.alumni.length,
     earned:C.money.total.in,spent:C.money.total.out,cash:S.cash,fails:C.fails,mentor:C.mentor,signature:signatureOf(S),
     rep:Object.assign({},S.rep),shopRep:S.studio.rep||0,tv:C.offers.tv||null};}
-const SHARE_CARD=null;   // PR 9: the Legacy screen's share card
 
 WEEK_HOOKS.costs=careerWeek;
 SIM.ACTS=ACTS;SIM.MENTOR=MENTOR;SIM.APPRENTICE_STEPS=APPRENTICE_STEPS;SIM.CHORES=CHORES;SIM.FRIENDS=FRIENDS;SIM.CHAIR_SPLIT=CHAIR_SPLIT;
 SIM.RATE_BY_REP=RATE_BY_REP;SIM.SUPPLIES=SUPPLIES;SIM.LEASE=LEASE;SIM.MARKETING=MARKETING;SIM.STUDIO_STAGES=STUDIO_STAGES;SIM.VIBES=VIBES;
 SIM.STAFF=STAFF;SIM.NOSHOW=NOSHOW;SIM.INSPECTION=INSPECTION;SIM.BROKE=BROKE;SIM.SIGNATURE=SIGNATURE;SIM.SKILLS=SKILLS;
 SIM.CONVENTIONS=CONVENTIONS;SIM.CONV_SCORE=CONV_SCORE;SIM.GUEST_SPOTS=GUEST_SPOTS;SIM.GUEST=GUEST;SIM.LEGACY_OFFERS=LEGACY_OFFERS;
-SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;SIM.SHARE_CARD=SHARE_CARD;
+SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;
 SIM.careerFresh=careerFresh;SIM.studioFresh=studioFresh;SIM.careerEnsure=careerEnsure;SIM.cashIn=cashIn;SIM.cashOut=cashOut;SIM.rateFor=rateFor;
 SIM.skillGain=skillGain;SIM.skillNextUnlock=skillNextUnlock;SIM.signatureOf=signatureOf;SIM.sigApply=sigApply;
 SIM.apprenticeSteps=apprenticeSteps;SIM.apprenticeGoal=apprenticeGoal;SIM.walkinsOpen=walkinsOpen;SIM.mentorLine=mentorLine;

@@ -52,16 +52,25 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});
   for(const id of ["crLegacy","crLegacy2"]){const l=$(id);if(l)l.addEventListener("click",()=>{if(typeof lgOpen==="function")lgOpen();});}
   if(C){caActWire(st);caInvitesWire();}
-  if(typeof evWire==="function")evWire();}
+  if(typeof evWire==="function")evWire();
+  if(typeof helpSoon==="function")helpSoon();}
 /* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
+/* PR 9: the next thing a track opens, as the game has it today. Segments all bring walk-ins; of REP_TRACKS' events only
+   these two happen (guest spots at GUEST.peers, the capital's convention at its peers number), so the bars name only those */
+const CR_LIVE={guest_spot:"guest spot invitations",convention:"the big convention in the capital"};
+function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
+  const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
+  for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
+  for(const id in t.events||{})if(CR_LIVE[id])try1(id,t.events[id],"event");
+  return best;}
 function crRep(){
   const T=INK_SIM.REP_TRACKS;if(!T)return"";
-  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=INK_SIM.repNext(S,k);
+  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=crRepNext(k);
     return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
-<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(CR_SEG[n.id]||n.id.replace(/_/g," "))}${n.kind==="event"?" (later update)":""}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
+<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," "))}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
@@ -147,7 +156,7 @@ function caActWire(st){
     toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment");
     CR.last={weeks:0,line:`${INK_SIM.MENTOR.first}: “${r.line}”`,log:[]};renderCareer();});
   on("caLease",()=>{const n=INK_SIM.leaseNeed(S);if(!confirm(`Sign a lease? ${fmtMoney(n.cost)} deposit now, then rent and upkeep every week.`))return;
-    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
+    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
   on("caShop",()=>showTab("studio"));
   on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now");renderCareer();});
   on("caApp",()=>{const r=INK_SIM.takeApprentice(S);if(!r.ok){toast(r.why==="stage"?"You need your own studio first":"One apprentice at a time");return;}
@@ -184,6 +193,7 @@ function caInvitesWire(){
     const inv=S.career.invites.find(i=>i.id===b.dataset.inv);
     if(inv&&inv.kind==="conv"&&b.dataset.yes==="1"&&typeof evConvOpen==="function"){evConvOpen(inv.id);return;}
     const st0=S.studio.stage,r=INK_SIM.enterInvite(S,b.dataset.inv,b.dataset.yes==="1");if(!r||!r.ok)return;
+    if(typeof evGoalsNow==="function")evGoalsNow();
     let msg="";
     if(r.kind==="conv")msg=r.place?`${["","First","Second","Third"][r.place]} place at ${r.name}!`:`No placing at ${r.name} this year. Peers saw your work, though.`;
     else if(r.kind==="guest"&&r.yes!==false)msg=`Off to ${r.spot.name} for ${r.spot.weeks} weeks`;

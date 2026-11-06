@@ -58,7 +58,8 @@ function gvEl(e,style,spread,mode,extra){
   else{if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
     h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((lw+spread)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
   return h+"</g>";}
-/* gvSvg(p, o) -> {svg, a}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls */
+/* gvSvg(p, o) -> {svg, a, vb, box, skin}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls,
+   o.bare (no skin background: the share card draws the limb itself) */
 function gvSvg(p,o){
   o=o||{};const d=p.design||{},c=gvClient(p),tone=c.skinTone!=null?c.skinTone:0.3;
   const yrs=o.years!=null?o.years:gvAgeYears(p);
@@ -86,7 +87,8 @@ function gvSvg(p,o){
     body+=`<g filter="url(#${id}h)" opacity="${dzR2(g==="blownout"?0.5:0.28)}">${m.els.map(e=>gvEl(e,m.style,0,"halo",0.9+sp*2.2)).join("")}</g>`;}
   body+=`<g${inkAttr} opacity="${dzR2(1-fd*0.72)}">${m.els.map(e=>gvEl(e,m.style,o.fresh?0:sp,"ink")).join("")}</g>`;
   if(o.ghost)body+=`<g class="gvGhost" opacity=".8">${m.els.map(e=>gvEl(e,m.style,0,"ghost")).join("")}</g>`;
-  return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="${dzR2(x0)} ${dzR2(y0)} ${dzR2(W)} ${dzR2(W)}" style="background:${skin}" aria-hidden="true">${defs?`<defs>${defs}</defs>`:""}${body}</svg>`,a};}
+  return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="${dzR2(x0)} ${dzR2(y0)} ${dzR2(W)} ${dzR2(W)}"${o.bare?"":` style="background:${skin}"`} aria-hidden="true">${defs?`<defs>${defs}</defs>`:""}${body}</svg>`,a,
+    vb:{x:x0,y:y0,w:W},box,skin};}   // vb and box: where the piece sits on its placement in mm (PR 9's piece card)
 /* today's render for the gallery, cached by piece + whole years + heal + skin */
 function gvToday(p){
   const c=gvClient(p),yr=Math.floor(gvAgeYears(p)),key=p.id+"|"+yr+"|"+(p.heal||"-")+"|"+(c.skinTone!=null?c.skinTone:"")+"|"+(p.design&&p.design.sizeMm);
@@ -119,13 +121,14 @@ ${react?`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c
 ${g==="infected"?`<p class="rvNote">${fix?`Free fix booked for week ${fix.w}, ${fix.y}. Reputation took a hit.`:"Reputation took a hit."}</p>`:""}
 ${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc(c.first)} left a review`}</span>${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}
 <div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
-:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>${typeof evPostBtn==="function"&&evPostBtn(p)?`<p class="clMeta rvPost">Or share it: <button class="btn sm" data-rv="post">Post it</button></p>`:""}`}</div>
+:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div><p class="clMeta rvPost">${typeof evPostBtn==="function"&&evPostBtn(p)?`Or share it: <button class="btn sm" data-rv="post">Post it</button> `:""}${typeof shPieceCard==="function"?`<button class="btn sm shBtn" data-rv="card">${SH_ICON}Share card</button>`:""}</p>`}</div>
 </article>`;}
 function rvWire(after){
   const card=$("rvCard");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
     const p=rvPending();if(!p)return;
     if(b.dataset.rv==="post"){if(typeof evPost==="function")evPost(p.id);b.disabled=true;return;}   // PR 8: posting doesn't close the reveal
+    if(b.dataset.rv==="card"){shPieceCard(p.id);return;}   // PR 9: nor does making its card
     if(b.dataset.rv==="yes"){INK_SIM.setPortfolio(S,p,true);toast("In your portfolio");}
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
@@ -189,10 +192,11 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}</div></section>`:""}
+${p.heal?`<section><div class="row">${p.by?"":`<button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}`}${typeof shPieceCard==="function"?`<button class="btn shBtn" id="gvCard">${SH_ICON}Share card</button>`:""}</div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
 ${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
   const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));
+  const cd=$("gvCard");if(cd)cd.addEventListener("click",()=>shPieceCard(p.id));   // PR 9
   if(typeof evPostWire==="function")evPostWire(()=>{if(!$("evOk"))gvOpen(p.id);});}
