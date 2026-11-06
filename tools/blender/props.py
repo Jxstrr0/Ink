@@ -1,6 +1,6 @@
 """tools/blender/props.py: the shop props, models/ink-*.glb, made by script (the Blender batch, PR 11).
 
-  python tools/blender/props.py [chair station ...] [--out DIR] [--no-pack]      (no names: all thirteen)
+  python tools/blender/props.py [chair station ...] [--out DIR] [--no-pack]      (no names: all fourteen)
 
 One function per slot in ASSETS.props (src/vis/assets.js) / docs/BLENDER.md section 2. Each prop is modelled in GAME axes
 (metres, +Y up, its front facing +Z, origin where the slot's `at` puts it: on the floor under the prop's centre, or on
@@ -346,6 +346,32 @@ def rotary():
     return P
 
 
+def pen():
+    """the wireless pen (0.1.15.0), at the rotary's spot on the tray when the kit uses it: one turned body in lathe profiles
+    (the battery collar at the back with its charge light, a slim body, a stroke dial, a rubber grip, a clear needle
+    cartridge and the needle tip). No cord, no logo, no maker's name. Origin at its underside, the centre of its length;
+    the tip points to -x, as the rotary's does"""
+    P = Prop("pen")
+    collar = M("pen", "collar", "#a8733f", 0.35, 0.7)
+    body = M("pen", "body", "#25282d", 0.4, 0.4)
+    dial = M("pen", "dial", "#4a4f55", 0.5, 0.5)
+    grip = M("pen", "grip", "#3b3e42", 0.85)
+    cart = M("pen", "cartridge", "#cfd6d8", 0.3)
+    st = M("pen", "steel", C["steel"], 0.25, 0.85)
+    led = M("pen", "light", "#7fe0a0", 0.4, emit="#5fd88a", emit_strength=1.5)
+    y = 0.0135                                                       # the axis height above the tray (the collar's radius)
+    # (radius, distance from the back end); spun round +Y, then laid along -x with the back end at x +0.074
+    seg = lambda prof, m, segs=12: P.add(lathe(prof, segs, (0.074, y, 0), rot=("z", math.pi / 2), cap_top=prof[-1][0] > 0, cap_bot=prof[0][0] > 0), m)
+    seg([(0.0, 0.0), (0.010, 0.0), (0.0135, 0.003), (0.0135, 0.024)], collar)                                      # battery collar
+    seg([(0.0135, 0.024), (0.0105, 0.026), (0.0105, 0.078)], body)                                                 # body
+    seg([(0.0122, 0.078), (0.0122, 0.085)], dial)                                                                  # stroke dial
+    seg([(0.0108, 0.085), (0.0104, 0.100), (0.0108, 0.115), (0.0104, 0.124)], grip)                               # grip
+    seg([(0.0098, 0.124), (0.009, 0.132), (0.006, 0.140)], cart, 10)                                              # cartridge
+    seg([(0.003, 0.140), (0.0012, 0.150), (0.0, 0.154)], st, 8)                                                    # needle tip
+    P.add(box((0.005, 0.003, 0.005), (0.062, 2 * y, 0.0)), led)                                                   # charge light
+    return P
+
+
 def lamp():
     """the angle lamp: weighted base, pole, a two-part arm with joints, the shade opening at (-0.55, 1.50, +0.33) pointing
     down at the forearm where the game's light sits, a bulb inside (ink_lamp_bulb, emissive)"""
@@ -595,6 +621,7 @@ def trophies():
 PROPS = {
     "chair": (chair, "ink-chair.glb", 1500), "station": (station, "ink-station.glb", 1200),
     "machine": (machine, "ink-machine-coil.glb", 600), "rotary": (rotary, "ink-machine-rotary.glb", 600),
+    "pen": (pen, "ink-machine-pen.glb", 400),
     "lamp": (lamp, "ink-lamp.glb", 800),
     "stool": (stool, "ink-stool.glb", 500), "shelves": (shelves, "ink-shelves.glb", 900),
     "bench": (bench, "ink-bench.glb", 800), "flashframe": (flashframe, "ink-flash-frame.glb", 400),

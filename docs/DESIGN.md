@@ -2,6 +2,14 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.15.0: Arkady's front room, your flash on your walls, the wireless pen
+
+- **Where your chair is depends on Arkady.** If you leave Arkady on good terms (his goodwill high enough that he gives you his own chair at a friend's split), the rented-chair stage is the front room of Sedov's on Kanatnaya Street: olive walls over a dark wood dado, old floorboards, a green half curtain on a brass rod across the canal window, his framed board of old-school flash with more sheets pinned in a row above it, a wall clock, his oxblood chair where he works now, a third empty chair, a glass counter with the till by the door and a curtained doorway through to the back room. The caption says "Your chair in Arkady's front room", as the card does. Otherwise (his goodwill low, Skip the broom, or back in a chair after your studio closed) it is the busy tiled shop across town, captioned "Your rented chair, across town"; its card now says "across town" too.
+- **The back room's caption** is now "Arkady's back room".
+- **Your own flash on your walls.** In your studio and the legacy studio the flash wall now shows the sheets you drew (Design tab › Flash), newest first, drawn from the same curated elements as on the board, each with its title. With fewer sheets than frames (ten), the rest are generic sheets; with none, all are. The sheets taped to the partition in the shop across town are your own too. Save or delete a sheet and the wall changes at once. Arkady's rooms keep his sheets. All of it is one shared picture (512 on Lite, 1024 on Full and Ultra).
+- **The wireless pen** has its own model on the tray: a slim dark body with a copper battery collar, a small green charge light and no cord. The machine your kit uses lies up front; the newest other machine you own lies at the back corner (the coil when you own nothing else).
+- **Lite** is still coded rooms only and loads nothing from `models/` (about 2.2k to 3.9k triangles a room).
+
 ## 0.1.14.0: a room per career stage, your machine on the tray
 
 - **Four different places.** The Studio tab's 3D shop is now a different room at each stage of the career, instead of one room that gains a few props.

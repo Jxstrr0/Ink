@@ -18,7 +18,7 @@ function shopHtml(stage){
 <div class="caRow"><span class="clMeta">Arkady's goodwill</span>${caBar(C.mentor.goodwill,"Arkady's goodwill")}</div>
 <dl class="kv" style="margin-top:8px"><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;
   if(stage==="chair"){const split=INK_SIM.CHAIR_SPLIT[C.split||"standard"];
-    return`<div class="card"><h2>Your chair</h2><p class="hint" style="margin-top:0">${C.split==="mentor"?`Arkady's own chair at ${esc(M.shop)}, at a friend's split.`:"A rented chair in a busy shop off the embankment."} The shop keeps ${Math.round(split*100)}% of your sittings and deposits; gloves, film, needles and ink are yours to buy, about ${fmtMoney(shRub(INK_SIM.SUPPLIES.perHour))} a booked hour.</p>
+    return`<div class="card"><h2>Your chair</h2><p class="hint" style="margin-top:0">${C.split==="mentor"?`Arkady's own chair at ${esc(M.shop)}, at a friend's split.`:"A rented chair in a busy shop across town, off the embankment."} The shop keeps ${Math.round(split*100)}% of your sittings and deposits; gloves, film, needles and ink are yours to buy, about ${fmtMoney(shRub(INK_SIM.SUPPLIES.perHour))} a booked hour.</p>
 <dl class="kv"><dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>
 <div class="row" style="margin-top:10px"><button class="btn" id="shCareer">Your own studio: see the Career tab</button></div></div>`;}
   const st=S.studio,b=st.build||{},B=INK_SIM.STUDIO_STAGES,room=INK_SIM.staffRoom(S),mine=S.pieces.filter(p=>p.by).length;
