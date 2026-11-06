@@ -5,6 +5,7 @@ html/body.html
 html/ld-libs.html
 sim/rng.js
 sim/elements.js
+sim/placements.js
 sim/design.js
 sim/aging.js
 sim/clients.js

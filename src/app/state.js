@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.0.0";
+const VERSION="0.1.1.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -21,6 +21,15 @@ function freshState(){return{
   week:1,            // 1..52 within the year
   year:2000,         // 2000..2030
   cash:0,
+  rate:0,            // your hourly rate (PR 7: RATE_BY_REP x PRICE_INDEX); 0 while an apprentice
+  rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks (REP_TRACKS, PR 5)
+  skills:{styles:{},consult:0,linework:0,shading:0,colour:0,speed:0},   // levels 0..10; styles keyed by STYLES id (SKILLS, PR 7)
+  kit:{},            // machine, needles, inks, voltage (PR 4)
+  clients:[],        // client records (PR 3); full for the CLIENT_CAP most recent/loyal, compacted after (PR 7)
+  pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5)
+  queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
+  studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
+  goals:{},          // GOALS done, id -> {w,y} (PR 8)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
   settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false},
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
