@@ -74,6 +74,8 @@ h1,h2,h3{margin:0;font-weight:700}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
 .kv dt{color:var(--mute)}
 .kv dd{margin:0;font-variant-numeric:tabular-nums}
+label{display:inline-flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mute)}
+select{min-height:40px;padding:0 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:14px}
 pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto}
 
 /* ---- the studio view (3D placeholder until PR 6) ---- */
