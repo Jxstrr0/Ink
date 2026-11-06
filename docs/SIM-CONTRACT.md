@@ -51,6 +51,7 @@ Allowed zones only: arms (forearm, upper arm, inner wrist area as part of forear
 ```
 { placement: PLACEMENTS id, sizeMm, style: STYLES id,
   pos: {x, y} (optional, 0..1: where the piece's centre sits in the placement box; default the middle),
+  flash: FLASH id, an own-flash id, or null (optional, PR 2: drawn from flash, so FLASH_DISCOUNT.hours applies),
   elements: [ { id: ELEMENTS id, x, y, scale, rot, lineWeight, fill (0..1 shading), colour: COLOURS id or null (= black) } ] }
 ```
 
@@ -79,6 +80,17 @@ SIM.scoreDesign(design, client, skills, opts?) -> {
 }
 Tables: LINE_MM, SKIN_CONTRAST, COMBOS, DESIGN_WEIGHTS, HOURS (hours by area and detail), SESSION_HOURS
 ```
+
+Board helpers (PR 2): `SIM.footprintOf(design) -> {x0, y0, w, h, cx, cy}` (the piece's footprint in the design's normalised box),
+`SIM.inkReads(colourId, skinTone) -> 0..1` (`SKIN_CONTRAST`; under 0.45 faint, under 0.2 won't read), `SIM.elementBox(id) -> {x, y, w, h}`
+(the path's bounding box in its 0..100 viewBox), `SIM.flowAt(placementId, bodyShape, xMm, yMm) -> degrees` (the local flow, like rot).
+`FLASH_DISCOUNT = {hours: 0.8}`: `design.flash` set (or `opts.flash`) multiplies hours before rounding.
+
+## `sim/flash.js` (PR 2)
+
+`FLASH = [ {id, name, note, placement (suggested), style, sizeMm, elements:[…]} ]`: about a dozen pre-composed designs in the design shape.
+`SIM.FLASH`. The board app keeps the elements in mm on the placement box and converts with `footprintOf`: sizeMm is the footprint's
+longest side, x/y/scale are normalised to it and pos is the footprint centre over the box.
 
 ## `sim/aging.js`
 

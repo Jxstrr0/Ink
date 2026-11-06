@@ -135,6 +135,219 @@ textarea.code{width:100%;min-height:120px;padding:10px;border-radius:8px;border:
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media (prefers-reduced-transparency:reduce){#scrim{background:rgba(0,0,0,.8)}#studioView .cap{background:#0f0c09}}
 html.noanim *,html.noanim *::before,html.noanim *::after{transition:none!important;animation:none!important}
+/* ===================== Ink: the Design tab (PR 2) =====================
+   The body diagram, the cream design board (cream with black ink in both themes; only the chrome around it follows the
+   theme), the selected element's toolbar, the element drawer in the sheet, the docked capsule with live deltas and the
+   aging strip, the stress report and the flash wall. Classes start with dz (board) or bm (body diagram).
+   Touch targets are 44 px. The deltas use colour AND shape (▲ / ▼), so they read colour-blind. */
+.dz{--dzUp:var(--ok);--dzDn:var(--crit);--dzNu:var(--gold)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dzSeg{display:flex;margin:0 0 12px}
+.dzSeg button{flex:1;min-height:44px;font-size:14.5px;letter-spacing:.02em}
+.dzTag{display:inline-block;font:600 11px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:4px 8px;vertical-align:middle}
+.dzFull{display:flex;flex-direction:column;gap:4px;width:100%;font-size:12.5px}
+.dzFull select{width:100%;min-height:44px}
+.dz .sp{flex:1}
+
+/* ---- Body view ---- */
+.dzClientHd{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.dzClientHd h2{margin:0}
+.dzBodyCtl{margin:0 0 6px}
+.dzBodyCtl .seg{display:flex}
+.dzBodyCtl .seg button{flex:1;min-height:44px;padding:0 10px}
+.dzFigCol .seg{display:flex;margin:0 0 4px}
+.dzFigCol .seg button{flex:1;min-height:44px;padding:0 8px}
+.dzCap.mini .dzAge,.dzCap.mini .dzCapT{display:none}
+.dzCap.mini .dzMs{padding-right:0}
+.dzTone{margin:0 0 6px}
+.dzToneRow{display:flex;align-items:center;gap:10px}
+.dzToneRow input{flex:1}
+.dzToneChip{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--line)}
+input[type=range]{min-height:44px;accent-color:var(--red);background:transparent}
+.dzBodyGrid{display:grid;grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.dzFigWrap{background:radial-gradient(ellipse at 50% 40%,var(--panel2),transparent 70%);border-radius:var(--r);padding:4px 0}
+.bm{display:block;width:100%;height:auto;max-height:62vh;margin:0 auto;-webkit-user-select:none;user-select:none}
+.bmz{cursor:pointer;outline:none}
+.bmz .f{fill:var(--red);fill-opacity:0;stroke:var(--red);stroke-opacity:0;stroke-width:1.2;transition:fill-opacity .15s}
+.bmz .s{fill:none;stroke:var(--red);stroke-opacity:0;stroke-linecap:round;transition:stroke-opacity .15s}
+.bmz:hover .f,.bmz:focus-visible .f{fill-opacity:.22;stroke-opacity:.6}
+.bmz:hover .s,.bmz:focus-visible .s{stroke-opacity:.28}
+.bmz.on .f{fill-opacity:.5;stroke-opacity:.9}
+.bmz.on .s{stroke-opacity:.55}
+.bmz:focus-visible .f,.bmz:focus-visible .s{stroke-dasharray:3 2}
+.bmLbl{font:600 9px var(--ui);letter-spacing:.2em;fill:var(--mute)}
+.dzSpot h3{font-family:var(--disp);font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:4px 0 8px}
+.dzSpot .kv{grid-template-columns:auto 1fr;gap:8px 10px;font-size:13.5px;align-items:start}
+.dzSpot .kv dd small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.dzBar{display:block;height:7px;border-radius:4px;background:var(--panel2);overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+.dzBar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red))}
+.dzGo{width:100%;margin-top:10px}
+.dzPlSel{margin-top:12px}
+
+/* ---- Board view: the bars above the board ---- */
+.dzBar1{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.dzSpotBtn{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:48px;padding:4px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.dzSpotBtn b{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dzSpotBtn small{color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dzSpotBtn:hover{border-color:var(--faint)}
+.dzStyle select{min-height:48px;max-width:42vw}
+.dzBar2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.dzBar2 .btn svg,.dzBar3 .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dzIb{border:1px solid var(--line);background:var(--panel)}
+.dzIb:disabled{opacity:.35;cursor:default}
+.dzIb:focus-visible,.dzChip:focus-visible,.dzSpotBtn:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzChip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute);font-weight:600;font-size:13.5px;cursor:pointer}
+.dzChip svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.dzChip.on{color:var(--text);border-color:var(--teal);background:var(--panel2);background:color-mix(in srgb,var(--teal) 18%,var(--panel))}
+.dzFlashTag{font:700 12px/1 var(--ui);letter-spacing:.04em;color:#fff8ef;background:var(--teal);border-radius:999px;padding:7px 10px}
+
+/* ---- the board itself: cream, black ink, both themes ---- */
+.dzBoardWrap{display:flex;justify-content:center;margin:0 0 10px}
+.dzBoard{position:relative;padding:0;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 2px 14px rgba(0,0,0,.25);max-width:100%}
+html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 2px 10px rgba(60,40,20,.12)}
+.dzSvg{display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dzSvg:focus{outline:none}
+.dzBg{fill:var(--board)}
+.dzLimb{fill:#efe3cc;stroke:none}
+.dzLimbE{fill:url(#dzLimbG);stroke:#c7b494;stroke-width:.6}
+.dzRuler{stroke:#b39e7c;stroke-width:.4;fill:none}
+.dzRulT,.dzFootT,.dzCreaseT{font-family:var(--ui);fill:#8c7655}
+.dzFlow polyline{fill:none;stroke:#9b8058;stroke-opacity:.35;stroke-width:.5;stroke-dasharray:3 3;stroke-linecap:round}
+.dzCrease{stroke:#b3432c;stroke-opacity:.65;stroke-width:.7;stroke-dasharray:2 2}
+.dzCreaseT{fill:#a04a33;font-weight:600}
+.dzFoot{fill:none;stroke:#8c7655;stroke-opacity:.5;stroke-width:.4;stroke-dasharray:1.5 1.5}
+.dzFootT{font-weight:600}
+.dzEmpty{font-family:var(--disp);fill:#a08a66;letter-spacing:.06em;text-transform:uppercase}
+.dzEmpty.sub{font-family:var(--ui);text-transform:none;letter-spacing:0}
+.dzEl{cursor:grab;outline:none}
+.dzEl .hit{fill:transparent}
+.dzEl:focus-visible .hit{fill:rgba(63,143,134,.12)}
+.dzSelR{fill:rgba(63,143,134,.06);stroke:#2f7f77}
+.dzHdl{cursor:nwse-resize}
+.dzHdl .hit{fill:transparent}
+.dzHdl .dot{fill:#fffaf1;stroke:#2f7f77}
+.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round}
+
+/* ---- the toolbar under the board ---- */
+.dzTools{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:0 0 10px}
+.dzToolHint{margin:4px 0;color:var(--mute);font-size:13.5px}
+.dzToolHint.sm{font-size:12.5px;margin:6px 0 0}
+.dzToolHd{display:flex;align-items:center;gap:8px;margin:-4px 0 6px}
+.dzToolHd b{font-size:15px}
+.dzToolHd span{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
+.dzToolHd span.bad{color:var(--crit)}
+.dzToolHd em{font-style:normal}
+.dzDel{color:var(--crit)}
+.dzToolRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.dzStep{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
+.dzStep button{flex:0 0 44px;min-height:44px;border:0;background:transparent;color:var(--text);font-size:20px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzStep button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dzStep button:hover{background:var(--line)}
+.dzStep button:focus-visible{outline:2px solid var(--red2);outline-offset:-2px}
+.dzStep span{flex:1;text-align:center;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzFillL{flex-direction:row;align-items:center;gap:10px;margin-top:6px;font-size:13px}
+.dzFillL input{flex:1}
+.dzFillL span{min-width:3.2em;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+.dzSws{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dzSw{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}
+.dzSw i{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.dzSw.on{border-color:var(--text);box-shadow:inset 0 0 0 2px var(--text)}
+.dzSw.weak i{opacity:.35;background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(0,0,0,.45) 3px 4px)!important}
+.dzSw small{font-size:9.5px;line-height:1;color:var(--warn);font-weight:700;white-space:nowrap}
+.dzSw:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzBar3{margin:0 0 12px}
+
+/* ---- the docked capsule ---- */
+.dzCap{position:sticky;bottom:0;z-index:5;margin:12px 0 0;padding:8px 8px 6px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.dzMs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) minmax(0,1.5fr);gap:2px;padding-right:34px}
+.dzM{display:flex;flex-direction:column;align-items:center;min-width:0;padding:2px 0}
+.dzM .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dzM b{font-size:17px;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzM.money b{font-size:15px}
+.dzM.meh b{color:var(--warn)}
+.dzM.bad b{color:var(--crit)}
+.dzM .d{min-height:15px;font-size:11.5px;font-weight:700;line-height:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzM .d.up{color:var(--dzUp)}
+.dzM .d.dn{color:var(--dzDn)}
+.dzM .d.nu{color:var(--dzNu)}
+.dzCapT{position:absolute;top:6px;right:6px;width:32px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzCapT svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.dzCap.shut .dzCapT svg{transform:rotate(180deg)}
+.dzCap.shut .dzAge{display:none}
+.dzAge{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.dzAgeL{flex:0 0 auto;width:46px;font-size:10px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dzAgeNone{font-size:12.5px;color:var(--faint)}
+.dzAgeF{flex:1;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.dzAgeI{width:44px;height:44px;border-radius:8px;background:var(--board);border:1px solid var(--boardLine);overflow:hidden}
+.dzAgeI svg{width:44px;height:44px;display:block}
+.dzAgeF figcaption{font-size:11px;line-height:1.1;color:var(--mute);white-space:nowrap}
+.dzAgeF figcaption b{font-size:13px;font-variant-numeric:tabular-nums}
+.dzAgeF b.ok{color:var(--text)}
+.dzAgeF b.meh{color:var(--warn)}
+.dzAgeF b.bad{color:var(--crit)}
+
+/* ---- the stress report ---- */
+.dzStress h2{margin-bottom:2px}
+.dzSub{margin:0 0 8px;color:var(--mute);font-size:13px}
+.dzSub b{color:var(--text);font-variant-numeric:tabular-nums}
+.dzSt{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.dzSt li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.35;padding:8px 10px;border-radius:10px;background:var(--panel2)}
+.dzSt .ic{flex:0 0 22px;height:22px;margin-top:-1px}
+.dzSt .ic svg{width:22px;height:22px;display:block}
+.dzSt .sev3{box-shadow:inset 3px 0 0 var(--crit)}
+.dzSt .sev3 .ic{color:var(--crit)}
+.dzSt .sev2{box-shadow:inset 3px 0 0 var(--warn)}
+.dzSt .sev2 .ic{color:var(--warn)}
+.dzSt .sev1 .ic{color:var(--mute)}
+.dzOk{display:flex;gap:8px;align-items:center;margin:4px 0;color:var(--ok);font-weight:600}
+.dzOk svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- the drawer (in the sheet) ---- */
+.dzDrF{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px}
+.dzDrF select{width:100%;min-height:44px}
+.dzDrFam{overflow-x:auto;margin:0 0 8px;-webkit-overflow-scrolling:touch}
+.dzDrFam .seg button{min-height:44px;padding:0 12px;white-space:nowrap}
+.dzSand{flex-direction:row;align-items:center;gap:10px;min-height:44px;font-size:13px;color:var(--mute);cursor:pointer}
+.dzSand input{width:22px;height:22px;accent-color:var(--red)}
+.dzDrG{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
+.dzTile{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;padding:8px 6px;border:1px solid var(--boardLine);border-radius:10px;background:var(--board);color:var(--boardInk);cursor:pointer;text-align:center}
+.dzTile svg{width:56px;height:56px}
+.dzTile b{font-size:12.5px;line-height:1.2}
+.dzTile small{display:flex;align-items:center;gap:3px;font-size:10.5px;color:#7c6a50;line-height:1.2}
+.dzTile small svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2}
+.dzTile:hover{border-color:#a99470}
+.dzTile:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzTile.lock{opacity:.5;filter:grayscale(1)}
+
+/* ---- the flash wall ---- */
+.dzFlHd h2{display:flex;align-items:center;gap:8px}
+.dzFls{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin:0 0 14px}
+.dzFl{display:flex;gap:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.dzFlArt{flex:0 0 96px;height:96px;display:flex;align-items:center;justify-content:center;background:var(--board);border-radius:10px}
+.dzFlArt svg{width:88px;height:88px}
+.dzFlTx{flex:1;min-width:0}
+.dzFlTx h3{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;margin:0}
+.dzFlTx .hint{margin:4px 0;font-size:12.5px}
+.dzFlMeta{margin:2px 0;color:var(--mute);font-size:12px}
+.dzFlNum{display:flex;gap:10px;margin:4px 0 8px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.dzFlNum span+span::before{content:"·";margin-right:10px;color:var(--faint)}
+
+/* ---- narrow phones and landscape ---- */
+@media (max-width:420px){
+  .dzBodyGrid{grid-template-columns:1fr 1fr;gap:8px}
+  .dzToolRow{gap:4px}
+  .dzStep button{flex-basis:40px}
+  .dzM .l{font-size:9.5px;letter-spacing:.03em}
+  .dzM b{font-size:15.5px}
+  .dzM.money b{font-size:13.5px}
+  .dzAgeL{width:38px;font-size:9px}
+}
+@media (max-width:360px){.dzStep span{font-size:11px}.dzAgeL{display:none}}
+@media (orientation:landscape) and (max-height:560px){
+  .dzCap{position:relative}
+  .bm{max-height:80vh}
+}
+@media (prefers-reduced-motion:reduce){.bmz .f,.bmz .s,.dzCapT svg{transition:none}}
 </style>
 
 <div id="app">
@@ -917,6 +1130,9 @@ const REGION_WORDS={
 /* styles whose colour goes on the lines too (no black outline); everywhere else an element's colour is its fill and
    its lines stay black, so a red traditional rose still has a black outline that reads on any skin */
 const COLOUR_LINES={watercolour:1};
+/* a flash design (FLASH in sim/flash.js, or the artist's own saved flash) is drawn already and the stencil exists:
+   design.flash set (or opts.flash) takes this share of the hours */
+const FLASH_DISCOUNT={hours:0.8};
 /* the default session outputs used for the aging prediction */
 const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.75};
 
@@ -965,7 +1181,7 @@ function dzPathBox(d){
     x=ox+a[k-2];y=oy+a[k-1];
     if(lc==="m"){sx=x;sy=y;cmd=rel?"l":"L";}
   }
-  return n>1?{w:x1-x0,h:y1-y0}:null;
+  return n>1?{x:x0,y:y0,w:x1-x0,h:y1-y0}:null;
 }
 /* sample an SVG arc (endpoint form) via its centre, so a circle drawn as two half arcs gets its real height */
 function dzArcPts(x1,y1,rx,ry,phi,fa,fs,x2,y2,add){
@@ -1325,6 +1541,7 @@ function scoreDesign(design,client,skills,opts){
   let dsum=0,fsum=0,sw=0;for(const e of E.els){const a=e.area+1e-6;sw+=a;dsum+=a*e.detail;fsum+=a*e.fill;}
   const det=sw?dsum/sw:0.5,fl=sw?fsum/sw:0,speed=clamp(skills.speed||0,0,10);
   let hours=(HOURS.setup+E.inkedCm2*lerp(HOURS.perCm2Simple,HOURS.perCm2Detailed,det)*(1+HOURS.fill*fl)*(1+HOURS.colour*dzColourShare(E)))*lerp(HOURS.speedSlow,HOURS.speedFast,speed/10);
+  if(design.flash||opts.flash)hours*=FLASH_DISCOUNT.hours;
   hours=Math.max(HOURS.round*2,Math.round(hours/HOURS.round)*HOURS.round);
   const sessions=Math.max(1,Math.ceil(hours/lerp(SESSION_HOURS.easy,SESSION_HOURS.hard,clamp(((pf.pain||0)-0.25)/0.7,0,1))-1e-9));
   const rate=opts.rate!=null?opts.rate:RATE_DEFAULT.rate,rep=opts.repMult!=null?opts.repMult:1,year=opts.year!=null?opts.year:2000;
@@ -1338,7 +1555,67 @@ function scoreDesign(design,client,skills,opts){
 }
 SIM.scoreDesign=scoreDesign;
 SIM.LINE_MM=LINE_MM;SIM.FAMILY_SHAPE=FAMILY_SHAPE;SIM.SKIN_CONTRAST=SKIN_CONTRAST;SIM.COMBOS=COMBOS;SIM.DESIGN_WEIGHTS=DESIGN_WEIGHTS;
+/* helpers for the design board (app/design.js) */
+/* the piece's footprint in the design's normalised box: {x0, y0, w, h, cx, cy} (multiply by sizeMm for millimetres) */
+SIM.footprintOf=design=>{const E=dzElems(design||{});return{x0:E.fx0,y0:E.fy0,w:E.fw,h:E.fh,cx:E.cx,cy:E.cy};};
+/* how well an ink colour reads on a skin tone, 0..1 (SKIN_CONTRAST; under 0.45 reads faintly, under 0.2 not at all) */
+SIM.inkReads=(colourId,skinTone)=>dzContrast(dzColour(colourId).light,skinTone==null?0.3:skinTone);
+/* an element's path bounding box in its 0..100 viewBox {x, y, w, h}, the same box scoring takes its proportions from */
+SIM.elementBox=id=>{const d=dzDef(id),a=d.path?dzPathBox(d.path):null,b=d.fill&&d.fill!==d.path?dzPathBox(d.fill):null;
+  if(!a&&!b)return{x:0,y:0,w:100,h:100};if(!a||!b)return a||b;
+  const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);return{x,y,w:Math.max(a.x+a.w,b.x+b.w)-x,h:Math.max(a.y+a.h,b.y+b.h)-y};};
+/* the local flow direction (degrees, like rot) at a point in mm on a placement for a body shape */
+SIM.flowAt=(placementId,bodyShape,xMm,yMm)=>{const p=SIM.PLACEMENTS[placementId];if(!p)return 0;
+  return dzLocalFlow(dzFlowSegs(p,SIM.placementBox(placementId,bodyShape)),xMm,yMm,p.flowDeg||0);};
+SIM.FLASH_DISCOUNT=FLASH_DISCOUNT;
 SIM.HOURS=HOURS;SIM.SESSION_HOURS=SESSION_HOURS;SIM.RATE_DEFAULT=RATE_DEFAULT;SIM.JOB_COVER=JOB_COVER;SIM.lineMm=dzLineMm;
+/* ===== sim/flash.js: FLASH, the pre-composed designs on the shop's flash wall (PR 2). Data only. =====
+   Each entry is a design in the shape docs/SIM-CONTRACT.md gives ("A design"), plus an id, a name and a note. The board
+   loads one onto the client's placement; scoreDesign gives it FLASH_DISCOUNT (design.flash set) because the drawing and
+   the stencil already exist. The artist's own saved designs (S.flash, app/design.js) join the wall over time.
+   Every element id must exist in ELEMENTS and every placement in PLACEMENTS (tools/sim-test.js checks). ===== */
+const FLASH=[
+  {id:"fl_sailor_rose",name:"Sailor's rose",note:"A red rose over a banner. The first thing on every wall.",placement:"forearm_l",style:"traditional",sizeMm:95,
+    elements:[{id:"rose_trad",x:.5,y:.36,scale:.62,rot:0,lineWeight:9,fill:.75,colour:"red"},
+              {id:"banner_scroll",x:.5,y:.8,scale:.95,rot:0,lineWeight:9,fill:.35,colour:"yellow"}]},
+  {id:"fl_swallows",name:"Swallow pair",note:"Two swallows facing each other: home and back again.",placement:"chest_l",style:"traditional",sizeMm:120,
+    elements:[{id:"swallow",x:.26,y:.5,scale:.48,rot:-12,lineWeight:9,fill:.7,colour:"blue"},
+              {id:"swallow",x:.74,y:.5,scale:.48,rot:12,lineWeight:9,fill:.7,colour:"blue"}]},
+  {id:"fl_anchor_heart",name:"Anchor and heart",note:"Steady and true. Bold enough to read across a bar.",placement:"forearm_r",style:"traditional",sizeMm:90,
+    elements:[{id:"anchor",x:.5,y:.45,scale:.85,rot:0,lineWeight:9,fill:.6,colour:"green"},
+              {id:"heart_trad",x:.5,y:.32,scale:.34,rot:0,lineWeight:9,fill:.85,colour:"red"}]},
+  {id:"fl_dagger_heart",name:"Dagger and heart",note:"Courage, and what it costs.",placement:"upperarm_l",style:"traditional",sizeMm:110,
+    elements:[{id:"heart_trad",x:.5,y:.5,scale:.48,rot:0,lineWeight:9,fill:.85,colour:"red"},
+              {id:"dagger",x:.5,y:.5,scale:.95,rot:0,lineWeight:9,fill:.4,colour:"teal"}]},
+  {id:"fl_compass",name:"Compass and star",note:"For the travellers. Geometric enough for the modern crowd.",placement:"upperarm_r",style:"traditional",sizeMm:85,
+    elements:[{id:"compass_rose",x:.5,y:.5,scale:.88,rot:0,lineWeight:7,fill:.4,colour:null},
+              {id:"nautical_star",x:.86,y:.14,scale:.24,rot:0,lineWeight:9,fill:.8,colour:"red"}]},
+  {id:"fl_sprig",name:"Fern sprig",note:"A fine-line sprig with a sparkle. Small, quick, popular.",placement:"forearm_l",style:"fineline",sizeMm:70,
+    elements:[{id:"fern",x:.5,y:.5,scale:.95,rot:-8,lineWeight:3,fill:0,colour:null},
+              {id:"sparkle",x:.8,y:.18,scale:.2,rot:0,lineWeight:3,fill:0,colour:null}]},
+  {id:"fl_moon",name:"Moon and stars",note:"Crescent moon with two sparkles. A first tattoo for the inner wrist.",placement:"forearm_r",style:"fineline",sizeMm:50,
+    elements:[{id:"moon_crescent",x:.42,y:.55,scale:.7,rot:0,lineWeight:3,fill:0,colour:null},
+              {id:"sparkle",x:.82,y:.2,scale:.3,rot:0,lineWeight:3,fill:0,colour:null},
+              {id:"sparkle",x:.84,y:.62,scale:.18,rot:0,lineWeight:3,fill:0,colour:null}]},
+  {id:"fl_peaks",name:"Mountain line",note:"Peaks, a pine and the river. Fine-line landscape for the hikers.",placement:"calf_l",style:"fineline",sizeMm:80,
+    elements:[{id:"mountains",x:.5,y:.42,scale:1,rot:0,lineWeight:3,fill:0,colour:null},
+              {id:"pine_tree",x:.22,y:.6,scale:.32,rot:0,lineWeight:5,fill:0,colour:null},
+              {id:"river",x:.6,y:.8,scale:.6,rot:90,lineWeight:3,fill:0,colour:null}]},
+  {id:"fl_wave",name:"Great wave",note:"A bold breaking wave. Japanese, built to hold for decades.",placement:"calf_r",style:"japanese",sizeMm:130,
+    elements:[{id:"big_wave",x:.5,y:.55,scale:.95,rot:0,lineWeight:11,fill:.65,colour:"blue"},
+              {id:"wave_curl",x:.22,y:.2,scale:.34,rot:0,lineWeight:7,fill:.4,colour:"blue"}]},
+  {id:"fl_band",name:"Linework band",note:"Clean lines round the arm. Wraps, so it ignores the wrap width.",placement:"forearm_l",style:"blackwork",sizeMm:100,
+    elements:[{id:"band_lines",x:.5,y:.5,scale:1,rot:0,lineWeight:5,fill:.5,colour:null}]},
+  {id:"fl_hummingbird",name:"Hummingbird",note:"A hummingbird on a soft wash. Pretty now; touch it up later.",placement:"shoulder_l",style:"watercolour",sizeMm:85,
+    elements:[{id:"fill_wash",x:.55,y:.55,scale:.85,rot:20,lineWeight:1,fill:.45,colour:"pink"},
+              {id:"hummingbird",x:.48,y:.45,scale:.8,rot:-10,lineWeight:5,fill:.6,colour:"teal"}]},
+  {id:"fl_bold_rose",name:"Blackwork rose",note:"A solid black rose. Reads on every skin tone, ages like a brick.",placement:"thigh_l",style:"blackwork",sizeMm:110,
+    elements:[{id:"rose_bold",x:.5,y:.5,scale:.95,rot:0,lineWeight:9,fill:1,colour:null}]},
+  {id:"fl_love_banner",name:"Love banner",note:"A heart with the word across it. Make the word big enough or it closes up.",placement:"upperarm_l",style:"traditional",sizeMm:90,
+    elements:[{id:"heart_trad",x:.5,y:.42,scale:.7,rot:0,lineWeight:9,fill:.85,colour:"red"},
+              {id:"script_love",x:.5,y:.72,scale:.75,rot:0,lineWeight:5,fill:0,colour:null}]}
+];
+SIM.FLASH=FLASH;
 /* ===== sim/aging.js: the aging model: age(tattoo, years) -> {blur, fade, spread, readability} (PR 1) =====
    How a tattoo looks after N years on a real person. Every line slowly spreads as ink migrates under the skin, edges soften,
    and pigment fades, lights first. What speeds it up:
@@ -2816,7 +3093,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.1.0";
+const VERSION="0.1.2.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -2841,6 +3118,10 @@ function freshState(){return{
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
+  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office"},   // the design board (PR 2): the working design
+                     // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
+                     // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
+  flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
   settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false},
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
@@ -2855,7 +3136,9 @@ function hydrate(o){
   if(!o||typeof o!=="object"||Array.isArray(o))return false;
   if(o.settings!=null&&(typeof o.settings!=="object"||Array.isArray(o.settings)))return false;
   const f=freshState();
-  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{})});
+  const ob=o.board&&typeof o.board==="object"&&!Array.isArray(o.board)?o.board:{};
+  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob)});
+  if(!Array.isArray(S.flash))S.flash=[];
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
@@ -2979,7 +3262,11 @@ function buSaveOk(o){
   if(!buObj(o))return false;
   if("settings" in o&&!buObj(o.settings))return false;
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
-  for(const k of ["clients","pieces","queue"])if(k in o&&!Array.isArray(o[k]))return false;
+  for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
+  if("board" in o){const b=o.board;if(!buObj(b))return false;
+    if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
+    if("skinTone" in b&&!buNum(b.skinTone))return false;}
+  if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
   return buTry(o);}
 /* load a copy the way the game would (hydrate), then put the running game back exactly as it was */
 function buTry(o){const keepS=S;let ok=false;
@@ -3186,47 +3473,489 @@ function renderStudio(){
   $("studioBody").innerHTML=`<div class="card"><h2>The shop</h2>
 <p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
 <dl class="kv"><dt>Stage</dt><dd>Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;}
-/* ===================== app/design.js: the Design tab =====================
-   PR 1 (text only): a sample piece is scored against a sample client and the raw score object is shown, so the sim can be
-   checked on a phone. Pick a placement, a size and a client to see the numbers move. The real design board (body diagram,
-   cream board, element drawer, live deltas, stress report, flash wall) replaces this in PR 2. */
+/* ===================== app/design.js: the Design tab, the design board (PR 2) =====================
+   Three views on a segmented control:
+     Body   the body diagram (app/bodymap.js): pick the spot, the body shape and the skin tone, and the sample walk-in.
+     Board  the cream board (both themes, Q10): the placement's box at its true aspect (wrap x length, in mm) with its flow
+            lines and joint creases, the elements on it, a toolbar for the selected one, the stress report.
+     Flash  the shop's flash wall (INK_SIM.FLASH) and your own saved flash (S.flash), both at FLASH_DISCOUNT hours.
+   A docked capsule (Body and Board) shows readability, flow, fit, hours, sessions and price with a ▲/▼ delta from before the
+   last change, and the piece aged at 0/5/10/20 years (mini renders blurred and faded by agePrediction).
+   The working model DZ.m keeps elements in millimetres on the placement box ({id, mx, my, mm, rot, lineWeight, fill,
+   colour}); dzToDesign() turns it into a design in the docs/SIM-CONTRACT.md shape (sizeMm = the piece's longest side, x/y/
+   scale normalised to it, pos = where its centre sits) and that is what S.board.design saves: parameters, never pictures.
+   Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
+   Until PR 3 the board scores against a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
+   memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved. */
 const DZ_SAMPLE_CLIENTS=[
-  {id:"t1",name:"Office worker, light skin",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
+  {id:"wk_office",name:"Darya",blurb:"accountant, first tattoo",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
    traits:{pain:.4,sun:.2,aftercare:.8,budget:.6,loyalty:.6,talkative:.5,trusting:.6},
-   wants:{styles:{traditional:1,neotrad:.6},tags:["nature"],sizeMm:[60,120],colour:.7},mustHaves:[],dealbreakers:[]},
-  {id:"t2",name:"Roofer, dark skin, outdoors",pronouns:"he/him",age:41,bodyShape:"masc",skinTone:.85,job:"roofer",
+   wants:{styles:{traditional:1,neotrad:.6,fineline:.5},tags:["flower","nature"],sizeMm:[50,110],colour:.6},mustHaves:[],dealbreakers:[]},
+  {id:"wk_roofer",name:"Bogdan",blurb:"roofer, out in the sun all day",pronouns:"he/him",age:41,bodyShape:"masc",skinTone:.85,job:"roofer",
    traits:{pain:.8,sun:.9,aftercare:.4,budget:.4,loyalty:.7,talkative:.3,trusting:.5},
-   wants:{styles:{blackwork:1,traditional:.7},tags:[],sizeMm:[80,200],colour:.2},mustHaves:[],dealbreakers:[{kind:"colour",v:"yellow"}]}
+   wants:{styles:{blackwork:1,traditional:.7},tags:["animal"],sizeMm:[80,200],colour:.2},mustHaves:[],dealbreakers:[{kind:"colour",v:"yellow"}]},
+  {id:"wk_student",name:"Sasha",blurb:"student, wants something small",pronouns:"they/them",age:19,bodyShape:"neutral",skinTone:.45,job:"student",
+   traits:{pain:.3,sun:.4,aftercare:.6,budget:.25,loyalty:.5,talkative:.7,trusting:.7},
+   wants:{styles:{fineline:1,geometric:.8,lettering:.5},tags:["moon","sky","script"],sizeMm:[20,60],colour:.1},mustHaves:[],dealbreakers:[]},
+  {id:"wk_chef",name:"Ilya",blurb:"chef, building a collection",pronouns:"he/him",age:36,bodyShape:"neutral",skinTone:.6,job:"chef",
+   traits:{pain:.7,sun:.3,aftercare:.7,budget:.8,loyalty:.8,talkative:.4,trusting:.6},
+   wants:{styles:{japanese:1,neotrad:.8,traditional:.6},tags:["ocean","japanese"],sizeMm:[100,240],colour:.8},mustHaves:[],dealbreakers:[]}
 ];
-const DZ={placement:null,size:90,client:0,colour:"red"};
-function dzSampleDesign(){
-  const E=INK_SIM.ELEMENTS||[],P=INK_SIM.PLACEMENTS||{};
-  const pick=(fam,style)=>E.find(e=>e.family===fam&&e.styles.includes(style))||E.find(e=>e.family===fam)||E[0];
-  const motif=pick("motif","traditional"),word=pick("lettering","lettering");
-  if(!DZ.placement)DZ.placement=P.forearm_l?"forearm_l":Object.keys(P)[0];
-  const els=[];
-  if(motif)els.push({id:motif.id,x:.5,y:.4,scale:.7,rot:0,lineWeight:motif.lineWeightDefault,fill:.5,colour:DZ.colour});
-  if(word)els.push({id:word.id,x:.5,y:.85,scale:.6,rot:0,lineWeight:word.lineWeightDefault,fill:0,colour:null});
-  return{placement:DZ.placement,sizeMm:DZ.size,style:"traditional",elements:els};}
+const DZ_UNDO_CAP=60,FLASH_MINE_CAP=40;
+const DZ_INK="#16120e";
+/* the capsule: key, label, how to show a value, whether up is good (null = neither) */
+const DZ_METRICS=[
+  {k:"readability",l:"Read",f:v=>Math.round(v*100),good:1},{k:"flow",l:"Flow",f:v=>Math.round(v*100),good:1},{k:"fit",l:"Fit",f:v=>Math.round(v*100),good:1},
+  {k:"hours",l:"Hours",f:v=>String(+v.toFixed(2)),good:null,u:"h"},{k:"sessions",l:"Visits",f:v=>v,good:null},{k:"price",l:"Price",f:v=>fmtMoney(v),good:null,money:1}
+];
+const DZ={view:"board",side:"front",sel:-1,sandbox:false,snap:false,undo:[],redo:[],m:null,cur:null,prev:null,base:null,snap0:null,
+  drawer:{style:"",family:"",tag:""},raf:0,ptrs:new Map(),g:null,pxmm:1,vb:null,keys:false,capOpen:typeof innerHeight!=="number"||innerHeight>=640};
+
+/* ---- small helpers ---- */
+const dzR2=v=>Math.round(v*100)/100,dzR4=v=>Math.round(v*1e4)/1e4;
+const dzEBc={};
+function dzEB(id){return dzEBc[id]||(dzEBc[id]=INK_SIM.elementBox(id));}
+function dzDef(id){return INK_SIM.elementById(id);}
+function dzColHex(c){const C=INK_SIM.COLOURS[c||"black"];return C?C.hex:DZ_INK;}
+function dzClient(){const b=S.board,c=DZ_SAMPLE_CLIENTS.find(x=>x.id===b.client)||DZ_SAMPLE_CLIENTS[0];
+  return Object.assign({},c,{bodyShape:b.bodyShape||c.bodyShape,skinTone:b.skinTone!=null?b.skinTone:c.skinTone});}
+function dzBox(pl){return INK_SIM.placementBox(pl||DZ.m.placement,S.board.bodyShape)||{wrapMm:100,lengthMm:200};}
+function dzCap1(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
+/* the element's long axis as scoring sees it (0 upright, 90 across), plus 90 for bands that wrap round the limb */
+function dzAxis(id){const b=dzEB(id),d=dzDef(id);return(b.w>b.h*1.15?90:0)+((d&&d.tags||[]).some(t=>t==="band"||t==="armband"||t==="wrap")?90:0);}
+function dzUnlocked(d){if(DZ.sandbox||!d||d.unlock==="start")return true;
+  const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");return!!m&&(((S.skills||{}).styles||{})[m[1]]||0)>=+m[2];}
+function dzLockText(d){const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");
+  if(m){const st=INK_SIM.STYLES[m[1]];return(st?st.name:m[1])+" "+m[2];}
+  const r=/^rnd:(\w+)$/.exec(d.unlock||"");return r?"Research: "+r[1].replace(/_/g," "):"Locked";}
+const dzSig=els=>els.map(e=>e.id).sort().join(",");
+
+/* ---- the model <-> a design (docs/SIM-CONTRACT.md) ---- */
+function dzToDesign(m){
+  m=m||DZ.m;const box=dzBox(m.placement);
+  const base={placement:m.placement,style:m.style,flash:m.flash||null};
+  if(!m.els.length)return Object.assign(base,{sizeMm:0,pos:{x:.5,y:.5},elements:[]});
+  const el=e=>({id:e.id,rot:dzR2(e.rot),lineWeight:e.lineWeight,fill:dzR2(e.fill),colour:e.colour||null});
+  const fp=INK_SIM.footprintOf({style:m.style,sizeMm:100,elements:m.els.map(e=>Object.assign(el(e),{x:e.mx/100,y:e.my/100,scale:e.mm/100}))});
+  const W=fp.w*100,H=fp.h*100,cx=fp.cx*100,cy=fp.cy*100,size=Math.max(W,H,1);
+  return Object.assign(base,{sizeMm:dzR2(size),pos:{x:dzR4(cx/box.wrapMm),y:dzR4(cy/box.lengthMm)},
+    elements:m.els.map(e=>Object.assign(el(e),{x:dzR4((e.mx-cx)/size+.5),y:dzR4((e.my-cy)/size+.5),scale:dzR4(e.mm/size)}))});}
+function dzFromDesign(d,placement){
+  const pl=placement||d.placement,box=dzBox(pl),sz=d.sizeMm||0,els=(d.elements||[]).filter(e=>dzDef(e.id));
+  const m={placement:pl,style:d.style||"traditional",flash:d.flash||null,els:[]};
+  if(!els.length||!sz)return m;
+  const fp=INK_SIM.footprintOf(Object.assign({},d,{elements:els})),pos=d.pos||{x:.5,y:.5};
+  const cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm;
+  m.els=els.map(e=>{const df=dzDef(e.id);return{id:e.id,mx:cx+((e.x!=null?e.x:.5)-fp.cx)*sz,my:cy+((e.y!=null?e.y:.5)-fp.cy)*sz,mm:(e.scale!=null?e.scale:.5)*sz,
+    rot:e.rot||0,lineWeight:e.lineWeight||df.lineWeightDefault,fill:clamp(e.fill||0,0,1),colour:e.colour||null};});
+  m.fsig=m.flash?dzSig(m.els):null;
+  return m;}
+function dzLoad(){
+  const P=INK_SIM.PLACEMENTS,d=S.board.design;
+  if(d&&P[d.placement])DZ.m=dzFromDesign(d);
+  else DZ.m={placement:P.forearm_l?"forearm_l":Object.keys(P)[0],style:"traditional",flash:null,els:[]};
+  DZ.sel=-1;DZ.cur=dzScore();DZ.prev=null;}
+function dzStore(){S.board.design=dzToDesign();save();}
+
+/* ---- scoring ---- */
+function dzScore(m){const d=dzToDesign(m);
+  try{return Object.assign(INK_SIM.scoreDesign(d,dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined}),{_d:d});}catch(e){return null;}}
+/* rescore at most once per frame; the capsule shows it against DZ.base (the score before the change being made) */
+function dzQueue(full){if(full)DZ.qFull=true;if(DZ.raf)return;
+  DZ.raf=requestAnimationFrame(()=>{DZ.raf=0;DZ.cur=dzScore();dzRenderCap();if(DZ.qFull){DZ.qFull=false;dzRenderAging();dzRenderStress();}});}
+
+/* ---- changes, undo and redo ---- */
+function dzBegin(){DZ.snap0=JSON.stringify(DZ.m);DZ.base=DZ.cur;}
+function dzEnd(){
+  if(DZ.snap0==null)return;const was=DZ.snap0;DZ.snap0=null;
+  if(JSON.stringify(DZ.m)===was){DZ.base=null;return;}
+  if(DZ.m.flash&&dzSig(DZ.m.els)!==DZ.m.fsig){DZ.m.flash=null;DZ.m.fsig=null;toast("New elements: a custom piece now, no flash discount");const t=$("dzFlashTag");if(t)t.remove();}
+  DZ.undo.push(was);if(DZ.undo.length>DZ_UNDO_CAP)DZ.undo.shift();DZ.redo.length=0;
+  DZ.prev=DZ.base||DZ.prev;DZ.base=null;
+  dzStore();DZ.cur=dzScore();dzRenderCap();dzRenderAging();dzRenderStress();dzSyncUndo();}
+function dzChange(fn,keepBoard){dzBegin();fn();if(DZ.sel>=DZ.m.els.length)DZ.sel=-1;dzEnd();if(!keepBoard)dzRenderBoard();dzRenderTools();}
+function dzUndoRedo(back){
+  const from=back?DZ.undo:DZ.redo,to=back?DZ.redo:DZ.undo;if(!from.length)return;
+  const before=DZ.cur;to.push(JSON.stringify(DZ.m));DZ.m=JSON.parse(from.pop());
+  if(DZ.sel>=DZ.m.els.length)DZ.sel=-1;
+  DZ.prev=before;dzStore();DZ.cur=dzScore();
+  if(DZ.view==="board"){dzRenderBoard();dzRenderTools();dzRenderStress();}else renderDesign();
+  dzRenderCap();dzRenderAging();dzSyncUndo();}
+function dzSyncUndo(){const u=$("dzUndo"),r=$("dzRedo");if(u)u.disabled=!DZ.undo.length;if(r)r.disabled=!DZ.redo.length;}
+
+/* ---- drawing elements (board, minis) ---- */
+/* one element as an SVG group in mm. Colour sits on the fill and the lines stay black; with no fill (or in watercolour)
+   the colour is the lines, the same way scoreDesign reads it */
+function dzElSvg(e,style,attrs,hit,spreadMm){
+  const d=dzDef(e.id);if(!d)return"";
+  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),cx=b.x+b.w/2,cy=b.y+b.h/2;
+  const fc=e.colour?dzColHex(e.colour):DZ_INK,lc=e.colour&&(style==="watercolour"||!(e.fill>0))?fc:DZ_INK;
+  let h=`<g${attrs||""} transform="${dzTf(e)}">`;
+  if(hit){const mu=hit/k,w=Math.max(b.w,mu),hh=Math.max(b.h,mu);h+=`<rect class="hit" x="${dzR2(cx-w/2)}" y="${dzR2(cy-hh/2)}" width="${dzR2(w)}" height="${dzR2(hh)}"/>`;}
+  if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+  h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((INK_SIM.lineMm(e.lineWeight)+(spreadMm||0))/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  return h+"</g>";}
+function dzTf(e){const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
+  return`translate(${dzR2(e.mx)} ${dzR2(e.my)}) rotate(${dzR2(e.rot)}) scale(${dzR4(k)}) translate(${dzR2(-(b.x+b.w/2))} ${dzR2(-(b.y+b.h/2))})`;}
+/* the elements of a model (or a design) in a small square svg fitted to the piece */
+function dzMini(m,cls,style,spreadMm){
+  if(!m.els.length)return`<svg class="${cls||""}" viewBox="0 0 10 10"></svg>`;
+  const d=dzToDesign(m),sz=d.sizeMm,cx=d.pos.x*dzBox(m.placement).wrapMm,cy=d.pos.y*dzBox(m.placement).lengthMm,pad=sz*0.08;
+  return`<svg class="${cls||""}" viewBox="${dzR2(cx-sz/2-pad)} ${dzR2(cy-sz/2-pad)} ${dzR2(sz+2*pad)} ${dzR2(sz+2*pad)}"${style?` style="${style}"`:""} aria-hidden="true">${m.els.map(e=>dzElSvg(e,m.style,"",0,spreadMm)).join("")}</svg>`;}
+
+/* ---- the tab ---- */
 function renderDesign(){
-  const P=INK_SIM.PLACEMENTS||{},ready=typeof INK_SIM.scoreDesign==="function";
-  let out="The scoring model isn't in this build yet.";
-  const d=ready?dzSampleDesign():null;
-  if(ready){try{out=JSON.stringify(INK_SIM.scoreDesign(d,DZ_SAMPLE_CLIENTS[DZ.client],S.skills,{year:S.year}),(k,v)=>typeof v==="number"?Math.round(v*1000)/1000:v,2);}catch(e){out="scoreDesign threw: "+e.message;}}
-  const opt=(v,l,cur)=>`<option value="${esc(v)}"${String(v)===String(cur)?" selected":""}>${esc(l)}</option>`;
-  $("designBody").innerHTML=`<div class="card"><h2>Design board</h2>
-<p class="hint" style="margin-top:0">The real board arrives next. For now: a sample piece scored by the sim. Change the placement, size, colour or client and watch the numbers move.</p>
-<div class="row" style="margin:8px 0">
-<label>Placement <select id="dzPl">${Object.values(P).map(p=>opt(p.id,p.name,DZ.placement)).join("")}</select></label>
-<label>Size <select id="dzSz">${[9,20,40,60,90,140,220].map(n=>opt(n,n+" mm",DZ.size)).join("")}</select></label>
-<label>Colour <select id="dzCol">${["red","yellow","black","skyblue","green"].map(c=>opt(c,c,DZ.colour)).join("")}</select></label>
-<label>Client <select id="dzCl">${DZ_SAMPLE_CLIENTS.map((c,i)=>opt(i,c.name,DZ.client)).join("")}</select></label>
-</div>
-${d?`<p class="hint">Design: ${esc(d.elements.map(e=>e.id).join(" + "))} on ${esc((P[d.placement]||{}).name||d.placement)}</p>`:""}
-<pre class="raw" id="dzOut"></pre></div>`;
-  $("dzOut").textContent=out;
-  const on=(id,f)=>{const el=$(id);if(el)el.addEventListener("change",()=>{f(el.value);renderDesign();});};
-  on("dzPl",v=>DZ.placement=v);on("dzSz",v=>DZ.size=+v);on("dzCol",v=>DZ.colour=v);on("dzCl",v=>DZ.client=+v);}
+  if(typeof INK_SIM.scoreDesign!=="function"){$("designBody").innerHTML=`<div class="card"><p class="hint">The scoring model isn't in this build.</p></div>`;return;}
+  if(!DZ.m)dzLoad();
+  dzKeysOnce();
+  const v=DZ.view;
+  $("designBody").innerHTML=`<div class="dz dz-${v}">
+<div class="dzSeg seg" role="tablist" aria-label="Design views">${[["body","Body"],["board","Board"],["flash","Flash"]].map(([k,l])=>`<button type="button" role="tab" data-v="${k}" class="${k===v?"on":""}" aria-selected="${k===v}">${l}</button>`).join("")}</div>
+<div id="dzView"></div>
+${v==="flash"?"":`<div class="dzCap${DZ.capOpen&&v==="board"?"":" shut"}${v==="body"?" mini":""}" id="dzCap" aria-live="off"></div>`}</div>`;
+  $("designBody").querySelector(".dzSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===DZ.view)return;DZ.view=b.dataset.v;INK_SOUND.tick();renderDesign();});
+  DZ.cur=dzScore();
+  if(v==="body")dzRenderBody();else if(v==="flash")dzRenderFlash();else dzRenderBoardView();
+  if(v!=="flash"){dzRenderCap();dzRenderAging();}}
+
+/* ---- Body view ---- */
+function dzRenderBody(){
+  const b=S.board,P=INK_SIM.PLACEMENTS,p=P[DZ.m.placement],box=dzBox(),cl=dzClient();
+  const shapes=Object.keys(INK_SIM.BODY_SHAPES);
+  const bar=(v,l)=>`<span class="dzBar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}" aria-label="${l}"><i style="width:${Math.round(v*100)}%"></i></span>`;
+  const word=(v,w)=>w[Math.min(w.length-1,Math.floor(v*w.length))];
+  const clientCard=`<div class="card dzClient"><div class="dzClientHd"><h2>Walk-in</h2><span class="dzTag">sample</span></div>
+<label class="dzFull">Who's in the chair<select id="dzCl">${DZ_SAMPLE_CLIENTS.map(c=>`<option value="${c.id}"${c.id===b.client?" selected":""}>${esc(c.name)}, ${esc(c.blurb)}</option>`).join("")}</select></label>
+<p class="hint">${esc(cl.name)} (${esc(cl.pronouns)}, ${cl.age}) likes ${esc(Object.keys(cl.wants.styles).map(s=>INK_SIM.STYLES[s].name.toLowerCase()).join(", "))}, about ${cl.wants.sizeMm[0]} to ${cl.wants.sizeMm[1]} mm.
+Practice walk-ins for now: real clients with their own wants start booking in the next update.</p></div>`;
+  $("dzView").innerHTML=`<div class="card dzBody">
+<div class="dzBodyCtl">${segHtml("dzShape",shapes.map(s=>[s,INK_SIM.BODY_SHAPES[s].name]),b.bodyShape)}</div>
+<label class="dzFull dzTone">Skin tone <span class="dzToneRow"><input type="range" id="dzTone" min="0" max="1" step="0.01" value="${b.skinTone}" aria-label="Skin tone, light to dark"><i class="dzToneChip" style="background:${bmSkin(b.skinTone)[0]}"></i></span></label>
+<div class="dzBodyGrid"><div class="dzFigCol">${segHtml("dzSide",[["front","Front"],["back","Back"]],DZ.side)}<div class="dzFigWrap" id="dzFig">${bmSvg(DZ.side,DZ.m.placement,b.bodyShape,b.skinTone)}</div></div>
+<div class="dzSpot" id="dzSpot">${p?`<h3>${esc(dzCap1(p.name))}</h3>
+<dl class="kv"><dt>Room</dt><dd><b>${box.wrapMm} × ${box.lengthMm} mm</b><small>wrap × length, ${esc(INK_SIM.BODY_SHAPES[b.bodyShape].name.toLowerCase())} build</small></dd>
+<dt>Pain</dt><dd>${bar(p.pain,"Pain")}<small>${word(p.pain,["Easy","Moderate","Sharp","Brutal"])}</small></dd>
+<dt>Shows</dt><dd>${bar(p.visibility,"Visibility")}<small>${word(p.visibility,["Easy to hide","Sometimes shows","Often on show","Always on show"])}</small></dd>
+<dt>Sun</dt><dd>${bar(p.sun,"Sun")}<small>${word(p.sun,["Rarely","Some","A lot","All day"])}</small></dd></dl>
+${p.creases.length?`<p class="hint">Joint${p.creases.length>1?"s":""} at the ${esc(p.creases.map(c=>c.name).join(" and "))}: stay clear of the crease.</p>`:""}
+<button class="btn pri dzGo" id="dzGo">Design on the ${esc(p.name)}</button>`:""}</div></div>
+<label class="dzFull dzPlSel">Or pick from the list<select id="dzPl">${Object.values(P).map(x=>`<option value="${x.id}"${x.id===DZ.m.placement?" selected":""}>${esc(dzCap1(x.name))}</option>`).join("")}</select></label></div>${clientCard}`;
+  const segW=(id,fn)=>$(id).addEventListener("click",e=>{const bt=e.target.closest("button[data-v]");if(!bt)return;fn(bt.dataset.v);});
+  segW("dzShape",v=>dzSetBody({bodyShape:v}));
+  segW("dzSide",v=>{DZ.side=v;dzRenderBody();});
+  const tone=$("dzTone");
+  tone.addEventListener("input",()=>{S.board.skinTone=+tone.value;$("dzTone").nextElementSibling.style.background=bmSkin(S.board.skinTone)[0];
+    $("dzFig").innerHTML=bmSvg(DZ.side,DZ.m.placement,S.board.bodyShape,S.board.skinTone);if(!DZ.base)DZ.base=DZ.cur;dzQueue(true);});
+  tone.addEventListener("change",()=>{DZ.prev=DZ.base||DZ.prev;DZ.base=null;save();DZ.cur=dzScore();dzRenderCap();dzRenderAging();});
+  $("dzCl").addEventListener("change",e=>{const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===e.target.value);if(!c)return;dzSetBody({client:c.id,bodyShape:c.bodyShape,skinTone:c.skinTone});});
+  $("dzPl").addEventListener("change",e=>dzSetPlacement(e.target.value));
+  const fig=$("dzFig");
+  fig.addEventListener("click",e=>{const z=e.target.closest(".bmz");if(z){INK_SOUND.tick();dzSetPlacement(z.dataset.p);}});
+  fig.addEventListener("keydown",e=>{const z=e.target.closest(".bmz");if(z&&(e.key==="Enter"||e.key===" ")){e.preventDefault();dzSetPlacement(z.dataset.p,true);}});
+  const go=$("dzGo");if(go)go.addEventListener("click",()=>{DZ.view="board";renderDesign();$("panel").scrollTop=0;});}
+/* a new body shape, skin tone or client: the piece keeps its size in mm and its place in the box */
+function dzSetBody(o){const d=dzToDesign(),before=DZ.cur;Object.assign(S.board,o);DZ.m=Object.assign(dzFromDesign(d),{fsig:DZ.m.fsig});
+  DZ.prev=before;save();renderDesign();}
+function dzSetPlacement(id,focus){
+  if(!INK_SIM.PLACEMENTS[id])return;
+  if(id===DZ.m.placement){if(DZ.view!=="body")renderDesign();return;}
+  if(BM_BACK_ONLY.test(id))DZ.side="back";else if(BM_FRONT_ONLY.test(id))DZ.side="front";
+  const d=dzToDesign(),before=DZ.cur;DZ.undo.push(JSON.stringify(DZ.m));DZ.redo.length=0;
+  DZ.m=Object.assign(dzFromDesign(Object.assign(d,{placement:id}),id),{fsig:DZ.m.fsig});DZ.prev=before;dzStore();
+  if(DZ.view==="body"){dzRenderBody();DZ.cur=dzScore();dzRenderCap();dzRenderAging();
+    if(focus){const z=document.querySelector(`.bmz[data-p="${id}"]`);if(z)z.focus();}}
+  else renderDesign();}
+
+/* ---- Board view ---- */
+function dzRenderBoardView(){
+  const m=DZ.m,p=INK_SIM.PLACEMENTS[m.placement],box=dzBox(),st=INK_SIM.STYLES;
+  $("dzView").innerHTML=`<div class="dzBar1">
+<button class="dzSpotBtn" id="dzSpotBtn" aria-label="Change the spot"><b>${esc(dzCap1(p.name))}</b><small>${box.wrapMm} × ${box.lengthMm} mm · ${esc(dzClient().name)}</small></button>
+<label class="dzStyle"><span class="sr">Style</span><select id="dzStyleSel" aria-label="Style of the piece">${Object.values(st).map(s=>`<option value="${s.id}"${s.id===m.style?" selected":""}>${esc(s.name)}</option>`).join("")}</select></label></div>
+<div class="dzBoardWrap" id="dzBoardWrap"><div class="board dzBoard" id="dzBoard"></div></div>
+<div class="dzBar2">
+<button class="btn pri" id="dzAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Element</button>
+<button class="ibtn dzIb" id="dzUndo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+<button class="ibtn dzIb" id="dzRedo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+<button class="dzChip${DZ.snap?" on":""}" id="dzSnap" aria-pressed="${DZ.snap}" title="Rotation snaps to the flow of the limb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3c-2 6 2 12 0 18M17 3c-2 6 2 12 0 18"/></svg>Snap to flow</button>
+<span class="sp"></span>${m.flash?`<span class="dzFlashTag" id="dzFlashTag" title="Flash: ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours">Flash −${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% h</span>`:""}</div>
+<div id="dzTools" class="dzTools"></div>
+<div class="row dzBar3"><button class="btn sm" id="dzSaveFl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save to my flash</button>
+<button class="btn sm" id="dzClear"${m.els.length?"":" disabled"}>Clear board</button></div>
+<div class="card dzStress" id="dzStress"></div>`;
+  $("dzSpotBtn").addEventListener("click",()=>{DZ.view="body";renderDesign();});
+  $("dzStyleSel").addEventListener("change",e=>{const v=e.target.value;dzChange(()=>{DZ.m.style=v;});dzRenderTools();});
+  $("dzAdd").addEventListener("click",dzOpenDrawer);
+  $("dzUndo").addEventListener("click",()=>dzUndoRedo(true));$("dzRedo").addEventListener("click",()=>dzUndoRedo(false));
+  $("dzSnap").addEventListener("click",()=>{DZ.snap=!DZ.snap;const b=$("dzSnap");b.classList.toggle("on",DZ.snap);b.setAttribute("aria-pressed",DZ.snap);
+    if(DZ.snap&&DZ.sel>=0)dzChange(()=>dzSnapEl(DZ.m.els[DZ.sel]));toast(DZ.snap?"Rotation snaps to the flow":"Free rotation");});
+  $("dzSaveFl").addEventListener("click",dzSaveFlash);
+  $("dzClear").addEventListener("click",()=>{if(!DZ.m.els.length)return;dzChange(()=>{DZ.m.els=[];DZ.m.flash=null;DZ.m.fsig=null;DZ.sel=-1;});$("dzClear").disabled=true;toast("Board cleared (Undo brings it back)");});
+  dzRenderBoard();dzRenderTools();dzRenderStress();dzSyncUndo();
+  const bw=$("dzBoardWrap");
+  if(window.ResizeObserver&&!bw._ro){let w0=bw.clientWidth;bw._ro=new ResizeObserver(()=>{if(Math.abs(bw.clientWidth-w0)>2&&DZ.view==="board"){w0=bw.clientWidth;dzRenderBoard();}});bw._ro.observe(bw);}}
+
+/* the board svg: viewBox in mm, the placement box at the origin with margins round it so a piece can hang off the edge */
+function dzRenderBoard(){
+  const host=$("dzBoard");if(!host)return;
+  const m=DZ.m,p=INK_SIM.PLACEMENTS[m.placement],box=dzBox(),W=box.wrapMm,L=box.lengthMm;
+  const wrap=$("dzBoardWrap"),cw=Math.max(200,(wrap?wrap.clientWidth:340)-2);
+  const land=innerWidth>innerHeight&&innerHeight<560,mh=land?Math.max(220,innerHeight-130):innerWidth<700?clamp(innerHeight-(DZ.capOpen?400:330),200,520):Math.min(innerHeight*0.58,620);
+  /* margins in mm, widened so the ruler's numbers (about 40 px) always fit on the left */
+  let mx=clamp(W*0.2,14,40),my=clamp(L*0.06,10,30),sc=Math.min(cw/(W+2*mx),mh/(L+2*my));
+  for(let i=0;i<3&&mx*sc<40;i++){mx=40/sc;sc=Math.min(cw/(W+2*mx),mh/(L+2*my));}
+  const vb={x:-mx,y:-my,w:W+2*mx,h:L+2*my},pw=Math.round(vb.w*sc),ph=Math.round(vb.h*sc);
+  DZ.pxmm=sc;DZ.vb=vb;
+  const px=n=>dzR2(n/sc);   // n screen pixels in mm
+  let h=`<svg id="dzSvg" class="dzSvg${DZ.sel>=0?" sel":""}" width="${pw}" height="${ph}" viewBox="${dzR2(vb.x)} ${dzR2(vb.y)} ${dzR2(vb.w)} ${dzR2(vb.h)}" role="application" aria-label="Design board, ${esc(p.name)}, ${W} by ${L} millimetres" tabindex="-1">
+<defs><linearGradient id="dzLimbG" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#8a6a40" stop-opacity=".22"/><stop offset=".2" stop-color="#8a6a40" stop-opacity="0"/><stop offset=".8" stop-color="#8a6a40" stop-opacity="0"/><stop offset="1" stop-color="#8a6a40" stop-opacity=".22"/></linearGradient></defs>
+<rect class="dzBg" x="${dzR2(vb.x)}" y="${dzR2(vb.y)}" width="${dzR2(vb.w)}" height="${dzR2(vb.h)}"/>
+<rect class="dzLimb" x="0" y="0" width="${W}" height="${L}" rx="${dzR2(Math.min(W,L)*0.1)}"/>
+<rect class="dzLimbE" x="0" y="0" width="${W}" height="${L}" rx="${dzR2(Math.min(W,L)*0.1)}"/>`;
+  /* the mm ruler down the left margin */
+  let rul="";for(let y=0;y<=L+0.01;y+=10){const big=y%50===0;rul+=`M${dzR2(-px(big?12:6))} ${y}H0`;}
+  h+=`<path class="dzRuler" d="${rul}"/>`;
+  for(let y=50;y<=L;y+=50)h+=`<text class="dzRulT" x="${dzR2(-px(14))}" y="${dzR2(y+px(4))}" font-size="${px(10)}" text-anchor="end">${y}</text>`;
+  /* flow lines and creases */
+  h+=`<g class="dzFlow">${p.flow.map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>`;
+  for(const c of p.creases||[]){const y=c.at*L;h+=`<line class="dzCrease" x1="${dzR2(-px(4))}" x2="${dzR2(W+px(4))}" y1="${dzR2(y)}" y2="${dzR2(y)}"/><text class="dzCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at<0.5?y-px(5):y+px(13))}" font-size="${px(10.5)}" text-anchor="middle">${esc(c.name)} crease</text>`;}
+  /* the piece's footprint */
+  const d=dzToDesign();
+  if(m.els.length){const sz=d.sizeMm,fp=INK_SIM.footprintOf(d),fw=fp.w*sz,fh=fp.h*sz,fx=d.pos.x*W-fw/2,fy=d.pos.y*L-fh/2;
+    h+=`<rect class="dzFoot" x="${dzR2(fx)}" y="${dzR2(fy)}" width="${dzR2(fw)}" height="${dzR2(fh)}"/><text class="dzFootT" x="${dzR2(fx+fw)}" y="${dzR2(fy-px(4))}" font-size="${px(10.5)}" text-anchor="end">${Math.round(fw)} × ${Math.round(fh)} mm</text>`;}
+  else h+=`<text class="dzEmpty" x="${dzR2(W/2)}" y="${dzR2(L/2)}" font-size="${px(14)}" text-anchor="middle">Add an element</text><text class="dzEmpty sub" x="${dzR2(W/2)}" y="${dzR2(L/2+px(20))}" font-size="${px(11.5)}" text-anchor="middle">or start from the flash wall</text>`;
+  h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,44/sc)).join("")}</g>`;
+  h+=`<g id="dzSelG"></g></svg>`;
+  host.innerHTML=h;
+  host.style.width=pw+"px";
+  dzDrawSel();dzWireBoard();}
+/* the selection box and its scale/rotate handle (screen-sized, drawn in the element's own frame) */
+function dzDrawSel(){
+  const g=$("dzSelG");if(!g)return;const e=DZ.m.els[DZ.sel];
+  if(!e){g.innerHTML="";g.removeAttribute("transform");return;}
+  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),u=1/(DZ.pxmm*k),pad=4*u;
+  g.setAttribute("transform",dzTf(e));
+  g.innerHTML=`<rect class="dzSelR" x="${dzR2(b.x-pad)}" y="${dzR2(b.y-pad)}" width="${dzR2(b.w+2*pad)}" height="${dzR2(b.h+2*pad)}" stroke-width="${dzR4(1.5*u)}" stroke-dasharray="${dzR4(5*u)} ${dzR4(4*u)}"/>
+<g class="dzHdl" data-h="1"><circle class="hit" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(22*u)}"/><circle class="dot" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(8*u)}" stroke-width="${dzR4(2*u)}"/>
+<path class="arr" d="M${dzR2(b.x+b.w+pad-4*u)} ${dzR2(b.y+b.h+pad)}h${dzR2(8*u)}M${dzR2(b.x+b.w+pad)} ${dzR2(b.y+b.h+pad-4*u)}v${dzR2(8*u)}" stroke-width="${dzR4(1.6*u)}"/></g>`;}
+/* move the selected element's group without redrawing the board */
+function dzMoveEl(i){const e=DZ.m.els[i],g=document.querySelector(`#dzEls .dzEl[data-i="${i}"]`);if(g&&e)g.setAttribute("transform",dzTf(e));if(i===DZ.sel)dzDrawSel();}
+function dzSelect(i){if(DZ.sel===i)return;DZ.sel=i;
+  document.querySelectorAll("#dzEls .dzEl").forEach(g=>g.classList.toggle("on",+g.dataset.i===i));
+  const svg=$("dzSvg");if(svg)svg.classList.toggle("sel",i>=0);dzDrawSel();dzRenderTools();}
+function dzSvgPt(ev){const svg=$("dzSvg"),r=svg.getBoundingClientRect();
+  return{x:DZ.vb.x+(ev.clientX-r.left)/DZ.pxmm,y:DZ.vb.y+(ev.clientY-r.top)/DZ.pxmm};}
+/* snap an element's rotation so its long axis runs with the flow where it sits */
+function dzSnapEl(e){if(!e)return;const loc=INK_SIM.flowAt(DZ.m.placement,S.board.bodyShape,e.mx,e.my),ax=dzAxis(e.id);
+  const base=loc-ax;let best=base,bd=1e9;for(let k=-3;k<=3;k++){const r=base+k*180,dd=Math.abs(r-e.rot);if(dd<bd){bd=dd;best=r;}}
+  e.rot=((Math.round(best*10)/10+540)%360)-180;}
+/* pointers: one finger drags an element, the corner handle scales and turns it, two fingers pinch-scale and rotate */
+function dzWireBoard(){
+  const svg=$("dzSvg");if(!svg)return;
+  svg.addEventListener("pointerdown",dzPDown);svg.addEventListener("pointermove",dzPMove);
+  svg.addEventListener("pointerup",dzPUp);svg.addEventListener("pointercancel",dzPUp);svg.addEventListener("lostpointercapture",dzPUp);
+  svg.addEventListener("focusin",e=>{const g=e.target.closest&&e.target.closest(".dzEl");if(g)dzSelect(+g.dataset.i);});}
+function dzPDown(ev){
+  const svg=$("dzSvg");const pt=dzSvgPt(ev);
+  DZ.ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  try{svg.setPointerCapture(ev.pointerId);}catch(_){}
+  if(DZ.ptrs.size===2&&DZ.sel>=0){dzPinchStart();ev.preventDefault();return;}
+  if(DZ.ptrs.size>1)return;
+  const hdl=ev.target.closest(".dzHdl"),g=ev.target.closest(".dzEl");
+  if(hdl&&DZ.sel>=0){const e=DZ.m.els[DZ.sel];dzBegin();DZ.g={kind:"hdl",e,d0:Math.hypot(pt.x-e.mx,pt.y-e.my)||1,a0:Math.atan2(pt.y-e.my,pt.x-e.mx),mm0:e.mm,rot0:e.rot};ev.preventDefault();return;}
+  if(g){const i=+g.dataset.i;dzSelect(i);const e=DZ.m.els[i];dzBegin();DZ.g={kind:"drag",e,ox:pt.x-e.mx,oy:pt.y-e.my,moved:false,x0:ev.clientX,y0:ev.clientY};ev.preventDefault();return;}
+  if(DZ.sel>=0&&ev.pointerType!=="touch")dzSelect(-1);
+  else if(DZ.sel>=0)DZ.g={kind:"tap",x0:ev.clientX,y0:ev.clientY};}
+function dzPinchStart(){const [a,b]=[...DZ.ptrs.values()],e=DZ.m.els[DZ.sel];if(!e)return;
+  if(!DZ.g||DZ.g.kind!=="pinch"){if(DZ.snap0==null)dzBegin();}
+  DZ.g={kind:"pinch",e,d0:Math.hypot(b.x-a.x,b.y-a.y)||1,a0:Math.atan2(b.y-a.y,b.x-a.x),mm0:e.mm,rot0:e.rot,mx0:e.mx,my0:e.my,cx0:(a.x+b.x)/2,cy0:(a.y+b.y)/2};}
+function dzPMove(ev){
+  if(!DZ.ptrs.has(ev.pointerId))return;DZ.ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  const G=DZ.g;if(!G)return;const box=dzBox(),lim=Math.max(box.wrapMm,box.lengthMm);
+  if(G.kind==="pinch"&&DZ.ptrs.size>=2){const [a,b]=[...DZ.ptrs.values()],e=G.e;
+    e.mm=clamp(G.mm0*Math.hypot(b.x-a.x,b.y-a.y)/G.d0,4,lim*1.5);
+    e.rot=G.rot0+(Math.atan2(b.y-a.y,b.x-a.x)-G.a0)*180/Math.PI;
+    e.mx=G.mx0+((a.x+b.x)/2-G.cx0)/DZ.pxmm;e.my=G.my0+((a.y+b.y)/2-G.cy0)/DZ.pxmm;
+    dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();return;}
+  const pt=dzSvgPt(ev),e=G.e,vb=DZ.vb;
+  if(G.kind==="drag"){if(!G.moved&&Math.hypot(ev.clientX-G.x0,ev.clientY-G.y0)<3)return;G.moved=true;
+    e.mx=clamp(pt.x-G.ox,vb.x,vb.x+vb.w);e.my=clamp(pt.y-G.oy,vb.y,vb.y+vb.h);dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}
+  else if(G.kind==="hdl"){e.mm=clamp(G.mm0*(Math.hypot(pt.x-e.mx,pt.y-e.my)||1)/G.d0,4,lim*1.5);
+    e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}}
+function dzPUp(ev){
+  if(!DZ.ptrs.has(ev.pointerId))return;DZ.ptrs.delete(ev.pointerId);
+  const G=DZ.g;
+  if(DZ.ptrs.size){if(G&&G.kind==="pinch")DZ.g={kind:"wait",e:G.e};return;}   // one finger still down: wait for it
+  DZ.g=null;
+  if(G&&G.kind==="tap"){if(Math.hypot(ev.clientX-G.x0,ev.clientY-G.y0)<8)dzSelect(-1);return;}
+  if(DZ.snap0==null)return;
+  const e=G&&G.e;if(e){e.rot=((e.rot%360)+540)%360-180;if(DZ.snap&&(G.kind!=="drag"||G.moved))dzSnapEl(e);dzMoveEl(DZ.sel);}
+  dzEnd();dzRenderBoard();dzRenderTools();}
+
+/* ---- the selected element's toolbar ---- */
+function dzRenderTools(){
+  const host=$("dzTools");if(!host)return;const e=DZ.m.els[DZ.sel];
+  if(!e){host.innerHTML=`<p class="dzToolHint">${DZ.m.els.length?"Tap an element to move, size or colour it. Two fingers on the board pinch and turn it.":"Add elements from the drawer. Lettering, motifs, frames and fills all score differently."}</p>`;return;}
+  const d=dzDef(e.id),st=INK_SIM.STYLES[DZ.m.style],tone=dzClient().skinTone,LW=INK_SIM.LINE_WEIGHTS;
+  const pal=["black"].concat((st&&st.palette||[]).filter(c=>c!=="black"));
+  const tooSmall=e.mm<d.minSizeMm;
+  const sw=pal.map(c=>{const r=INK_SIM.inkReads(c,tone),bad=r<0.2?"won't read":r<0.45?"faint":"",cur=(e.colour||"black")===c;
+    return`<button type="button" class="dzSw${cur?" on":""}${bad?" weak":""}" data-c="${c}" aria-pressed="${cur}" aria-label="${esc(INK_SIM.COLOURS[c].name)}${bad?", "+bad+" on this skin":""}" title="${esc(INK_SIM.COLOURS[c].name)}${bad?": "+bad+" on this skin tone":""}"><i style="background:${dzColHex(c)}"></i>${bad?`<small>${bad}</small>`:""}</button>`;}).join("");
+  host.innerHTML=`<div class="dzToolHd"><b>${esc(d.name)}</b><span class="${tooSmall?"bad":""}">${Math.round(e.mm)} mm${tooSmall?` <em>(needs ${d.minSizeMm})</em>`:""}</span><span class="sp"></span>
+<button class="ibtn dzIb" data-a="dup" aria-label="Duplicate" title="Duplicate"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg></button>
+<button class="ibtn dzIb" data-a="fwd" aria-label="Bring forward" title="Bring forward"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="11" height="11" rx="2"/><rect x="9" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".25"/></svg></button>
+<button class="ibtn dzIb dzDel" data-a="del" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+<div class="dzToolRow">
+<div class="dzStep" role="group" aria-label="Size"><button data-a="s-" aria-label="Smaller">−</button><span>Size</span><button data-a="s+" aria-label="Bigger">+</button></div>
+<div class="dzStep" role="group" aria-label="Rotate"><button data-a="r-" aria-label="Rotate left"><svg viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 16"/></svg></button><span>${Math.round(e.rot)}°</span><button data-a="r+" aria-label="Rotate right"><svg viewBox="0 0 24 24"><path d="M20 4v6h-6"/><path d="M19.5 10A8 8 0 1 0 18 16"/></svg></button></div>
+<div class="dzStep" role="group" aria-label="Line weight"><button data-a="l-" aria-label="Finer line">−</button><span>${e.lineWeight}RL</span><button data-a="l+" aria-label="Bolder line">+</button></div></div>
+${d.fill?`<label class="dzFull dzFillL">Fill <input type="range" id="dzFill" min="0" max="1" step="0.05" value="${e.fill}" aria-label="Fill shading, 0 to 100 percent"><span id="dzFillV">${Math.round(e.fill*100)}%</span></label>`:`<p class="dzToolHint sm">Linework only: no area to fill.</p>`}
+${d.colourable?`<div class="dzSws" role="group" aria-label="Colour (${esc(st?st.name:"")} palette)">${sw}</div>`:`<p class="dzToolHint sm">Black only.</p>`}`;
+  host.querySelectorAll("button[data-a]").forEach(b=>b.addEventListener("click",()=>dzTool(b.dataset.a)));
+  host.querySelectorAll(".dzSw").forEach(b=>b.addEventListener("click",()=>{const c=b.dataset.c;
+    dzChange(()=>{const x=DZ.m.els[DZ.sel];x.colour=c==="black"?null:c;});}));
+  const f=$("dzFill");if(f){f.addEventListener("input",()=>{if(DZ.snap0==null)dzBegin();DZ.m.els[DZ.sel].fill=+f.value;$("dzFillV").textContent=Math.round(f.value*100)+"%";
+      const x=DZ.m.els[DZ.sel],g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.outerHTML=dzElSvg(x,DZ.m.style,` class="dzEl on" data-i="${DZ.sel}" tabindex="0" role="button" aria-label="${esc(d.name)}"`,44/DZ.pxmm);dzQueue();});
+    f.addEventListener("change",()=>{dzEnd();dzRenderBoard();});}}
+function dzTool(a){
+  const i=DZ.sel,e=DZ.m.els[i];if(!e)return;const LW=INK_SIM.LINE_WEIGHTS,box=dzBox();
+  const step=DZ.snap?90:15;
+  if(a==="del"){dzChange(()=>{DZ.m.els.splice(i,1);DZ.sel=-1;});return;}
+  if(a==="dup"){dzChange(()=>{const c=Object.assign({},e,{mx:e.mx+6,my:e.my+6});DZ.m.els.push(c);DZ.sel=DZ.m.els.length-1;});return;}
+  if(a==="fwd"){if(i>=DZ.m.els.length-1){toast("Already on top");return;}dzChange(()=>{const t=DZ.m.els[i];DZ.m.els[i]=DZ.m.els[i+1];DZ.m.els[i+1]=t;DZ.sel=i+1;});return;}
+  dzChange(()=>{
+    if(a==="s-")e.mm=Math.max(4,e.mm/1.1);if(a==="s+")e.mm=Math.min(Math.max(box.wrapMm,box.lengthMm)*1.5,e.mm*1.1);
+    if(a==="r-"||a==="r+"){e.rot+=a==="r+"?step:-step;e.rot=((e.rot%360)+540)%360-180;if(DZ.snap)dzSnapEl(e);}
+    if(a==="l-"||a==="l+"){const k=LW.indexOf(e.lineWeight),n=clamp((k<0?3:k)+(a==="l+"?1:-1),0,LW.length-1);e.lineWeight=LW[n];}
+  });}
+
+/* ---- the capsule: live numbers, deltas, and the aging strip ---- */
+function dzRenderCap(){
+  const host=$("dzCap");if(!host||!DZ.cur)return;
+  const c=DZ.cur,ref=DZ.base||DZ.prev;
+  const cells=DZ_METRICS.map(M=>{
+    const v=c[M.k];let dl="";
+    if(ref&&ref[M.k]!=null&&DZ.m.els.length){const dv=M.k==="price"||M.k==="hours"||M.k==="sessions"?v-ref[M.k]:Math.round(v*100)-Math.round(ref[M.k]*100);
+      if(Math.abs(dv)>1e-9){const up=dv>0,cls=M.good==null?"nu":(up?"up":"dn"),txt=M.money?fmtMoney(Math.abs(dv)):M.k==="hours"?(+Math.abs(dv).toFixed(2)+"h"):Math.abs(dv);
+        dl=`<span class="d ${cls}" aria-label="${up?"up":"down"} ${txt}">${up?"▲":"▼"}${txt}</span>`;}}
+    const has=DZ.m.els.length,warn=!has?"":M.good&&v<0.35?" bad":M.good&&v<0.6?" meh":"";
+    return`<div class="dzM${warn}${M.money?" money":""}"><span class="l">${M.l}</span><b>${has?M.f(v):"–"}</b>${dl||`<span class="d"></span>`}</div>`;}).join("");
+  if(!host.firstChild){host.innerHTML=`<div class="dzMs">${cells}</div><button class="dzCapT" id="dzCapT" aria-expanded="${DZ.capOpen}" aria-label="Show or hide the aging strip"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button><div class="dzAge" id="dzAge"></div>`;
+    $("dzCapT").addEventListener("click",()=>{DZ.capOpen=!DZ.capOpen;host.classList.toggle("shut",!DZ.capOpen);$("dzCapT").setAttribute("aria-expanded",DZ.capOpen);if(DZ.view==="board")dzRenderBoard();});}
+  else host.querySelector(".dzMs").innerHTML=cells;}
+function dzRenderAging(){
+  const host=$("dzAge");if(!host||!DZ.cur)return;
+  if(!DZ.m.els.length){host.innerHTML=`<span class="dzAgeL">How it ages</span><span class="dzAgeNone">Nothing on the board yet</span>`;return;}
+  const c=DZ.cur,d=c._d,minPx=44,mm=d.sizeMm*1.16,pxPer=minPx/mm;
+  const years=[[0,{blur:0,fade:0,spread:0,readability:c.readability}],[5,c.agePrediction[5]],[10,c.agePrediction[10]],[20,c.agePrediction[20]]];
+  host.innerHTML=`<span class="dzAgeL">How it ages</span>`+years.map(([y,a])=>{
+    const bl=Math.max(0,a.blur*pxPer),fd=clamp(a.fade,0,1),r=a.readability,cls=r<0.35?"bad":r<0.6?"meh":"ok";
+    return`<figure class="dzAgeF"><div class="dzAgeI">${dzMini(DZ.m,"",`filter:blur(${dzR2(bl)}px) saturate(${dzR2(1-fd*0.9)});opacity:${dzR2(1-fd*0.7)}`,a.spread||0)}</div>
+<figcaption>${y?y+"y":"Now"} <b class="${cls}">${Math.round(r*100)}</b></figcaption></figure>`;}).join("");}
+
+/* ---- the stress report ---- */
+const DZ_SEV={3:{l:"Serious",i:`<svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z" fill="currentColor"/><path d="M12 7v6M12 16.5v.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`},
+  2:{l:"Warning",i:`<svg viewBox="0 0 24 24"><path d="M12 2.5 22.5 21h-21z" fill="currentColor"/><path d="M12 9v5M12 17.3v.4" stroke="#1c1813" stroke-width="2.2" stroke-linecap="round"/></svg>`},
+  1:{l:"Note",i:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`}};
+function dzRenderStress(){
+  const host=$("dzStress");if(!host||!DZ.cur)return;const c=DZ.cur;
+  const sub=`<p class="dzSub">Balance <b>${Math.round(c.balance*100)}</b> · Coherence <b>${Math.round(c.coherence*100)}</b> · Overall <b>${Math.round(c.total*100)}</b></p>`;
+  if(!DZ.m.els.length){host.innerHTML=`<h2>Stress report</h2><p class="hint">Put something on the board and this lists what will go wrong with it on skin.</p>`;return;}
+  host.innerHTML=`<h2>Stress report</h2>${sub}${c.stress.length?`<ul class="dzSt">${c.stress.map(s=>`<li class="sev${s.sev}"><span class="ic" role="img" aria-label="${DZ_SEV[s.sev].l}">${DZ_SEV[s.sev].i}</span><span>${esc(dzCap1(s.text))}</span></li>`).join("")}</ul>`
+    :`<p class="dzOk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Nothing to worry about. This will hold up.</p>`}`;}
+
+/* ---- the element drawer (in the sheet) ---- */
+function dzOpenDrawer(){
+  const E=INK_SIM.ELEMENTS,dr=DZ.drawer,tagN={};
+  for(const e of E)for(const t of e.tags)tagN[t]=(tagN[t]||0)+1;
+  const tags=Object.keys(tagN).filter(t=>tagN[t]>=3).sort();
+  openSheet("Add an element",`<div class="dzDrF">
+<label>Style<select id="dzDrS"><option value="">All styles</option>${Object.values(INK_SIM.STYLES).map(s=>`<option value="${s.id}"${s.id===dr.style?" selected":""}>${esc(s.name)}</option>`).join("")}</select></label>
+<label>Tag<select id="dzDrT"><option value="">Any tag</option>${tags.map(t=>`<option value="${t}"${t===dr.tag?" selected":""}>${esc(t.replace(/_/g," "))}</option>`).join("")}</select></label></div>
+<div class="dzDrFam">${segHtml("dzDrFam",[["","All"],["motif","Motifs"],["lettering","Lettering"],["frame","Frames"],["fill","Fills"],["texture","Textures"]],dr.family)}</div>
+<label class="dzSand"><input type="checkbox" id="dzDrSb"${DZ.sandbox?" checked":""}> Show all (sandbox: unlock every element for testing)</label>
+<div class="dzDrG" id="dzDrG"></div>`);
+  const grid=()=>dzDrawerGrid();
+  $("dzDrS").addEventListener("change",e=>{dr.style=e.target.value;grid();});
+  $("dzDrT").addEventListener("change",e=>{dr.tag=e.target.value;grid();});
+  $("dzDrFam").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;dr.family=b.dataset.v;
+    $("dzDrFam").querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});grid();});
+  $("dzDrSb").addEventListener("change",e=>{DZ.sandbox=e.target.checked;grid();});
+  $("dzDrG").addEventListener("click",e=>{const t=e.target.closest(".dzTile");if(!t)return;const d=dzDef(t.dataset.id);
+    if(!dzUnlocked(d)){toast("Unlocks at "+dzLockText(d));return;}closeSheet();dzAddEl(d);});
+  grid();}
+function dzDrawerGrid(){
+  const dr=DZ.drawer,host=$("dzDrG");if(!host)return;
+  const list=INK_SIM.ELEMENTS.filter(e=>(!dr.style||e.styles.includes(dr.style))&&(!dr.family||e.family===dr.family)&&(!dr.tag||e.tags.includes(dr.tag)));
+  list.sort((a,b)=>(dzUnlocked(b)?1:0)-(dzUnlocked(a)?1:0));
+  const sw=lw=>(0.7+lw*0.22).toFixed(2);
+  host.innerHTML=list.length?list.map(e=>{const un=dzUnlocked(e),b=dzEB(e.id),s=Math.max(b.w,b.h),vx=b.x+b.w/2-s/2-4,vy=b.y+b.h/2-s/2-4;
+    return`<button type="button" class="dzTile${un?"":" lock"}" data-id="${e.id}" aria-label="${esc(e.name)}${un?"":", locked: "+esc(dzLockText(e))}">
+<svg viewBox="${dzR2(vx)} ${dzR2(vy)} ${dzR2(s+8)} ${dzR2(s+8)}" aria-hidden="true">${e.fill?`<path d="${e.fill}" fill="${DZ_INK}" fill-opacity="${e.fill===e.path?1:.35}"/>`:""}<path d="${e.path}" fill="none" stroke="${DZ_INK}" stroke-width="${dzR2(sw(e.lineWeightDefault)*s/100)}" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<b>${esc(e.name)}</b><small>${un?esc(e.family)+" · "+e.minSizeMm+" mm+":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>${esc(dzLockText(e))}`}</small></button>`;}).join("")
+    :`<p class="hint">Nothing matches those filters.</p>`;}
+function dzAddEl(d){
+  const box=dzBox(),mn=Math.min(box.wrapMm,box.lengthMm),n=DZ.m.els.length;
+  const mm=clamp(Math.max(d.minSizeMm*1.15,mn*0.4),8,mn*0.9);
+  const e={id:d.id,mx:box.wrapMm/2+(n%4)*6,my:box.lengthMm/2+(n%4)*6,mm,rot:0,lineWeight:d.lineWeightDefault,fill:d.fill?(d.fill===d.path?1:0.5):0,colour:null};
+  dzChange(()=>{if(!n&&!d.styles.includes(DZ.m.style))DZ.m.style=d.styles[0];if(DZ.snap)dzSnapEl(e);DZ.m.els.push(e);DZ.sel=DZ.m.els.length-1;});
+  if(DZ.view!=="board"){DZ.view="board";renderDesign();}
+  else{const s=$("dzStyleSel");if(s)s.value=DZ.m.style;const c=$("dzClear");if(c)c.disabled=false;}}
+
+/* ---- flash: the wall and your own ---- */
+function dzSaveFlash(){
+  if(!DZ.m.els.length){toast("Nothing on the board to save");return;}
+  if(S.flash.length>=FLASH_MINE_CAP){toast(`Your flash book is full (${FLASH_MINE_CAP}). Delete one on the Flash tab first.`);return;}
+  const nm=n=>{const q=/^([^:]+):\s*(.+)$/.exec(n);return q?q[2]+" "+q[1].toLowerCase():n;};   // "Script: Love" -> "Love script"
+  const names=[...new Set(DZ.m.els.map(e=>nm(dzDef(e.id).name)))].slice(0,2).map((n,i)=>i&&!/script$/.test(n)?n.toLowerCase():n);
+  let k=1;while(S.flash.some(f=>f.id==="mf"+k))k++;
+  const d=dzToDesign();d.flash=null;
+  S.flash.push({id:"mf"+k,name:names.join(" and "),design:d,w:S.week,y:S.year});save();
+  toast("Saved to your flash");}
+function dzFlashCard(f,mine){
+  const m=dzFromDesign(f.design||f),sc=INK_SIM.scoreDesign(Object.assign({},f.design||f,{flash:f.id,placement:DZ.m.placement}),dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined});
+  const st=INK_SIM.STYLES[(f.design||f).style];
+  return`<article class="dzFl"><div class="dzFlArt board">${dzMini(m,"")}</div>
+<div class="dzFlTx"><h3>${esc(f.name)}</h3><p class="dzFlMeta">${esc(st?st.name:"")} · ${Math.round((f.design||f).sizeMm)} mm${mine?` · week ${f.w}, ${f.y}`:""}</p>
+${f.note?`<p class="hint">${esc(f.note)}</p>`:""}
+<p class="dzFlNum"><span>${sc.hours} h</span><span>${fmtMoney(sc.price)}</span><span>Read ${Math.round(sc.readability*100)}</span></p>
+<div class="row"><button class="btn sm pri" data-use="${esc(f.id)}" aria-label="Use ${esc(f.name)} on the ${esc(INK_SIM.PLACEMENTS[DZ.m.placement].name)}">Use it</button>${mine?`<button class="btn sm" data-del="${esc(f.id)}" aria-label="Delete ${esc(f.name)} from your flash">Delete</button>`:""}</div></div></article>`;}
+function dzRenderFlash(){
+  const wall=INK_SIM.FLASH||[],mine=S.flash||[],off=Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100);
+  $("dzView").innerHTML=`<div class="card dzFlHd"><h2>Flash wall</h2><p class="hint">Drawn already, stencil ready: flash takes ${off}% fewer hours. Prices are for ${esc(dzClient().name)} on the ${esc(INK_SIM.PLACEMENTS[DZ.m.placement].name)}. Using one replaces the board (Undo brings it back).</p></div>
+<div class="dzFls">${wall.map(f=>dzFlashCard(f,false)).join("")}</div>
+<div class="card dzFlHd"><h2>My flash <span class="dzTag">${mine.length}/${FLASH_MINE_CAP}</span></h2><p class="hint">${mine.length?"Your own designs, saved from the board. They take the flash discount too.":"Nothing yet. On the board, Save to my flash keeps a design here; over the years it becomes your own wall."}</p></div>
+<div class="dzFls">${mine.map(f=>dzFlashCard(f,true)).join("")}</div>`;
+  $("dzView").addEventListener("click",e=>{
+    const u=e.target.closest("[data-use]"),dl=e.target.closest("[data-del]");
+    if(u){const f=wall.find(x=>x.id===u.dataset.use)||mine.find(x=>x.id===u.dataset.use);if(f)dzUseFlash(f);}
+    if(dl){const i=mine.findIndex(x=>x.id===dl.dataset.del);if(i>=0){mine.splice(i,1);save();renderDesign();toast("Deleted from your flash");}}});}
+function dzUseFlash(f){
+  const src=JSON.parse(JSON.stringify(f.design||f)),box=dzBox();
+  src.flash=f.id;src.pos={x:.5,y:.5};
+  /* shrink it to fit the spot if it's bigger than the box */
+  const fp=INK_SIM.footprintOf(src),fit=Math.min(1,box.wrapMm*0.92/(fp.w*src.sizeMm||1),box.lengthMm*0.92/(fp.h*src.sizeMm||1));
+  if(fit<1&&!(src.elements||[]).some(e=>(dzDef(e.id).tags||[]).includes("band")))src.sizeMm*=fit;
+  const before=DZ.cur;DZ.undo.push(JSON.stringify(DZ.m));DZ.redo.length=0;
+  DZ.m=dzFromDesign(src,DZ.m.placement);DZ.sel=-1;DZ.prev=before;dzStore();
+  DZ.view="board";renderDesign();$("panel").scrollTop=0;toast(`${f.name}: flash, ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours`);}
+
+/* ---- keyboard (desktop): arrows nudge, +/- size, [ ] turn, Delete, Ctrl+Z / Ctrl+Shift+Z ---- */
+function dzKeysOnce(){
+  if(DZ.keys)return;DZ.keys=true;
+  document.addEventListener("keydown",ev=>{
+    if(curTab!=="design"||DZ.view!=="board"||sheetOn())return;
+    const t=ev.target,tag=t&&t.tagName;if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA")return;
+    const k=ev.key,mod=ev.ctrlKey||ev.metaKey;
+    if(mod&&(k==="z"||k==="Z")){ev.preventDefault();dzUndoRedo(!ev.shiftKey);return;}
+    if(mod&&(k==="y"||k==="Y")){ev.preventDefault();dzUndoRedo(false);return;}
+    const e=DZ.m.els[DZ.sel];if(!e||mod)return;
+    const st=ev.shiftKey?5:1,mv={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,-st],ArrowDown:[0,st]}[k];
+    if(mv){ev.preventDefault();if(DZ.snap0==null)dzBegin();e.mx+=mv[0];e.my+=mv[1];dzMoveEl(DZ.sel);dzQueue();clearTimeout(DZ.kt);DZ.kt=setTimeout(()=>{dzEnd();dzRenderBoard();dzRenderTools();const g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.focus({preventScroll:true});},350);return;}
+    const a={"+":"s+","=":"s+","-":"s-","_":"s-","]":"r+","[":"r-",Delete:"del",Backspace:"del"}[k];
+    if(a){ev.preventDefault();dzTool(a);const g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.focus({preventScroll:true});}
+    if(k==="Escape"&&DZ.sel>=0){dzSelect(-1);}
+  });}
 /* ===================== app/session.js: the Session tab =====================
    The chair: stencil placement, linework (trace-and-rhythm), shading, colour packing, the client's pain and fatigue
    meters (PR 4). Empty state while nobody is booked in. */
@@ -3245,6 +3974,107 @@ function renderClients(){
 function renderCareer(){
   $("careerBody").innerHTML=`<div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
 <dl class="kv"><dt>Act</dt><dd>1 · Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd></dl></div>`;}
+/* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================
+   An original front/back drawing of the neutral, stylized mannequin (smooth capsule limbs, no face, no anatomical detail),
+   dressed in a crop top and shorts so the ribs/side are bare. Drawn for Ink; no traced art.
+     bmSvg(view, sel, shape, tone) -> SVG string. view "front" | "back", sel = the selected PLACEMENTS id, shape = a
+       BODY_SHAPES id (changes the shoulders, waist, hips and limb thickness), tone 0..1 (tints the skin).
+   Every PLACEMENTS id has a tappable zone on one or both views (<g class="bmz" data-p="forearm_l" tabindex="0">); the
+   Design tab wires the taps and the keyboard. The front view shows the figure's left on the viewer's right; the back view
+   shows it on the viewer's left. Geometry is in a 200 x 420 box. */
+/* zones drawn on one view only (the rest are on both) */
+const BM_BACK_ONLY=/^(upperback|fullback|nape|calf_[lr])$/,BM_FRONT_ONLY=/^(shin_[lr]|foot_[lr]|neck_[lr]|ribs_[lr]|chest_[lr]|sternum)$/;
+const BM_SHAPES={masc:{sh:52,wa:33,hp:30,lm:1.12},femme:{sh:44,wa:28,hp:34,lm:0.9},neutral:{sh:48,wa:31,hp:32,lm:1}};
+/* skin tint stops for tone 0..1 (fill, outline) */
+const BM_SKIN=[[0,"#f5dcc5","#b48a6c"],[0.33,"#dba57c","#9c6c4a"],[0.66,"#9b6442","#5f3a24"],[1,"#4d2f21","#24150d"]];
+const BM_CLOTH={top:"#5e6e6b",shorts:"#3d4350",seam:"rgba(0,0,0,.25)"};
+function bmMix(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);
+  return"#"+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,"0")).join("");}
+function bmSkin(tone){tone=clamp(+tone||0,0,1);
+  for(let i=1;i<BM_SKIN.length;i++)if(tone<=BM_SKIN[i][0]){const a=BM_SKIN[i-1],b=BM_SKIN[i],t=(tone-a[0])/(b[0]-a[0]);return[bmMix(a[1],b[1],t),bmMix(a[2],b[2],t)];}
+  return[BM_SKIN[3][1],BM_SKIN[3][2]];}
+const bmN=v=>Math.round(v*10)/10;
+/* a smooth closed outline through points (Catmull-Rom as cubic Beziers) */
+function bmSmooth(ps){
+  const n=ps.length,P=i=>ps[(i+n)%n];let d="M"+bmN(ps[0][0])+" "+bmN(ps[0][1]);
+  for(let i=0;i<n;i++){const p0=P(i-1),p1=P(i),p2=P(i+1),p3=P(i+2);
+    d+="C"+[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1]].map(bmN).join(" ");}
+  return d+"Z";}
+/* the figure's joints for a shape; g = +1 draws on the viewer's right, -1 on the left */
+function bmPts(k){const c={};
+  c.S=g=>[100+g*(k.sh-4),88];c.E=g=>[100+g*(k.sh+9),160];c.W=g=>[100+g*(k.sh+19),226];c.H=g=>[100+g*(k.sh+24),256];
+  c.Hip=g=>[100+g*k.hp*0.55,236];c.K=g=>[100+g*k.hp*0.6,318];c.A=g=>[100+g*k.hp*0.64,390];c.T=g=>[100+g*k.hp*0.7,404];
+  return c;}
+function bmTorso(k){
+  const R=[[10,66],[k.sh*0.72,75],[k.sh+2,86],[k.sh-9,112],[k.wa+7,142],[k.wa,186],[k.hp+2,222],[k.hp-3,246],[5,254]];
+  const pts=R.map(p=>[100+p[0],p[1]]).concat(R.slice().reverse().map(p=>[100-p[0],p[1]]));
+  return bmSmooth(pts);}
+const bmLine=(a,b)=>`M${bmN(a[0])} ${bmN(a[1])}L${bmN(b[0])} ${bmN(b[1])}`;
+function bmSvg(view,sel,shape,tone){
+  const k=BM_SHAPES[shape]||BM_SHAPES.neutral,c=bmPts(k),fr=view!=="back",[skin,edge]=bmSkin(tone);
+  const W={up:22*k.lm,fo:17.5*k.lm,ha:14*k.lm,th:34*k.lm,sh:23*k.lm,ft:15*k.lm};
+  const torso=bmTorso(k);
+  /* limbs as round-capped strokes: [from, to, width] for both sides */
+  const limbs=[];
+  for(const g of [-1,1]){limbs.push([c.S(g),c.E(g),W.up],[c.E(g),c.W(g),W.fo],[c.W(g),c.H(g),W.ha],[c.Hip(g),c.K(g),W.th],[c.K(g),c.A(g),W.sh],[c.A(g),c.T(g),W.ft]);}
+  let h=`<svg class="bm" viewBox="0 0 200 420" role="group" aria-label="${fr?"Front":"Back"} of the body: tap a spot to tattoo">
+<defs><clipPath id="bmClip${fr?"F":"B"}"><path d="${torso}"/></clipPath></defs>
+<g class="bmFig">`;
+  /* outline pass, then the skin */
+  h+=`<g fill="none" stroke="${edge}" stroke-linecap="round">${limbs.map(l=>`<path d="${bmLine(l[0],l[1])}" stroke-width="${bmN(l[2]+2.4)}"/>`).join("")}</g>`;
+  h+=`<rect x="${100-9*k.lm}" y="46" width="${18*k.lm}" height="30" rx="6" fill="${skin}" stroke="${edge}" stroke-width="1.2"/>`;
+  h+=`<path d="${torso}" fill="${skin}" stroke="${edge}" stroke-width="1.2"/>`;
+  h+=`<g fill="none" stroke="${skin}" stroke-linecap="round">${limbs.map(l=>`<path d="${bmLine(l[0],l[1])}" stroke-width="${bmN(l[2])}"/>`).join("")}</g>`;
+  h+=`<ellipse cx="100" cy="30" rx="18" ry="22" fill="${skin}" stroke="${edge}" stroke-width="1.2"/>`;
+  /* soft joints, so it reads as a mannequin */
+  h+=`<g fill="none" stroke="${edge}" stroke-opacity=".35" stroke-width=".9">${[-1,1].map(g=>{const e=c.E(g),kn=c.K(g);return`<circle cx="${bmN(e[0])}" cy="${bmN(e[1])}" r="${bmN(W.fo*0.42)}"/><circle cx="${bmN(kn[0])}" cy="${bmN(kn[1])}" r="${bmN(W.sh*0.45)}"/>`;}).join("")}</g>`;
+  /* clothes: crop top (scooped at the front) and shorts, clipped to the body */
+  const clip=`clip-path="url(#bmClip${fr?"F":"B"})"`;
+  const top=fr?`M40 102L86 102Q100 116 114 102L160 102L160 146L40 146Z`:`M40 100L160 100L160 140L40 140Z`;
+  h+=`<g ${clip}><path d="${top}" fill="${BM_CLOTH.top}"/>`;
+  for(const g of [-1,1])h+=`<path d="${bmLine([100+g*k.sh*0.42,70],[100+g*k.sh*0.56,104])}" stroke="${BM_CLOTH.top}" stroke-width="7" stroke-linecap="round"/>`;
+  h+=`<rect x="20" y="212" width="160" height="50" fill="${BM_CLOTH.shorts}"/></g>`;
+  for(const g of [-1,1]){const a=c.Hip(g),b=[a[0]+g*0.6,262];h+=`<path d="${bmLine(a,b)}" stroke="${BM_CLOTH.shorts}" stroke-width="${bmN(W.th+2.6)}" stroke-linecap="butt"/>`;}
+  h+=`<path d="M100 214L100 ${fr?236:244}" stroke="${BM_CLOTH.seam}" stroke-width="1"/>`;
+  /* quiet cues: collarbones at the front, the spine at the back */
+  h+=fr?`<path d="M94 79Q${100-k.sh*0.4} 76 ${100-k.sh*0.75} 82M106 79Q${100+k.sh*0.4} 76 ${100+k.sh*0.75} 82" fill="none" stroke="${edge}" stroke-opacity=".45" stroke-width=".9"/>`
+       :`<path d="M100 78L100 100M100 140L100 206" fill="none" stroke="${edge}" stroke-opacity=".35" stroke-width=".9"/>`;
+  h+=`</g>`;
+  /* ---- the zones ---- */
+  const zs=[];
+  const Z=(id,inner)=>{const p=INK_SIM.PLACEMENTS[id];if(!p)return;zs.push(`<g class="bmz${id===sel?" on":""}" data-p="${id}" tabindex="0" role="button" aria-pressed="${id===sel}" aria-label="${esc(p.name)}">${inner}</g>`);};
+  const strokeZ=(a,b,w)=>`<path class="s" d="${bmLine(a,b)}" stroke-width="${bmN(w)}"/>`;
+  const fillZ=(d,cl)=>`<path class="f" d="${d}"${cl?" "+clip:""}/>`;
+  const rect=(x,y,w,hh,r)=>`M${bmN(x+r)} ${bmN(y)}H${bmN(x+w-r)}Q${bmN(x+w)} ${bmN(y)} ${bmN(x+w)} ${bmN(y+r)}V${bmN(y+hh-r)}Q${bmN(x+w)} ${bmN(y+hh)} ${bmN(x+w-r)} ${bmN(y+hh)}H${bmN(x+r)}Q${bmN(x)} ${bmN(y+hh)} ${bmN(x)} ${bmN(y+hh-r)}V${bmN(y+r)}Q${bmN(x)} ${bmN(y)} ${bmN(x+r)} ${bmN(y)}Z`;
+  if(!fr){
+    Z("fullback",fillZ(rect(30,80,140,170,8),true));
+    Z("upperback",fillZ(rect(30,80,140,64,8),true));
+    Z("nape",fillZ(rect(100-9*k.lm,46,18*k.lm,30,6)));
+  }
+  for(const s of ["l","r"]){
+    const g=fr?(s==="l"?1:-1):(s==="l"?-1:1);
+    Z("upperarm_"+s,strokeZ(c.S(g),c.E(g),W.up));
+    Z("forearm_"+s,strokeZ(c.E(g),c.W(g),W.fo));
+    Z("hand_"+s,strokeZ(c.W(g),c.H(g),W.ha));
+    const S=c.S(g);Z("shoulder_"+s,`<circle class="f" cx="${bmN(S[0]+g*2)}" cy="${bmN(S[1]-1)}" r="${bmN(12*k.lm)}"/>`);
+    const hp=c.Hip(g),kn=c.K(g);
+    Z("thigh_"+s,strokeZ([hp[0]+g*0.6,fr?268:266],[kn[0],kn[1]-14],W.th-2));
+    if(fr){
+      Z("shin_"+s,strokeZ([kn[0],kn[1]+10],c.A(g),W.sh));
+      Z("foot_"+s,strokeZ(c.A(g),c.T(g),W.ft));
+      Z("neck_"+s,fillZ(g>0?rect(100,48,9*k.lm,26,3):rect(100-9*k.lm,48,9*k.lm,26,3)));
+      Z("ribs_"+s,fillZ(bmSmooth([[100+g*(k.sh-11),114],[100+g*(k.wa+6),144],[100+g*(k.wa-1),190],[100+g*(k.wa-12),188],[100+g*(k.wa-6),146],[100+g*(k.sh-22),118]]),true));
+    }else{
+      Z("calf_"+s,strokeZ([kn[0],kn[1]+10],c.A(g),W.sh));
+    }
+  }
+  if(fr){
+    for(const s of ["l","r"]){const g=s==="l"?1:-1;Z("chest_"+s,fillZ(g>0?rect(101,80,k.sh-12,30,8):rect(100-(k.sh-11),80,k.sh-12,30,8),true));}
+    Z("sternum",fillZ(rect(93,96,14,62,6)));
+  }
+  h+=`<g class="bmZones">${zs.join("")}</g>`;
+  h+=`<text class="bmLbl" x="100" y="418" text-anchor="middle">${fr?"FRONT":"BACK"}</text></svg>`;
+  return h;}
 /* ===================== app/help.js: help overlays on the apprenticeship (PR 9). Last app file: closes the script. ===================== */
 </script>
 <script>__ldGo(start)</script>
