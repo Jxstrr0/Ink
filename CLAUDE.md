@@ -19,6 +19,7 @@ node build.js --check    # exit 1 if either is stale, a script block does not co
 node check-savecode.js   # save-code checks: round trip, damaged and cut-off codes, storage full
 node tools/sim-test.js   # the sim on a fixed seed: every design sub-score, aging at 5/10/20 years, sanity assertions
 node tools/element-sheet.js [--png out.png]   # validate the element library (and render a contact sheet)
+node tools/session-test.js   # the session and kit on fixed traces: flattener, steady vs rushed, blowouts, joins, pain, zones, multi-session
 ```
 
 Run all of them before every commit. To play a local copy: `python3 -m http.server` in the repo root and open it in a browser. The service worker only registers on a real host (or with `?sw=1`), so local testing is never cached.
@@ -76,7 +77,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.3.0, November 2026)
+## Current status (0.1.4.0, November 2026)
+
+- PR 4 built: the kit (`sim/kit.js`: machines, needles, inks, voltage and stroke, `kitBands`/`kitDeltas`; the build panel on the Studio tab) and the session (`sim/session.js`, `app/session.js`): stencil placement, trace-and-rhythm linework, shading and colour zones, pain and fatigue with break, numbing cream and chat, multi-session pieces (progress on the queue item), practice on fake skin, results and XP, the machine buzz. Handedness and Assist in Settings. New S fields: `kit` (starter kit), `session`, `settings.handed`, `settings.assist`; a new career starts with 3,000 ₽. Session tests: `node tools/session-test.js`.
 
 - PR 3 built: the week clock (`sim/calendar.js`: `advanceWeek`, `nextStop`) behind Career › Next; clients, briefs, the consult, memory, returns and referrals (`sim/clients.js`), walk-ins (`sim/market.js`); the Clients tab (`app/clients.js`): this week, the consult chat, designing for a booking, the client list and card. Sittings use a temporary Quick session until PR 4. S.board gained `item`. Save size grows with every client: PR 7's `CLIENT_CAP` compaction is required.
 
