@@ -251,8 +251,8 @@ const cqC = SIM.makeClient(SIM.rng(9), { id: "c1", year: 2006 }); CQ.clients.pus
 for (let i = 0; i < 8; i++) CQ.queue.push({ id: "q" + (i + 1), kind: "session", client: "c1", w: 11, y: 2006, hours: 6, sessionNo: 1, sessions: 1, price: 1000, deposit: 200, ask: cqC.ask });
 const cqLog = SIM.advanceWeek(CQ);
 check("sessions that don't fit the week's hours carry to next week", CQ.queue.filter(q => q.w === 11).reduce((a, q) => a + q.hours, 0) <= SIM.WEEK.stages.chair.hours && CQ.queue.some(q => q.w === 12) && cqLog.some(l => l.k === "carried"));
-const fin = SIM.finishSession(CQ, CQ.queue.find(q => q.w === 11).id, { design: rose });
-check("finishing a session pays the balance and creates the piece", fin.piece && CQ.pieces.length === 1 && CQ.cash === 800);
+const cqCash = CQ.cash, fin = SIM.finishSession(CQ, CQ.queue.find(q => q.w === 11).id, { design: rose });   // PR 7: advanceWeek now charges supplies, so compare the change
+check("finishing a session pays the balance and creates the piece", fin.piece && CQ.pieces.length === 1 && CQ.cash - cqCash === 800);
 
 /* ---- PR 5: heals and the reputation tracks (all on fixed seeds) ---- */
 const HC = (care, loyalty) => Object.assign(SIM.makeClient(SIM.rng(31), { id: "c1", year: 2004 }), { loyalty: loyalty == null ? 0.5 : loyalty });
@@ -322,10 +322,23 @@ for (let i = 0; i < 12; i++) { const c = HC(); c.id = "c" + (i + 2); c.traits.af
 for (let i = 0; i < 3; i++) SIM.advanceWeek(HR);
 check("rep: a run of clean heals through the calendar raises peers", HR.rep.peers > 20 && HR.pieces.every(p => p.heal), HR.rep.peers + " peers, grades " + HR.pieces.map(p => p.heal).join(","));
 
-/* ---- the synthetic 30-year run: consult and accept walk-ins, do every session with default outputs ---- */
+/* ---- the synthetic 30-year run: consult and accept walk-ins, do every session with default outputs ----
+   PR 7: the acts now move through the career functions (rent a chair in year 3, lease in year 8, legacy in year 20), the
+   studio builds two stations and hires two artists, invites are declined, and the client archive (CLIENT_CAP) runs. */
+const AUTO_SIZES = {};
 function autoWeek(S) {
   const yrs = S.year - 2000;
-  S.studio.stage = yrs < 3 ? "apprentice" : yrs < 8 ? "chair" : yrs < 20 ? "studio" : "legacy";
+  SIM.careerEnsure(S);
+  if (yrs >= 3 && S.studio.stage === "apprentice") SIM.rentChair(S);
+  if (yrs >= 8 && S.studio.stage === "chair") { if (S.cash < SIM.leaseNeed(S).cost) S.cash = SIM.leaseNeed(S).cost + 1; SIM.leaseStudio(S); }
+  if (S.studio.stage === "studio" || S.studio.stage === "legacy") {
+    while ((S.studio.build.stations || 0) < 2) { const c = SIM.buildCost(S, "stations"); if (S.cash < c) S.cash = c; SIM.buildUp(S, "stations"); }
+    if (!S.studio.build.steril) { const c = SIM.buildCost(S, "steril"); if (S.cash < c) S.cash = c; SIM.buildUp(S, "steril"); }
+    if (SIM.staffRoom(S) > 0) { const cand = SIM.staffCandidates(S)[0]; if (cand) { if (S.cash < 1e6) S.cash += 1e6; SIM.hireStaff(S, cand.cid); } }
+    if (S.cash < 0) S.cash = 0;   // the auto-player is never the one testing the soft fail
+  }
+  if (yrs >= 20 && S.studio.stage === "studio") SIM.goLegacy(S);
+  for (const inv of S.career.invites.slice()) if (inv.kind !== "chair") SIM.enterInvite(S, inv.id, false);
   S.rep.walkins = Math.min(100, yrs * 6); S.rep.collectors = Math.min(100, yrs * 4); S.rep.peers = Math.min(100, yrs * 3);
   S.skills.consult = Math.min(10, Math.floor(yrs / 2)); S.skills.speed = Math.min(10, Math.floor(yrs / 3));
   const r = SIM.rng(S.seed).fork("auto:" + S.year + ":" + S.week), now = SIM.weekIndex(S.week, S.year);
@@ -339,6 +352,14 @@ function autoWeek(S) {
   for (const q of S.queue.slice()) if (q.kind === "session" && SIM.weekIndex(q.w, q.y) === now)
     SIM.finishSession(S, q.id, { design: q.design || SIM.proxyDesign(q.ask), out: { lineQuality: 0.8, depthQuality: 0.8, saturation: 0.8, trauma: 0.4 } });
 }
+/* the save's size: ink-save JSON (packed, as the app writes it) and the INK1: backup code (app/savecode.js buZip) */
+const BU = (() => { const ctx = { TextEncoder, TextDecoder, Uint8Array, console }; vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(ROOT, "src/app/savecode.js"), "utf8") + "\nthis.zip=buZip;this.sum=buSum;", ctx); return ctx; })();
+function saveSizes(S) {
+  const t0 = process.hrtime.bigint(), json = JSON.stringify(SIM.packSave(S)), packMs = Number(process.hrtime.bigint() - t0) / 1e6;
+  const body = BU.zip(new TextEncoder().encode(JSON.stringify({ v: 1, at: 0, ver: "test", save: JSON.parse(json), slots: [null, null, null] })));
+  return { json: json.length, raw: JSON.stringify(S).length, code: 5 + body.length + 6, clients: S.clients.length, full: S.clients.filter(c => !c.compact).length, pieces: S.pieces.length, staffPieces: S.pieces.filter(p => p.by).length, packMs };
+}
 const LONG = S0({ seed: SEED });
 const perYear = {}, tRun = process.hrtime.bigint();
 let lastLog = null;
@@ -346,6 +367,7 @@ for (let i = 0; i < 1560; i++) {
   autoWeek(LONG);
   const t0 = process.hrtime.bigint(); lastLog = SIM.advanceWeek(LONG); const dt = Number(process.hrtime.bigint() - t0) / 1e6;
   (perYear[LONG.year] = perYear[LONG.year] || []).push(dt);
+  if (LONG.week === 1 && [2005, 2010, 2020, 2030].includes(LONG.year)) AUTO_SIZES[LONG.year - 2000] = saveSizes(LONG);
 }
 const runMs = Number(process.hrtime.bigint() - tRun) / 1e6;
 const y30 = perYear[2029], avg30 = y30.reduce((a, b) => a + b, 0) / y30.length, max30 = Math.max(...y30);
@@ -353,9 +375,98 @@ const ids = LONG.clients.map(c => c.id);
 check("30-year run: 1,560 weeks lands on 2030 week 1", LONG.year === 2030 && LONG.week === 1, LONG.week + "/" + LONG.year);
 check("30-year run: no duplicate client, piece or queue ids", new Set(ids).size === ids.length && new Set(LONG.pieces.map(p => p.id)).size === LONG.pieces.length && new Set(LONG.queue.map(q => q.id)).size === LONG.queue.length);
 check("30-year run: every client is an adult", LONG.clients.every(c => c.age >= 18 && SIM.clientAge(c, LONG.year) >= 18));
-check("30-year run: referrals, returns and named pieces all happen", LONG.clients.some(c => c.referredBy) && LONG.clients.some(c => c.history.some(h => h.kind === "consult" && h.src === "return")) && LONG.pieces.every(p => /^the .+ on .+'s .+/.test(p.name)));
+check("30-year run: referrals, returns and named pieces all happen", LONG.clients.some(c => c.referredBy) && LONG.clients.some(c => (c.history || []).some(h => h.kind === "consult" && h.src === "return")) && LONG.pieces.every(p => /^the .+ on .+'s .+/.test(p.name)));
 check("30-year run: advanceWeek under 50 ms at year 30", avg30 < 50 && max30 < 150, avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 check("the 30-year run is deterministic (first 2 years, twice)", (() => { const a = S0({ seed: 77 }), b = S0({ seed: 77 }); for (let i = 0; i < 104; i++) { autoWeek(a); SIM.advanceWeek(a); autoWeek(b); SIM.advanceWeek(b); } return JSON.stringify(a) === JSON.stringify(b) && a.clients.length > 0; })());
+
+/* ---- PR 7: career, studio, money, staff, the client archive and the save's size ---- */
+const PI = y => SIM.priceIndex(y), RUB = (y, v) => Math.round(v * PI(y) / 10) * 10;
+{ /* costs: the chair's cut of last week's takings, supplies for booked hours, studio rent and upkeep */
+  const C1 = S0({ week: 10, year: 2004, studio: { stage: "chair", staff: [] }, cash: 50000 }); SIM.careerEnsure(C1); C1.career.split = "standard";
+  C1.career.money.cur.in.sitting = 10000;
+  C1.queue.push({ id: "q1", kind: "session", client: "c9", w: 11, y: 2004, hours: 4, sessionNo: 2, sessions: 2, price: 0, deposit: 0 });
+  SIM.advanceWeek(C1); const o1 = C1.career.money.cur.out;
+  check("costs: a chair pays the shop its cut of last week's takings", o1.chair === Math.round(10000 * SIM.CHAIR_SPLIT.standard), JSON.stringify(o1));
+  check("costs: supplies are charged per booked hour", o1.supplies === RUB(2004, SIM.SUPPLIES.perHour * 4), JSON.stringify(o1));
+  const C2 = S0({ week: 10, year: 2010, studio: { stage: "studio", staff: [], lease: { w: 1, y: 2010 }, build: { stations: 1 } }, cash: 500000 }); SIM.careerEnsure(C2);
+  SIM.advanceWeek(C2); const o2 = C2.career.money.cur.out;
+  check("costs: a studio pays rent, utilities and station upkeep every week", o2.rent === RUB(2010, SIM.LEASE.rentWeek + SIM.LEASE.utilities + SIM.STUDIO_STAGES.stations.upkeep), JSON.stringify(o2));
+  check("costs: the week's ledger matches the cash", C2.cash === 500000 - Object.values(o2).reduce((a, b) => a + b, 0) + Object.values(C2.career.money.cur.in).reduce((a, b) => a + b, 0));
+}
+{ /* the soft fail: four weeks under the floor closes the studio; clients, pieces and rep stay */
+  const mk = gw => { const F = S0({ week: 10, year: 2012, studio: { stage: "studio", staff: [], lease: { w: 1, y: 2010 }, build: { stations: 2, steril: 1 } }, cash: -1e6, rep: { walkins: 40, collectors: 30, peers: 30 } });
+    SIM.careerEnsure(F); F.career.mentor.goodwill = gw; F.career.insp = 1e9;
+    for (let i = 0; i < 6; i++) { const c = HC(); c.id = "c" + (i + 1); F.clients.push(c); SIM.addPiece(F, { client: c.id, design: rose, out: GOOD, heal: "crisp" }); }
+    F.studio.staff.push({ id: "s1", name: "Lev Orlov", first: "Lev", style: "blackwork", skill: 5, ego: 0.3, cut: 0.4, poach: 0, loyalty: 0.9, pieces: 0, earned: 0 }); F.studio.nextStaff = 2;
+    return F; };
+  const F = mk(0.2), nC = F.clients.length, rep0 = clone(F.rep), myPieces = F.pieces.filter(p => !p.by).length; let wk = 0;
+  while (F.studio.stage === "studio" && wk < 8) { F.cash = Math.min(F.cash, -1e6); SIM.advanceWeek(F); wk++; }
+  check("soft fail: four weeks under BROKE.floor closes the studio and drops you to a chair", F.studio.stage === "chair" && wk === SIM.BROKE.weeks, wk + " weeks, " + F.studio.stage);
+  check("soft fail: staff go, the lease and the build-out go", F.studio.staff.length === 0 && !F.studio.lease && F.studio.build.stations === 0 && F.career.alumni.some(a => a.id === "s1"));
+  check("soft fail: clients, your pieces and your reputation stay", F.clients.length === nC && F.pieces.filter(p => !p.by).length === myPieces && F.rep.collectors >= rep0.collectors - 1 && F.rep.peers >= rep0.peers - 1);
+  check("soft fail: a scene for the app and a fresh start in cash", F.career.scene && F.career.scene.kind === "broke" && F.career.scene.staff[0] === "Lev Orlov" && F.cash === RUB(2012, SIM.BROKE.restart) && F.career.fails === 1);
+  const L = mk(0.9); for (let i = 0; i < 4; i++) { L.cash = Math.min(L.cash, -1e6); SIM.advanceWeek(L); }
+  check("soft fail: once, a mentor with high goodwill lends you the money instead", L.studio.stage === "studio" && L.career.mentor.loan === true && L.career.money.cur.in.loan === RUB(2012, SIM.BROKE.loan));
+}
+{ /* the four acts and Act 1's tutorial */
+  const A = S0({ seed: 5 }); A.career = SIM.careerFresh(); SIM.careerEnsure(A);
+  check("Act 1: walk-ins stay closed until the friend step", SIM.walkinsOpen(A) === false && SIM.apprenticeGoal(A).id === "chore");
+  const ch = SIM.doChore(A, SIM.CHORES[0].id);
+  check("Act 1: a chore earns XP and goodwill and passes a week", A.career.chores === 1 && A.week === 2 && A.career.mentor.goodwill > SIM.MENTOR.goodwill.start && ch.line.length > 0);
+  const fb = SIM.friendBooking(A);
+  check("Act 1: a friend's piece is free and booked this week", fb && fb.friend && fb.price === 0 && SIM.weekIndex(fb.w, fb.y) === SIM.weekIndex(A.week, A.year) && A.career.friends.length === 1);
+  SIM.finishSession(A, fb.id, { design: SIM.proxyDesign(fb.ask), out: GOOD });
+  SIM.apprenticeSteps(A);
+  check("Act 1: after the friend's piece, walk-ins open", SIM.walkinsOpen(A) === true && !!A.career.steps.friend && SIM.apprenticeGoal(A).id !== "friend");
+  A.year = 2002; A.week = 1; const rc = SIM.rentChair(A);
+  check("Act 2: renting a chair early costs Arkady's goodwill", rc.ok && rc.early && A.studio.stage === "chair" && A.career.reached.chair && A.career.mentor.left.early === true);
+  check("Act 3: a lease needs cash and a year (or rep)", SIM.leaseStudio(A).ok === false);
+  A.year = 2008; A.cash = 1e6; const ls = SIM.leaseStudio(A);
+  check("Act 3: leasing sets the stage and charges the deposit", ls.ok && A.studio.stage === "studio" && A.cash === 1e6 - ls.cost && A.career.reached.studio);
+  check("Act 4: Legacy waits for its years (or collectors)", SIM.goLegacy(A).ok === false);
+  A.year = 2018; check("Act 4: Legacy sets the stage", SIM.goLegacy(A).ok && A.studio.stage === "legacy" && A.career.reached.legacy);
+  const K = S0({ seed: 6 }); K.career = SIM.careerFresh(); SIM.skipBroom(K);
+  check("Skip the broom: a rented chair in week 1 of 2003 with the tutorial done", K.year === 2003 && K.week === 1 && K.studio.stage === "chair" && SIM.apprenticeGoal(K) === null && SIM.walkinsOpen(K) && K.skills.linework > 0 && K.rate > 0);
+}
+{ /* staff: their pieces go to the shop gallery and shop rep, never your body of work */
+  const T = S0({ week: 10, year: 2012, studio: { stage: "studio", staff: [], lease: { w: 1, y: 2010 }, build: { stations: 2 } }, cash: 2e6, rep: { walkins: 50, collectors: 30, peers: 30 } });
+  SIM.careerEnsure(T); T.career.insp = 1e9;
+  const cand = SIM.staffCandidates(T); const h1 = SIM.hireStaff(T, cand[0].cid), h2 = SIM.hireStaff(T, cand[1].cid), h3 = SIM.hireStaff(T, cand[2].cid);
+  check("staff: hiring fills stations and no more", h1.ok && h2.ok && !h3.ok && h3.why === "stations" && T.studio.staff.length === 2);
+  const mine0 = T.pieces.filter(p => !p.by).length;
+  for (let i = 0; i < 12; i++) { T.cash = 2e6; SIM.advanceWeek(T); }
+  const sp = T.pieces.filter(p => p.by);
+  check("staff: they finish pieces from simStaffSession", sp.length > 4 && sp.every(p => p.out && p.out.lineQuality > 0 && p.out.trauma > 0), sp.length + " pieces");
+  check("staff: their pieces are not yours (not in your body of work or the Legacy count)", T.pieces.filter(p => !p.by).length === mine0 && SIM.legacySummary(T).pieces === mine0 && SIM.legacySummary(T).shopPieces === sp.length);
+  check("staff: shop pieces carry the guest client and name the artist", sp.every(p => p.guest && p.guest.n && !SIM.findClient(T, p.client) && T.studio.staff.concat(T.career.alumni).some(s => s.id === p.by)) && SIM.staffName(T, sp[0].by).length > 2);
+  check("staff: heals move the shop's rep, not yours", sp.some(p => p.heal) && T.studio.rep !== 0);
+  const o1 = SIM.simStaffSession({ id: "s1", skill: 2 }, rose, { r: SIM.rng(1) }), o2 = SIM.simStaffSession({ id: "s1", skill: 9 }, rose, { r: SIM.rng(1) });
+  check("staff: simStaffSession is seeded and skill shows", JSON.stringify(o1) === JSON.stringify(SIM.simStaffSession({ id: "s1", skill: 2 }, rose, { r: SIM.rng(1) })) && o2.lineQuality > o1.lineQuality && o2.trauma < o1.trauma);
+}
+{ /* a convention: judged, charged, recorded */
+  const V = clone(LONG); SIM.unpackSave(V); const cv = SIM.CONVENTIONS[0], cash0 = V.cash, fee = RUB(V.year, cv.fee + cv.travel);
+  V.career.invites.push({ id: "conv:" + cv.id + ":t", kind: "conv", conv: cv.id, fee });
+  const res = SIM.enterInvite(V, "conv:" + cv.id + ":t", true);
+  check("convention: the fee is charged and the result recorded", res.ok && res.kind === "conv" && V.career.conv[V.career.conv.length - 1].id === cv.id && V.cash === cash0 - fee + (res.place ? RUB(V.year, cv.prize[res.place - 1]) : 0), JSON.stringify(res));
+}
+/* the client archive (CLIENT_CAP) and the packed save */
+const ids30 = LONG.pieces.map(p => p.id);
+check("archive: at most CLIENT_CAP full client records at year 30", LONG.clients.filter(c => !c.compact).length <= SIM.CLIENT_CAP + 20 && LONG.clients.some(c => c.compact), LONG.clients.filter(c => !c.compact).length + " full");
+check("archive: pieces are never dropped (p1..pN, every one)", ids30.every((id, i) => id === "p" + (i + 1)));
+check("archive: compacted clients came back during the run", LONG.clients.some(c => (c.history || []).some(h => h.kind === "note" && /back after a long while/.test(h.text))));
+{ const X = clone(LONG), cc = X.clients.find(c => c.compact && (c.pieces || []).length), np = cc.pieces.length; SIM.expandClient(X, cc);
+  check("archive: expandClient brings a compacted client back with their pieces", !cc.compact && cc.ask && cc.brief && cc.pieces.length === np && cc.history.length === 1); }
+const PK = JSON.stringify(SIM.packSave(LONG)), UN = SIM.unpackSave(JSON.parse(PK));
+check("packed save: every piece comes back (ids, names, placements, heals, artists)", UN.pieces.length === LONG.pieces.length && UN.pieces.every((p, i) => { const q = LONG.pieces[i]; return p.id === q.id && p.client === q.client && p.name === q.name && p.design.placement === q.design.placement && p.heal === q.heal && p.by === q.by && Math.abs(p.out.lineQuality - q.out.lineQuality) < 0.001; }));
+check("packed save: compacted clients come back with their pieces lists", UN.clients.length === LONG.clients.length && UN.clients.every((c, i) => c.id === LONG.clients[i].id && (c.pieces || []).length === (LONG.clients[i].pieces || []).length));
+check("packed save: packing the unpacked save gives the same JSON", JSON.stringify(SIM.packSave(UN)) === PK);
+const SZ = AUTO_SIZES[30];
+check("save size: ink-save JSON at year 30 under 2 MB, the backup code under 1.2 MB", SZ.json < 2e6 && SZ.code < 1.2e6, JSON.stringify(SZ));
+check("save size: packing at year 30 takes under 150 ms", SZ.packMs < 150, SZ.packMs.toFixed(1) + " ms");
+{ const sig = SIM.signatureOf(LONG), sum = SIM.legacySummary(LONG);
+  check("signature: thirty years of work settle into a signature", sig.ready && sig.style && sig.strength > 0, JSON.stringify(sig));
+  check("Legacy: the summary has the oldest piece that reads, the busiest client, decades and apprentices", sum.oldest && sum.most && sum.most.n > 1 && Object.keys(sum.decades).length >= 3 && sum.pieces + sum.shopPieces === LONG.pieces.length && Array.isArray(sum.apprentices), JSON.stringify({ oldest: sum.oldest, most: sum.most, dec: sum.decades }));
+  check("Legacy: the 30-year auto career reached all four acts ", ["chair", "studio", "legacy"].every(k => LONG.career.reached[k])); }
 
 if (!QUIET) {
   console.log("\nsample briefs:");
@@ -376,15 +487,17 @@ if (!QUIET) {
   console.log("Next, four presses, if only booked clients, heals and events stopped it:");
   for (let i = 0; i < 4; i++) { const res = SIM.nextStop(NY); console.log("  [" + res.weeks + " wk, stop: " + res.why + "] " + res.line); }
   SIM.WEEK.nextStopsOnWalkins = true;
-  const retN = LONG.clients.filter(c => c.history.some(h => h.kind === "consult" && h.src === "return")).length;
+  const retN = LONG.clients.filter(c => (c.history || []).some(h => h.kind === "consult" && h.src === "return")).length;
   console.log("\n30-year run: " + LONG.clients.length + " clients, " + LONG.pieces.length + " pieces, " + LONG.clients.filter(c => c.referredBy).length + " referred, " + retN + " came back, queue " + LONG.queue.length +
-    ", cash " + LONG.cash.toLocaleString("en-CA") + " RUB, S as JSON " + Math.round(JSON.stringify(LONG).length / 1024) + " KB (uncompacted; CLIENT_CAP is PR 7). whole run " + Math.round(runMs) + " ms");
+    ", cash " + LONG.cash.toLocaleString("en-CA") + " RUB, S as JSON " + Math.round(JSON.stringify(LONG).length / 1024) + " KB unpacked. whole run " + Math.round(runMs) + " ms");
   console.log("last advanceWeek log: " + lastLog.map(l => l.text).join(" | "));
   console.log("\nheals (300 pieces each): good outputs + good aftercare " + JSON.stringify(hGood) + "; rough + bad aftercare " + JSON.stringify(hRoughBad) +
     "; rough but low trauma " + JSON.stringify(hLowT) + "; good with 8 blowouts " + JSON.stringify(hBlow));
   const lg = LONG.pieces.reduce((a, p) => (a[p.heal || "none"] = (a[p.heal || "none"] || 0) + 1, a), {});
   console.log("30-year run heals: " + JSON.stringify(lg) + "; rep after 12 clean heals from 20/20/20: " + JSON.stringify(HR.rep));
 }
+if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(LONG));   // DUMP=file: the year-30 state, for poking at
+console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; "));
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
 /* ---- timing ---- */

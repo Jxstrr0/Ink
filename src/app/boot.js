@@ -38,7 +38,8 @@ function openSettings(){
 <p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
 <section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
 <section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
-<div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div></section>
+<div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div>
+${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtml()}`:""}</section>
 <section id="set-app" hidden><h3>App</h3><div class="row"><button class="btn pri" id="pwaInstall" hidden>Install app</button></div>
 <p class="hint" id="pwaIos" hidden>On iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</p></section>
 <section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p>
@@ -54,6 +55,7 @@ function openSettings(){
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
+  if(typeof slWire==="function")slWire();
   pwaSync();}
 
 /* ---- PWA: install offer and the update bar ---- */
@@ -88,7 +90,7 @@ function pwaInit(){
 
 /* ---- start: load the save, wire the page, draw the studio ---- */
 function start(){
-  loadSaved();applySettings();
+  const had=loadSaved();applySettings();
   document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{INK_SOUND.tick();const again=b.dataset.tab===curTab;showTab(b.dataset.tab);if(again)$("panel").scrollTo({top:0});}));
   $("setOpen").addEventListener("click",openSettings);
   $("sheetClose").addEventListener("click",closeSheet);$("scrim").addEventListener("click",closeSheet);
@@ -99,4 +101,6 @@ function start(){
   pwaInit();
   renderHeader();showTab("studio");
   save();
-  window.__ldDone&&__ldDone();}
+  window.__ldDone&&__ldDone();
+  if(!had&&typeof slNewOpen==="function")slNewOpen(true);   // PR 7: the start screen on a first visit
+  else if(typeof lgSceneOpen==="function")lgSceneOpen();}

@@ -6,7 +6,7 @@
    Every cache name starts with "ink-": Prairie Engine Works lives on the same origin with "pew-" caches, and each worker only ever
    deletes caches with its own prefix. A worker that finds an opaque three.js copy takes over at once instead of waiting. */
 "use strict";
-const CACHE = "ink-shell-v0.1.6.0-4a3a783b18", MEDIA = "ink-media-v1-e3b0c442", LIBS = "ink-libs-v1";
+const CACHE = "ink-shell-v0.1.7.0-592d10ba52", MEDIA = "ink-media-v1-e3b0c442", LIBS = "ink-libs-v1";
 const PRECACHE = ["index.html","manifest.webmanifest","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg"], CDN = ["https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js","https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"];
 const LIB_HOSTS = ["cdnjs.cloudflare.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 const BASE = new URL("./", self.location).pathname;

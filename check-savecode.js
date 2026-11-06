@@ -31,10 +31,16 @@ function stateCore() {
   if (a < 0 || b < 0) throw new Error("couldn't find the state section in src/app/state.js");
   return s.slice(a, b).replace(/^let S=/m, "S=");
 }
-function load() {
+/* the real INK_SIM (every src/sim/ file in manifest order, without the <script> tags), for the PR 7 packed-save checks */
+function simCode() {
+  const list = fs.readFileSync(path.join(ROOT, "src", "manifest.txt"), "utf8").split("\n").map(l => l.trim()).filter(l => l.startsWith("sim/"));
+  return list.map(f => fs.readFileSync(path.join(ROOT, "src", f), "utf8")).join("").replace(/<\/?script>/g, "");
+}
+function load(withSim) {
   const code = fs.readFileSync(SRC, "utf8");
   const ctx = { localStorage: fakeStorage(), TextEncoder, TextDecoder, Uint8Array, VERSION: "test", S: null, Date, JSON };
   vm.createContext(ctx);
+  if (withSim) vm.runInContext(simCode(), ctx, { filename: "sim.js" });
   vm.runInContext(stateCore() + "\n" + code + "\nthis.__set=o=>{S=o;};this.__get=()=>S;", ctx, { filename: "savecode.js" });
   return ctx;
 }
@@ -237,6 +243,44 @@ check("packing survives big, varied saves (LZW dictionary fills up)", () => {
   const bytes = new TextEncoder().encode("abababababababababab");
   assert.deepStrictEqual(Array.from(a.buUnzip(a.buZip(bytes))), Array.from(bytes), "KwKwK case");
   assert.deepStrictEqual(plain(a.buUnzip(a.buZip(new Uint8Array(0)))), []);
+});
+check("PR 7: a slot squeezed with buZip round trips; a damaged one is refused", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const slot = { z: a.buZip(new TextEncoder().encode(JSON.stringify(game({ year: 2011 })))), savedAt: 1760200000000, week: 27, year: 2011, stage: "studio", pieces: 1 };
+  a.localStorage.setItem("ink-slot2", JSON.stringify(slot));
+  const r = load().buRead(a.buCode());
+  assert.deepStrictEqual(plain(r.data.slots[1]), slot);
+  assert.deepStrictEqual(plain(a.buSlotData(r.data.slots[1])), game({ year: 2011 }));
+  assert.deepStrictEqual(plain(a.buSlotData(r.data.slots[0])).year, 2001, "a plain slot still reads");
+  const bad = { v: 1, at: 0, ver: "t", save: game(), slots: [null, Object.assign({}, slot, { z: slot.z.slice(0, -9) + "zzzzzzzzz" }), null] };
+  const body = a.buZip(new TextEncoder().encode(JSON.stringify(bad)));
+  assert.strictEqual(msg(a, "INK1:" + body + a.buSum(body)), "bad");
+});
+check("PR 7: the career and studio are checked", () => {
+  const a = load();
+  for (const sv of [game({ career: "act 1" }), game({ career: { invites: "none" } }), game({ career: { money: [] } }), game({ studio: "chair" }), game({ studio: { stage: 2 } }), game({ studio: { staff: {} } })]) {
+    const body = a.buZip(new TextEncoder().encode(JSON.stringify({ v: 1, at: 0, ver: "t", save: sv, slots: [] })));
+    assert.strictEqual(msg(a, "INK1:" + body + a.buSum(body)), "bad", JSON.stringify({ career: sv.career, studio: sv.studio }));
+  }
+  const ok = game({ career: { mentor: { goodwill: 0.5 }, invites: [], money: { cur: { in: {}, out: {} }, total: { in: 0, out: 0 } } }, studio: { stage: "chair", staff: [] } });
+  live(a, ok); assert.deepStrictEqual(plain(a.buRead(a.buCode()).data.save), ok);
+});
+check("PR 7: with the sim, a packed career round trips through a code and hydrate", () => {
+  const a = load(true); a.__set(a.freshState());
+  const S = a.__get(); assert(S.career && S.career.mentor && !S.career.old, "a new career starts in Act 1");
+  vm.runInContext(`(() => { const S0 = S; S0.year = 2006; S0.studio.stage = "chair";
+    for (let i = 0; i < 120; i++) { const c = INK_SIM.makeClient(INK_SIM.rng(i + 1), { id: "c" + (i + 1), year: 2006 }); S0.clients.push(c);
+      const p = INK_SIM.addPiece(S0, { client: c.id, design: INK_SIM.proxyDesign(c.ask), out: { lineQuality: 0.81, depthQuality: 0.77, saturation: 0.8, trauma: 0.31 } }); p.heal = "crisp"; }
+    return 1; })()`, a);
+  const before = plain(a.__get()), packed = JSON.parse(a.saveJson());
+  assert(packed.pieces.filter(Array.isArray).length >= 60, "older pieces are packed");
+  const r = load(true).buRead(a.buCode());
+  const b = load(true); assert(b.hydrate(r.data.save));
+  const after = plain(b.__get());
+  assert.strictEqual(after.pieces.length, 120);
+  assert(after.pieces.every((p, i) => !Array.isArray(p) && p.id === before.pieces[i].id && p.name === before.pieces[i].name && p.design.placement === before.pieces[i].design.placement && Math.abs(p.out.trauma - 0.31) < 1e-6), "every piece comes back as a record");
+  assert.strictEqual(after.studio.stage, "chair"); assert(after.career && !after.career.old);
+  assert(b.hydrate({ week: 5, year: 2004 })); assert.strictEqual(plain(b.__get()).career.old, true, "a save from before PR 7 counts the tutorial as done");
 });
 
 let bad = 0;

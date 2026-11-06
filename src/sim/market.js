@@ -45,14 +45,21 @@ function mkSegBoost(S){
 function mkPoisson(r,lambda){const L=Math.exp(-lambda);let k=0,p=1;do{k++;p*=r();}while(p>L&&k<50);return k-1;}
 function generateWalkins(S,r){
   const stage=(S.studio&&S.studio.stage)||"apprentice";
+  if(typeof walkinsOpen==="function"&&!walkinsOpen(S))return[];   // PR 7: an apprentice before the friend step; books closed in Act 4
   const slots=((typeof WEEK!=="undefined"&&WEEK.stages[stage])||{walkinSlots:3}).walkinSlots;
-  let lambda=(WALKINS.base[stage]||WALKINS.base.chair)*mkSeason(S.week);
+  const shop=typeof shopWalkins==="function"?shopWalkins(S):{mult:1,seg:{}};   // PR 7: build-out, vibe, marketing, guest spot
+  let lambda=(WALKINS.base[stage]||WALKINS.base.chair)*mkSeason(S.week)*Math.max(0.2,shop.mult);
   for(const k in WALKINS.rep)lambda*=1+WALKINS.rep[k]*mkRep(S,k);
-  const n=Math.min(slots,mkPoisson(r,lambda));
+  const n=Math.min(slots+(shop.guest?2:0),mkPoisson(r,lambda));
   const out=[],taken=[],segBoost=mkSegBoost(S),sizes=WALKINS.sizes[stage]||null;
+  for(const s in shop.seg||{})segBoost[s]=(segBoost[s]||0)+shop.seg[s];
+  const sig=S.career&&typeof signatureOf==="function"?signatureOf(S):null,rs=r.fork("sig");
   for(let i=0;i<n;i++){
     const id=clNextId(S,taken);taken.push(id);
-    out.push(makeClient(r,{id,year:S.year,week:S.week,stage,segBoost,sizes,src:"walkin"}));
+    const c=makeClient(r,{id,year:S.year,week:S.week,stage,segBoost,sizes,src:"walkin",styleMult:shop.styles||null});
+    /* PR 7: past the SIGNATURE threshold some ask for "your thing"; collectors more often */
+    if(sig&&sig.ready&&rs.chance(SIGNATURE.askChance*sig.strength*(c.theme==="collector"?SIGNATURE.collector:1)))sigApply(c,sig,rs);
+    out.push(c);
   }
   return out;
 }

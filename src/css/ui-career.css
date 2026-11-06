@@ -1,0 +1,80 @@
+/* ===================== ui-career.css: the career, the shop, scenes, slots (PR 7) =====================
+   The act card on the Career tab (Arkady's word, the one-line goal, the step list, chores), invitations, money and
+   skills; the shop cards on the Studio tab (build-out levels, artists); the shop-closed scene and the Legacy screen;
+   the save slots and the New career sheet. Theme tokens only, so the light theme follows; no motion. */
+.caSay{margin:8px 0 10px;padding:10px 12px;border-left:3px solid var(--gold);background:var(--panel2);border-radius:0 10px 10px 0;font-size:15px;font-style:italic}
+.caSay cite{display:block;margin-top:4px;font-style:normal;font-size:12.5px;color:var(--mute)}
+.caSay cite::before{content:"— "}
+.caGoal{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;margin:0 0 10px}
+.caGoal b{font-size:15.5px}
+.caSteps{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:var(--mute)}
+.caSteps li{display:flex;gap:8px;align-items:baseline}
+.caSteps li::before{content:"";flex:0 0 auto;width:9px;height:9px;border:1.5px solid var(--faint);border-radius:50%;transform:translateY(1px)}
+.caSteps li.done{color:var(--faint);text-decoration:line-through}
+.caSteps li.done::before{background:var(--ok);border-color:var(--ok)}
+.caSteps li.now{color:var(--text);font-weight:600}
+.caSteps li.now::before{border-color:var(--red);background:var(--red)}
+.caRow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.caBar{min-width:80px}
+.caChores{display:flex;flex-wrap:wrap;gap:6px}
+.caChores .btn{flex:1 1 calc(50% - 6px);min-height:44px;text-align:left;justify-content:flex-start}
+.caNeed{list-style:none;margin:4px 0;padding:0;font-size:14px;display:flex;flex-direction:column;gap:3px;color:var(--mute)}
+.caNeed li.ok{color:var(--ok)}
+.caLater{font-style:italic}
+.caProj{display:flex;flex-direction:column;gap:8px}
+.caPr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.caPr .clMeta{grid-column:1}
+.caPr .btn,.caPr .ok{grid-column:2;grid-row:1/span 2}
+.caPast{margin:4px 0;padding-left:18px;font-size:14px}
+.caInvR{padding:10px 0;border-top:1px solid var(--line)}
+.caInvR:first-of-type{border-top:0;padding-top:0}
+.caInvR p{margin:0 0 8px}
+.caMoney .kv dd.in{color:var(--ok)}
+.caMoney .kv dd.out{color:var(--mute)}
+.caSkL{display:flex;flex-direction:column;gap:8px}
+.caSkR{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:10px;align-items:center}
+.caSkR>span:first-child{display:flex;flex-direction:column;min-width:0}
+.caPr .ok,.shB .ok{color:var(--ok)}.shS .warn{color:var(--warn)}.caAct .crit{color:var(--crit)}
+
+/* ---- the shop (Studio tab) ---- */
+.shBs{display:flex;flex-direction:column}
+.shB{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.shB:first-child{border-top:0;padding-top:0}
+.shBN{display:flex;flex-direction:column;gap:2px;min-width:0}
+.shLv{display:flex;gap:4px;margin-top:2px}
+.shLv i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.shLv i.on{background:var(--gold)}
+.shS{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.shS:first-of-type{border-top:0;padding-top:0}
+.shSH{display:flex;flex-direction:column}
+.shCut b{min-width:40px;text-align:center;font-variant-numeric:tabular-nums}
+.shCut .btn{min-width:44px;min-height:40px}
+.shSel select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);padding:0 10px}
+
+/* ---- scenes and the Legacy screen ---- */
+.lgScene.card{border-color:var(--gold)}
+.lgScene h2{margin-top:2px}
+.lgKeep{margin:8px 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.lgBig{font-family:var(--disp);font-size:24px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 4px}
+.lgPair{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
+.lgPair p{margin:0}
+.lgFig{margin:0;cursor:pointer}
+.lgFig .gvSvg{width:96px;height:96px;border-radius:10px;display:block}
+.lgFig figcaption{font-size:12px;color:var(--mute);margin-top:2px;text-align:center}
+.lgDec{display:flex;flex-direction:column;gap:6px}
+.lgDecR{display:grid;grid-template-columns:52px 1fr 40px;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+
+/* ---- save slots and New career ---- */
+.slList{display:flex;flex-direction:column}
+.slR{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.slR:first-child{border-top:0}
+.slN{display:flex;flex-direction:column}
+.slOpt{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;padding:14px;margin:0 0 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+.slOpt b{font-size:17px}
+.slOpt span{font-size:13.5px;color:var(--mute)}
+.slOpt.pri{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.slOpt:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+/* the reputation bar's look, outside the reputation grid */
+.caBar,.lgDecR .crRepB,.caSkR .crRepV,.lgDecR b{grid-area:auto}
+.caRow .caBar{width:100%}
+.lgLine{padding-left:12px;border-left:3px solid var(--gold)}

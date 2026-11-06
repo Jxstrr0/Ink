@@ -10,7 +10,7 @@
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
    (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
-   INK_SIM.kitPrice (2000 rubles x the price index). PR 7 adds the studio build-out, staff and money here. */
+   INK_SIM.kitPrice (2000 rubles x the price index). PR 7: the shop's own cards (stage, build-out, staff) come from app/shop.js. */
 const ST={view:null,key:""};
 const ST_CAP={apprentice:"The back room at your mentor's shop",chair:"Your rented chair",studio:"Your studio",legacy:"Your studio, years on"};
 function stGl(){return typeof INK_VIS!=="undefined"&&INK_VIS.ready();}
@@ -58,10 +58,11 @@ function renderStudio(){
 <span class="clMeta">${who.sample?"Sample walk-in · ":""}${n?`${n} piece${n>1?"s":""} on them`:"No ink from you yet"}${who.live?" · stencil on":""}</span></div>
 ${gl?segHtml("stView",[["consult","Face-on"],["session","The work"],["reveal","Reveal"]],ST.view):""}
 ${gl?`<p class="hint" style="margin:8px 0 0">Drag the view to look around.</p>`:""}</div>`:"";
-  $("studioBody").innerHTML=`${chair}<div class="card"><h2>The shop</h2>
+  $("studioBody").innerHTML=`${chair}${typeof shopHtml==="function"?shopHtml(stage):`<div class="card"><h2>The shop</h2>
 <p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
-<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
+<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`}
 <div class="card kp" id="kp"></div>`;
+  if(typeof shopWire==="function")shopWire();
   const sv=$("stView");
   if(sv){if(!work)sv.querySelectorAll('button[data-v="session"],button[data-v="reveal"]').forEach(b=>{b.disabled=true;});
     sv.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.disabled)return;ST.view=b.dataset.v;INK_SOUND.tick();

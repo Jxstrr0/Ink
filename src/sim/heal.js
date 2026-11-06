@@ -195,13 +195,19 @@ function hlBookFix(S,piece,c){
 function healPiece(S,piece,r,log){
   if(!piece||piece.heal)return piece&&piece.heal;
   const real=findClient(S,piece.client);
-  const guest=!real&&typeof SIM.guestClient==="function"?SIM.guestClient(piece.client):null;
+  const staff=!!piece.by;   // PR 7: a staff artist's piece (sim/career.js): the shop's reputation, the Shop gallery, no reveal
+  const guest=!real&&piece.guest?{traits:{aftercare:piece.guest.a,sun:piece.guest.s},loyalty:0.4,skinTone:piece.guest.t}
+    :!real&&typeof SIM.guestClient==="function"?SIM.guestClient(piece.client):null;
   const c=real||{id:piece.client,first:"",traits:(guest&&guest.traits)||{},loyalty:guest&&guest.loyalty!=null?guest.loyalty:0.3,history:[]};
   const g=healGrade(piece,hlAftercare(c),r.fork("grade:"+piece.id));
   piece.heal=g;piece.healW=S.week;piece.healY=S.year;
   const name=HEAL_GRADES[g].name;
   let text="The bandage comes off "+piece.name+": "+(g==="infected"?"it got infected.":"healed "+name+".");
   if(real){clientLog(real,{w:S.week,y:S.year,kind:"heal",piece:piece.id,grade:g});loyaltyBump(real,g);}
+  if(staff){   /* the shop's name, not yours: a staff infection hits the shop */
+    if(typeof shopRepHeal==="function")shopRepHeal(S,piece);
+    if(g==="infected"&&log)log.push({k:"event",text:"A client of "+(typeof staffName==="function"?staffName(S,piece.by):"one of your artists")+"'s got infected. It's on the shop.",piece:piece.id,staff:piece.by});
+    return g;}
   /* reputation: the heal, then the review */
   repApply(S,repHealDelta(S,piece));
   const rv=writeReview(c,piece,r.fork("review:"+piece.id));
@@ -209,6 +215,7 @@ function healPiece(S,piece,r,log){
     if(!real)piece.review={stars:rv.stars,text:rv.text};
     const st=rv.stars-3;repApply(S,{walkins:st*REP.review.walkins,collectors:st*REP.review.collectors,peers:st*REP.review.peers});
   }
+  if(S.career&&S.studio&&S.studio.stage==="apprentice"&&S.career.mentor&&typeof caGoodwill==="function")caGoodwill(S,g==="crisp"?MENTOR.goodwill.crisp:g==="soft"?0:MENTOR.goodwill.bad);   // PR 7
   if(g==="infected"&&real&&!real.compact){
     const fx=hlBookFix(S,piece,real);
     text+=" A free fix is booked for week "+fx.w+", "+fx.y+".";
