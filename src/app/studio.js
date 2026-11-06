@@ -1,20 +1,77 @@
 /* ===================== app/studio.js: the Studio tab =====================
-   The shop at its current stage: the 3D view on top (INK_VIS; a placeholder room until PR 6), then the shop's cards.
+   The shop at its current stage: the 3D view on top (INK_VIS, PR 6), then who is in the chair, then the shop's cards.
+   Who sits in the 3D chair (stWho): the client of the sitting in progress, else the next booked client from S.queue,
+   else your last client (the newest piece), else the board's client. Their pieces are on the model as they look today
+   (stTattoos: years since the piece was made, its heal grade from PR 5, ink, the client's sun), and the sitting in
+   progress shows as its purple stencil. Camera chips: Face-on (consult), The work (session, close on the newest piece) and
+   Reveal; drag the view to look round (Lite allows less). stMount() puts the one WebGL canvas back in the Studio view
+   (the Session tab borrows it for 3D stencil placement).
    The kit build panel (PR 4, plan Q9): S.kit is a machine, a tray of needle groupings (up to KIT_TRAY_MAX), an ink tier,
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
    (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
    INK_SIM.kitPrice (2000 rubles x the price index). PR 7 adds the studio build-out, staff and money here. */
+const ST={view:null,key:""};
+const ST_CAP={apprentice:"The back room at your mentor's shop",chair:"Your rented chair",studio:"Your studio",legacy:"Your studio, years on"};
+function stGl(){return typeof INK_VIS!=="undefined"&&INK_VIS.ready();}
+function stSkin(t){return typeof bmSkin==="function"?bmSkin(t)[0]:"#dba57c";}
+/* a client record (real or a sample walk-in) as the 3D chair needs it */
+function stWhoOf(id,o){
+  const real=INK_SIM.findClient(S,id),samp=typeof DZ_SAMPLE_CLIENTS!=="undefined"?DZ_SAMPLE_CLIENTS.find(x=>x.id===id):null,c=real||samp;if(!c)return null;
+  const onBoard=id===S.board.client;
+  return Object.assign({id,name:real?real.name:c.name,sample:!real,shape:onBoard&&S.board.bodyShape?S.board.bodyShape:c.bodyShape||"neutral",
+    tone:onBoard&&S.board.skinTone!=null?S.board.skinTone:c.skinTone!=null?c.skinTone:0.3,sun:(c.traits||{}).sun},o||{});}
+function stWho(){
+  const L=typeof seLive==="function"?seLive():null;
+  if(L&&L.kind!=="practice"&&L.clientId){const w=stWhoOf(L.clientId,{why:"In the chair now",live:L});if(w){w.shape=L.bodyShape||w.shape;w.tone=L.skinTone!=null?L.skinTone:w.tone;return w;}}
+  const wk=q=>INK_SIM.weekIndex(q.w,q.y),now=INK_SIM.weekIndex(S.week,S.year);
+  const q=S.queue.filter(x=>x.kind==="session"&&INK_SIM.findClient(S,x.client)).sort((a,b)=>wk(a)-wk(b))[0];
+  if(q){const w=stWhoOf(q.client,{why:wk(q)<=now?"In the chair this week":`Booked in for week ${q.w}, ${q.y}`,item:q});if(w)return w;}
+  for(let i=S.pieces.length-1;i>=0;i--){const w=stWhoOf(S.pieces[i].client,{why:"Your last client"});if(w)return w;}
+  return stWhoOf(S.board.client,{why:"On the design board"});}
+/* their pieces as they look today */
+function stTattoos(who){
+  const now=INK_SIM.weekIndex(S.week,S.year);
+  return S.pieces.filter(p=>p.client===who.id&&p.design&&Array.isArray(p.design.elements)&&p.design.elements.length)
+    .map(p=>({design:p.design,out:p.out||null,heal:p.heal||null,ink:p.ink||null,years:Math.max(0,(now-INK_SIM.weekIndex(p.w,p.y))/52),skinTone:who.tone,sun:who.sun!=null?who.sun:0.4}));}
+function stMount(){if(!stGl())return false;INK_VIS.mount($("studioView"));INK_VIS.setStencil(null);return true;}
+/* put the client in the 3D chair and aim the camera */
+function stShow(who,view){
+  if(!stMount())return;
+  const stage=(S.studio&&S.studio.stage)||"apprentice";INK_VIS.setStudio(stage);
+  if(!who){INK_VIS.setClient(null);INK_VIS.setView("consult");return;}
+  INK_VIS.setClient({bodyShape:who.shape,skinTone:who.tone,skin:stSkin(who.tone)});
+  const list=stTattoos(who);INK_VIS.setTattoos(list);
+  const live=who.live&&who.live.design;
+  if(live)INK_VIS.setStencil(live);
+  const work=live||(list.length?list[list.length-1].design:null);
+  INK_VIS.setView(view==="consult"||!work?"consult":view,work?{placement:work.placement,size:work.sizeMm}:{});}
+function renderStudio(){
+  const stage=(S.studio&&S.studio.stage)||"apprentice",gl=stGl(),who=stWho();
+  $("studioView").classList.toggle("nogl",!gl);
+  $("studioCap").textContent=gl?ST_CAP[stage]||ST_CAP.apprentice:"The 3D shop needs WebGL, which this browser has turned off";
+  const n=who?S.pieces.filter(p=>p.client===who.id).length:0,work=who&&(who.live||n);
+  const key=who?who.id+"|"+(who.live?"live":"")+"|"+n:"";
+  if(key!==ST.key){ST.key=key;ST.view=who&&who.live?"session":who&&n&&who.why==="Your last client"?"reveal":"consult";}
+  if(!work&&ST.view!=="consult")ST.view="consult";
+  const chair=who?`<div class="card stChair"><div class="stWho"><span class="clK">${esc(who.why)}</span><b>${esc(who.name)}</b>
+<span class="clMeta">${who.sample?"Sample walk-in · ":""}${n?`${n} piece${n>1?"s":""} on them`:"No ink from you yet"}${who.live?" · stencil on":""}</span></div>
+${gl?segHtml("stView",[["consult","Face-on"],["session","The work"],["reveal","Reveal"]],ST.view):""}
+${gl?`<p class="hint" style="margin:8px 0 0">Drag the view to look around.</p>`:""}</div>`:"";
+  $("studioBody").innerHTML=`${chair}<div class="card"><h2>The shop</h2>
+<p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
+<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
+<div class="card kp" id="kp"></div>`;
+  const sv=$("stView");
+  if(sv){if(!work)sv.querySelectorAll('button[data-v="session"],button[data-v="reveal"]').forEach(b=>{b.disabled=true;});
+    sv.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.disabled)return;ST.view=b.dataset.v;INK_SOUND.tick();
+      sv.querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});stShow(stWho(),ST.view);});}
+  stShow(who,ST.view);
+  if(typeof INK_SIM.kitBands==="function")kpRender();else $("kp").remove();}
 const KP={sec:"machine"};
 /* the deltas the panel shows: key, label, which way is good (1 up, -1 down, 0 neither) */
 const KP_DELTAS=[{k:"band",l:"steady band",good:1},{k:"pace",l:"marker speed",good:0},{k:"shade",l:"shading speed",good:1},
   {k:"trauma",l:"skin trauma",good:-1},{k:"fade",l:"ink fade",good:-1}];
-function renderStudio(){
-  $("studioBody").innerHTML=`<div class="card"><h2>The shop</h2>
-<p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
-<dl class="kv"><dt>Stage</dt><dd>Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
-<div class="card kp" id="kp"></div>`;
-  if(typeof INK_SIM.kitBands==="function")kpRender();else $("kp").remove();}
 function kpKit(){S.kit=INK_SIM.kitClean(S.kit);return S.kit;}
 function kpSet(){return{assist:!!S.settings.assist};}
 function kpSummary(kit){
