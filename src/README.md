@@ -63,19 +63,19 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | **INK_SOUND** | |
 | `sound/synth.js` | the whole block: audio context on first tap, `tick()`; the machine buzz `buzzStart`/`buzzSet`/`buzzStop` and its `BUZZ` table (PR 4) |
 | **INK_VIS** | |
-| `vis/core.js` | `<script>`, IIFE open, shared state `V`, tier table, `init`, `resize`, `setTier`, `draw` (render once per change) |
-| `vis/body.js` | the mannequin (PR 6) |
-| `vis/decals.js` | tattoo decals in UV space (PR 6) |
-| `vis/studio.js` | `studioPlaceholder()`: lamp, floor, wall, flash sheet, chair and stool as plain shapes until PR 6 |
-| `vis/api.js` | the `window.INK_VIS` object (`init`, `ready`, `setTier`, `resize`, `redraw`, `fps`, `_state`), IIFE close, `</script>` |
+| `vis/core.js` | `<script>`, IIFE open, shared state `V`, tier table `TIER`, `init`, `resize`, `setTier`, `draw` (render once per change), the frame loop (`vsKick`, `vsLoop`, only while moving), the camera rig (`vsGoTo`, orbit), pointer handling (orbit, or drag the stencil via `vsHit` raycast to UV) |
+| `vis/body.js` | the mannequin (PR 6): `BD_FORM`, `BD_ZONES` (placement → island, anchor, offset), tube and torso builders, `bdBuild` (three shapes, UV islands packed in mm), `bdFromUV`, `bdZone`/`bdZonePos`, `bdMeshes`, `bdApplyShape`, `bdArmrest` |
+| `vis/decals.js` | tattoo decals in UV space (PR 6): `dcDraw` (one design into its island, aged), `dcCompose` (the client's skin texture, on change only), `dcStencil` (the purple overlay) |
+| `vis/studio.js` | the shop (PR 6): `vsRoom` (walls, floor, window, chair, station, lamp, flash wall, stage props, lights), `vsStage(stage)`, `vsArmrests` |
+| `vis/api.js` | `vsBuild`, `vsView` (camera presets), `vsClient`; the `window.INK_VIS` object (`init`, `ready`, `setTier`, `resize`, `redraw`, `fps`, `mount`, `setClient`, `setTattoos`, `setStencil`, `setView`, `setStudio`, `setReduced`, `stats`, `_state` for tests), IIFE close, `</script>` |
 | **app** | |
 | `app/state.js` | `<script>`, `VERSION`, `$`, `esc`, `clamp`, `MONEY`/`fmtMoney`, **`freshState()` (the one definition of `S`)**, `save`/`snapshot`/`hydrate`/`loadSaved`/`applyLoaded`, `SAVE_KEY`/`SLOTS`/`slotKey`, theme, `toast` |
 | `app/perf.js` | graphics tiers (`perfTier`, `applyGfx`) and auto-adjust (`PERF`, `perfPoll`) |
 | `app/savecode.js` | save codes: `buCode`, `buRead`, `buWrite`, the Back up / Restore sheets, backup files, `buPersist` |
 | `app/boot.js` | `showTab`, `renderAll`, the sheet (`openSheet`/`closeSheet`), Settings, PWA install and update bar, `start()` |
-| `app/studio.js` | `renderStudio`; the kit build panel (`kpRender`: summary, Machine / Needles / Ink / Tune with up/down deltas, buying) (PR 4) |
+| `app/studio.js` | `renderStudio` (PR 6: who's in the 3D chair `stWho`, their pieces `stTattoos`, `stShow`, `stMount`, camera chips); the kit build panel (`kpRender`: summary, Machine / Needles / Ink / Tune with up/down deltas, buying) (PR 4) |
 | `app/design.js` | `renderDesign`: the design board (Body, Board, Flash views), `DZ_SAMPLE_CLIENTS`, the working model `DZ`, undo/redo, drawer, capsule, stress report, flash wall (PR 2); Tattoo this and Practice on fake skin under the board (PR 4) |
-| `app/session.js` | `renderSession` (PR 4): the lobby (sittings due, a sample piece's next sitting, Practice on fake skin), stencil placement, the chair (four canvases, meters, care rail, liner chips, zones), results; `sessionStartBooked(item)` (booked, via `INK_SIM.finishSession`), `seTattooThis` (the board's Tattoo this), `seStartPractice`; `SE_PAY`, `SE_HEAL_WEEKS`, `SE_FPS`; `window.__inkSessFps()` |
+| `app/session.js` | `renderSession` (PR 4): the lobby (sittings due, a sample piece's next sitting, Practice on fake skin), stencil placement (3D on the body, PR 6: `se3dPlace`, `se3dStencil`, `seChkUpdate`; or the flat box), the chair (four canvases, meters, care rail, liner chips, zones), results; `sessionStartBooked(item)` (booked, via `INK_SIM.finishSession`), `seTattooThis` (the board's Tattoo this), `seStartPractice`; `SE_PAY`, `SE_HEAL_WEEKS`, `SE_FPS`; `window.__inkSessFps()` |
 | `app/clients.js` | `renderClients`: This week (walk-ins, booked consults, sittings due, coming up) the client list with filters and a client card (pieces as they look today, history; tap a piece for its history, PR 5), and Work (PR 5: the body of work, drawn by `app/gallery.js`); the consult view; `clDesignFor` and the board's booking bar (`clBookingBar`); `clSession` (PR 4's `sessionStartBooked` if present, else `clQuickSession`) (PR 3) |
 | `app/career.js` | `renderCareer`: the reveal at the top (PR 5, `rvHtml` from `app/gallery.js`), the Next button (`crNext` → `INK_SIM.nextStop`, warns once if people are waiting; refuses while a booked sitting is in the chair, PR 4), the stop's log, `STAGE_NAMES` (PR 3); the reputation bars `crRep` (PR 5) |
 | `app/gallery.js` | the reveal and the body of work (PR 5): `gvSvg` (a piece on skin, aged by `INK_SIM.age`, with the blowout halo, the patchy mask and the stencil ghost), `gvToday` (cached per piece + whole year + heal), the reveal (`rvHtml`/`rvWire`, `S.reveals`), the Work view `gvRenderWork` (filters, 40 at a time), a piece's history `gvOpen`; sets `INK_SIM.guestClient` for sample walk-ins |
@@ -107,7 +107,7 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`. `h
 | `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id, or a real client id from PR 3), `item` (PR 3: the `S.queue` session item being designed for, or null) |
 | `flash` | array | your own flash, saved from the board: `{id, name, design, w, y}`, at most `FLASH_MINE_CAP` (40) (PR 2) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
-| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced`, `handed` (`"right"`/`"left"`, PR 4), `assist` (PR 4) |
+| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced`, `handed` (`"right"`/`"left"`, PR 4), `assist` (PR 4), `flatStencil` (PR 6: place the stencil on the flat box instead of the 3D body) |
 | `bkAt` | number | when the last backup was made (ms), 0 = never |
 
 The sim's data shapes (designs, clients, elements, placements) are in `docs/SIM-CONTRACT.md`.

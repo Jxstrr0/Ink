@@ -99,7 +99,9 @@ pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12
 
 /* ---- the studio view (3D placeholder until PR 6) ---- */
 #studioView{position:relative;height:min(42vh,320px);border-radius:var(--r);overflow:hidden;background:#0f0c09;margin:0 0 12px;border:1px solid var(--line)}
-#studioView canvas{display:block;width:100%;height:100%}
+#studioView canvas{display:block;width:100%;height:100%;cursor:grab}
+#studioView.nogl{height:auto;min-height:44px;background:linear-gradient(160deg,#2a1f17,#0f0c09)}#studioView.nogl .cap{position:static;display:block;margin:12px}
+.stChair .stWho{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.stChair .stWho b{font-size:17px}
 #studioView .cap{position:absolute;left:12px;bottom:10px;font-size:12px;color:#d8cdb9;background:rgba(15,12,9,.6);padding:3px 8px;border-radius:6px}
 
 /* ---- design board: cream in both themes ---- */
@@ -511,6 +513,9 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 /* placement */
 .sePlaceWrap{display:flex;justify-content:center;background:var(--panel2);border-radius:10px;padding:8px;margin:6px 0 8px}
 .sePlace{width:100%;max-height:min(52vh,460px);touch-action:none;cursor:grab}
+.sePlace3d{position:relative;height:min(52vh,420px);border-radius:10px;overflow:hidden;background:#0f0c09;margin:6px 0 8px;border:1px solid var(--line)}
+.sePlace3d canvas{display:block;width:100%;height:100%;cursor:grab}
+.seRot{margin:0 0 8px}
 .seFlow polyline{fill:none;stroke:rgba(60,40,20,.28);stroke-width:.6;stroke-dasharray:2 2}
 .seCrease{stroke:rgba(150,40,30,.6);stroke-width:.7;stroke-dasharray:3 2}
 .seCreaseT{fill:rgba(120,30,20,.75);font-family:var(--ui)}
@@ -3528,6 +3533,7 @@ SIM.healReaction=healReaction;SIM.healApology=healApology;SIM.pieceReview=pieceR
                                        hours, parts, dots}  (cached; never saved)
      SIM.sessionBands(sess)           the kit bands plus paceMmS, accMm, view (mm)
      SIM.sessionPlace(sess, pos)      move the stencil before the first line (pos 0..1 in the box); returns stencilCheck
+     SIM.sessionRotate(sess, deg)     turn the stencil before the first line (about its own centre); returns stencilCheck
      SIM.stencilCheck(design, client, skills) -> {flow, issues:[{id, sev, text}]}   flow and crease, re-checked
      SIM.sessionItem(sess) -> the current item (with .stroke or .zone) or null
      SIM.penDown / penMove / penUp(sess, t, x, y) -> live {ok, r (pace ratio), d (mm off), u, rushed, stopped, blow, sat,
@@ -3774,6 +3780,20 @@ function sessionPlace(sess,pos){
   sess.design.pos={x:dsR(clamp(pos.x,0,1)),y:dsR(clamp(pos.y,0,1))};
   ssStartSitting(sess);
   return stencilCheck(sess.design,sess.client,sess.skills);
+}
+/* turn the whole stencil by deg about its footprint's centre. The real size of every element stays the same; if the turned
+   design no longer fits its 0..1 box, the box is widened (sizeMm up, coordinates in) so the mm on skin don't change */
+function sessionRotate(sess,deg){
+  if(sess.next>0||sess.cur||sess.acc.sittings>0||!deg)return stencilCheck(sess.design,sess.client,sess.skills);
+  const d=sess.design,fp=SIM.footprintOf(d),th=deg*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
+  d.elements=(d.elements||[]).map(el=>{const x=(el.x!=null?el.x:0.5)-fp.cx,y=(el.y!=null?el.y:0.5)-fp.cy;
+    let r=((el.rot||0)+deg)%360;if(r>180)r-=360;if(r<=-180)r+=360;
+    return Object.assign({},el,{x:fp.cx+x*cs-y*sn,y:fp.cy+x*sn+y*cs,rot:r});});
+  const f2=SIM.footprintOf(d),k=Math.max(1,f2.w,f2.h);
+  d.elements=d.elements.map(el=>Object.assign({},el,{x:dsR(0.5+(el.x-f2.cx)/k),y:dsR(0.5+(el.y-f2.cy)/k),scale:dsR((el.scale!=null?el.scale:0.5)/k),rot:Math.round(el.rot*10)/10}));
+  if(k>1)d.sizeMm=Math.round((d.sizeMm||50)*k);
+  ssStartSitting(sess);
+  return stencilCheck(d,sess.client,sess.skills);
 }
 
 /* ---- the meters: advance the sitting clock by dH hours of work (and add any trauma) ---- */
@@ -4033,7 +4053,7 @@ function sessionStart(sess){if(sess.phase==="place")sess.phase="work";return ses
 
 SIM.STENCIL=STENCIL;SIM.PACE=PACE;SIM.ACC=ACC;SIM.DEPTH=DEPTH;SIM.BLOW=BLOW;SIM.JOIN=JOIN;SIM.LW_FIT=LW_FIT;SIM.ZONE=ZONE;
 SIM.COLOUR_PACK=COLOUR;SIM.TRAUMA=TRAUMA;SIM.PAIN=PAIN;SIM.FATIGUE=FATIGUE;SIM.BREAK=BREAK;SIM.NUMB=NUMB;SIM.CHAT=CHAT;SIM.SKILL_XP=SKILL_XP;
-SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.sessionBands=ssBands;SIM.sessionPlace=sessionPlace;
+SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.sessionBands=ssBands;SIM.sessionPlace=sessionPlace;SIM.sessionRotate=sessionRotate;
 SIM.stencilCheck=stencilCheck;SIM.sessionItem=sessionItem;SIM.sessionStart=sessionStart;SIM.sessionResume=sessionResume;
 SIM.penDown=penDown;SIM.penMove=penMove;SIM.penUp=penUp;SIM.sessionSetLiner=sessionSetLiner;SIM.sessionNextItem=sessionNextItem;
 SIM.sessionAction=sessionAction;SIM.sessionFinish=sessionFinish;SIM.sessionXp=sessionXp;SIM.sessionPainRate=sessionPainRate;
@@ -4290,61 +4310,762 @@ return{init,tick,buzzStart,buzzSet,buzzStop,setOn(v){on=!!v;if(!on)buzzStop();},
 <script>
 /* ===================== Ink: INK_VIS (three.js) =====================
    INK_VIS draws what the sim says: the mannequin, the tattoos as decals, the studio. One IIFE spread over src/vis/:
-   this file opens it, vis/api.js closes it and sets window.INK_VIS. three.js r128 from the CDN.
-   core.js: the renderer, the tier settings (lite / full / ultra) and on-demand rendering. Nothing draws every frame unless
-   something is moving; a still scene renders once per change, which keeps phones cool. fps() reports the measured rate
-   while a loop runs (null when idle) for app/perf.js. */
+   this file opens it, vis/api.js closes it and sets window.INK_VIS. three.js r128 from the CDN. INK_VIS never reads or
+   writes the game state S: the app hands it a client, a list of pieces and a view, and it draws them.
+   core.js: the renderer, the tier settings (lite / full / ultra), materials, the camera rig and on-demand rendering.
+   Nothing draws every frame unless something is moving: a still scene renders once per change, which keeps phones cool.
+   A frame loop runs only during a camera move, a body-shape change or a drag, capped at the tier's fps (30 on Lite);
+   fps() reports the measured rate while it runs and null when idle, so app/perf.js's auto-adjust only ever judges real
+   motion. Drag on the view orbits the camera gently round what it looks at (Lite allows less); with a stencil handler
+   set (the Session tab's placement step), a drag that lands on the stencil's island moves the stencil instead. ===== */
 (function(){"use strict";
-const V={renderer:null,scene:null,camera:null,canvas:null,tier:"lite",dirty:true,looping:false,fps:null,_f:0,_t0:0,raf:0};
-const TIER={lite:{pr:1,aa:false,fpsCap:30},full:{pr:1.5,aa:true,fpsCap:60},ultra:{pr:2,aa:true,fpsCap:60}};
+const V={renderer:null,scene:null,camera:null,canvas:null,tier:"lite",dirty:true,looping:false,fps:null,_f:0,_t0:0,_last:0,raf:0,
+  reduced:false,lastInput:0,drag:null,cam:null,onStencil:null,mats:null,body:null,room:null,ovMeshes:[],built:"",
+  shape:"neutral",shapeW:{neutral:1,masc:0,femme:0},shapeTw:null,tone:0.3,skin:"#dba57c",clientOn:false,
+  tattoos:[],stencil:null,stage:"apprentice",view:"consult",viewOpt:{},ray:null};
+const TIER={
+  lite:{pr:1.5,aa:false,fpsCap:30,tex:1024,ov:512,std:false,shadows:false,shadowMap:0,aniso:1,minPx:1.15,orbit:[0.55,0.22]},
+  full:{pr:1.5,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:1024,aniso:4,minPx:1,orbit:[1.1,0.4]},
+  ultra:{pr:2,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:2048,aniso:8,minPx:1,orbit:[1.5,0.5]}};
+const ROOM={x:[-2.62,2.62],y:[0.14,2.6],z:[-2.22,2.42]};   // where the camera may go (inside the walls)
 function hasGL(){return typeof THREE!=="undefined";}
+function vsCol(hex){return new THREE.Color(hex).convertSRGBToLinear();}
+/* a material for this tier: Lambert on Lite, Standard (roughness, a little metal) on Full and Ultra */
+function vsMat(hex,o){o=o||{};const T=TIER[V.tier];
+  const p={color:vsCol(hex)};if(o.map)p.map=o.map;if(o.side)p.side=o.side;if(o.emissive){p.emissive=vsCol(o.emissive);p.emissiveIntensity=o.ei||1;}
+  if(o.basic)return new THREE.MeshBasicMaterial(Object.assign({},p,{color:o.map?new THREE.Color(0xffffff):p.color}));
+  return T.std?new THREE.MeshStandardMaterial(Object.assign(p,{roughness:o.r!=null?o.r:0.8,metalness:o.m||0})):new THREE.MeshLambertMaterial(p);}
 function init(canvas,tier){
   if(!hasGL())return false;
   V.canvas=canvas;V.tier=TIER[tier]?tier:"lite";
   try{V.renderer=new THREE.WebGLRenderer({canvas,antialias:TIER[V.tier].aa,powerPreference:"low-power"});}catch(e){V.renderer=null;return false;}
+  if(!V.renderer.getContext()){V.renderer=null;return false;}
   V.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TIER[V.tier].pr));
   V.renderer.outputEncoding=THREE.sRGBEncoding;
   V.scene=new THREE.Scene();
-  V.camera=new THREE.PerspectiveCamera(42,1,.1,60);
+  V.camera=new THREE.PerspectiveCamera(42,1,.05,40);
+  V.cam={p:new THREE.Vector3(0.5,1.3,2.0),t:new THREE.Vector3(0,0.93,0.05),yaw:0,pitch:0,tw:null};
+  V.ray=new THREE.Raycaster();
+  canvas.style.touchAction="none";
+  canvas.addEventListener("pointerdown",vsDown);canvas.addEventListener("pointermove",vsMove);
+  canvas.addEventListener("pointerup",vsUp);canvas.addEventListener("pointercancel",vsUp);
+  canvas.addEventListener("webglcontextlost",e=>{e.preventDefault();V.lost=true;});
+  canvas.addEventListener("webglcontextrestored",()=>{V.lost=false;V.built="";vsBuild();});
   resize();
   window.addEventListener("resize",()=>{resize();});
   return true;}
-function resize(){if(!V.renderer||!V.canvas)return;const w=V.canvas.clientWidth||1,h=V.canvas.clientHeight||1;V.renderer.setSize(w,h,false);V.camera.aspect=w/h;V.camera.updateProjectionMatrix();V.dirty=true;draw();}
-function setTier(t){if(!TIER[t]||!V.renderer)return;V.tier=t;V.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TIER[t].pr));resize();}
+function resize(){if(!V.renderer||!V.canvas)return;const w=V.canvas.clientWidth||1,h=V.canvas.clientHeight||1;V.renderer.setSize(w,h,false);V.camera.aspect=w/h;
+  V.camera.fov=w/h<0.8?52:42;V.camera.updateProjectionMatrix();V.dirty=true;draw();}
+function setTier(t){if(!TIER[t]||!V.renderer)return;const was=TIER[V.tier];V.tier=t;V.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TIER[t].pr));
+  const T=TIER[t];if(was.std!==T.std||was.shadows!==T.shadows||was.tex!==T.tex||was.shadowMap!==T.shadowMap){V.built="";vsBuild();}resize();}
 /* render once if something changed */
-function draw(){if(!V.renderer||!V.dirty)return;V.dirty=false;V.renderer.render(V.scene,V.camera);}
-/* ===== vis/body.js: the mannequin, one low-poly adult mesh with three body-shape morphs, skin-tone material, one UV
-   island per limb or zone (PR 6) ===== */
-/* ===== vis/decals.js: tattoos rendered into each island's UV space and composited into a per-client skin texture;
-   aging applies blur and fade on the canvas (PR 6) ===== */
-/* ===== vis/studio.js: the shop interior. PR 0 is a placeholder (warm lamp, floor, back wall and the chair as simple
-   shapes) so the three.js pipeline is proven on every tier; PR 6 replaces it with the real studio stages. ===== */
-function studioPlaceholder(){
-  const s=V.scene;s.background=new THREE.Color(0x0f0c09);
-  s.add(new THREE.HemisphereLight(0xffe2bf,0x20160e,.55));
-  const lamp=new THREE.PointLight(0xffc98a,1.1,14);lamp.position.set(.8,2.6,1.4);s.add(lamp);
-  const mat=c=>new THREE.MeshLambertMaterial({color:c});
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(10,10),mat(0x3a2b20));floor.rotation.x=-Math.PI/2;s.add(floor);
-  const wall=new THREE.Mesh(new THREE.PlaneGeometry(10,4),mat(0x6b4f3a));wall.position.set(0,2,-2.2);s.add(wall);
-  const flash=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1),mat(0xf3ead8));flash.position.set(-1.4,1.7,-2.18);s.add(flash);
-  const leather=mat(0x1d1a17),steel=mat(0x8a8780);
-  const chair=new THREE.Group();
-  const seat=new THREE.Mesh(new THREE.BoxGeometry(.7,.14,1.0),leather);seat.position.y=.62;chair.add(seat);
-  const back=new THREE.Mesh(new THREE.BoxGeometry(.7,.12,.8),leather);back.position.set(0,.95,-.62);back.rotation.x=-1.05;chair.add(back);
-  const post=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.5,10),steel);post.position.y=.3;chair.add(post);
-  const base=new THREE.Mesh(new THREE.CylinderGeometry(.35,.4,.06,16),steel);base.position.y=.03;chair.add(base);
-  chair.position.set(.5,0,-.6);chair.rotation.y=-.5;s.add(chair);
-  const stool=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.08,16),leather);stool.position.set(-.5,.5,.1);s.add(stool);
-  const stoolPost=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.46,8),steel);stoolPost.position.set(-.5,.25,.1);s.add(stoolPost);
-  V.camera.position.set(0,1.7,3.4);V.camera.lookAt(0,.8,-.6);V.dirty=true;}
-/* ===== vis/api.js: the INK_VIS public object, IIFE close. Later PRs add setClient, setTattoos, setView, setStudio. ===== */
+function draw(){if(!V.renderer||!V.dirty||V.lost)return;V.dirty=false;V.renderer.render(V.scene,V.camera);}
+function vsKick(){V.lastInput=performance.now();if(V.raf||!V.renderer)return;V._t0=0;V._last=0;V.raf=requestAnimationFrame(vsLoop);}
+function vsLoop(now){
+  V.raf=0;
+  const busy=V.cam.tw||V.shapeTw||V.drag||now-V.lastInput<220;
+  if(!busy){V.looping=false;V.fps=null;V.dirty=true;draw();return;}
+  V.looping=true;V.raf=requestAnimationFrame(vsLoop);
+  const cap=TIER[V.tier].fpsCap;if(V._last&&now-V._last<1000/cap-3)return;
+  V._last=now;vsStep(now);V.dirty=true;draw();
+  if(!V._t0){V._t0=now;V._f=0;return;}
+  V._f++;if(now-V._t0>=500){V.fps=Math.round(V._f*1000/(now-V._t0));V._t0=now;V._f=0;}}
+const vsEase=t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function vsStep(now){
+  const c=V.cam;
+  if(c.tw){const k=Math.min(1,(now-c.tw.t0)/c.tw.dur),e=vsEase(k);
+    c.p.lerpVectors(c.tw.p0,c.tw.p1,e);c.t.lerpVectors(c.tw.t0v,c.tw.t1,e);if(k>=1)c.tw=null;}
+  if(V.shapeTw){const s=V.shapeTw,k=Math.min(1,(now-s.t0)/s.dur),e=vsEase(k),w={};
+    for(const n in s.w1)w[n]=s.w0[n]+(s.w1[n]-s.w0[n])*e;vsApplyShape(w);if(k>=1){V.shapeTw=null;vsAfterShape();}}
+  vsApplyCam();}
+/* the camera: base position and target, plus the orbit offsets (yaw round the up axis, pitch round the side axis) */
+function vsApplyCam(){
+  const c=V.cam,off=c.p.clone().sub(c.t);
+  if(c.yaw)off.applyAxisAngle(new THREE.Vector3(0,1,0),c.yaw);
+  if(c.pitch){const ax=new THREE.Vector3().crossVectors(off,new THREE.Vector3(0,1,0));if(ax.lengthSq()>1e-8)off.applyAxisAngle(ax.normalize(),c.pitch);}
+  const p=c.t.clone().add(off);
+  p.x=Math.max(ROOM.x[0],Math.min(ROOM.x[1],p.x));p.y=Math.max(ROOM.y[0],Math.min(ROOM.y[1],p.y));p.z=Math.max(ROOM.z[0],Math.min(ROOM.z[1],p.z));
+  V.camera.position.copy(p);V.camera.lookAt(c.t);V.dirty=true;}
+function vsGoTo(p,t,instant){
+  const c=V.cam;
+  if(instant||V.reduced||!V.renderer){c.p.copy(p);c.t.copy(t);c.yaw=c.pitch=0;c.tw=null;vsApplyCam();draw();return;}
+  /* start from where the camera is now (orbit included) */
+  const p0=V.camera.position.clone(),t0=c.t.clone();c.yaw=c.pitch=0;
+  c.tw={p0,t0v:t0,p1:p.clone(),t1:t.clone(),t0:performance.now(),dur:Math.min(900,350+p0.distanceTo(p)*260)};vsKick();}
+
+/* ---- pointer: orbit, or drag the stencil ---- */
+function vsHit(ev){
+  if(!V.body)return null;const r=V.canvas.getBoundingClientRect();
+  const m=new THREE.Vector2(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
+  V.ray.setFromCamera(m,V.camera);const h=V.ray.intersectObjects(V.body.parts.concat(V.body.head?[V.body.head]:[]),false)[0];
+  if(!h||!h.uv||!h.object.userData.arr||h.object.userData.part==="head")return null;
+  if(/^(top|shorts)/.test(h.object.userData.part))return null;
+  const q=bdFromUV(h.uv.x,h.uv.y);return q;}
+function vsDown(ev){
+  if(!V.renderer||(ev.button!=null&&ev.button>0))return;
+  V.drag={id:ev.pointerId,x:ev.clientX,y:ev.clientY,mode:"orbit",moved:0};
+  if(V.onStencil&&V.stencil&&V.clientOn){const z=bdZone(V.stencil.placement),q=vsHit(ev);
+    if(z&&q&&q.isl===z.isl){V.drag.mode="stencil";V.drag.z=z;V.drag.p0=bdZonePos(z,q.x,q.y);V.drag.s0=Object.assign({x:.5,y:.5},V.stencil.pos||{});V.drag.pos=V.drag.s0;}}
+  try{V.canvas.setPointerCapture(ev.pointerId);}catch(e){}
+  vsKick();ev.preventDefault();}
+function vsMove(ev){
+  const d=V.drag;if(!d||d.id!==ev.pointerId)return;
+  const dx=ev.clientX-d.x,dy=ev.clientY-d.y;d.x=ev.clientX;d.y=ev.clientY;d.moved+=Math.abs(dx)+Math.abs(dy);
+  if(d.mode==="stencil"){const q=vsHit(ev);
+    if(q&&q.isl===d.z.isl){const p=bdZonePos(d.z,q.x,q.y);d.pos={x:Math.max(0,Math.min(1,d.s0.x+p.x-d.p0.x)),y:Math.max(0,Math.min(1,d.s0.y+p.y-d.p0.y))};
+      V.onStencil(d.pos,"move");}}
+  else{const o=TIER[V.tier].orbit,c=V.cam;c.yaw=Math.max(-o[0],Math.min(o[0],c.yaw-dx*0.006));c.pitch=Math.max(-o[1],Math.min(o[1],c.pitch-dy*0.004));vsApplyCam();}
+  vsKick();}
+function vsUp(ev){
+  const d=V.drag;if(!d||d.id!==ev.pointerId)return;V.drag=null;
+  if(d.mode==="stencil"&&d.moved>2&&V.onStencil)V.onStencil(d.pos,"end");
+  vsKick();}
+/* ===== vis/body.js: the mannequin (PR 6) =====
+   One low-poly adult mannequin, seated in the tattoo chair: smooth capsule limbs, no face, no anatomical detail, dressed in
+   shorts and a crop top (separate fitted meshes, always on) so the ribs/side stay bare. Built from code, not a model file:
+   every body part is a generalised tube (rings along a Catmull-Rom spine), the torso a stack of ellipses. PR 10 can swap
+   the parts for Blender meshes as long as they keep the same islands.
+   Body shapes: the three BODY_SHAPES (masc/femme/neutral) are built from the SAME topology with different ring sizes, so
+   the UVs are identical across shapes and a tattoo never moves when the shape changes. Girth comes straight from
+   INK_SIM.BODY_SHAPES[shape].wrap (the multipliers the board uses), so the sim, the board and the model agree. A shape
+   change lerps the vertex positions on the CPU (no morph shaders), only when it happens.
+   UV layout: one island per limb or zone, exactly INK_SIM.ISLANDS (arm_l/arm_r, leg_l/leg_r, back, chest, side_l/side_r,
+   neck, hand_l/hand_r, foot_l/foot_r) plus a tiny "blank" island for skin that never takes ink (head, thumbs, belly).
+   Each island is unwrapped in true millimetres of the NEUTRAL body: x is the arc round each ring from the island's face
+   line (rightward as you look at the skin), y the distance down each column from the island's start (shoulder to wrist,
+   hip to ankle, neck to waist...), the same directions as the board. Islands are shelf-packed into the unit square with a
+   density weight (arms and chest get more pixels per mm than the backs of the legs).
+   Zones: BD_ZONES places each PLACEMENTS box on its island: which way round the ring its centre sits (frac of the ring,
+   0 = the face line), any sideways offset, and the joint it hangs from (the same crease the board draws). bdZone(id)
+   resolves left/right and gives the centre line, so decals.js and the stencil drag share one mapping. ===== */
+const BD_FORM={neutral:{sh:0.19,waist:1,hip:1,depth:1},masc:{sh:0.207,waist:1.05,hip:0.99,depth:1.06},femme:{sh:0.173,waist:0.88,hip:1.07,depth:0.95}};
+const BD_SHAPES=["neutral","masc","femme"];
+/* pixels-per-mm weight per island in the texture atlas */
+const BD_ISLAND_W={arm_l:1.4,arm_r:1.4,leg_l:0.72,leg_r:0.72,back:1,chest:1.2,side_l:1,side_r:1,neck:1.1,hand_l:1.15,hand_r:1.15,foot_l:0.85,foot_r:0.85,blank:1};
+const BD_CLOTH={top:"#5e6e6b",shorts:"#3d4350"};   // the same colours as the 2D body diagram (app/bodymap.js BM_CLOTH)
+/* where each placement box sits on its island (left side; the right mirrors frac and xOff):
+   frac = share of the ring round from the face line to the box centre, xOff = extra mm sideways (torso patches),
+   anchor = a ring landmark, at = where on the box's length that landmark falls (the board's crease), dy = mm extra down */
+const BD_ZONES={
+  forearm:{isl:"arm",frac:0,anchor:"elbow",at:0.03},
+  upperarm:{isl:"arm",frac:0.25,anchor:"elbow",at:0.97},
+  shoulder:{isl:"arm",frac:0.25,anchor:"top",at:0,dy:6},
+  hand:{isl:"hand",frac:0,anchor:"wrist",at:0.03},
+  thigh:{isl:"leg",frac:0,anchor:"knee",at:0.97},
+  calf:{isl:"leg",frac:0.5,anchor:"knee",at:0.03},
+  shin:{isl:"leg",frac:0,anchor:"knee",at:0.03},
+  foot:{isl:"foot",frac:0,anchor:"ankle",at:0.03},
+  ribs:{isl:"side",frac:0,anchor:"armpit",at:0,dy:8},
+  neck:{isl:"neck",frac:-0.25,anchor:"top",at:0,dy:4},
+  upperback:{isl:"back",anchor:"top",at:0,dy:38},
+  fullback:{isl:"back",anchor:"top",at:0,dy:18},
+  chest_l:{isl:"chest",xOff:82,anchor:"top",at:0,dy:70},
+  chest_r:{isl:"chest",xOff:-82,anchor:"top",at:0,dy:70},
+  sternum:{isl:"chest",xOff:0,anchor:"top",at:0,dy:80},
+  nape:{isl:"neck",frac:0,anchor:"top",at:0,dy:14}
+};
+const BD={built:false,parts:[],islands:{},zones:{},cur:"neutral",curW:null};
+
+/* ---- small vector maths on [x,y,z] arrays ---- */
+const bdAdd=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],bdSub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],bdMul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const bdDot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],bdCross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const bdLen=a=>Math.hypot(a[0],a[1],a[2]),bdNrm=a=>{const l=bdLen(a)||1;return[a[0]/l,a[1]/l,a[2]/l];};
+const bdClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function bdWrap(shape,region){const B=(typeof INK_SIM!=="undefined"&&INK_SIM.BODY_SHAPES)||{},s=B[shape]||B.neutral;return(s&&s.wrap&&s.wrap[region])||1;}
+
+/* Catmull-Rom through the keys, sampled densely, with its arc length */
+function bdSpline(keys){
+  const n=keys.length,P=[bdSub(bdMul(keys[0],2),keys[1])].concat(keys,[bdSub(bdMul(keys[n-1],2),keys[n-2])]),pts=[];
+  for(let i=1;i<n;i++){const p0=P[i-1],p1=P[i],p2=P[i+1],p3=P[i+2];
+    for(let k=0;k<24;k++){const t=k/24,t2=t*t,t3=t2*t;
+      pts.push([0,1,2].map(c=>0.5*(2*p1[c]+(-p0[c]+p2[c])*t+(2*p0[c]-5*p1[c]+4*p2[c]-p3[c])*t2+(-p0[c]+3*p1[c]-3*p2[c]+p3[c])*t3)));}}
+  pts.push(keys[n-1].slice());
+  const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+bdLen(bdSub(pts[i],pts[i-1])));
+  return{pts,cum,L:cum[cum.length-1]};}
+function bdAt(sp,u){
+  const s=bdClamp(u,0,1)*sp.L,c=sp.cum;let lo=0,hi=c.length-2;
+  while(lo<hi){const m=(lo+hi+1)>>1;if(c[m]<=s)lo=m;else hi=m-1;}
+  const a=sp.pts[lo],b=sp.pts[lo+1],t=(s-c[lo])/((c[lo+1]-c[lo])||1);
+  return{p:bdAdd(a,bdMul(bdSub(b,a),t)),T:bdNrm(bdSub(b,a))};}
+function bdProf(prof,u){
+  if(u<=prof[0][0])return[prof[0][1],prof[0][2]];
+  for(let i=1;i<prof.length;i++)if(u<=prof[i][0]){const a=prof[i-1],b=prof[i],t=(u-a[0])/(b[0]-a[0]||1),e=t*t*(3-2*t),k=0.5*t+0.5*e;
+    return[a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k];}
+  const z=prof[prof.length-1];return[z[1],z[2]];}
+/* ring fractions: a few tight rings for the end caps, the rest even */
+function bdRings(n,capA,capB){
+  const out=[];const a=capA?[0,0.012,0.035,0.07]:[0],b=capB?[0.93,0.965,0.988,1]:[1];
+  const lo=a[a.length-1],hi=b[0],m=n-a.length-b.length;
+  for(const u of a)out.push(u);for(let i=1;i<=m;i++)out.push(lo+(hi-lo)*i/(m+1));for(const u of b)out.push(u);return out;}
+const bdThetas=(segs,seam)=>{const t=[];for(let j=0;j<=segs;j++)t.push(seam+2*Math.PI*j/segs);return t;};
+
+/* a tube: rings along the spine, N transported from `face`, B = T x N; a point is C + N rN cos(th) + B rB sin(th) */
+function bdTube(o){
+  const sp=bdSpline(o.keys),P=[],C=[],T=[];let N=null;
+  for(const u of o.us){const a=bdAt(sp,u),t=a.T;
+    N=bdNrm(N?bdSub(N,bdMul(t,bdDot(N,t))):bdSub(o.face,bdMul(t,bdDot(o.face,t))));
+    const B=bdCross(t,N),r=bdProf(o.prof,u),rN=r[0]*o.g+(o.inflate||0),rB=r[1]*o.g+(o.inflate||0);
+    P.push(o.thetas.map(th=>bdAdd(a.p,bdAdd(bdMul(N,rN*Math.cos(th)),bdMul(B,rB*Math.sin(th))))));C.push(a.p);T.push(t);}
+  return{P,C,T};}
+/* the torso: horizontal rings [y, half width, half depth, centre z] from the neck base down; the back is a little flatter */
+function bdTorsoRings(f){
+  const R=[[1.140,.050,.046,-.008],[1.128,.076,.058,-.010],[1.108,.122,.072,-.012],[1.085,.166,.086,-.010],[1.058,.190,.098,-.006],
+    [1.025,.192,.108,-.002],[0.990,.184,.116,.002],[0.950,.176,.121,.006],[0.905,.167,.119,.006],[0.860,.157,.113,.004],[0.815,.147,.105,.002],
+    [0.770,.141,.099,0],[0.725,.143,.099,-.004],[0.680,.151,.103,-.008],[0.635,.161,.109,-.012],[0.590,.167,.113,-.015],[0.548,.165,.111,-.016],
+    [0.512,.151,.101,-.016],[0.492,.10,.066,-.016],[0.484,.02,.02,-.016]];
+  const shK=f.sh/0.19;
+  return R.map((r,i)=>{const w=i<=1?f.neck:i<=7?lerpV(f.neck,shK*f.chest,bdClamp((i-1)/3,0,1)):i<=12?lerpV(shK*f.chest,f.waist,bdClamp((i-7)/4,0,1)):lerpV(f.waist,f.hip,bdClamp((i-12)/3,0,1));
+    return[r[0],r[1]*w,r[2]*(i<=1?f.neck:f.depth),r[3]];});}
+function lerpV(a,b,t){return a+(b-a)*t;}
+function bdTorsoAt(rings,y){   // a ring interpolated at height y (for the clothes)
+  for(let i=1;i<rings.length;i++){const a=rings[i-1],b=rings[i];if(y<=a[0]&&y>=b[0]){const t=(a[0]-y)/((a[0]-b[0])||1);return a.map((v,k)=>v+(b[k]-v)*t);}}
+  return rings[y>rings[0][0]?0:rings.length-1].slice();}
+function bdEllipses(rings,thetas,inflate){
+  const P=[],C=[],T=[],N=[0,0,1],B=[-1,0,0];
+  for(const r of rings){const c=[0,r[0],r[3]],a=r[1]+(inflate||0),b=r[2]+(inflate||0);
+    P.push(thetas.map(th=>{const cz=Math.cos(th);return bdAdd(c,bdAdd(bdMul(N,b*cz*(cz<0?0.9:1)),bdMul(B,a*Math.sin(th))));}));C.push(c);T.push([0,-1,0]);}
+  return{P,C,T};}
+/* torso columns: front +-62 deg (8 steps), each side 62..118 deg (6), back 118..242 deg (10) */
+const BD_TORSO_TH=(()=>{const d=Math.PI/180,t=[];const seg=(a,b,n)=>{for(let i=0;i<n;i++)t.push((a+(b-a)*i/n)*d);};
+  seg(-62,62,8);seg(62,118,6);seg(118,242,10);seg(242,298,6);t.push(298*d);return t;})();
+
+/* every part for one body shape. Left limbs are on +x (the figure's left), the figure faces +z */
+function bdSpec(shape){
+  /* girth from BODY_SHAPES; the chest width leans on the back multiplier (the shoulders already widen with sh) */
+  const f0=BD_FORM[shape]||BD_FORM.neutral,f=Object.assign({},f0,{neck:bdWrap(shape,"neck"),chest:lerpV(1,bdWrap(shape,"back"),0.6),arm:bdWrap(shape,"arm"),
+    leg:bdWrap(shape,"leg"),hand:bdWrap(shape,"hand"),foot:bdWrap(shape,"foot")});
+  const out=[],sh=f.sh,rings=bdTorsoRings(f);
+  out.push({id:"torso",kind:"torso",G:bdEllipses(rings,BD_TORSO_TH),marks:{top:0,armpit:6,waist:11},
+    patches:[{isl:"chest",i0:0,i1:7,j0:0,j1:8,jc:4},{isl:"blank",i0:7,i1:19,j0:0,j1:8,jc:4},{isl:"side_r",i0:0,i1:19,j0:8,j1:14,jc:11},
+      {isl:"back",i0:0,i1:19,j0:14,j1:24,jc:19},{isl:"side_l",i0:0,i1:19,j0:24,j1:30,jc:27}]});
+  for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
+    /* the arm: shoulder dome, upper arm hanging, elbow bent, forearm forward on the armrest (face line up) */
+    const aK=[[sh-0.012,1.083,-0.008],[sh+0.04,1.0,0],[sh+0.1,0.8,0.035],[sh+0.105,0.745,0.27]].map(X);
+    const aUs=bdRings(22,true,false);
+    out.push({id:"arm_"+L,kind:"tube",G:bdTube({keys:aK,us:aUs,thetas:bdThetas(14,Math.PI),face:[0,0,1],g:f.arm,
+      prof:[[0,.006,.006],[.02,.03,.03],[.05,.045,.046],[.1,.052,.052],[.2,.049,.048],[.35,.046,.044],[.5,.042,.040],[.566,.040,.041],[.62,.039,.044],[.72,.036,.042],[.85,.029,.036],[.95,.022,.031],[1,.021,.030]]}),
+      marks:{top:0,elbow:bdNear(aUs,0.566),wrist:aUs.length-1},patches:[{isl:"arm_"+L,jc:7}]});
+    const w=aK[3],hK=[bdAdd(w,X([-0.002,0.002,-0.022])),bdAdd(w,X([0.003,-0.006,0.07])),bdAdd(w,X([0.004,-0.022,0.15])),bdAdd(w,X([0.004,-0.036,0.188]))];
+    const hUs=bdRings(12,false,true);
+    out.push({id:"hand_"+L,kind:"tube",G:bdTube({keys:hK,us:hUs,thetas:bdThetas(12,Math.PI),face:[0,1,0],g:f.hand,
+      prof:[[0,.019,.028],[.12,.02,.03],[.35,.017,.043],[.6,.015,.045],[.75,.013,.043],[.9,.011,.038],[.97,.007,.03],[1,.002,.012]]}),
+      marks:{wrist:bdNear(hUs,0.1)},patches:[{isl:"hand_"+L,jc:6}]});
+    out.push({id:"thumb_"+L,kind:"tube",G:bdTube({keys:[bdAdd(w,X([-0.026,-0.006,0.03])),bdAdd(w,X([-0.044,-0.012,0.07])),bdAdd(w,X([-0.047,-0.016,0.098]))],
+      us:bdRings(6,false,true),thetas:bdThetas(8,Math.PI),face:[0,1,0],g:f.hand,prof:[[0,.011,.012],[.5,.0095,.010],[.9,.007,.007],[1,.002,.002]]}),marks:{},patches:[{isl:"blank",jc:4}]});
+    /* the leg: thigh forward on the seat, knee bent, shin down, foot flat; face line up the thigh and down the shin */
+    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
+    const lUs=bdRings(24,false,false);
+    out.push({id:"leg_"+L,kind:"tube",G:bdTube({keys:lK,us:lUs,thetas:bdThetas(16,s>0?Math.PI/2:-Math.PI/2),face:[0,1,0],g:f.leg,
+      prof:[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072],[.55,.056,.058],[.62,.054,.056],[.7,.056,.058],[.8,.048,.047],[.92,.037,.036],[1,.034,.034]]}),
+      marks:{hip:0,knee:bdNear(lUs,0.55),ankle:lUs.length-1},patches:[{isl:"leg_"+L,jc:s>0?12:4}]});
+    const A=lK[4],fK=[bdAdd(A,X([0,-0.065,-0.055])),bdAdd(A,X([0,-0.066,0.02])),bdAdd(A,X([0.004,-0.08,0.12])),bdAdd(A,X([0.008,-0.086,0.2]))];
+    const fUs=bdRings(13,true,true);
+    out.push({id:"foot_"+L,kind:"tube",G:bdTube({keys:fK,us:fUs,thetas:bdThetas(12,Math.PI),face:[0,1,0],g:f.foot,
+      prof:[[0,.004,.004],[.05,.03,.028],[.2,.042,.035],[.38,.04,.04],[.6,.027,.045],[.8,.018,.046],[.93,.014,.042],[1,.003,.02]]}),
+      marks:{ankle:bdNear(fUs,0.3)},patches:[{isl:"foot_"+L,jc:6}]});}
+  const nUs=bdRings(7,false,false);
+  out.push({id:"neck",kind:"tube",G:bdTube({keys:[[0,1.245,0.005],[0,1.18,-0.002],[0,1.11,-0.012]],us:nUs,thetas:bdThetas(16,Math.PI),face:[0,0,-1],g:f.neck,
+    prof:[[0,.045,.05],[.5,.047,.052],[1,.056,.062]]}),marks:{top:0},patches:[{isl:"neck",jc:8}]});
+  /* clothes: a strapless bandeau and the shorts (hips plus the top of each thigh). The bandeau is a front panel only, under the
+     chest island, so the chest, the ribs and the whole back stay bare for work (the mannequin is stylized: nothing holds it up) */
+  const topR=[.952,.928,.904,.88,.857,.835].map(y=>bdTorsoAt(rings,y)),topTh=[];for(let k=0;k<=12;k++)topTh.push((-66+11*k)*Math.PI/180);
+  const topG=bdEllipses(topR,topTh,0.006);topG.arc=true;
+  out.push({id:"top",kind:"cloth",mat:"top",G:topG,patches:[{isl:"blank",jc:4}],open:true});
+  const shR=[.70,.665,.63,.595,.56,.53,.505,.49,.484].map(y=>bdTorsoAt(rings,y));
+  out.push({id:"shorts",kind:"cloth",mat:"shorts",G:bdEllipses(shR,BD_TORSO_TH,0.006),patches:[{isl:"blank",jc:4}],open:true});
+  for(const s of [1,-1]){const L=s>0?"l":"r",X=v=>[v[0]*s,v[1],v[2]];
+    const lK=[[0.09,0.6,-0.07],[0.1,0.555,0.10],[0.11,0.53,0.43],[0.115,0.32,0.455],[0.115,0.115,0.45]].map(X);
+    const u1=0.24,us=[0,u1*0.25,u1*0.5,u1*0.75,u1*0.92,u1];
+    const lp=[[0,.07,.08],[.06,.082,.088],[.2,.08,.085],[.4,.07,.072]];
+    out.push({id:"shortsleg_"+L,kind:"cloth",mat:"shorts",G:bdTube({keys:lK,us,thetas:bdThetas(16,0),face:[0,1,0],g:f.leg,inflate:0.007,prof:lp}),patches:[{isl:"blank",jc:8}],open:true});}
+  return out;}
+function bdNear(us,u){let b=0;for(let i=1;i<us.length;i++)if(Math.abs(us[i]-u)<Math.abs(us[b]-u))b=i;return b;}
+
+/* outward normals by finite differences round each ring and along each column */
+function bdNormals(G){
+  const n=G.P.length,m=G.P[0].length-1,out=[];
+  for(let i=0;i<n;i++){const row=[];for(let j=0;j<=m;j++){const jj=j===m&&!G.arc?0:j;
+    const a=G.arc?G.P[i][Math.min(m,j+1)]:G.P[i][(jj+1)%m],b=G.arc?G.P[i][Math.max(0,j-1)]:G.P[i][(jj-1+m)%m],c=G.P[Math.min(n-1,i+1)][jj],d=G.P[Math.max(0,i-1)][jj];
+    let v=bdCross(bdSub(c,d),bdSub(a,b));const rad=bdSub(G.P[i][jj],G.C[i]);
+    if(bdLen(v)<1e-10||bdLen(rad)<2e-4)v=bdMul(G.T[i],i<n/2?-1:1);else if(bdDot(v,rad)<0)v=bdMul(v,-1);
+    row.push(bdNrm(v));}out.push(row);}
+  return out;}
+/* island coordinates (mm) for one patch of the neutral grid: x = -(arc from column jc), y = distance down each column */
+function bdPatchXY(G,p){
+  const X=[],Y=[];
+  for(let i=p.i0;i<=p.i1;i++){const A=[0];for(let j=p.j0+1;j<=p.j1;j++)A.push(A[A.length-1]+bdLen(bdSub(G.P[i][j],G.P[i][j-1])));
+    const ac=A[p.jc-p.j0];X.push(A.map(a=>-(a-ac)*1000));}
+  const col=[];for(let j=p.j0;j<=p.j1;j++){let y=0;const c=[];for(let i=0;i<=p.i1;i++){if(i)y+=bdLen(bdSub(G.P[i][j],G.P[i-1][j]));if(i>=p.i0)c.push(y*1000);}col.push(c);}
+  for(let k=0;k<=p.i1-p.i0;k++)Y.push(col.map(c=>c[k]));
+  return{X,Y};}
+
+/* shelf-pack the islands into the unit square at the largest scale that fits */
+function bdPack(isl){
+  const ids=Object.keys(isl).sort((a,b)=>isl[b].h*isl[b].wt-isl[a].h*isl[a].wt||(a<b?-1:1)),pad=6/1024;
+  const fit=s=>{let x=pad,y=pad,row=0;const out={};
+    for(const id of ids){const w=isl[id].w*isl[id].wt*s,h=isl[id].h*isl[id].wt*s;
+      if(w+2*pad>1)return null;if(x+w+pad>1){x=pad;y+=row+pad;row=0;}
+      out[id]={x,y,w,h};x+=w+pad;row=Math.max(row,h);}
+    return y+row+pad<=1?out:null;};
+  let lo=0,hi=1/200,best=null;
+  for(let k=0;k<32;k++){const s=(lo+hi)/2,r=fit(s);if(r){best={s,r};lo=s;}else hi=s;}
+  return best;}
+
+/* build everything once: the three shapes, the islands and the atlas, the zones */
+function bdBuild(){
+  if(BD.built)return BD;
+  const specs={};for(const sh of BD_SHAPES)specs[sh]=bdSpec(sh);
+  const base=specs.neutral,isl={};
+  base.forEach((part,k)=>{part.N={};for(const sh of BD_SHAPES){const G=specs[sh][k].G;part.N[sh]=bdNormals(G);if(sh!=="neutral")part["G_"+sh]=G;}
+    part.G_neutral=part.G;
+    for(const p of part.patches){if(p.i0==null){p.i0=0;p.i1=part.G.P.length-1;p.j0=0;p.j1=part.G.P[0].length-1;}
+      p.xy=bdPatchXY(part.G,p);
+      if(p.isl==="blank")continue;
+      const I=isl[p.isl]||(isl[p.isl]={xmin:1e9,xmax:-1e9,ymin:1e9,ymax:-1e9});
+      for(const r of p.xy.X)for(const x of r){I.xmin=Math.min(I.xmin,x);I.xmax=Math.max(I.xmax,x);}
+      for(const r of p.xy.Y)for(const y of r){I.ymin=Math.min(I.ymin,y);I.ymax=Math.max(I.ymax,y);}}});
+  isl.blank={xmin:0,xmax:12,ymin:0,ymax:12};
+  const req={};for(const id in isl)req[id]={w:isl[id].xmax-isl[id].xmin,h:isl[id].ymax-isl[id].ymin,wt:BD_ISLAND_W[id]||1};
+  const pk=bdPack(req);
+  for(const id in isl){const r=pk.r[id];BD.islands[id]=Object.assign(isl[id],{id,rect:r,ppm:pk.s*req[id].wt});}
+  BD.parts=base;
+  for(const part of base)for(const p of part.patches)p.uv=p.xy.X.map((r,k)=>r.map((x,j)=>bdUV(p.isl,x,p.xy.Y[k][j])));
+  for(const id in INK_SIM.PLACEMENTS)BD.zones[id]=bdZoneMake(id);
+  BD.built=true;return BD;}
+/* island mm -> atlas uv (three.js v runs up; the canvas runs down) */
+function bdUV(id,x,y){const I=BD.islands[id];if(id==="blank")return[I.rect.x+I.rect.w/2,1-(I.rect.y+I.rect.h/2)];
+  return[I.rect.x+(x-I.xmin)*I.ppm,1-(I.rect.y+(y-I.ymin)*I.ppm)];}
+/* atlas uv -> {island, x, y} in mm, or null */
+function bdFromUV(u,v){const cy=1-v;
+  for(const id in BD.islands){if(id==="blank")continue;const I=BD.islands[id],r=I.rect;
+    if(u>=r.x&&u<=r.x+r.w&&cy>=r.y&&cy<=r.y+r.h)return{isl:id,x:I.xmin+(u-r.x)/I.ppm,y:I.ymin+(cy-r.y)/I.ppm};}
+  return null;}
+/* a zone: island, the box's start (y0, mm down the island), its centre line x(y) and a vertex to aim the camera at */
+function bdZoneMake(id){
+  const P=INK_SIM.PLACEMENTS[id];if(!P)return null;
+  const side=P.side,base=side&&!BD_ZONES[id]?id.replace(/_[lr]$/,""):id,Z=BD_ZONES[base];if(!Z)return null;
+  const mir=side==="r"&&base!==id?-1:1,isl=INK_SIM.ISLANDS.indexOf(Z.isl+"_"+side)>=0?Z.isl+"_"+side:Z.isl;
+  const partId=Z.isl==="arm"||Z.isl==="leg"||Z.isl==="hand"||Z.isl==="foot"?Z.isl+"_"+side:Z.isl==="neck"?"neck":"torso";
+  const part=BD.parts.find(p=>p.id===partId),patch=part.patches.find(p=>p.isl===isl);if(!patch)return null;
+  const frac=(Z.frac||0)*mir,xOff=(Z.xOff||0)*(base!==id?mir:1);
+  /* the centre line ring by ring: the point frac of the way round (x = frac x the ring's length), its y */
+  const rows=[];
+  for(let k=0;k<patch.xy.X.length;k++){const X=patch.xy.X[k],Y=patch.xy.Y[k],C=X[0]-X[X.length-1];
+    const xt=frac*C+xOff;let y=Y[patch.jc-patch.j0];
+    for(let j=0;j<X.length-1;j++){const a=X[j],b=X[j+1];if((xt<=a&&xt>=b)||(xt>=a&&xt<=b)){const t=(xt-a)/((b-a)||1);y=Y[j]+(Y[j+1]-Y[j])*t;break;}}
+    rows.push({x:xt,y});}
+  const ai=(part.marks[Z.anchor]||0)-patch.i0,anchorY=rows[bdClamp(ai,0,rows.length-1)].y;
+  const y0=anchorY-(Z.at||0)*P.lengthMm+(Z.dy||0);
+  const z={id,isl,part:part.id,frac,xOff,y0,W:P.wrapMm,L:P.lengthMm,region:P.region,rows,flat:frac===0};
+  /* the camera's aim: the vertex nearest the box centre */
+  const ym=y0+P.lengthMm/2,xm=bdZoneX(z,ym);let best=1e18,bi=0,off=0;
+  for(const p of part.patches){const n=(p.i1-p.i0+1)*(p.j1-p.j0+1);
+    if(p===patch)for(let k=0;k<p.xy.X.length;k++)for(let j=0;j<p.xy.X[k].length;j++){const d=(p.xy.X[k][j]-xm)**2+(p.xy.Y[k][j]-ym)**2;if(d<best){best=d;bi=off+k*(p.j1-p.j0+1)+j;}}
+    off+=n;}
+  z.vtx=bi;return z;}
+function bdZoneX(z,y){const R=z.rows;if(z.flat||R.length<2)return R.length?R[0].x:0;
+  if(y<=R[0].y)return R[0].x;for(let i=1;i<R.length;i++)if(y<=R[i].y){const t=(y-R[i-1].y)/((R[i].y-R[i-1].y)||1);return R[i-1].x+(R[i].x-R[i-1].x)*t;}
+  return R[R.length-1].x;}
+function bdZone(id){bdBuild();return BD.zones[id]||null;}
+/* island mm on a zone -> the design's pos (0..1 of the box). Shape-free: the box width scales with the body */
+function bdZonePos(z,x,y){return{x:(x-bdZoneX(z,y)+z.W/2)/z.W,y:(y-z.y0)/z.L};}
+
+/* ---- the meshes ---- */
+function bdGeometry(part){
+  const pos=[],uv=[],idx=[],sets={};for(const sh of BD_SHAPES)sets[sh]={p:[],n:[]};
+  let base=0;
+  for(const p of part.patches){const cols=p.j1-p.j0+1,rows=p.i1-p.i0+1;
+    for(let i=p.i0;i<=p.i1;i++)for(let j=p.j0;j<=p.j1;j++){
+      for(const sh of BD_SHAPES){const q=part["G_"+sh].P[i][j],nv=part.N[sh][i][j];sets[sh].p.push(q[0],q[1],q[2]);sets[sh].n.push(nv[0],nv[1],nv[2]);}
+      const t=p.uv[i-p.i0][j-p.j0];uv.push(t[0],t[1]);}
+    for(let i=0;i<rows-1;i++)for(let j=0;j<cols-1;j++){const a=base+i*cols+j,b=a+1,c=a+cols,d=c+1;idx.push(a,b,c,c,b,d);}
+    base+=rows*cols;}
+  const g=new THREE.BufferGeometry();
+  const arr={};for(const sh of BD_SHAPES)arr[sh]={p:new Float32Array(sets[sh].p),n:new Float32Array(sets[sh].n)};
+  g.setAttribute("position",new THREE.BufferAttribute(arr.neutral.p.slice(),3));
+  g.setAttribute("normal",new THREE.BufferAttribute(arr.neutral.n.slice(),3));
+  g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx);g.computeBoundingSphere();
+  return{g,arr};}
+/* the head: a smooth egg, no features */
+function bdHead(){const g=new THREE.SphereGeometry(1,18,12);g.scale(0.084,0.112,0.098);g.translate(0,1.305,0.012);
+  const c=bdUV("blank",0,0),uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,c[0],c[1]);return g;}
+/* build the mannequin's meshes into a group with the materials given: {skin, top, shorts} */
+function bdMeshes(mats){
+  bdBuild();const grp=new THREE.Group();grp.name="body";const parts=[];
+  for(const part of BD.parts){const G=bdGeometry(part),m=part.kind==="cloth"?mats[part.mat]:mats.skin;
+    const mesh=new THREE.Mesh(G.g,m);mesh.userData.part=part.id;mesh.userData.arr=G.arr;mesh.userData.islands=part.patches.map(p=>p.isl);
+    mesh.castShadow=true;mesh.receiveShadow=true;grp.add(mesh);parts.push(mesh);}
+  const head=new THREE.Mesh(bdHead(),mats.skin);head.castShadow=true;head.userData.part="head";head.userData.islands=["blank"];grp.add(head);
+  return{grp,parts};}
+/* set the vertex positions for a mix of shapes: w = {neutral, masc, femme} weights summing to 1 */
+function bdApplyShape(parts,w){
+  for(const mesh of parts){const A=mesh.userData.arr;if(!A)continue;
+    const P=mesh.geometry.attributes.position.array,N=mesh.geometry.attributes.normal.array,n=P.length;
+    const a=A.neutral,b=A.masc,c=A.femme,wa=w.neutral||0,wb=w.masc||0,wc=w.femme||0;
+    for(let i=0;i<n;i++){P[i]=a.p[i]*wa+b.p[i]*wb+c.p[i]*wc;N[i]=a.n[i]*wa+b.n[i]*wb+c.n[i]*wc;}
+    mesh.geometry.attributes.position.needsUpdate=true;mesh.geometry.attributes.normal.needsUpdate=true;mesh.geometry.computeBoundingSphere();}}
+/* world point and normal of a zone's aim vertex for the current shape mix */
+function bdZoneAim(parts,z){
+  const mesh=parts.find(m=>m.userData.part===z.part);if(!mesh)return null;
+  const P=mesh.geometry.attributes.position.array,N=mesh.geometry.attributes.normal.array,i=z.vtx*3;
+  return{p:new THREE.Vector3(P[i],P[i+1],P[i+2]),n:new THREE.Vector3(N[i],N[i+1],N[i+2]).normalize()};}
+/* the forearm's underside for an armrest, per shape: {x, y, z, pitch} of the pad's top centre */
+function bdArmrest(shape,side){
+  bdBuild();const part=BD.parts.find(p=>p.id==="arm_"+side),G=part["G_"+shape];if(!G)return null;
+  const n=G.P.length,a=Math.round(n*0.72),b=n-2,lowest=i=>G.P[i].reduce((m,q)=>q[1]<m[1]?q:m,[0,9,0]);
+  const pa=lowest(a),pb=lowest(b);
+  return{x:(pa[0]+pb[0])/2,y:(pa[1]+pb[1])/2,z:(pa[2]+pb[2])/2+0.03,pitch:Math.atan2(pa[1]-pb[1],pb[2]-pa[2])};}
+function bdTriangles(parts){let t=0;for(const m of parts){const g=m.geometry;t+=(g.index?g.index.count:g.attributes.position.count)/3;}return t;}
+/* ===== vis/decals.js: tattoos on the skin texture (PR 6) =====
+   One skin texture per visible client: a canvas (Lite 1024 px, Full and Ultra 2048 px) that is white with the ink on it;
+   the skin material multiplies it by the client's skin colour, so ink sits under the skin the way it does in life (pale
+   colours sink into dark skin) and a skin-tone change needs no repaint.
+   Each piece is drawn with the same maths as the board (app/design.js dzToDesign / dzElSvg): elements in millimetres on
+   the placement box (pos x box, footprint-centred offsets x sizeMm), each one translate(mx,my) rotate(rot) scale(k)
+   about its path's box centre, Path2D from the element's SVG paths (cached per element), line width INK_SIM.lineMm plus
+   the spread, colour on the fill and black lines (watercolour and fill-less colour take colour lines). It is drawn into
+   a small offscreen canvas in the zone's neutral millimetres (the body shape stretches the box across, so across is
+   divided by the shape's wrap multiplier), then copied onto its island in bands that follow the zone's centre line, and
+   clipped to the island: nothing is ever drawn across islands.
+   Aging: INK_SIM.age(piece, years) gives blur, fade and spread (with the piece.heal grade from PR 5); spread widens the
+   lines, fade lowers the alpha, blur softens the offscreen copy (canvas filter where the browser has it, else a downscale).
+   dcCompose(list, shape) repaints only when the list or the shape changed (a signature check), never per frame.
+   The stencil overlay (dcStencil) is a second, small canvas for one island, mapped onto that island's rect with the
+   texture's offset/repeat, so dragging the stencil repaints a few hundred pixels and never the skin. ===== */
+const DC_INK="#16120e";
+const DC_STENCIL={light:"#6a3fc8",dark:"#cbb6ff",rl:5};   // the purple of the Session tab's flat stencil (app/session.js SE_STENCIL)
+const DC={canvas:null,ctx:null,tex:null,size:0,sig:"",paths:{},filter:null,tmp:null,minPx:1.1,
+  ov:{canvas:null,ctx:null,tex:null,isl:null,sig:"",size:512}};
+function dcPath(id){
+  let c=DC.paths[id];if(c)return c;
+  const d=INK_SIM.elementById(id);if(!d)return null;
+  try{c={d:new Path2D(d.path),f:d.fill?new Path2D(d.fill):null,b:INK_SIM.elementBox(id),def:d};}catch(e){return null;}
+  return(DC.paths[id]=c);}
+function dcFilterOk(){
+  if(DC.filter==null){try{const c=document.createElement("canvas").getContext("2d");c.filter="blur(2px)";DC.filter=c.filter==="blur(2px)";}catch(e){DC.filter=false;}}
+  return DC.filter;}
+function dcInit(size,aniso,minPx){
+  if(DC.canvas&&DC.size===size){DC.minPx=minPx||DC.minPx;return DC.tex;}
+  if(DC.tex)DC.tex.dispose();
+  const c=document.createElement("canvas");c.width=c.height=size;
+  DC.canvas=c;DC.ctx=c.getContext("2d");DC.size=size;DC.sig="";DC.minPx=minPx||1.1;
+  DC.ctx.fillStyle="#fff";DC.ctx.fillRect(0,0,size,size);
+  DC.tex=new THREE.CanvasTexture(c);DC.tex.encoding=THREE.sRGBEncoding;DC.tex.anisotropy=aniso||1;
+  return DC.tex;}
+/* the elements of a design in placement-box millimetres for a body shape (app/session.js seEls, the same transform) */
+function dcEls(d,box){const sz=d.sizeMm||50,pos=d.pos||{x:.5,y:.5},fp=INK_SIM.footprintOf(d);
+  return(d.elements||[]).filter(e=>INK_SIM.elementById(e.id)).map(e=>({id:e.id,mx:pos.x*box.wrapMm+((e.x!=null?e.x:.5)-fp.cx)*sz,my:pos.y*box.lengthMm+((e.y!=null?e.y:.5)-fp.cy)*sz,
+    mm:(e.scale!=null?e.scale:.5)*sz,rot:e.rot||0,lineWeight:e.lineWeight||7,fill:e.fill||0,colour:e.colour||null}));}
+function dcHex(c){const C=INK_SIM.COLOURS[c||"black"];return C?C.hex:DC_INK;}
+/* draw one piece onto a destination {ctx, ox, oy, ppx, clip:[x,y,w,h]} where (ox,oy) is the island's (xmin,ymin) in px.
+   mode "ink" (aged) or "stencil" (purple lines, opts.colour) */
+function dcDraw(dst,t,shape,mode,opts){
+  const d=t&&t.design;if(!d||!Array.isArray(d.elements)||!d.elements.length)return false;
+  const z=bdZone(d.placement);if(!z)return false;const I=BD.islands[z.isl];if(!I)return false;
+  const box=INK_SIM.placementBox(d.placement,shape)||{wrapMm:z.W,lengthMm:z.L},m=box.wrapMm/z.W,ppx=dst.ppx;
+  const els=dcEls(d,box);if(!els.length)return false;
+  let ag={blur:0,fade:0,spread:0};
+  if(mode==="ink")try{ag=INK_SIM.age(t,Math.max(0,t.years||0))||ag;}catch(e){}
+  const pad=2+ag.spread+ag.blur*3;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const e of els){const r=e.mm*0.75;x0=Math.min(x0,e.mx-r);x1=Math.max(x1,e.mx+r);y0=Math.min(y0,e.my-r);y1=Math.max(y1,e.my+r);}
+  const nx0=(x0-pad)/m,nx1=(x1+pad)/m,ny0=y0-pad,ny1=y1+pad;
+  const cw=Math.max(2,Math.min(2048,Math.ceil((nx1-nx0)*ppx))),ch=Math.max(2,Math.min(2048,Math.ceil((ny1-ny0)*ppx)));
+  const oc=document.createElement("canvas");oc.width=cw;oc.height=ch;const c=oc.getContext("2d");
+  c.setTransform(ppx/m,0,0,ppx,-nx0*ppx,-ny0*ppx);c.lineCap="round";c.lineJoin="round";
+  const minMm=(opts&&opts.minPx||DC.minPx)/(ppx/Math.max(m,1));
+  for(const e of els){const P=dcPath(e.id);if(!P)continue;const b=P.b,k=e.mm/Math.max(b.w,b.h,1e-6);
+    c.save();c.translate(e.mx,e.my);c.rotate(e.rot*Math.PI/180);c.scale(k,k);c.translate(-(b.x+b.w/2),-(b.y+b.h/2));
+    if(mode==="stencil"){c.strokeStyle=opts.colour;c.lineWidth=Math.max(INK_SIM.lineMm(DC_STENCIL.rl),minMm)/k;c.globalAlpha=0.85;c.stroke(P.d);}
+    else{const fc=e.colour?dcHex(e.colour):DC_INK,lc=e.colour&&(d.style==="watercolour"||!(e.fill>0))?fc:DC_INK;
+      if(P.f&&e.fill>0){c.globalAlpha=bdClamp(e.fill,0,1);c.fillStyle=fc;c.fill(P.f);c.globalAlpha=1;}
+      c.strokeStyle=lc;c.lineWidth=Math.max(INK_SIM.lineMm(e.lineWeight)+ag.spread,minMm)/k;c.stroke(P.d);}
+    c.restore();}
+  /* aging blur */
+  let src=oc;const bpx=ag.blur*ppx;
+  if(mode==="ink"&&bpx>0.45){const t2=document.createElement("canvas");t2.width=cw;t2.height=ch;const c2=t2.getContext("2d");
+    if(dcFilterOk()){c2.filter=`blur(${Math.min(12,bpx).toFixed(2)}px)`;c2.drawImage(oc,0,0);}
+    else{const f=1/(1+Math.min(8,bpx)*0.8),sw=Math.max(1,Math.round(cw*f)),sh=Math.max(1,Math.round(ch*f)),t3=document.createElement("canvas");t3.width=sw;t3.height=sh;
+      const c3=t3.getContext("2d");c3.imageSmoothingEnabled=true;c3.drawImage(oc,0,0,sw,sh);c2.imageSmoothingEnabled=true;c2.drawImage(t3,0,0,cw,ch);}
+    src=t2;}
+  /* copy onto the island along the zone's centre line, clipped to the island */
+  const g=dst.ctx;g.save();g.beginPath();g.rect(dst.clip[0],dst.clip[1],dst.clip[2],dst.clip[3]);g.clip();
+  g.globalAlpha=mode==="ink"?bdClamp(1-ag.fade,0.05,1):1;
+  const dxAt=y=>dst.ox+(bdZoneX(z,y)-z.W/2+nx0-I.xmin)*ppx,dy0=dst.oy+(z.y0+ny0-I.ymin)*ppx;
+  if(z.flat)g.drawImage(src,dxAt(0),dy0);
+  else for(let py=0;py<ch;py+=3){const h=Math.min(3,ch-py);g.drawImage(src,0,py,cw,h,dxAt(z.y0+ny0+(py+h/2)/ppx),dy0+py,cw,h);}
+  g.restore();return true;}
+/* repaint the skin with these pieces: [{design, out, heal, ink, years, skinTone, sun}] */
+function dcCompose(list,shape){
+  if(!DC.ctx)return false;bdBuild();
+  const sig=JSON.stringify([shape,DC.size,(list||[]).map(t=>[t.design,t.out||null,t.heal||null,t.ink||null,Math.round((t.years||0)*10)/10,t.skinTone,t.sun])]);
+  if(sig===DC.sig)return false;DC.sig=sig;
+  const g=DC.ctx,S0=DC.size;g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.fillStyle="#fff";g.fillRect(0,0,S0,S0);
+  for(const t of list||[]){const z=t&&t.design&&bdZone(t.design.placement);if(!z)continue;const I=BD.islands[z.isl],r=I.rect;
+    try{dcDraw({ctx:g,ox:r.x*S0,oy:r.y*S0,ppx:I.ppm*S0,clip:[r.x*S0,r.y*S0,r.w*S0,r.h*S0]},t,shape,"ink");}catch(e){}}
+  DC.tex.needsUpdate=true;return true;}
+/* the stencil overlay: a small canvas over one island. Returns the island id it covers (or null) */
+function dcStencil(design,shape,tone){
+  const ov=DC.ov;const z=design&&design.elements&&design.elements.length?bdZone(design.placement):null;
+  if(!z){if(ov.ctx)ov.ctx.clearRect(0,0,ov.canvas.width,ov.canvas.height);ov.isl=null;ov.sig="";if(ov.tex)ov.tex.needsUpdate=true;return null;}
+  const I=BD.islands[z.isl],r=I.rect;
+  const big=ov.size,w=r.w>=r.h?big:Math.max(16,Math.round(big*r.w/r.h)),h=r.w>=r.h?Math.max(16,Math.round(big*r.h/r.w)):big;
+  if(!ov.canvas||ov.canvas.width!==w||ov.canvas.height!==h){
+    if(ov.tex)ov.tex.dispose();ov.canvas=document.createElement("canvas");ov.canvas.width=w;ov.canvas.height=h;ov.ctx=ov.canvas.getContext("2d");
+    ov.tex=new THREE.CanvasTexture(ov.canvas);ov.tex.generateMipmaps=false;ov.tex.minFilter=THREE.LinearFilter;ov.tex.encoding=THREE.sRGBEncoding;
+    ov.tex.wrapS=ov.tex.wrapT=THREE.ClampToEdgeWrapping;}
+  ov.tex.repeat.set(1/r.w,1/r.h);ov.tex.offset.set(-r.x/r.w,-(1-r.y-r.h)/r.h);
+  const sig=JSON.stringify([design,shape,tone>0.6,w]);
+  if(sig!==ov.sig){ov.sig=sig;const g=ov.ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,h);
+    const ppx=w/(I.xmax-I.xmin);
+    dcDraw({ctx:g,ox:0,oy:0,ppx,clip:[1,1,w-2,h-2]},{design},shape,"stencil",{colour:tone>0.6?DC_STENCIL.dark:DC_STENCIL.light,minPx:1.6});
+    ov.tex.needsUpdate=true;}
+  ov.isl=z.isl;return z.isl;}
+/* ===== vis/studio.js: the shop interior (PR 6) =====
+   A modest working shop built from primitives: plank floor, plaster walls over a dark wood dado, the tattoo chair (padded
+   seat, two adjustable armrests that sit under the client's forearms), your station (a trolley with the machine, ink caps
+   and a paper roll, an angle lamp on a stand pointed at the work, your stool), the flash wall (sheets drawn from
+   INK_SIM.FLASH on canvas), and a window onto a Mostograd canal at night: facades with lit windows across the water, a
+   drawbridge raised for the night, reflections. The client faces +z; the window and flash wall are on the back wall.
+   vsRoom() returns {grp, stages, lights, armrests}; vsStage(stage) shows the props for apprentice | chair | studio | legacy
+   (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 6k triangles.
+   Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build. ===== */
+const VR_STAGES=["apprentice","chair","studio","legacy"];
+function vrCanvas(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=TIER[V.tier].aniso;return t;}
+function vrRng(seed){return typeof INK_SIM!=="undefined"&&INK_SIM.rng?INK_SIM.rng(seed):{range:(a,b)=>(a+b)/2,chance:()=>false,int:(a)=>a};}
+/* the night view: sky, the far embankment's facades, a raised drawbridge, the canal */
+function vrNight(){return vrCanvas(512,384,(g,w,h)=>{const r=vrRng(1703);
+  const sky=g.createLinearGradient(0,0,0,h*0.62);sky.addColorStop(0,"#070d1c");sky.addColorStop(1,"#22304d");g.fillStyle=sky;g.fillRect(0,0,w,h);
+  g.fillStyle="rgba(255,250,230,.8)";for(let i=0;i<40;i++){g.fillRect(r.range(0,w),r.range(0,h*0.3),1,1);}
+  g.fillStyle="rgba(250,240,210,.9)";g.beginPath();g.arc(w*0.8,h*0.13,13,0,7);g.fill();
+  const base=h*0.6;let x=-10;
+  while(x<w){const bw=r.range(55,95),bh=r.range(95,150),tone=r.int(0,2);g.fillStyle=["#1a2030","#1e2536","#232a3a"][tone];g.fillRect(x,base-bh,bw,bh);
+    g.fillStyle="#141926";g.fillRect(x,base-bh-4,bw,5);g.fillRect(x,base-bh*0.55,bw,2);
+    for(let fy=base-bh+12;fy<base-12;fy+=19)for(let fx=x+8;fx<x+bw-10;fx+=15){const lit=r.chance(0.36);g.fillStyle=lit?(r.chance(0.7)?"#f2c46a":"#e9dcb0"):"#2b3245";g.fillRect(fx,fy,7,11);}
+    x+=bw+r.range(0,4);}
+  /* the drawbridge, both leaves up for the night, with its red lamps */
+  g.save();g.translate(w*0.3,base);g.fillStyle="#10141e";g.fillRect(-60,-12,26,12);g.fillRect(34,-12,26,12);
+  g.save();g.translate(-34,-8);g.rotate(-1.15);g.fillRect(0,-5,58,8);g.restore();g.save();g.translate(34,-8);g.rotate(1.15+Math.PI);g.fillRect(0,-3,58,8);g.restore();
+  g.fillStyle="#ff4a3a";g.beginPath();g.arc(-12,-58,2.2,0,7);g.arc(12,-58,2.2,0,7);g.fill();g.restore();
+  g.fillStyle="#3a3f48";g.fillRect(0,base,w,6);
+  const wat=g.createLinearGradient(0,base+6,0,h);wat.addColorStop(0,"#0d1628");wat.addColorStop(1,"#05080f");g.fillStyle=wat;g.fillRect(0,base+6,w,h-base-6);
+  for(let i=0;i<70;i++){const fx=r.range(0,w),fy=r.range(base+10,h),len=r.range(6,22);g.fillStyle=r.chance(0.6)?"rgba(242,196,106,.35)":"rgba(200,210,240,.18)";g.fillRect(fx,fy,len,1.5);}
+  g.fillStyle="#3a3f48";g.fillRect(0,h-16,w,16);});}
+/* the flash wall: cream sheets with the shop's flash on them */
+function vrFlash(n){return vrCanvas(1024,512,(g,w,h)=>{
+  g.fillStyle="#3b2b1f";g.fillRect(0,0,w,h);
+  const F=(typeof INK_SIM!=="undefined"&&INK_SIM.FLASH)||[],cols=5,rows=2,sw=w/cols,sh=h/rows;
+  for(let i=0;i<cols*rows;i++){if(i>=n)break;const cx=(i%cols)*sw,cy=Math.floor(i/cols)*sh,f=F[i%Math.max(1,F.length)];
+    g.save();g.translate(cx+sw/2,cy+sh/2);g.rotate(((i*37)%7-3)*0.006);
+    g.fillStyle="#f3ead8";g.fillRect(-sw*0.42,-sh*0.43,sw*0.84,sh*0.86);
+    g.fillStyle="#7a1f17";g.beginPath();g.arc(0,-sh*0.4,4,0,7);g.fill();
+    if(f){const fp=INK_SIM.footprintOf(f),k=sh*0.62/Math.max(f.sizeMm,1);g.save();g.translate(0,sh*0.02);g.scale(k,k);
+      for(const e of f.elements){const P=dcPath(e.id);if(!P)continue;const b=P.b,ek=(e.scale*f.sizeMm)/Math.max(b.w,b.h,1e-6);
+        g.save();g.translate((e.x-fp.cx)*f.sizeMm,(e.y-fp.cy)*f.sizeMm);g.rotate((e.rot||0)*Math.PI/180);g.scale(ek,ek);g.translate(-(b.x+b.w/2),-(b.y+b.h/2));
+        if(P.f&&e.fill>0){g.globalAlpha=Math.min(1,e.fill);g.fillStyle=e.colour?dcHex(e.colour):DC_INK;g.fill(P.f);g.globalAlpha=1;}
+        g.strokeStyle=DC_INK;g.lineWidth=Math.max(1.2/k,INK_SIM.lineMm(e.lineWeight||7))/ek;g.lineCap=g.lineJoin="round";g.stroke(P.d);g.restore();}
+      g.restore();
+      g.fillStyle="#2a1d14";g.font="600 15px Oswald, 'Arial Narrow', sans-serif";g.textAlign="center";g.fillText(String(f.name||"").toUpperCase().slice(0,22),0,sh*0.38);}
+    g.restore();}});}
+function vrPlanks(){const t=vrCanvas(256,256,(g,w,h)=>{const r=vrRng(77);
+  for(let i=0;i<8;i++){const y=i*h/8,l=r.range(0.82,1);g.fillStyle=`rgb(${Math.round(104*l)},${Math.round(70*l)},${Math.round(46*l)})`;g.fillRect(0,y,w,h/8);
+    g.fillStyle="rgba(0,0,0,.35)";g.fillRect(0,y,w,1.5);const cut=r.range(20,230);g.fillRect(cut,y,1.5,h/8);
+    g.fillStyle="rgba(255,230,190,.05)";for(let k=0;k<5;k++)g.fillRect(0,y+r.range(3,h/8-3),w,1);}});
+  t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,4);return t;}
+function vrSign(){return vrCanvas(512,128,(g,w,h)=>{g.fillStyle="#1b120c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a35e";g.lineWidth=4;g.strokeRect(8,8,w-16,h-16);
+  g.fillStyle="#f0c674";g.font="600 54px Oswald, 'Arial Narrow', sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText("TATTOO",w/2,h/2+2);});}
+
+function vsRoom(){
+  const T=TIER[V.tier],grp=new THREE.Group(),st={};for(const s of VR_STAGES)st[s]=new THREE.Group();
+  st.apprenticeOnly=new THREE.Group();
+  const add=(m,p,parent)=>{m.position.set(p[0],p[1],p[2]);m.castShadow=m.receiveShadow=T.shadows;(parent||grp).add(m);return m;};
+  const box=(w,h,d,mat,p,par)=>add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat),p,par);
+  const cyl=(r1,r2,h,seg,mat,p,par)=>add(new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),mat),p,par);
+  const M={plaster:vsMat("#7a5a43",{r:0.95}),wood:vsMat("#3a2618",{r:0.7}),floor:vsMat("#ffffff",{map:vrPlanks(),r:0.75}),leather:vsMat("#1f1a17",{r:0.45}),
+    steel:vsMat("#9a968e",{r:0.35,m:0.6}),dark:vsMat("#151210",{r:0.6}),cream:vsMat("#efe5d2",{r:0.9}),paper:vsMat("#f4f1ea",{r:0.95}),
+    brass:vsMat("#b48a46",{r:0.4,m:0.7}),lampshade:vsMat("#2b2b2b",{r:0.5,m:0.3}),bulb:vsMat("#fff4d6",{emissive:"#ffd9a0",ei:1.4}),
+    rug:vsMat("#5c2a22",{r:1}),green:vsMat("#3f6b45",{r:0.9}),pot:vsMat("#8a4b2e",{r:0.9}),card:vsMat("#a07a52",{r:1}),ceil:vsMat("#2a211b",{r:1})};
+  /* the shell */
+  const floor=add(new THREE.Mesh(new THREE.PlaneGeometry(5.6,4.9),M.floor),[0,0,0.1]);floor.rotation.x=-Math.PI/2;floor.castShadow=false;
+  const ceil=add(new THREE.Mesh(new THREE.PlaneGeometry(5.6,4.9),M.ceil),[0,2.8,0.1]);ceil.rotation.x=Math.PI/2;
+  const wall=(w,p,ry)=>{const m=add(new THREE.Mesh(new THREE.PlaneGeometry(w,2.8),M.plaster),[p[0],1.4,p[2]]);m.rotation.y=ry;m.castShadow=false;return m;};
+  wall(5.6,[0,0,-2.35],0);wall(4.9,[-2.8,0,0.1],Math.PI/2);wall(4.9,[2.8,0,0.1],-Math.PI/2);wall(5.6,[0,0,2.55],Math.PI);
+  box(5.6,0.9,0.03,M.wood,[0,0.45,-2.335]);box(0.03,0.9,4.9,M.wood,[-2.785,0.45,0.1]);box(0.03,0.9,4.9,M.wood,[2.785,0.45,0.1]);box(5.6,0.9,0.03,M.wood,[0,0.45,2.535]);
+  box(5.6,0.05,0.05,M.dark,[0,0.92,-2.32]);box(0.05,0.05,4.9,M.dark,[-2.77,0.92,0.1]);box(0.05,0.05,4.9,M.dark,[2.77,0.92,0.1]);
+  /* the window onto the canal (back wall, left) */
+  const win=add(new THREE.Mesh(new THREE.PlaneGeometry(1.05,1.3),new THREE.MeshBasicMaterial({map:vrNight()})),[-1.45,1.62,-2.33]);win.castShadow=win.receiveShadow=false;
+  for(const [w,h,x,y] of [[1.17,0.07,0,0.68],[1.17,0.07,0,-0.68],[0.07,1.43,-0.55,0],[0.07,1.43,0.55,0],[0.04,1.3,0,0],[1.05,0.04,0,0.22]])box(w,h,0.06,M.wood,[-1.45+x,1.62+y,-2.31]);
+  box(1.3,0.05,0.18,M.wood,[-1.45,0.93,-2.27]);
+  /* the flash wall (back wall, right): fuller from the rented chair on */
+  const flashFull=add(new THREE.Mesh(new THREE.PlaneGeometry(2.0,1.0),vsMat("#ffffff",{map:vrFlash(10),r:0.9})),[0.85,1.72,-2.33],st.chair);
+  const flashHalf=add(new THREE.Mesh(new THREE.PlaneGeometry(2.0,1.0),vsMat("#ffffff",{map:vrFlash(6),r:0.9})),[0.85,1.72,-2.33],st.apprenticeOnly);
+  flashFull.castShadow=flashHalf.castShadow=false;
+  for(const [w,h,x,y] of [[2.1,0.05,0,0.52],[2.1,0.05,0,-0.52],[0.05,1.09,-1.03,0],[0.05,1.09,1.03,0]])box(w,h,0.04,M.wood,[0.85+x,1.72+y,-2.31]);
+  /* the chair: padded seat on a column, two armrests on posts (moved under the forearms per body shape) */
+  box(0.5,0.09,0.46,M.leather,[0,0.425,0.06]);box(0.52,0.025,0.48,M.dark,[0,0.37,0.06]);
+  cyl(0.045,0.05,0.34,12,M.steel,[0,0.2,0.06]);cyl(0.28,0.3,0.04,20,M.steel,[0,0.02,0.06]);
+  const armrests={};
+  for(const s of ["l","r"]){const g=new THREE.Group();grp.add(g);
+    const pad=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.045,0.36),M.leather);pad.position.set(0,-0.0225,0);pad.castShadow=pad.receiveShadow=T.shadows;
+    const tilt=new THREE.Group();tilt.add(pad);g.add(tilt);
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,1,8),M.steel);post.castShadow=T.shadows;g.add(post);
+    const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.12,0.03,14),M.steel);g.add(foot);
+    armrests[s]={g,tilt,post,foot};}
+  /* your station: trolley, machine, ink caps, paper roll, angle lamp, stool */
+  const tx=0.86,tz=0.32;
+  for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz]);
+  box(0.46,0.02,0.36,M.steel,[tx,0.8,tz]);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz]);
+  const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05]);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
+  box(0.05,0.03,0.035,M.brass,[tx-0.02,0.83,tz+0.03]);
+  ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03]));
+  cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09]);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09]);
+  cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1]);
+  box(0.36,0.08,0.26,M.cream,[tx,0.33,tz]);
+  /* the lamp: a stand by the trolley, an arm reaching over the forearm, a shade aimed down at the work */
+  const LS=[1.05,0,-0.45],LH=[0.5,1.5,-0.12];cyl(0.14,0.15,0.03,16,M.dark,[LS[0],0.015,LS[2]]);cyl(0.015,0.015,1.62,8,M.dark,[LS[0],0.82,LS[2]]);
+  {const a=new THREE.Vector3(LS[0],1.62,LS[2]),b=new THREE.Vector3(LH[0],LH[1]+0.06,LH[2]),m=a.clone().add(b).multiplyScalar(0.5),len=a.distanceTo(b);
+    const arm=cyl(0.011,0.011,len,8,M.dark,[m.x,m.y,m.z]);arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());}
+  const shade=add(new THREE.Mesh(new THREE.ConeGeometry(0.085,0.12,16,1,true),M.lampshade.clone()),LH);shade.material.side=THREE.DoubleSide;
+  shade.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-0.35,1.4,-0.4).normalize());
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.028,10,8),M.bulb),[LH[0]-0.01,LH[1]-0.05,LH[2]+0.01]);
+  cyl(0.18,0.18,0.06,18,M.leather,[0.95,0.55,0.86]);cyl(0.025,0.025,0.5,8,M.steel,[0.95,0.27,0.86]);cyl(0.2,0.22,0.03,16,M.steel,[0.95,0.015,0.86]);
+  /* the pendant over the chair: a bare bulb in the back room, a shade later */
+  cyl(0.004,0.004,0.6,4,M.dark,[0,2.5,0.3]);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),M.bulb),[0,2.18,0.3]);
+  const ps=add(new THREE.Mesh(new THREE.ConeGeometry(0.2,0.16,20,1,true),M.brass.clone()),[0,2.24,0.3],st.chair);ps.material.side=THREE.DoubleSide;
+  /* shelves on the left wall, jars and a stack of sketchbooks */
+  for(const y of [1.25,1.62]){box(0.24,0.03,1.1,M.wood,[-2.66,y,-0.6]);
+    for(let i=0;i<4;i++)cyl(0.04,0.04,0.12,10,vsMat(["#4c6a72","#8b6b3d","#6d3b2e","#53624a"][(i+(y>1.4?2:0))%4],{r:0.5}),[-2.66,y+0.075,-1.0+i*0.25]);}
+  box(0.2,0.12,0.28,vsMat("#2c3540",{r:0.9}),[-2.66,1.33,-0.05]);
+  /* the front wall: the door to the shop floor, a bench for whoever is waiting */
+  box(0.95,2.05,0.05,M.wood,[1.6,1.025,2.52]);cyl(0.02,0.02,0.04,8,M.brass,[1.2,1.0,2.49]);
+  box(1.4,0.08,0.42,M.leather,[-1.3,0.46,2.25]);box(1.4,0.42,0.06,M.leather,[-1.3,0.7,2.47]);
+  for(const x of [-1.9,-0.7])box(0.05,0.42,0.38,M.dark,[x,0.21,2.25]);
+  /* apprentice: boxes of supplies stacked in the corner and the broom you sweep with */
+  box(0.42,0.3,0.36,M.card,[-2.35,0.15,-1.95],st.apprenticeOnly);box(0.36,0.26,0.3,M.card,[-2.33,0.43,-1.93],st.apprenticeOnly);
+  box(0.4,0.28,0.34,M.card,[-1.9,0.14,-2.05],st.apprenticeOnly);
+  const broom=cyl(0.012,0.012,1.3,6,M.wood,[2.62,0.68,-1.7],st.apprenticeOnly);broom.rotation.z=0.12;box(0.3,0.08,0.06,M.dark,[2.54,0.06,-1.7],st.apprenticeOnly);
+  /* the rented chair: a rug under the chair */
+  const rug=add(new THREE.Mesh(new THREE.CircleGeometry(1.05,36),M.rug),[0,0.004,0.25],st.chair);rug.rotation.x=-Math.PI/2;rug.castShadow=false;
+  /* your studio: a lit sign and a plant */
+  const sign=add(new THREE.Mesh(new THREE.PlaneGeometry(1.0,0.25),new THREE.MeshBasicMaterial({map:vrSign()})),[2.77,2.05,-0.6],st.studio);sign.rotation.y=-Math.PI/2;
+  cyl(0.16,0.12,0.3,14,M.pot,[2.45,0.15,-2.0],st.studio);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,1),M.green),[2.45,0.6,-2.0],st.studio);
+  /* legacy: framed photos of healed work along the right wall and a second plant */
+  for(let i=0;i<6;i++){const f=box(0.03,0.3,0.24,M.wood,[2.77,1.35+(i%2)*0.4,0.4+Math.floor(i/2)*0.42],st.legacy);
+    box(0.01,0.24,0.18,M.cream,[2.755,f.position.y,f.position.z],st.legacy);}
+  cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],st.legacy);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],st.legacy);
+  for(const s of VR_STAGES)grp.add(st[s]);grp.add(st.apprenticeOnly);
+  /* light: warm hemisphere, the work lamp, the pendant, a little cold moonlight through the window */
+  const hemi=new THREE.HemisphereLight(vsCol("#f3e4d2"),vsCol("#2a1c12"),T.std?0.6:0.62);grp.add(hemi);
+  let lamp;
+  if(T.shadows){lamp=new THREE.SpotLight(vsCol("#ffd29a"),1.6,6,0.9,0.5,1);lamp.target.position.set(0.24,0.74,0.16);grp.add(lamp.target);
+    lamp.castShadow=true;lamp.shadow.mapSize.set(T.shadowMap,T.shadowMap);lamp.shadow.bias=-0.0006;lamp.shadow.camera.near=0.2;lamp.shadow.camera.far=6;}
+  else lamp=new THREE.PointLight(vsCol("#ffd29a"),1.15,5,1);
+  lamp.position.set(LH[0]-0.02,LH[1]-0.07,LH[2]+0.02);grp.add(lamp);
+  const pend=new THREE.PointLight(vsCol("#ffdcae"),T.std?0.7:0.55,7,1);pend.position.set(0,2.1,0.3);grp.add(pend);
+  const moon=new THREE.DirectionalLight(vsCol("#7d95c4"),0.22);moon.position.set(-1.5,2.2,-2);grp.add(moon);
+  return{grp,stages:st,armrests,lights:{hemi,lamp,pend,moon}};}
+/* show the props for a stage (cumulative: the studio keeps the rented chair's rug and flash) */
+function vsStage(stage){
+  const R=V.room;if(!R)return;const i=Math.max(0,VR_STAGES.indexOf(stage));V.stage=VR_STAGES[i];
+  VR_STAGES.forEach((s,k)=>{R.stages[s].visible=k<=i;});R.stages.apprenticeOnly.visible=i===0;V.dirty=true;}
+/* move the armrests under the forearms for the current shape mix */
+function vsArmrests(w){
+  const R=V.room;if(!R)return;
+  for(const s of ["l","r"]){let x=0,y=0,z=0,p=0;for(const sh of BD_SHAPES){const k=w[sh]||0;if(!k)continue;const a=bdArmrest(sh,s);x+=a.x*k;y+=a.y*k;z+=a.z*k;p+=a.pitch*k;}
+    const A=R.armrests[s];A.g.position.set(x,y-0.004,z);A.tilt.rotation.x=-p;A.post.scale.y=y-0.03;A.post.position.set(0,-(y-0.03)/2-0.02,0.0);A.foot.position.set(0,-y+0.015,0);}}
+/* ===== vis/api.js: the INK_VIS public object, IIFE close (PR 6) =====
+   vsBuild() assembles the scene for the current tier (room, mannequin, skin texture, stencil overlay); a tier change that
+   needs other materials, shadows or texture size rebuilds it. The API (all calls cheap when nothing changed; each one
+   renders once at most, or starts a short frame loop for a move):
+     init(canvas, tier) -> bool    ready()    setTier(t)    resize()    redraw()    fps() -> number while moving, else null
+     mount(el)                     moves the one WebGL canvas into el (the Studio view, the Session tab's placement step)
+     setClient(c)                  {bodyShape, skinTone 0..1, skin: "#hex" (the app passes bmSkin's colour so 2D and 3D
+                                   agree)} or null for an empty chair; a shape change morphs over ~0.45 s (instant when reduced)
+     setTattoos(list)              [{design, out, heal, ink, years, skinTone, sun}]: repaints the skin only if it changed
+     setStencil(design, {drag})    the purple stencil on its island; drag(pos, "move"|"end") is called while it is dragged
+     setView(name, {placement, size, instant})   consult (face-on) | stencil (the limb) | session (close on the work) | reveal
+     setStudio(stage)              apprentice | chair | studio | legacy
+     setReduced(bool)              camera moves and shape changes become instant
+     stats() -> {triangles, body, room, tier}   for the phone test ===== */
+function vsBuild(){
+  if(!V.renderer)return;const T=TIER[V.tier],key=V.tier;if(V.built===key)return;V.built=key;
+  const s=V.scene;while(s.children.length)s.remove(s.children[0]);
+  s.background=vsCol("#0f0c09");s.fog=null;
+  V.renderer.shadowMap.enabled=T.shadows;V.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  V.room=vsRoom();s.add(V.room.grp);
+  const tex=dcInit(T.tex,T.aniso,T.minPx);DC.sig="";DC.ov.size=T.ov;DC.ov.sig="";
+  const skin=T.std?new THREE.MeshStandardMaterial({color:vsCol(V.skin),map:tex,roughness:0.62,metalness:0}):new THREE.MeshLambertMaterial({color:vsCol(V.skin),map:tex});
+  V.mats={skin,top:vsMat(BD_CLOTH.top,{r:0.95,side:THREE.DoubleSide}),shorts:vsMat(BD_CLOTH.shorts,{r:0.95,side:THREE.DoubleSide})};
+  const B=bdMeshes(V.mats);V.body={grp:B.grp,parts:B.parts,head:B.grp.children.find(m=>m.userData.part==="head")};
+  /* the stencil overlay: a second copy of each skin part over the same geometry, drawn only where the overlay has lines */
+  dcStencil(null);V.ovMeshes=[];
+  const ovMat=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  ovMat.visible=false;V.mats.ov=ovMat;
+  for(const m of B.parts){if(!m.userData.arr||/^(top|shorts|thumb)/.test(m.userData.part))continue;
+    const o=new THREE.Mesh(m.geometry,ovMat);o.userData.islands=m.userData.islands;o.visible=false;o.renderOrder=2;B.grp.add(o);V.ovMeshes.push(o);}
+  s.add(B.grp);B.grp.visible=V.clientOn;
+  vsApplyShape(V.shapeW);vsStage(V.stage);
+  dcCompose(V.tattoos,V.shape);vsStencilApply();
+  vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();}
+function vsApplyShape(w){V.shapeW=w;if(V.body)bdApplyShape(V.body.parts,w);vsArmrests(w);V.dirty=true;}
+function vsAfterShape(){if(V.view!=="consult")vsView(V.view,V.viewOpt);}
+function vsStencilApply(){
+  if(!V.mats)return;const isl=V.stencil&&V.clientOn?dcStencil(V.stencil,V.shape,V.tone):dcStencil(null);
+  const ov=V.mats.ov;if(isl){ov.map=DC.ov.tex;ov.visible=true;ov.needsUpdate=true;}else ov.visible=false;
+  for(const o of V.ovMeshes)o.visible=!!isl&&o.userData.islands.indexOf(isl)>=0;
+  V.dirty=true;}
+/* where each view puts the camera */
+function vsView(name,o){
+  o=o||{};V.view=name;V.viewOpt={placement:o.placement||V.viewOpt.placement,size:o.size};
+  let p,t;
+  const z=(name!=="consult"&&V.clientOn&&V.body)?bdZone(V.viewOpt.placement||"forearm_l"):null,aim=z&&bdZoneAim(V.body.parts,z);
+  if(!aim){p=new THREE.Vector3(0.62,1.3,2.05);t=new THREE.Vector3(0,0.92,0.08);V.view=name==="consult"||!V.clientOn?name:"consult";}
+  else{const ext=Math.max(z.W,z.L)/1000,sz=(o.size||0)/1000;
+    const D=name==="session"?Math.min(1.1,Math.max(0.3,(sz||ext)*2.1+0.16)):name==="reveal"?Math.min(1.7,Math.max(0.55,ext*1.8+0.38)):Math.min(1.4,Math.max(0.42,ext*1.5+0.22));
+    /* look at the skin from its normal, leaning out from the body's centre line and a little from above */
+    /* torso: lean out from the spine (front, back or side); limbs: lean out sideways, so the seat and the thighs stay out of the way */
+    const torso=/^(chest|back|side|neck)/.test(z.isl);
+    const out=torso?new THREE.Vector3(aim.p.x,0,aim.p.z):new THREE.Vector3(aim.p.x>=0?1:-1,0,0);if(out.lengthSq()<1e-6)out.set(0,0,1);out.normalize();
+    /* the ribs are half hidden by the arm, so come from the front and a little below; skin that faces the chair (the calf)
+       is seen from the side, low, so the seat stays out of the way */
+    const side=/^side/.test(z.isl),back=!torso&&aim.n.z<-0.4;
+    const dir=side?aim.n.clone().multiplyScalar(0.5).add(new THREE.Vector3(0,0.02,0.85)).add(out.multiplyScalar(0.8))
+      :torso?aim.n.clone().multiplyScalar(0.5).add(new THREE.Vector3(0,0.25,0)).add(out.multiplyScalar(0.9))
+      :back?aim.n.clone().multiplyScalar(0.35).add(new THREE.Vector3(0,0.08,0)).add(out.multiplyScalar(1))
+      :aim.n.clone().multiplyScalar(0.7).add(new THREE.Vector3(0,0.28,0)).add(out.multiplyScalar(name==="session"?0.55:0.75));
+    if(name==="reveal")dir.applyAxisAngle(new THREE.Vector3(0,1,0),aim.p.x>=0?0.5:-0.5);
+    dir.normalize();if(dir.y>0.9){dir.y=0.9;const h=Math.sqrt(1-0.81),xz=new THREE.Vector2(dir.x,dir.z);if(xz.lengthSq()<1e-6)xz.set(0,1);xz.normalize().multiplyScalar(h);dir.x=xz.x;dir.z=xz.y;}
+    t=aim.p.clone();p=t.clone().add(dir.multiplyScalar(D));}
+  vsGoTo(p,t,o.instant);}
+function vsClient(c){
+  const on=!!c;V.clientOn=on;if(V.body)V.body.grp.visible=on;
+  if(c){const shape=BD_FORM[c.bodyShape]?c.bodyShape:"neutral";V.tone=c.skinTone!=null?+c.skinTone:0.3;if(c.skin)V.skin=c.skin;
+    if(V.mats)V.mats.skin.color.copy(vsCol(V.skin));
+    if(shape!==V.shape){V.shape=shape;const w1={neutral:0,masc:0,femme:0};w1[shape]=1;
+      if(V.reduced||!V.body){V.shapeTw=null;vsApplyShape(w1);vsAfterShape();}else{V.shapeTw={w0:Object.assign({},V.shapeW),w1,t0:performance.now(),dur:450};vsKick();}
+      dcCompose(V.tattoos,V.shape);vsStencilApply();}}
+  else vsStencilApply();
+  V.dirty=true;draw();}
 window.INK_VIS={
-  init(canvas,tier){const ok=init(canvas,tier);if(ok){studioPlaceholder();draw();}return ok;},
-  ready(){return !!V.renderer;},
+  init(canvas,tier){const ok=init(canvas,tier);if(ok){try{vsBuild();}catch(e){V.renderer=null;return false;}}return ok;},
+  ready(){return !!V.renderer&&!V.lost;},
   setTier,resize,
   redraw(){V.dirty=true;draw();},
   fps(){return V.looping?V.fps:null;},
-  _state:V
+  mount(el){if(!V.canvas||!el)return false;if(V.canvas.parentNode!==el)el.insertBefore(V.canvas,el.firstChild);resize();return true;},
+  setClient(c){if(!V.renderer)return;vsClient(c);},
+  setTattoos(list){V.tattoos=Array.isArray(list)?list:[];if(!V.renderer)return;if(dcCompose(V.tattoos,V.shape)){V.dirty=true;draw();}},
+  setStencil(design,o){V.stencil=design&&design.elements&&design.elements.length?design:null;V.onStencil=o&&o.drag||null;if(!V.renderer)return;vsStencilApply();draw();},
+  setView(name,o){if(!V.renderer){V.view=name;return;}vsView(name||"consult",o);},
+  setStudio(stage){V.stage=stage||"apprentice";if(V.room){vsStage(V.stage);draw();}},
+  setReduced(b){V.reduced=!!b;},
+  stats(){const tri=o=>{let n=0;o.traverse(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
+    return V.renderer?{tier:V.tier,body:V.body?bdTriangles(V.body.parts.concat([V.body.head])):0,room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
+  /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
+  _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,
+    hit:(cx,cy,pl)=>{const q=vsHit({clientX:cx,clientY:cy}),z=bdZone(pl);return q&&z&&q.isl===z.isl?bdZonePos(z,q.x,q.y):null;}})
 };
 })();
 </script>
@@ -4356,7 +5077,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.5.0";
+const VERSION="0.1.6.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -4392,7 +5113,7 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false},   // handed and assist: the session (PR 4)
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6)
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();
@@ -4437,7 +5158,9 @@ function toast(msg){const t=$("toast");if(!t)return;t.textContent=msg;t.classLis
    so nothing happens while the studio is idle. */
 const PERF={T:["lite","full","ultra"],LOW:27,NEED:8000,SETTLE:6000,HOLD:3000,boot:performance.now(),f:null,fAt:0,sAt:0,low:0,tier:null,tab:null,holdTo:0,dropped:false,manual:false,force:null};
 function perfTier(){return S.settings.gfx||(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)?"lite":"full");}
-function applyGfx(){if(typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.setTier(perfTier());}
+function applyGfx(){if(typeof INK_VIS==="undefined")return;
+  INK_VIS.setReduced(!!(S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)));   // camera moves become cuts
+  if(INK_VIS.ready())INK_VIS.setTier(perfTier());}
 function perfReset(hold){PERF.low=0;PERF.sAt=0;if(hold)PERF.holdTo=performance.now()+PERF.HOLD;}
 function perfPoll(){
   if(!S||typeof INK_VIS==="undefined"||!INK_VIS.ready())return;
@@ -4537,6 +5260,7 @@ const buNum=v=>typeof v==="number"&&isFinite(v);
 function buSaveOk(o){
   if(!buObj(o))return false;
   if("settings" in o&&!buObj(o.settings))return false;
+  if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
   if("board" in o){const b=o.board;if(!buObj(b))return false;
@@ -4759,22 +5483,79 @@ function start(){
   save();
   window.__ldDone&&__ldDone();}
 /* ===================== app/studio.js: the Studio tab =====================
-   The shop at its current stage: the 3D view on top (INK_VIS; a placeholder room until PR 6), then the shop's cards.
+   The shop at its current stage: the 3D view on top (INK_VIS, PR 6), then who is in the chair, then the shop's cards.
+   Who sits in the 3D chair (stWho): the client of the sitting in progress, else the next booked client from S.queue,
+   else your last client (the newest piece), else the board's client. Their pieces are on the model as they look today
+   (stTattoos: years since the piece was made, its heal grade from PR 5, ink, the client's sun), and the sitting in
+   progress shows as its purple stencil. Camera chips: Face-on (consult), The work (session, close on the newest piece) and
+   Reveal; drag the view to look round (Lite allows less). stMount() puts the one WebGL canvas back in the Studio view
+   (the Session tab borrows it for 3D stencil placement).
    The kit build panel (PR 4, plan Q9): S.kit is a machine, a tray of needle groupings (up to KIT_TRAY_MAX), an ink tier,
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
    (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
    INK_SIM.kitPrice (2000 rubles x the price index). PR 7 adds the studio build-out, staff and money here. */
+const ST={view:null,key:""};
+const ST_CAP={apprentice:"The back room at your mentor's shop",chair:"Your rented chair",studio:"Your studio",legacy:"Your studio, years on"};
+function stGl(){return typeof INK_VIS!=="undefined"&&INK_VIS.ready();}
+function stSkin(t){return typeof bmSkin==="function"?bmSkin(t)[0]:"#dba57c";}
+/* a client record (real or a sample walk-in) as the 3D chair needs it */
+function stWhoOf(id,o){
+  const real=INK_SIM.findClient(S,id),samp=typeof DZ_SAMPLE_CLIENTS!=="undefined"?DZ_SAMPLE_CLIENTS.find(x=>x.id===id):null,c=real||samp;if(!c)return null;
+  const onBoard=id===S.board.client;
+  return Object.assign({id,name:real?real.name:c.name,sample:!real,shape:onBoard&&S.board.bodyShape?S.board.bodyShape:c.bodyShape||"neutral",
+    tone:onBoard&&S.board.skinTone!=null?S.board.skinTone:c.skinTone!=null?c.skinTone:0.3,sun:(c.traits||{}).sun},o||{});}
+function stWho(){
+  const L=typeof seLive==="function"?seLive():null;
+  if(L&&L.kind!=="practice"&&L.clientId){const w=stWhoOf(L.clientId,{why:"In the chair now",live:L});if(w){w.shape=L.bodyShape||w.shape;w.tone=L.skinTone!=null?L.skinTone:w.tone;return w;}}
+  const wk=q=>INK_SIM.weekIndex(q.w,q.y),now=INK_SIM.weekIndex(S.week,S.year);
+  const q=S.queue.filter(x=>x.kind==="session"&&INK_SIM.findClient(S,x.client)).sort((a,b)=>wk(a)-wk(b))[0];
+  if(q){const w=stWhoOf(q.client,{why:wk(q)<=now?"In the chair this week":`Booked in for week ${q.w}, ${q.y}`,item:q});if(w)return w;}
+  for(let i=S.pieces.length-1;i>=0;i--){const w=stWhoOf(S.pieces[i].client,{why:"Your last client"});if(w)return w;}
+  return stWhoOf(S.board.client,{why:"On the design board"});}
+/* their pieces as they look today */
+function stTattoos(who){
+  const now=INK_SIM.weekIndex(S.week,S.year);
+  return S.pieces.filter(p=>p.client===who.id&&p.design&&Array.isArray(p.design.elements)&&p.design.elements.length)
+    .map(p=>({design:p.design,out:p.out||null,heal:p.heal||null,ink:p.ink||null,years:Math.max(0,(now-INK_SIM.weekIndex(p.w,p.y))/52),skinTone:who.tone,sun:who.sun!=null?who.sun:0.4}));}
+function stMount(){if(!stGl())return false;INK_VIS.mount($("studioView"));INK_VIS.setStencil(null);return true;}
+/* put the client in the 3D chair and aim the camera */
+function stShow(who,view){
+  if(!stMount())return;
+  const stage=(S.studio&&S.studio.stage)||"apprentice";INK_VIS.setStudio(stage);
+  if(!who){INK_VIS.setClient(null);INK_VIS.setView("consult");return;}
+  INK_VIS.setClient({bodyShape:who.shape,skinTone:who.tone,skin:stSkin(who.tone)});
+  const list=stTattoos(who);INK_VIS.setTattoos(list);
+  const live=who.live&&who.live.design;
+  if(live)INK_VIS.setStencil(live);
+  const work=live||(list.length?list[list.length-1].design:null);
+  INK_VIS.setView(view==="consult"||!work?"consult":view,work?{placement:work.placement,size:work.sizeMm}:{});}
+function renderStudio(){
+  const stage=(S.studio&&S.studio.stage)||"apprentice",gl=stGl(),who=stWho();
+  $("studioView").classList.toggle("nogl",!gl);
+  $("studioCap").textContent=gl?ST_CAP[stage]||ST_CAP.apprentice:"The 3D shop needs WebGL, which this browser has turned off";
+  const n=who?S.pieces.filter(p=>p.client===who.id).length:0,work=who&&(who.live||n);
+  const key=who?who.id+"|"+(who.live?"live":"")+"|"+n:"";
+  if(key!==ST.key){ST.key=key;ST.view=who&&who.live?"session":who&&n&&who.why==="Your last client"?"reveal":"consult";}
+  if(!work&&ST.view!=="consult")ST.view="consult";
+  const chair=who?`<div class="card stChair"><div class="stWho"><span class="clK">${esc(who.why)}</span><b>${esc(who.name)}</b>
+<span class="clMeta">${who.sample?"Sample walk-in · ":""}${n?`${n} piece${n>1?"s":""} on them`:"No ink from you yet"}${who.live?" · stencil on":""}</span></div>
+${gl?segHtml("stView",[["consult","Face-on"],["session","The work"],["reveal","Reveal"]],ST.view):""}
+${gl?`<p class="hint" style="margin:8px 0 0">Drag the view to look around.</p>`:""}</div>`:"";
+  $("studioBody").innerHTML=`${chair}<div class="card"><h2>The shop</h2>
+<p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
+<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
+<div class="card kp" id="kp"></div>`;
+  const sv=$("stView");
+  if(sv){if(!work)sv.querySelectorAll('button[data-v="session"],button[data-v="reveal"]').forEach(b=>{b.disabled=true;});
+    sv.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.disabled)return;ST.view=b.dataset.v;INK_SOUND.tick();
+      sv.querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});stShow(stWho(),ST.view);});}
+  stShow(who,ST.view);
+  if(typeof INK_SIM.kitBands==="function")kpRender();else $("kp").remove();}
 const KP={sec:"machine"};
 /* the deltas the panel shows: key, label, which way is good (1 up, -1 down, 0 neither) */
 const KP_DELTAS=[{k:"band",l:"steady band",good:1},{k:"pace",l:"marker speed",good:0},{k:"shade",l:"shading speed",good:1},
   {k:"trauma",l:"skin trauma",good:-1},{k:"fade",l:"ink fade",good:-1}];
-function renderStudio(){
-  $("studioBody").innerHTML=`<div class="card"><h2>The shop</h2>
-<p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
-<dl class="kv"><dt>Stage</dt><dd>Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
-<div class="card kp" id="kp"></div>`;
-  if(typeof INK_SIM.kitBands==="function")kpRender();else $("kp").remove();}
 function kpKit(){S.kit=INK_SIM.kitClean(S.kit);return S.kit;}
 function kpSet(){return{assist:!!S.settings.assist};}
 function kpSummary(kit){
@@ -5353,7 +6134,9 @@ function dzKeysOnce(){
      the lobby    sittings due this week (booked from the Clients tab, with a design), a sample walk-in's piece waiting for its
                   next sitting, and Practice on fake skin (pick the board's design or a flash piece). The empty state says
                   "No one in the chair. Book a client from the Clients tab." with a Practice button.
-     placement    drag the purple stencil on the placement box; flow and creases are re-checked (INK_SIM.stencilCheck).
+     placement    drag the purple stencil on the client's body in 3D (PR 6: the one WebGL canvas is borrowed from the Studio
+                  view), or on the flat placement box (fake skin, no WebGL, or the "Flat view" toggle, S.settings.flatStencil);
+                  turn it 15 degrees a tap (INK_SIM.sessionRotate); flow and creases are re-checked (INK_SIM.stencilCheck).
      the chair    linework (plan Q4: trace-and-rhythm), then shading and colour zones. Four stacked canvases: base (skin and
                   the purple stencil), fill (shading and colour), ink (the lines you lay, drawn bit by bit from your finger)
                   and overlay (the pacing marker, the finger dot; only the rectangles that changed are cleared). The frame loop
@@ -5522,18 +6305,26 @@ function seRenderPlace(){
   const chk=SE.place||(SE.place=INK_SIM.stencilCheck(d,sess.client?Object.assign({},sess.client,{bodyShape:sess.bodyShape,skinTone:sess.skinTone}):null,sess.skills));
   const mx=W*0.12,my=L*0.05,skin=seSkinRgb(sess.skinTone),dark=sess.skinTone>0.6;
   const els=seEls(d,box),sw=INK_SIM.lineMm(5);
+  /* PR 6: on a client the stencil goes on the 3D body (fake skin stays flat); Settings keeps the flat box as a fallback */
+  const can3d=sess.kind!=="practice"&&typeof stGl==="function"&&stGl(),in3d=can3d&&!S.settings.flatStencil;
   host.innerHTML=`<div class="se">${seTopHtml(sess)}
-<div class="card"><h2>Place the stencil</h2><p class="hint" style="margin-top:0">Drag it where it sits best on the ${esc(P?P.name.toLowerCase():"skin")}. Flow and creases are checked again.</p>
-<div class="sePlaceWrap"><svg id="sePlace" class="sePlace" viewBox="${dzR2(-mx)} ${dzR2(-my)} ${dzR2(W+2*mx)} ${dzR2(L+2*my)}" role="application" aria-label="Stencil on the ${esc(P?P.name:"skin")}, drag to move">
+<div class="card"><h2>Place the stencil</h2><p class="hint" style="margin-top:0">Drag it where it sits best on the ${esc(P?P.name.toLowerCase():"skin")}${in3d?"; drag off it to look around":""}. Flow and creases are checked again.</p>
+${in3d?`<div class="sePlace3d" id="sePlace3d"></div>`:`<div class="sePlaceWrap"><svg id="sePlace" class="sePlace" viewBox="${dzR2(-mx)} ${dzR2(-my)} ${dzR2(W+2*mx)} ${dzR2(L+2*my)}" role="application" aria-label="Stencil on the ${esc(P?P.name:"skin")}, drag to move">
 <rect x="0" y="0" width="${W}" height="${L}" rx="${dzR2(Math.min(W,L)*0.12)}" fill="${seRgb(skin)}"/>
 <g class="seFlow">${(P?P.flow:[]).map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>
 ${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(c.at*L)}" y2="${dzR2(c.at*L)}"/><text class="seCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at*L-2)}" font-size="${dzR2(Math.max(4,W*0.06))}" text-anchor="middle">${esc(c.name)}</text>`).join("")}
 <g id="sePlaceG" class="seStencilG" style="color:${dark?SE_STENCIL.dark:SE_STENCIL.light}">${els.map(e=>{const df=INK_SIM.elementById(e.id),b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
-    return`<g transform="${dzTf(e)}"><path d="${df.path}" fill="none" stroke="currentColor" stroke-width="${dzR4(sw/k)}" stroke-linecap="round" stroke-linejoin="round"/></g>`;}).join("")}</g></svg></div>
-<div class="seChk"><span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}</div>
+    return`<g transform="${dzTf(e)}"><path d="${df.path}" fill="none" stroke="currentColor" stroke-width="${dzR4(sw/k)}" stroke-linecap="round" stroke-linejoin="round"/></g>`;}).join("")}</g></svg></div>`}
+<div class="row seRot"><button class="btn sm" data-serot="-15" aria-label="Turn the stencil 15 degrees anticlockwise">⟲ 15°</button><button class="btn sm" data-serot="15" aria-label="Turn the stencil 15 degrees clockwise">⟳ 15°</button>
+${can3d?`<button class="btn sm" id="seFlat" aria-pressed="${!in3d}">${in3d?"Flat view":"3D view"}</button>`:""}</div>
+<div class="seChk" id="seChk">${seChkHtml(chk)}</div>
 <div class="row"><button class="btn pri" id="seGo">${INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line"?"Start lining":"Start"}</button><button class="btn" id="seCancel">Not now</button></div></div></div>`;
   $("seGo").addEventListener("click",()=>{INK_SIM.sessionStart(sess);save();INK_SOUND.tick();renderSession();});
   $("seCancel").addEventListener("click",seCancel);
+  host.querySelectorAll("[data-serot]").forEach(b=>b.addEventListener("click",()=>{SE.place=INK_SIM.sessionRotate(sess,+b.dataset.serot);save();INK_SOUND.tick();
+    if(in3d){seChkUpdate();se3dStencil(sess);}else seRenderPlace();}));
+  const fb=$("seFlat");if(fb)fb.addEventListener("click",()=>{S.settings.flatStencil=in3d;save();INK_SOUND.tick();seRenderPlace();});
+  if(in3d){se3dPlace(sess);return;}
   /* drag */
   const svg=$("sePlace"),g=$("sePlaceG");let drag=null;
   const pt=ev=>{const m=svg.getScreenCTM();if(!m)return{x:0,y:0};const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const q=p.matrixTransform(m.inverse());return{x:q.x,y:q.y};};
@@ -5542,6 +6333,23 @@ ${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(
   const end=()=>{if(!drag)return;const dr=drag;drag=null;if(Math.abs(dr.dx)+Math.abs(dr.dy)<0.5){g.removeAttribute("transform");return;}
     SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});save();seRenderPlace();};
   svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);}
+function seChkHtml(chk){
+  return`<span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}`;}
+function seChkUpdate(){const e=$("seChk");if(e&&SE.place)e.innerHTML=seChkHtml(SE.place);}
+/* the 3D placement: the client on the chair with their other pieces, the purple stencil on the limb. A drag on the stencil
+   moves it live (raycast to the body's UV, then placement mm, in vis/core.js); letting go places it in the sim, which
+   re-checks flow and creases. A drag off the stencil orbits the camera */
+function se3dStencil(sess){
+  const h=(pos,ph)=>{if(ph==="move"){INK_VIS.setStencil(Object.assign({},sess.design,{pos}),{drag:h});return;}
+    SE.place=INK_SIM.sessionPlace(sess,pos);save();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
+  INK_VIS.setStencil(sess.design,{drag:h});}
+function se3dPlace(sess){
+  const el=$("sePlace3d");if(!el||!INK_VIS.mount(el))return;
+  const tone=sess.skinTone!=null?sess.skinTone:0.3,d=sess.design;
+  INK_VIS.setClient({bodyShape:sess.bodyShape||"neutral",skinTone:tone,skin:stSkin(tone)});
+  const c=sess.client;INK_VIS.setTattoos(c&&c.id?stTattoos({id:c.id,tone,sun:(c.traits||{}).sun}):[]);
+  se3dStencil(sess);
+  INK_VIS.setView("stencil",{placement:d.placement,size:d.sizeMm});}
 function seCancel(){
   const sess=SE.sess;if(!sess)return;
   if(sess.next>sess.start||sess.cur){toast("You've started: end the sitting instead");return;}

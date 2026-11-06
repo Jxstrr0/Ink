@@ -295,6 +295,7 @@ SIM.sessionPlan(sess) -> {box, strokes, zones, items:[{k:"line"|"shade"|"colour"
 SIM.sessionBands(sess) -> kitBands + {paceMmS, accMm, view}
 SIM.stencilCheck(design, client, skills) -> {flow, issues: stress entries crease, crease_near, too_wide, too_long, against_flow, against_shape}
 SIM.sessionPlace(sess, {x, y})   SIM.sessionStart(sess)   SIM.sessionResume(sess)   SIM.sessionItem(sess) -> item + {stroke | zone} | null
+SIM.sessionRotate(sess, deg)   (PR 6) turn the stencil before the first line, about its footprint centre; element sizes in mm are kept (the box widens, sizeMm up, if it must); returns stencilCheck
 SIM.penDown / penMove / penUp(sess, tMs, xMm, yMm) -> {ok, why?, r (pace / target), d (mm off), rushed, blow, join, sat, over, inside,
                                                      pain, fatigue, clock, stop, done, lineDone}
 SIM.sessionSetLiner(sess, id)   SIM.sessionNextItem(sess)   SIM.sessionAction(sess, "break"|"numb"|"chat") -> {ok, why, eff, cost, talk}

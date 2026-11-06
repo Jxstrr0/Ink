@@ -6,7 +6,9 @@
    so nothing happens while the studio is idle. */
 const PERF={T:["lite","full","ultra"],LOW:27,NEED:8000,SETTLE:6000,HOLD:3000,boot:performance.now(),f:null,fAt:0,sAt:0,low:0,tier:null,tab:null,holdTo:0,dropped:false,manual:false,force:null};
 function perfTier(){return S.settings.gfx||(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)?"lite":"full");}
-function applyGfx(){if(typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.setTier(perfTier());}
+function applyGfx(){if(typeof INK_VIS==="undefined")return;
+  INK_VIS.setReduced(!!(S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)));   // camera moves become cuts
+  if(INK_VIS.ready())INK_VIS.setTier(perfTier());}
 function perfReset(hold){PERF.low=0;PERF.sAt=0;if(hold)PERF.holdTo=performance.now()+PERF.HOLD;}
 function perfPoll(){
   if(!S||typeof INK_VIS==="undefined"||!INK_VIS.ready())return;

@@ -179,6 +179,20 @@ lim.m.pain = 0.97; traceAll(lim, { speed: 1 }, 1);
 const lf = SIM.sessionFinish(lim);
 check("hitting the pain limit ends the sitting early and keeps the part", lim.stop === "pain" && lf.early && lf.nextPart === lf.part, lim.stop + " " + lf.early);
 
+/* ---- turning the stencil (the 3D placement step's rotate buttons) ---- */
+const mmOf = s => SIM.sessionPlan(s).strokes.map(k => k.len).reduce((a, b) => a + b, 0);
+const rotS = SIM.sessionNew({ design: onSpot(flash("fl_anchor_heart"), "forearm_l"), client: CL, skills: SK, kit: SIM.kitDefault(), kind: "sample" });
+const len0 = mmOf(rotS), rot0 = rotS.design.elements.map(e => e.rot || 0), rc = SIM.sessionRotate(rotS, 45);
+const fpR = SIM.footprintOf(rotS.design);
+check("sessionRotate turns every element, keeps the line length (mm) and the box in 0..1",
+  rotS.design.elements.every((e, i) => Math.abs(((e.rot - rot0[i] - 45 + 540) % 360) - 180) < 0.2) && Math.abs(mmOf(rotS) - len0) < len0 * 0.01 &&
+  fpR.x0 >= -0.002 && fpR.y0 >= -0.002 && fpR.x0 + fpR.w <= 1.002 && fpR.y0 + fpR.h <= 1.002 && typeof rc.flow === "number", f3(len0) + " -> " + f3(mmOf(rotS)));
+SIM.sessionRotate(rotS, -45);
+check("turning back restores the rotations", rotS.design.elements.every((e, i) => Math.abs(e.rot - rot0[i]) < 0.2));
+const rotW = mk(onSpot(flash("fl_moon"), "forearm_l")); traceAll(rotW, { speed: 1 }, 1);
+const rw0 = JSON.stringify(rotW.design.elements); SIM.sessionRotate(rotW, 30);
+check("sessionRotate does nothing once the first line is down", JSON.stringify(rotW.design.elements) === rw0);
+
 /* ---- outputs and XP ---- */
 const full = (() => { const s = mk(flash("fl_moon")); traceAll(s, { speed: 1 }); while (SIM.sessionItem(s)) SIM.sessionNextItem(s); return SIM.sessionFinish(s); })();
 check("outputs match aging.js tattoo.out (0..1) and feed SIM.age", ["lineQuality", "depthQuality", "saturation", "trauma"].every(k => full.out[k] >= 0 && full.out[k] <= 1) && full.done && full.sessionsUsed === 1 &&
