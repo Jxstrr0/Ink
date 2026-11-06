@@ -18,7 +18,7 @@ function lgBrokeHtml(sc,inSheet){
 <p>Four weeks under water was all the bank would wait. The lease goes back, the stations get sold off${staff?`, and ${esc(sc.staff.join(", "))} ${staff===1?"has":"have"} to find other chairs`:""}.</p>
 ${sc.line?`<p class="caLater lgLine">${esc(sc.line)}</p>`:""}
 <ul class="lgKeep"><li><b>Your clients</b> stay with you: ${S.clients.length} of them.</li><li><b>Your work</b> stays: every piece you've done, ${S.pieces.filter(p=>!p.by).length} in all, still healing and aging on real people.</li><li><b>Your reputation</b> stays. People remember the work, not the lease.</li></ul>
-<p class="hint">You're back in a rented chair with ${fmtMoney(S.cash)} to start again. You can lease another studio when the money's there.</p>
+<p class="hint">You're back in ${S.career&&S.career.split==="mentor"?"your chair in Arkady's front room":"a rented chair across town"} with ${fmtMoney(S.cash)} to start again. You can lease another studio when the money's there.</p>
 <div class="row"><button class="btn pri" id="${inSheet?"lgBack":"lgBackC"}" style="flex:1">Back to work</button></div></div>`;}
 function lgSceneCard(){const sc=lgScene();if(!sc||sc.kind!=="broke")return"";return lgBrokeHtml(sc,false);}
 function lgDone(){if(S.career)S.career.scene=null;save();if(sheetOn())closeSheet();renderAll();}
