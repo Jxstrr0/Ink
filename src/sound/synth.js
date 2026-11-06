@@ -5,13 +5,26 @@
    buzzStop() on lift. The profile is the machine's (sim/kit.js MACHINES buzz: wave, hz, cut, rough), so a used coil rattles
    and a pen hums; the pitch follows your pace (BUZZ.pitchLo + pitchK x pace ratio) and a rushed stroke makes it stutter (a
    square LFO gating the level). Parameters move by plain .value writes (no automation queue to pile up on a busy phone).
-   Everything is quiet when S.settings.sound is off. */
+   Everything is quiet when S.settings.sound is off.
+   PR 10: two short Kenney UI sounds (CC0, sounds/CREDITS.md): tick() plays sounds/tap.wav once it has loaded (the synth click
+   until then, or if it fails), chime() plays sounds/toast.wav when a toast shows. They are fetched once, after the first tap
+   has made the audio context (about 30 KB, every tier; the service worker caches sounds/). chime() never makes the context
+   itself, so a toast before any tap stays silent. The machine buzz stays synthesised. */
+const UI_SOUNDS={tap:{file:"sounds/tap.wav",vol:0.32},toast:{file:"sounds/toast.wav",vol:0.28}};
 const BUZZ={vol:0.06,pitchLo:0.8,pitchK:0.28,pitchMax:1.6,rattle:0.5,stutterHz:12,stutter:0.85,attack:0.02,release:0.04};
 const INK_SOUND=(function(){
 let ctx=null,master=null,on=true;
-function init(){if(ctx)return true;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;ctx=new A();master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);return true;}catch(e){ctx=null;return false;}}
+function init(){if(ctx)return true;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;ctx=new A();master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);uiLoad();return true;}catch(e){ctx=null;return false;}}
+/* the UI samples: fetched and decoded once, quietly skipped if anything fails (offline, old browser) */
+const bufs={};let uiAsked=false;
+function uiLoad(){if(uiAsked||!ctx||typeof fetch!=="function")return;uiAsked=true;
+  for(const k in UI_SOUNDS)fetch(UI_SOUNDS[k].file).then(r=>r.ok?r.arrayBuffer():null).then(ab=>{if(!ab)return;
+    ctx.decodeAudioData(ab,b=>{bufs[k]=b;},()=>{});}).catch(()=>{});}
+function uiPlay(k){const b=bufs[k];if(!b)return false;try{if(ctx.state==="suspended")ctx.resume();const s=ctx.createBufferSource(),g=ctx.createGain();
+  s.buffer=b;g.gain.value=UI_SOUNDS[k].vol;s.connect(g);g.connect(master);s.start();return true;}catch(e){return false;}}
+function chime(){if(!on||!ctx)return;uiPlay("toast");}
 /* a short soft click for taps on tabs and buttons */
-function tick(){if(!on||!init())return;try{if(ctx.state==="suspended")ctx.resume();const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+function tick(){if(!on||!init())return;if(uiPlay("tap"))return;try{if(ctx.state==="suspended")ctx.resume();const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
   o.type="triangle";o.frequency.setValueAtTime(1400,t);o.frequency.exponentialRampToValueAtTime(700,t+.04);
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.08,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.06);
   o.connect(g);g.connect(master);o.start(t);o.stop(t+.07);}catch(e){}}
@@ -32,6 +45,6 @@ function buzzSet(r,rushed){if(!bz)return;try{
   if(!!rushed!==bz.rushed){bz.rushed=!!rushed;bz.sg.gain.value=rushed?BUZZ.vol*BUZZ.stutter:0;}}catch(e){}}
 function buzzStop(){if(!bz)return;const b=bz;bz=null;try{const t=ctx.currentTime;b.sg.gain.value=0;b.g.gain.cancelScheduledValues(t);b.g.gain.setTargetAtTime(0,t,BUZZ.release);
   [b.o,b.lfo,b.st].forEach(x=>x.stop(t+BUZZ.release*6));}catch(e){}}
-return{init,tick,buzzStart,buzzSet,buzzStop,setOn(v){on=!!v;if(!on)buzzStop();},isOn(){return on;}};
+return{init,tick,chime,buzzStart,buzzSet,buzzStop,setOn(v){on=!!v;if(!on)buzzStop();},isOn(){return on;}};
 })();
 </script>

@@ -4,9 +4,12 @@
    and a paper roll, an angle lamp on a stand pointed at the work, your stool), the flash wall (sheets drawn from
    INK_SIM.FLASH on canvas), and a window onto a Mostograd canal at night: facades with lit windows across the water, a
    drawbridge raised for the night, reflections. The client faces +z; the window and flash wall are on the back wall.
-   vsRoom() returns {grp, stages, lights, armrests}; vsStage(stage) shows the props for apprentice | chair | studio | legacy
-   (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 6k triangles.
-   Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build. ===== */
+   vsRoom() returns {grp, stages, lights, armrests, props, mats}; vsStage(stage) shows the props for apprentice | chair |
+   studio | legacy (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 3k
+   triangles. Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build.
+   PR 10: every prop is a named group in `props` (chair, station, machine, lamp, stool, shelves, bench, flashframe, sign,
+   plant, photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
+   photo textures on them and swap a Blender model in for a coded prop on Full and Ultra. Lite never sees either. ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
 function vrCanvas(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=TIER[V.tier].aniso;return t;}
@@ -59,7 +62,9 @@ function vsRoom(){
   const add=(m,p,parent)=>{m.position.set(p[0],p[1],p[2]);m.castShadow=m.receiveShadow=T.shadows;(parent||grp).add(m);return m;};
   const box=(w,h,d,mat,p,par)=>add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat),p,par);
   const cyl=(r1,r2,h,seg,mat,p,par)=>add(new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),mat),p,par);
-  const M={plaster:vsMat("#7a5a43",{r:0.95}),wood:vsMat("#3a2618",{r:0.7}),floor:vsMat("#ffffff",{map:vrPlanks(),r:0.75}),leather:vsMat("#1f1a17",{r:0.45}),
+  /* PR 10: each coded prop sits in its own named group, so vis/assets.js can hide it when a model file stands in for it */
+  const props={},pg=(name,parent)=>{const g=new THREE.Group();g.name="prop:"+name;(parent||grp).add(g);props[name]=g;return g;};
+  const M={plaster:vsMat("#7a5a43",{r:0.95}),wood:vsMat("#3a2618",{r:0.7}),dado:vsMat("#3a2618",{r:0.7}),floor:vsMat("#ffffff",{map:vrPlanks(),r:0.75}),leather:vsMat("#1f1a17",{r:0.45}),
     steel:vsMat("#9a968e",{r:0.35,m:0.6}),dark:vsMat("#151210",{r:0.6}),cream:vsMat("#efe5d2",{r:0.9}),paper:vsMat("#f4f1ea",{r:0.95}),
     brass:vsMat("#b48a46",{r:0.4,m:0.7}),lampshade:vsMat("#2b2b2b",{r:0.5,m:0.3}),bulb:vsMat("#fff4d6",{emissive:"#ffd9a0",ei:1.4}),
     rug:vsMat("#5c2a22",{r:1}),green:vsMat("#3f6b45",{r:0.9}),pot:vsMat("#8a4b2e",{r:0.9}),card:vsMat("#a07a52",{r:1}),ceil:vsMat("#2a211b",{r:1})};
@@ -68,7 +73,7 @@ function vsRoom(){
   const ceil=add(new THREE.Mesh(new THREE.PlaneGeometry(5.6,4.9),M.ceil),[0,2.8,0.1]);ceil.rotation.x=Math.PI/2;
   const wall=(w,p,ry)=>{const m=add(new THREE.Mesh(new THREE.PlaneGeometry(w,2.8),M.plaster),[p[0],1.4,p[2]]);m.rotation.y=ry;m.castShadow=false;return m;};
   wall(5.6,[0,0,-2.35],0);wall(4.9,[-2.8,0,0.1],Math.PI/2);wall(4.9,[2.8,0,0.1],-Math.PI/2);wall(5.6,[0,0,2.55],Math.PI);
-  box(5.6,0.9,0.03,M.wood,[0,0.45,-2.335]);box(0.03,0.9,4.9,M.wood,[-2.785,0.45,0.1]);box(0.03,0.9,4.9,M.wood,[2.785,0.45,0.1]);box(5.6,0.9,0.03,M.wood,[0,0.45,2.535]);
+  box(5.6,0.9,0.03,M.dado,[0,0.45,-2.335]);box(0.03,0.9,4.9,M.dado,[-2.785,0.45,0.1]);box(0.03,0.9,4.9,M.dado,[2.785,0.45,0.1]);box(5.6,0.9,0.03,M.dado,[0,0.45,2.535]);
   box(5.6,0.05,0.05,M.dark,[0,0.92,-2.32]);box(0.05,0.05,4.9,M.dark,[-2.77,0.92,0.1]);box(0.05,0.05,4.9,M.dark,[2.77,0.92,0.1]);
   /* the window onto the canal (back wall, left) */
   const win=add(new THREE.Mesh(new THREE.PlaneGeometry(1.05,1.3),new THREE.MeshBasicMaterial({map:vrNight()})),[-1.45,1.62,-2.33]);win.castShadow=win.receiveShadow=false;
@@ -78,10 +83,10 @@ function vsRoom(){
   const flashFull=add(new THREE.Mesh(new THREE.PlaneGeometry(2.0,1.0),vsMat("#ffffff",{map:vrFlash(10),r:0.9})),[0.85,1.72,-2.33],st.chair);
   const flashHalf=add(new THREE.Mesh(new THREE.PlaneGeometry(2.0,1.0),vsMat("#ffffff",{map:vrFlash(6),r:0.9})),[0.85,1.72,-2.33],st.apprenticeOnly);
   flashFull.castShadow=flashHalf.castShadow=false;
-  for(const [w,h,x,y] of [[2.1,0.05,0,0.52],[2.1,0.05,0,-0.52],[0.05,1.09,-1.03,0],[0.05,1.09,1.03,0]])box(w,h,0.04,M.wood,[0.85+x,1.72+y,-2.31]);
-  /* the chair: padded seat on a column, two armrests on posts (moved under the forearms per body shape) */
-  box(0.5,0.09,0.46,M.leather,[0,0.425,0.06]);box(0.52,0.025,0.48,M.dark,[0,0.37,0.06]);
-  cyl(0.045,0.05,0.34,12,M.steel,[0,0.2,0.06]);cyl(0.28,0.3,0.04,20,M.steel,[0,0.02,0.06]);
+  const PF=pg("flashframe");for(const [w,h,x,y] of [[2.1,0.05,0,0.52],[2.1,0.05,0,-0.52],[0.05,1.09,-1.03,0],[0.05,1.09,1.03,0]])box(w,h,0.04,M.wood,[0.85+x,1.72+y,-2.31],PF);
+  /* the chair: padded seat on a column, two armrests on posts (moved under the forearms per body shape; they stay coded) */
+  const PC=pg("chair");box(0.5,0.09,0.46,M.leather,[0,0.425,0.06],PC);box(0.52,0.025,0.48,M.dark,[0,0.37,0.06],PC);
+  cyl(0.045,0.05,0.34,12,M.steel,[0,0.2,0.06],PC);cyl(0.28,0.3,0.04,20,M.steel,[0,0.02,0.06],PC);
   const armrests={};
   for(const s of ["l","r"]){const g=new THREE.Group();grp.add(g);
     const pad=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.045,0.36),M.leather);pad.position.set(0,-0.0225,0);pad.castShadow=pad.receiveShadow=T.shadows;
@@ -90,35 +95,35 @@ function vsRoom(){
     const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.12,0.03,14),M.steel);g.add(foot);
     armrests[s]={g,tilt,post,foot};}
   /* your station: trolley, machine, ink caps, paper roll, angle lamp, stool */
-  const tx=0.86,tz=0.32;
-  for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz]);
-  box(0.46,0.02,0.36,M.steel,[tx,0.8,tz]);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz]);
-  const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05]);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
-  box(0.05,0.03,0.035,M.brass,[tx-0.02,0.83,tz+0.03]);
-  ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03]));
-  cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09]);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09]);
-  cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1]);
-  box(0.36,0.08,0.26,M.cream,[tx,0.33,tz]);
-  /* the lamp: a stand by the trolley, an arm reaching over the forearm, a shade aimed down at the work */
-  const LS=[1.05,0,-0.45],LH=[0.5,1.5,-0.12];cyl(0.14,0.15,0.03,16,M.dark,[LS[0],0.015,LS[2]]);cyl(0.015,0.015,1.62,8,M.dark,[LS[0],0.82,LS[2]]);
+  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine");
+  for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz],PS);
+  box(0.46,0.02,0.36,M.steel,[tx,0.8,tz],PS);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz],PS);
+  const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05],PM);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
+  box(0.05,0.03,0.035,M.brass,[tx-0.02,0.83,tz+0.03],PM);
+  ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03],PS));
+  cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09],PS);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09],PS);
+  cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1],PS);
+  box(0.36,0.08,0.26,M.cream,[tx,0.33,tz],PS);
+  /* the lamp: a stand by the trolley, an arm reaching over the forearm, a shade aimed down at the work (the light itself stays coded) */
+  const LS=[1.05,0,-0.45],LH=[0.5,1.5,-0.12],PL=pg("lamp");cyl(0.14,0.15,0.03,16,M.dark,[LS[0],0.015,LS[2]],PL);cyl(0.015,0.015,1.62,8,M.dark,[LS[0],0.82,LS[2]],PL);
   {const a=new THREE.Vector3(LS[0],1.62,LS[2]),b=new THREE.Vector3(LH[0],LH[1]+0.06,LH[2]),m=a.clone().add(b).multiplyScalar(0.5),len=a.distanceTo(b);
-    const arm=cyl(0.011,0.011,len,8,M.dark,[m.x,m.y,m.z]);arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());}
-  const shade=add(new THREE.Mesh(new THREE.ConeGeometry(0.085,0.12,16,1,true),M.lampshade.clone()),LH);shade.material.side=THREE.DoubleSide;
+    const arm=cyl(0.011,0.011,len,8,M.dark,[m.x,m.y,m.z],PL);arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());}
+  const shade=add(new THREE.Mesh(new THREE.ConeGeometry(0.085,0.12,16,1,true),M.lampshade.clone()),LH,PL);shade.material.side=THREE.DoubleSide;
   shade.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-0.35,1.4,-0.4).normalize());
-  add(new THREE.Mesh(new THREE.SphereGeometry(0.028,10,8),M.bulb),[LH[0]-0.01,LH[1]-0.05,LH[2]+0.01]);
-  cyl(0.18,0.18,0.06,18,M.leather,[0.95,0.55,0.86]);cyl(0.025,0.025,0.5,8,M.steel,[0.95,0.27,0.86]);cyl(0.2,0.22,0.03,16,M.steel,[0.95,0.015,0.86]);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.028,10,8),M.bulb),[LH[0]-0.01,LH[1]-0.05,LH[2]+0.01],PL);
+  const PT=pg("stool");cyl(0.18,0.18,0.06,18,M.leather,[0.95,0.55,0.86],PT);cyl(0.025,0.025,0.5,8,M.steel,[0.95,0.27,0.86],PT);cyl(0.2,0.22,0.03,16,M.steel,[0.95,0.015,0.86],PT);
   /* the pendant over the chair: a bare bulb in the back room, a shade later */
   cyl(0.004,0.004,0.6,4,M.dark,[0,2.5,0.3]);
   add(new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),M.bulb),[0,2.18,0.3]);
   const ps=add(new THREE.Mesh(new THREE.ConeGeometry(0.2,0.16,20,1,true),M.brass.clone()),[0,2.24,0.3],st.chair);ps.material.side=THREE.DoubleSide;
   /* shelves on the left wall, jars and a stack of sketchbooks */
-  for(const y of [1.25,1.62]){box(0.24,0.03,1.1,M.wood,[-2.66,y,-0.6]);
-    for(let i=0;i<4;i++)cyl(0.04,0.04,0.12,10,vsMat(["#4c6a72","#8b6b3d","#6d3b2e","#53624a"][(i+(y>1.4?2:0))%4],{r:0.5}),[-2.66,y+0.075,-1.0+i*0.25]);}
-  box(0.2,0.12,0.28,vsMat("#2c3540",{r:0.9}),[-2.66,1.33,-0.05]);
+  const PH=pg("shelves");for(const y of [1.25,1.62]){box(0.24,0.03,1.1,M.wood,[-2.66,y,-0.6],PH);
+    for(let i=0;i<4;i++)cyl(0.04,0.04,0.12,10,vsMat(["#4c6a72","#8b6b3d","#6d3b2e","#53624a"][(i+(y>1.4?2:0))%4],{r:0.5}),[-2.66,y+0.075,-1.0+i*0.25],PH);}
+  box(0.2,0.12,0.28,vsMat("#2c3540",{r:0.9}),[-2.66,1.33,-0.05],PH);
   /* the front wall: the door to the shop floor, a bench for whoever is waiting */
   box(0.95,2.05,0.05,M.wood,[1.6,1.025,2.52]);cyl(0.02,0.02,0.04,8,M.brass,[1.2,1.0,2.49]);
-  box(1.4,0.08,0.42,M.leather,[-1.3,0.46,2.25]);box(1.4,0.42,0.06,M.leather,[-1.3,0.7,2.47]);
-  for(const x of [-1.9,-0.7])box(0.05,0.42,0.38,M.dark,[x,0.21,2.25]);
+  const PB=pg("bench");box(1.4,0.08,0.42,M.leather,[-1.3,0.46,2.25],PB);box(1.4,0.42,0.06,M.leather,[-1.3,0.7,2.47],PB);
+  for(const x of [-1.9,-0.7])box(0.05,0.42,0.38,M.dark,[x,0.21,2.25],PB);
   /* apprentice: boxes of supplies stacked in the corner and the broom you sweep with */
   box(0.42,0.3,0.36,M.card,[-2.35,0.15,-1.95],st.apprenticeOnly);box(0.36,0.26,0.3,M.card,[-2.33,0.43,-1.93],st.apprenticeOnly);
   box(0.4,0.28,0.34,M.card,[-1.9,0.14,-2.05],st.apprenticeOnly);
@@ -126,12 +131,13 @@ function vsRoom(){
   /* the rented chair: a rug under the chair */
   const rug=add(new THREE.Mesh(new THREE.CircleGeometry(1.05,36),M.rug),[0,0.004,0.25],st.chair);rug.rotation.x=-Math.PI/2;rug.castShadow=false;
   /* your studio: a lit sign and a plant */
-  const sign=add(new THREE.Mesh(new THREE.PlaneGeometry(1.0,0.25),new THREE.MeshBasicMaterial({map:vrSign()})),[2.77,2.05,-0.6],st.studio);sign.rotation.y=-Math.PI/2;
-  cyl(0.16,0.12,0.3,14,M.pot,[2.45,0.15,-2.0],st.studio);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,1),M.green),[2.45,0.6,-2.0],st.studio);
-  /* legacy: framed photos of healed work along the right wall and a second plant */
-  for(let i=0;i<6;i++){const f=box(0.03,0.3,0.24,M.wood,[2.77,1.35+(i%2)*0.4,0.4+Math.floor(i/2)*0.42],st.legacy);
-    box(0.01,0.24,0.18,M.cream,[2.755,f.position.y,f.position.z],st.legacy);}
+  const sign=add(new THREE.Mesh(new THREE.PlaneGeometry(1.0,0.25),new THREE.MeshBasicMaterial({map:vrSign()})),[2.77,2.05,-0.6],pg("sign",st.studio));sign.rotation.y=-Math.PI/2;
+  const PP=pg("plant",st.studio);cyl(0.16,0.12,0.3,14,M.pot,[2.45,0.15,-2.0],PP);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,1),M.green),[2.45,0.6,-2.0],PP);
+  /* legacy: framed photos of healed work along the right wall and a second plant; vis/assets.js adds the trophy shelf when its file exists */
+  const PG=pg("photos",st.legacy);for(let i=0;i<6;i++){const f=box(0.03,0.3,0.24,M.wood,[2.77,1.35+(i%2)*0.4,0.4+Math.floor(i/2)*0.42],PG);
+    box(0.01,0.24,0.18,M.cream,[2.755,f.position.y,f.position.z],PG);}
   cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],st.legacy);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],st.legacy);
+  pg("trophies",st.legacy);   // empty: no coded stand-in, a model only
   for(const s of VR_STAGES)grp.add(st[s]);grp.add(st.apprenticeOnly);
   /* light: warm hemisphere, the work lamp, the pendant, a little cold moonlight through the window */
   const hemi=new THREE.HemisphereLight(vsCol("#f3e4d2"),vsCol("#2a1c12"),T.std?0.6:0.62);grp.add(hemi);
@@ -142,7 +148,7 @@ function vsRoom(){
   lamp.position.set(LH[0]-0.02,LH[1]-0.07,LH[2]+0.02);grp.add(lamp);
   const pend=new THREE.PointLight(vsCol("#ffdcae"),T.std?0.7:0.55,7,1);pend.position.set(0,2.1,0.3);grp.add(pend);
   const moon=new THREE.DirectionalLight(vsCol("#7d95c4"),0.22);moon.position.set(-1.5,2.2,-2);grp.add(moon);
-  return{grp,stages:st,armrests,lights:{hemi,lamp,pend,moon}};}
+  return{grp,stages:st,armrests,props,mats:M,lights:{hemi,lamp,pend,moon}};}
 /* show the props for a stage (cumulative: the studio keeps the rented chair's rug and flash) */
 function vsStage(stage){
   const R=V.room;if(!R)return;const i=Math.max(0,VR_STAGES.indexOf(stage));V.stage=VR_STAGES[i];
