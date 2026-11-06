@@ -208,6 +208,6 @@ function clOpenClient(id){
 <dt>First seen</dt><dd>Week ${since.w||"?"}, ${since.y||"?"}${ref?` · sent by ${esc(ref.name)}`:""}</dd><dt>Loyalty</dt><dd>${clLoyal(c.loyalty)}</dd></dl>
 <div class="clChips" style="margin-top:10px">${clWhat(c)||`<span class="clMeta">You haven't found out much about them yet.</span>`}</div></section>
 <section><h3>Their pieces, as they look today</h3>${pieceHtml}</section>
-<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);
+<section><h3>History</h3>${c.compact?`<p class="hint">It's been a long while. Older notes on ${esc(c.first||c.name)} are archived; they fill in again if they come back.</p>`:""}${hist?`<ul class="clHist">${hist}</ul>`:c.compact?"":`<p class="hint">Nothing yet.</p>`}</section>`);
   const pc=$("sheetBody").querySelector(".clPcs");
   if(pc&&typeof gvOpen==="function"){const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();gvOpen(f.dataset.gp);}};pc.addEventListener("click",go);pc.addEventListener("keydown",go);}}

@@ -74,7 +74,7 @@ function seEls(design,box){const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5
 function seRender(design,skin,out,bodyShape){
   const box=INK_SIM.placementBox(design.placement,bodyShape)||{wrapMm:100,lengthMm:200},els=seEls(design,box);
   if(!els.length)return"";
-  const sz=design.sizeMm||50,cx=design.pos.x*box.wrapMm,cy=design.pos.y*box.lengthMm,pad=sz*0.12;
+  const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5},cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm,pad=sz*0.12;
   const blur=out?Math.max(0,(0.9-out.lineQuality)*1.6):0,op=out?0.55+0.45*out.saturation:1;
   return`<svg class="seRen" viewBox="${dzR2(cx-sz/2-pad)} ${dzR2(cy-sz/2-pad)} ${dzR2(sz+2*pad)} ${dzR2(sz+2*pad)}" style="background:${seRgb(skin)}" aria-hidden="true"><g style="opacity:${dzR2(op)};${blur>0.05?`filter:blur(${dzR2(blur*sz/100)}px)`:""}">${els.map(e=>dzElSvg(e,design.style)).join("")}</g></svg>`;}
 

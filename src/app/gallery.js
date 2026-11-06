@@ -12,8 +12,10 @@
      the work     gvRenderWork(host): the Clients tab's third view. Every piece as it looks today, newest first, filtered by
                   year, style, client name and portfolio, 40 at a time ("Show more"). Tap one for its history (gvOpen): the
                   session outputs, the heal, how it looks at 0, 5 and 10 years and today, and the client's ledger.
+   PR 7: pieces by your staff (p.by, sim/career.js) are the Shop gallery (GV.shop, the Work view's Yours / Shop switch),
+   never your own work; their client is often only p.guest {n first name, t skin tone, a aftercare, s sun}.
    Sample walk-ins aren't in S.clients: INK_SIM.guestClient (set below) hands the sim their traits so their aftercare counts. */
-const GV={cache:new Map(),CAP:1500,n:0,show:40,year:"",style:"",q:"",port:false,seq:0};
+const GV={cache:new Map(),CAP:1500,n:0,show:40,year:"",style:"",q:"",port:false,seq:0,shop:false};
 const GV_BLOW="#263a63";      // a blowout: ink pushed too deep reads as a blue-black haze round the line
 const GV_STENCIL="#7b52ea";   // the stencil ghost: transfer purple, dashed, over the healed ink
 const GV_WORDS={crisp:"Crisp",soft:"Slightly soft",patchy:"Patchy",blownout:"Blown out",infected:"Infected"};
@@ -37,6 +39,7 @@ function gvGrade(g){return g?`<span class="gvGrade g-${g}">${gvShape(g)}${esc(GV
 function gvSample(id){return typeof DZ_SAMPLE_CLIENTS!=="undefined"?DZ_SAMPLE_CLIENTS.find(x=>x.id===id):null;}
 function gvClient(p){
   const c=INK_SIM.findClient(S,p.client);if(c)return c;
+  if(p.guest)return{id:p.client,first:p.guest.n,name:p.guest.n,skinTone:p.guest.t,traits:{aftercare:p.guest.a,sun:p.guest.s},guest:true,shop:true};
   const s=gvSample(p.client);
   return s?{id:s.id,first:s.name,name:s.name+" (sample walk-in)",skinTone:s.skinTone,traits:s.traits,guest:true}:{id:p.client,first:"a client",name:"A client",skinTone:0.3,traits:{},guest:true};}
 INK_SIM.guestClient=id=>{const s=gvSample(id);return s?{traits:s.traits,loyalty:0.3,skinTone:s.skinTone}:null;};
@@ -126,9 +129,11 @@ function rvWire(after){
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
 /* ===================== the body of work (Clients tab, Work view) ===================== */
+function gvBy(p){return p.by&&SIMOK("staffName")?INK_SIM.staffName(S,p.by):"";}
+function gvAll(){return S.pieces.filter(p=>!!p.by===!!GV.shop);}
 function gvList(){
   const qs=GV.q.trim().toLowerCase(),out=[];
-  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(!!p.by!==!!GV.shop)continue;
     if(GV.year&&String(p.y)!==GV.year)continue;
     if(GV.style&&(p.design||{}).style!==GV.style)continue;
     if(GV.port&&!p.portfolio)continue;
@@ -138,19 +143,22 @@ function gvList(){
 function gvTile(p){
   const t=gvToday(p),c=gvClient(p),st=INK_SIM.STYLES[(p.design||{}).style];
   return`<button class="gvT${p.portfolio?" port":""}" data-p="${esc(p.id)}"><span class="gvA">${t.svg}${p.portfolio?`<span class="gvPort" title="In your portfolio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span class="sr">In your portfolio</span></span>`:""}</span>
-<span class="gvL"><b>${esc(gvCap(p.label||"tattoo"))}</b><span class="clMeta">${p.y} · ${esc(c.first||"")}${st?` · ${esc(st.name)}`:""}</span><span class="gvM">${p.heal?gvShape(p.heal):""}<span class="clMeta">${t.yr<1?"fresh":t.yr+" yr"} · reads ${gvReads(t.a.readability)}</span></span></span></button>`;}
+<span class="gvL"><b>${esc(gvCap(p.label||"tattoo"))}</b><span class="clMeta">${p.y} · ${esc(c.first||"")}${p.by?` · by ${esc(gvBy(p))}`:st?` · ${esc(st.name)}`:""}</span><span class="gvM">${p.heal?gvShape(p.heal):""}<span class="clMeta">${t.yr<1?"fresh":t.yr+" yr"} · reads ${gvReads(t.a.readability)}</span></span></span></button>`;}
 function gvRenderWork(host){
-  const all=S.pieces,years=[...new Set(all.map(p=>p.y))].sort((a,b)=>b-a),styles=Object.keys(INK_SIM.STYLES).filter(k=>all.some(p=>(p.design||{}).style===k));
+  const all=gvAll(),years=[...new Set(all.map(p=>p.y))].sort((a,b)=>b-a),styles=Object.keys(INK_SIM.STYLES).filter(k=>all.some(p=>(p.design||{}).style===k));
   const list=gvList(),nPort=all.filter(p=>p.portfolio).length;
+  const nBy=S.pieces.filter(p=>p.by).length,sw=nBy||GV.shop?`<div class="row" style="margin-bottom:10px">${segHtml("gvWho",[["mine","Your work"],["shop",`Shop · ${nBy}`]],GV.shop?"shop":"mine")}</div>`:"";
+  const wire=()=>{const w=$("gvWho");if(w)w.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;GV.shop=b.dataset.v==="shop";GV.show=40;INK_SOUND.tick();gvRenderWork(host);});};
+  if(!all.length&&GV.shop){host.innerHTML=`${sw}<div class="card empty"><p><b>No shop pieces yet.</b></p><p>Pieces your artists finish land here, apart from your own work.</p></div>`;wire();return;}
   if(!all.length){host.innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg><p><b>No finished pieces yet.</b></p><p>Every tattoo you finish lands here and ages with the person wearing it.</p></div>`;return;}
-  host.innerHTML=`<div class="card gvFil">
+  host.innerHTML=`${sw}<div class="card gvFil">
 <div class="gvSel"><label>Year<select id="gvY"><option value="">All years</option>${years.map(y=>`<option${String(y)===GV.year?" selected":""}>${y}</option>`).join("")}</select></label>
 <label>Style<select id="gvS"><option value="">All styles</option>${styles.map(k=>`<option value="${k}"${k===GV.style?" selected":""}>${esc(INK_SIM.STYLES[k].name)}</option>`).join("")}</select></label></div>
 <div class="row"><label class="clSearch gvQ"><span class="sr">Search by client</span><input id="gvQ" type="search" placeholder="Search by client" value="${esc(GV.q)}" autocomplete="off"></label>
 <button class="btn sm gvPortB${GV.port?" on":""}" id="gvP" aria-pressed="${GV.port}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Portfolio · ${nPort}</button></div>
-<p class="clMeta gvCount">${list.length===all.length?`${all.length} piece${all.length===1?"":"s"}`:`${list.length} of ${all.length} pieces`}, as they look in ${S.year}.</p></div>
+<p class="clMeta gvCount">${list.length===all.length?`${all.length} piece${all.length===1?"":"s"}`:`${list.length} of ${all.length} pieces`}${GV.shop?" by your artists":""}, as they look in ${S.year}.</p></div>
 ${list.length?`<div class="gvGrid" id="gvGrid">${list.slice(0,GV.show).map(gvTile).join("")}</div>${list.length>GV.show?`<div class="row" style="justify-content:center"><button class="btn" id="gvMore">Show more (${list.length-GV.show})</button></div>`:""}`:`<div class="card empty"><p>Nothing matches.</p></div>`}`;
-  const re=()=>{GV.show=40;gvRenderWork(host);};
+  const re=()=>{GV.show=40;gvRenderWork(host);};wire();
   $("gvY").addEventListener("change",e=>{GV.year=e.target.value;re();});
   $("gvS").addEventListener("change",e=>{GV.style=e.target.value;re();});
   $("gvP").addEventListener("click",()=>{GV.port=!GV.port;INK_SOUND.tick();re();});
@@ -170,7 +178,7 @@ function gvOpen(id){
   const spent=mine.reduce((s,x)=>s+(x.price||0),0);
   openSheet(gvCap(p.label||"Piece"),`<section class="gvHist"><div class="gvHead"><div class="gvBigA">${now.svg}</div><div>
 <p class="gvName">${esc(gvCap(p.name))}</p><p>${gvGrade(p.heal)}${p.portfolio?` <span class="gvGrade g-port">★ Portfolio</span>`:""}</p>
-<p class="clMeta">${yrs<1?"Fresh":Math.floor(yrs)+(Math.floor(yrs)===1?" year":" years")+" on the skin"} · reads ${gvReads(now.a.readability)}</p></div></div></section>
+<p class="clMeta">${yrs<1?"Fresh":Math.floor(yrs)+(Math.floor(yrs)===1?" year":" years")+" on the skin"} · reads ${gvReads(now.a.readability)}</p>${p.by?`<p class="clMeta">By ${esc(gvBy(p))}, one of your shop's artists</p>`:""}</div></div></section>
 <section><h3>The work</h3><dl class="kv"><dt>Done</dt><dd>Week ${p.w}, ${p.y}${p.stage?` · ${esc((typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[p.stage])||p.stage)}`:""}</dd>
 <dt>Style</dt><dd>${esc((INK_SIM.STYLES[(p.design||{}).style]||{}).name||"")} · ${Math.round((p.design||{}).sizeMm||0)} mm${(p.design||{}).flash?" · flash":""}</dd>
 ${p.price?`<dt>Price</dt><dd>${fmtMoney(p.price)}</dd>`:""}${p.sessionsUsed?`<dt>Sittings</dt><dd>${p.sessionsUsed}</dd>`:""}
@@ -180,9 +188,9 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
+${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
-${c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
+${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
   const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));}
