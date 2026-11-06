@@ -17,7 +17,8 @@ The stack, build and save-code tooling are lifted from Prairie Engine Works (`gi
 node build.js            # rebuild index.html and sw.js from src/
 node build.js --check    # exit 1 if either is stale, a script block does not compile, or a function is declared twice
 node check-savecode.js   # save-code checks: round trip, damaged and cut-off codes, storage full
-node tools/sim-test.js   # (from PR 1) the sim on a fixed seed: every design sub-score and aging at 5/10/20 years
+node tools/sim-test.js   # the sim on a fixed seed: every design sub-score, aging at 5/10/20 years, sanity assertions
+node tools/element-sheet.js [--png out.png]   # validate the element library (and render a contact sheet)
 ```
 
 Run all of them before every commit. To play a local copy: `python3 -m http.server` in the repo root and open it in a browser. The service worker only registers on a real host (or with `?sw=1`), so local testing is never cached.
@@ -75,7 +76,8 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.0.0, November 2026)
+## Current status (0.1.1.0, November 2026)
 
+- PR 1 built: seeded rng, 135 design elements (105 original, 30 game-icons CC BY 3.0, credited in `art/CREDITS.md` and Settings › About), 9 styles, 26 placements, design scoring with skin contrast and the stress report, the aging model, ruble `PRICE_INDEX`, `tools/sim-test.js`. Data shapes: `docs/SIM-CONTRACT.md`. The Design tab shows the raw score object until PR 2.
 - PR 0 (scaffold) built: five tabs (Studio, Design, Session, Clients, Career), a placeholder 3D back room on the Studio tab, Settings (theme, reduced effects, graphics tier and auto-adjust, sound), Back up / Restore codes and backup files, PWA with the update bar.
 - What to test on a phone after any change: the loading bar finishes and the studio renders on Lite; every tab switches; Settings opens as a sheet; Back up and Restore round trip; light theme reads; portrait and landscape; no console errors on desktop.
