@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.5.0";
+const VERSION="0.1.6.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -41,7 +41,7 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false},   // handed and assist: the session (PR 4)
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6)
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();

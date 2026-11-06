@@ -80,7 +80,9 @@ pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12
 
 /* ---- the studio view (3D placeholder until PR 6) ---- */
 #studioView{position:relative;height:min(42vh,320px);border-radius:var(--r);overflow:hidden;background:#0f0c09;margin:0 0 12px;border:1px solid var(--line)}
-#studioView canvas{display:block;width:100%;height:100%}
+#studioView canvas{display:block;width:100%;height:100%;cursor:grab}
+#studioView.nogl{height:auto;min-height:44px;background:linear-gradient(160deg,#2a1f17,#0f0c09)}#studioView.nogl .cap{position:static;display:block;margin:12px}
+.stChair .stWho{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.stChair .stWho b{font-size:17px}
 #studioView .cap{position:absolute;left:12px;bottom:10px;font-size:12px;color:#d8cdb9;background:rgba(15,12,9,.6);padding:3px 8px;border-radius:6px}
 
 /* ---- design board: cream in both themes ---- */
