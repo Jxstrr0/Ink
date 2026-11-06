@@ -156,7 +156,11 @@ Save it as `Ink-blender/ink-mannequin-raw.glb`, then pack it (section 3) to `mod
 
 ## 2. The shop props
 
-The shop is one coded room (the back room of Arkady's shop, then your rented chair, your studio, your legacy studio). Each stage shows the props of the stages before it plus its own. Every prop below has a coded stand-in in `src/vis/studio.js` and a slot in `ASSETS.props` in `src/vis/assets.js`. When your file is in, the game hides the coded stand-in and puts your model exactly where the slot says, on Full and Ultra only.
+Since 0.1.14.0 the shop is four coded rooms, one per career stage: Arkady's back room, a rented chair in a busy shop, your studio and the legacy studio (`VR_ROOMS` in `src/vis/studio.js`). Every prop below has a coded stand-in in `src/vis/studio.js` and a slot in `ASSETS.props` in `src/vis/assets.js`. When your file is in, the game hides the coded stand-in and puts your model where the slot says, on Full and Ultra only.
+
+**Where a prop stands per room.** Make every model once, for the spot and facing in the table below (its *home*). The game then moves the whole prop group, model and stand-in together, into each room that has it: `VR_PLACE` in `src/vis/studio.js` gives the room's origin for it and an extra turn round its own origin (for example the shelves turn to face you on the back room's back wall, the sign and the photos move from the right wall to the back wall). So you never need a second file or new numbers per room; keep the origin rules exactly, because the turn happens round that origin. Which rooms have which prop: chair, station, machine, rotary, lamp and stool are in every room; shelves in the back room, your studio and the legacy studio; bench, flash frame in the rented chair, your studio and the legacy studio; sign and plant in your studio and the legacy studio; photos, trophies and plant2 in the legacy studio only.
+
+**The machines.** The coil machine and the rotary pen both lie on the tray in every room. The one the player's kit uses goes to the front spot (0.74, 0.81, 0.38, turned 0.4) and the other to the back corner (0.79, 0.81, 0.22, turned -0.3) (`VR_TRAY`). The wireless pen shows as the rotary until it has a model of its own.
 
 ### For every prop
 
