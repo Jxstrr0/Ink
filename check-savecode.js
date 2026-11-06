@@ -1,0 +1,202 @@
+#!/usr/bin/env node
+/* Ink: checks for the Back up / Restore save codes (src/app/savecode.js). Same shape as Prairie Engine Works' checker.
+ *
+ *   node check-savecode.js        run every check, print one line each, exit 1 if any fail
+ *
+ * It loads src/app/savecode.js on its own with a pretend localStorage, plus the real freshState / hydrate / snapshot cut
+ * out of src/app/state.js, so it runs in plain node with no browser. It also makes sure index.html was rebuilt with the
+ * current savecode.js. Keys: ink-save, ink-slot1 .. ink-slot3. Zero dependencies (node >= 16).
+ */
+"use strict";
+const fs = require("fs"), path = require("path"), vm = require("vm"), assert = require("assert");
+const ROOT = __dirname, SRC = path.join(ROOT, "src", "app", "savecode.js"), STATE = path.join(ROOT, "src", "app", "state.js");
+
+/* ---- a pretend browser: localStorage in a Map, plus the game bits savecode.js calls ---- */
+function fakeStorage() {
+  const m = new Map();
+  return {
+    quota: Infinity,   // like a real browser's storage limit: a setItem that would go over it throws
+    used: () => [...m].reduce((n, [k, v]) => n + k.length + v.length, 0),
+    getItem: k => (m.has(k) ? m.get(k) : null),
+    setItem(k, v) { v = String(v); const was = m.has(k) ? k.length + m.get(k).length : 0;
+      if (this.used() - was + k.length + v.length > this.quota) throw new Error("QuotaExceededError"); m.set(k, v); },
+    removeItem: k => { m.delete(k); },
+    clear: () => m.clear(),
+    dump: () => Object.fromEntries([...m].sort())
+  };
+}
+/* the real state functions: everything in state.js from "const SAVE_KEY" up to the theme section */
+function stateCore() {
+  const s = fs.readFileSync(STATE, "utf8"), a = s.indexOf("const SAVE_KEY"), b = s.indexOf("/* ---- theme and settings");
+  if (a < 0 || b < 0) throw new Error("couldn't find the state section in src/app/state.js");
+  return s.slice(a, b).replace(/^let S=/m, "S=");
+}
+function load() {
+  const code = fs.readFileSync(SRC, "utf8");
+  const ctx = { localStorage: fakeStorage(), TextEncoder, TextDecoder, Uint8Array, VERSION: "test", S: null, Date, JSON };
+  vm.createContext(ctx);
+  vm.runInContext(stateCore() + "\n" + code + "\nthis.__set=o=>{S=o;};this.__get=()=>S;", ctx, { filename: "savecode.js" });
+  return ctx;
+}
+const KEYS = ["ink-save", "ink-slot1", "ink-slot2", "ink-slot3"];
+
+/* ---- realistic saves ---- */
+function game(over) {
+  return Object.assign({
+    v: 1, week: 27, year: 2004, cash: 4825, seed: 123456789, bkAt: 0,
+    settings: { theme: "light", gfx: "lite", gfxAuto: true, sound: false, reduced: false },
+    clients: [{ id: "c1", name: "Darya Volkova · Дарья ✿", pronouns: "she/her", age: 31, skin: 0.42, history: [{ w: 12, y: 2003, k: "consult" }] }],
+    pieces: [{ id: "p1", client: "c1", placement: "forearm_l", sizeMm: 90, style: "traditional", elements: [{ id: "rose", x: .5, y: .5, scale: 1, rot: 0, lineWeight: 5, fill: 1, colour: "red" }], out: { lineQuality: .82, depthQuality: .74 }, w: 14, y: 2003 }],
+    queue: []
+  }, over || {});
+}
+const seed = st => {
+  st.clear();
+  st.setItem("ink-save", JSON.stringify(game()));
+  st.setItem("ink-slot1", JSON.stringify(Object.assign(game({ year: 2001 }), { savedAt: 1760000000000 })));
+  st.setItem("ink-slot3", JSON.stringify(Object.assign(game({ week: 3, cash: 90 }), { savedAt: 1760100000000 })));
+};
+const plain = o => JSON.parse(JSON.stringify(o));   // objects made inside the vm have their own Object/Array, so copy them out before comparing
+const msg = (ctx, text) => { try { ctx.buRead(text); } catch (e) { return e.bu || "crash:" + e.message; } return "ok"; };
+const live = (ctx, o) => ctx.__set(JSON.parse(JSON.stringify(o)));
+
+/* ---- the checks ---- */
+const checks = [];
+const check = (name, fn) => checks.push([name, fn]);
+
+check("index.html carries the current savecode.js (run `node build.js` if not)", () => {
+  assert(fs.readFileSync(path.join(ROOT, "index.html"), "utf8").includes(fs.readFileSync(SRC, "utf8")));
+});
+check("round trip: everything comes back on a fresh browser", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const code = a.buCode(), before = a.localStorage.dump();
+  assert(code.startsWith("INK1:") && /^INK1:[A-Za-z0-9_-]+$/.test(code), "only base64url characters after INK1:");
+  const b = load();   // another phone: nothing saved yet
+  const r = b.buRead(code);
+  assert.strictEqual(r.kind, "full");
+  assert.deepStrictEqual(plain(r.data.save), game());
+  assert.strictEqual(r.data.slots.length, 3);
+  assert.strictEqual(r.data.slots[1], null, "empty slot 2 stays empty");
+  assert(b.buWrite(r.data));
+  assert.deepStrictEqual(Object.keys(b.localStorage.dump()).sort(), KEYS.filter(k => k !== "ink-slot2").sort());
+  for (const k of ["ink-slot1", "ink-slot3"]) assert.deepStrictEqual(JSON.parse(b.localStorage.getItem(k)), JSON.parse(before[k]), k);
+  assert.deepStrictEqual(JSON.parse(b.localStorage.getItem("ink-save")), game());
+});
+check("code is much shorter than the save it holds", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const raw = JSON.stringify(a.buMake()).length, code = a.buCode().length;
+  assert(code < raw * 0.9, `code ${code} vs JSON ${raw}`);
+});
+check("spaces, line breaks and text around the code are fine", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const code = a.buCode(), mid = code.length >> 1;
+  const messy = "here's my save:\n  " + code.slice(0, mid) + "\n ​" + code.slice(mid, mid + 40) + "  " + code.slice(mid + 40) + '" thanks!';
+  assert.strictEqual(a.buRead(messy).kind, "full");
+});
+check("a damaged code is rejected (one character changed)", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const code = a.buCode();
+  for (const at of [6, code.length >> 1, code.length - 3]) {
+    const c = code[at] === "A" ? "B" : "A";
+    assert.strictEqual(msg(a, code.slice(0, at) + c + code.slice(at + 1)), "damaged", "changed at " + at);
+  }
+});
+check("a cut-off code is rejected", () => {
+  const a = load(); seed(a.localStorage); live(a, game());
+  const code = a.buCode();
+  for (const n of [1, 6, 7, 50, code.length >> 1, code.length - 6]) assert.strictEqual(msg(a, code.slice(0, code.length - n)), "damaged", "cut " + n);
+  assert.strictEqual(msg(a, code.slice(0, 200) + code.slice(260)), "damaged", "chunk missing from the middle");
+  assert.strictEqual(msg(a, "INK1:"), "damaged");
+});
+check("a code from another game is rejected", () => {
+  const a = load();
+  assert.strictEqual(msg(a, "PEW1:CYQwLiBcIAQBYA6s9ccc5z"), "other");
+  assert.strictEqual(msg(a, "GG1:abcdef123456"), "other");
+});
+check("a code from a newer version gets its own message", () => {
+  const a = load(); live(a, game());
+  const body = a.buCode().slice(5);
+  assert.strictEqual(msg(a, "INK2:" + body), "newer");
+  assert.strictEqual(msg(a, "INK12:" + body), "newer");
+});
+check("empty and junk pastes get a friendly message, never a crash", () => {
+  const a = load();
+  assert.strictEqual(msg(a, ""), "empty");
+  assert.strictEqual(msg(a, "   \n "), "empty");
+  assert.strictEqual(msg(a, null), "empty");
+  assert.strictEqual(msg(a, "hello there"), "notcode");
+  assert.strictEqual(msg(a, "INK1:!!!!!!!!!!!!"), "damaged");
+  assert.strictEqual(msg(a, "INK0:" + "A".repeat(20)), "notcode");
+});
+check("an empty save (brand-new player) round trips, and restoring it clears the slots", () => {
+  const a = load(); a.__set(a.freshState());
+  const fresh = plain(a.freshState());
+  const code = a.buCode(), r = a.buRead(code).data;
+  assert.deepStrictEqual(plain(r.slots), [null, null, null]);
+  delete fresh.seed; const got = plain(r.save); delete got.seed;
+  assert.deepStrictEqual(got, fresh);
+  const b = load(); seed(b.localStorage);
+  assert(b.buWrite(r));
+  assert.deepStrictEqual(Object.keys(b.localStorage.dump()), ["ink-save"]);
+});
+const pack = (a, d) => { const body = a.buZip(new TextEncoder().encode(JSON.stringify(d))); return "INK1:" + body + a.buSum(body); };
+check("a well-formed code with a broken save inside is refused and nothing is written", () => {
+  const a = load(); seed(a.localStorage); const before = a.localStorage.dump();
+  const bad = [
+    { v: 1, save: game({ settings: "dark" }), slots: [] },                          // settings not an object
+    { v: 1, save: game(), slots: [null, null, null, null] },                         // too many slots
+    { v: 1, save: game(), slots: ["slot"] },                                         // slot not an object
+    { v: 1, save: game({ cash: "lots" }), slots: [] },                               // cash not a number
+    { v: 1, save: game({ week: null }), slots: [] },                                 // week not a number
+    { v: 1, save: game({ clients: { 0: 1 } }), slots: [] },                          // clients not a list
+    { v: 1, save: game({ pieces: "none" }), slots: [] },
+    { v: 2, save: game(), slots: [] },
+    { v: 1, save: [game()], slots: [] },
+    [game()], "just a string", 42, null
+  ];
+  for (const d of bad) assert.strictEqual(msg(a, pack(a, d)), "bad", JSON.stringify(d).slice(0, 80));
+  assert.strictEqual(msg(a, pack(a, { v: 1, save: game(), slots: [] })), "ok", "and the same thing done right passes");
+  assert.deepStrictEqual(a.localStorage.dump(), before);
+});
+check("a write that fails half way (storage full) puts every key back the way it was", () => {
+  const a = load(); seed(a.localStorage); a.localStorage.setItem("ink-slot2", JSON.stringify(game({ year: 2002 })));
+  const before = a.localStorage.dump();
+  const huge = game({ pieces: Array.from({ length: 400 }, (_, i) => ({ id: "p" + i, sizeMm: i })) });
+  const r = { v: 1, save: game({ cash: 99 }), slots: [game(), null, huge] };   // slot 3 won't fit
+  a.localStorage.quota = a.localStorage.used() + 2000;
+  assert.strictEqual(a.buWrite(r), false);
+  assert.deepStrictEqual(a.localStorage.dump(), before);
+  a.localStorage.quota = Infinity;
+  assert.strictEqual(a.buWrite(r), true);
+  assert.deepStrictEqual(JSON.parse(a.localStorage.getItem("ink-slot3")), huge);
+});
+check("trial load never changes the running game", () => {
+  const a = load(); const running = game({ week: 9 }); a.__set(running);
+  a.buRead(a.buCode());
+  assert.strictEqual(a.__get(), running);
+});
+check("hydrate fills in fields a save doesn't have yet", () => {
+  const a = load();
+  assert(a.hydrate({ week: 5, year: 2001, settings: { theme: "light" } }));
+  const s = plain(a.__get());
+  assert.strictEqual(s.week, 5); assert.strictEqual(s.settings.theme, "light"); assert.strictEqual(s.settings.gfxAuto, true); assert.strictEqual(s.cash, 0);
+});
+check("packing survives big, varied saves (LZW dictionary fills up)", () => {
+  const a = load();
+  let x = 12345; const rnd = () => (x = (x * 1103515245 + 12345) >>> 0) / 4294967296;
+  const big = game({ pieces: Array.from({ length: 4000 }, (_, i) => ({ id: "p" + i + "_" + rnd().toString(36), sizeMm: rnd() * 200, rot: rnd() * 6.28, note: "é ü ✿ " + i })) });
+  live(a, big);
+  const code = a.buCode();
+  assert.deepStrictEqual(plain(a.buRead(code).data.save), big);
+  const bytes = new TextEncoder().encode("abababababababababab");
+  assert.deepStrictEqual(Array.from(a.buUnzip(a.buZip(bytes))), Array.from(bytes), "KwKwK case");
+  assert.deepStrictEqual(plain(a.buUnzip(a.buZip(new Uint8Array(0)))), []);
+});
+
+let bad = 0;
+for (const [name, fn] of checks) {
+  try { fn(); console.log("ok   " + name); }
+  catch (e) { bad++; console.log("FAIL " + name + "\n     " + String(e && e.message || e).split("\n").join("\n     ")); }
+}
+console.log(bad ? `\n${bad} of ${checks.length} checks failed` : `\nall ${checks.length} save code checks passed`);
+process.exit(bad ? 1 : 0);

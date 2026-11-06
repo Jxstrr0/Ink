@@ -1,0 +1,52 @@
+<script>
+/* ===================== Ink: app =====================
+   The app script is one top-level script spread over src/app/ (state.js opens it, help.js closes it; html/tail.html then
+   calls start()). It glues INK_SIM (numbers) and INK_VIS (pictures) to the page.
+   state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
+   the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
+   S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
+const VERSION="0.1.0.0";
+const $=id=>document.getElementById(id);
+const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+/* money display. The currency is open (plan Q15: Lombard's Mostograd currency or plain dollars); only this table changes */
+const MONEY={sym:"$",before:true};
+const fmtMoney=n=>{const s=Math.round(Math.abs(n)).toLocaleString("en-CA");return(n<0?"-":"")+(MONEY.before?MONEY.sym+s:s+" "+MONEY.sym);};
+
+/* ---- the state object ---- */
+const SAVE_KEY="ink-save",SLOTS=3,slotKey=i=>"ink-slot"+i;
+const SAVE_V=1;   // bump when a save needs migrating in hydrate()
+function freshState(){return{
+  v:SAVE_V,
+  week:1,            // 1..52 within the year
+  year:2000,         // 2000..2030
+  cash:0,
+  seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false},
+  bkAt:0             // when the last backup code or file was made (app/savecode.js)
+};}
+let S=freshState();
+
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot()));if(typeof buPersist==="function")buPersist();}catch(e){}}
+function snapshot(){return JSON.parse(JSON.stringify(S));}
+/* load a saved object into S on top of a fresh state, so a field added since that save gets its default. false if it
+   isn't an Ink save. */
+function hydrate(o){
+  if(!o||typeof o!=="object"||Array.isArray(o))return false;
+  if(o.settings!=null&&(typeof o.settings!=="object"||Array.isArray(o.settings)))return false;
+  const f=freshState();
+  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{})});
+  S.v=SAVE_V;
+  return true;}
+function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
+/* a restored or slot-loaded game takes over the running one */
+function applyLoaded(o,msg){if(!hydrate(o)){toast("That save couldn't be loaded");return;}save();applySettings();renderAll();toast(msg||"Loaded");}
+
+/* ---- theme and settings ---- */
+function applyTheme(){const t=S.settings.theme||"dark";const eff=t==="auto"?(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;
+  document.documentElement.setAttribute("data-theme",eff);
+  const m=document.querySelector("meta[name=theme-color]");if(m)m.setAttribute("content",eff==="light"?"#f4efe6":"#17130f");}
+function applySettings(){applyTheme();document.documentElement.classList.toggle("noanim",!!S.settings.reduced);INK_SOUND.setOn(S.settings.sound!==false);applyGfx();}
+
+/* ---- toast ---- */
+function toast(msg){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}

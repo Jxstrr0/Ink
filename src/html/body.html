@@ -1,0 +1,57 @@
+</style>
+
+<div id="app">
+  <header id="hdr">
+    <div class="brand">Ink<em>.</em></div>
+    <div class="when"><b id="whenLbl">Week 1, 2000</b><span id="stageLbl">Apprentice</span></div>
+    <div class="sp"></div>
+    <div class="cash" id="cashLbl" aria-label="Cash">0</div>
+    <button class="ibtn" id="setOpen" aria-label="Settings" title="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </header>
+
+  <main id="panel">
+    <section class="tabpage on" id="tab-studio" aria-label="Studio">
+      <div id="studioView"><canvas id="gl" aria-hidden="true"></canvas><span class="cap" id="studioCap">The back room at your mentor's shop</span></div>
+      <div id="studioBody"></div>
+    </section>
+    <section class="tabpage" id="tab-design" aria-label="Design">
+      <div id="designBody"></div>
+    </section>
+    <section class="tabpage" id="tab-session" aria-label="Session">
+      <div id="sessionBody"></div>
+    </section>
+    <section class="tabpage" id="tab-clients" aria-label="Clients">
+      <div id="clientsBody"></div>
+    </section>
+    <section class="tabpage" id="tab-career" aria-label="Career">
+      <div id="careerBody"></div>
+    </section>
+  </main>
+
+  <nav id="tabs" aria-label="Tabs">
+    <button data-tab="studio" class="on" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>Studio</button>
+    <button data-tab="design"><svg viewBox="0 0 24 24"><path d="M4 20l4-1L19 8a2.1 2.1 0 0 0-3-3L5 16z"/><path d="M14 7l3 3"/><path d="M4 20h7"/></svg>Design</button>
+    <button data-tab="session"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="9" rx="1.5"/><path d="M10.5 12v4h3v-4"/><path d="M12 16v5"/><path d="M15 6h3a2 2 0 0 1 0 4h-3"/></svg>Session</button>
+    <button data-tab="clients"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2A4.5 4.5 0 0 1 21 18.5"/></svg>Clients</button>
+    <button data-tab="career"><svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Career</button>
+  </nav>
+</div>
+
+<div id="scrim"></div>
+<div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sh"><h2 id="sheetTitle">Settings</h2><button class="ibtn" id="sheetClose" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div id="sheetBody"></div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="bkFileIn" accept=".txt,text/plain" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+<script>/* three.js addons only Full and Ultra use (the glTF loader for the Blender props, PR 10). A Lite phone skips them at boot;
+   window.__inkLibs() loads them on demand and resolves true once they are in. build.js reads INK_LIBS so the service worker
+   precaches every URL (same pattern as Prairie Engine Works' PEW_LIBS). */
+(function(){window.INK_LIBS=["https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"];
+var p=null,ready=function(){return typeof THREE!=="undefined"&&!!THREE.GLTFLoader;};
+window.__inkLibs=function(){if(ready())return Promise.resolve(true);
+ if(!p)p=new Promise(function(res){var i=0;(function next(){if(i>=INK_LIBS.length){res(ready());return;}var s=document.createElement("script");s.src=INK_LIBS[i++];s.async=false;s.crossOrigin="anonymous";s.onload=next;s.onerror=function(){p=null;res(false);};document.head.appendChild(s);})();});
+ return p;};
+})();</script>
