@@ -37,7 +37,8 @@ function openSettings(){
 <div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div></section>
 <section id="set-app" hidden><h3>App</h3><div class="row"><button class="btn pri" id="pwaInstall" hidden>Install app</button></div>
 <p class="hint" id="pwaIos" hidden>On iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</p></section>
-<section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p></section>`);
+<section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p>
+<p class="hint">Some design elements are icons by Lorc and Delapouite from <a href="https://game-icons.net/" target="_blank" rel="noopener">game-icons.net</a>, licensed <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a> and reshaped for tattoo flash. Full list: <a href="https://github.com/Jxstrr0/Ink/blob/main/art/CREDITS.md" target="_blank" rel="noopener">art/CREDITS.md</a>.</p></section>`);
   const seg=(id,fn)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;
     $(id).querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});fn(b.dataset.v);save();});
   seg("setTheme",v=>{st.theme=v;applyTheme();});

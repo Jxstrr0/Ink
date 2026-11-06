@@ -44,7 +44,7 @@ Commit this file as `docs/INK-PLAN.md` in the `Ink` repo so every session can fi
 | Body model | One stylized adult mannequin mesh with male/female/neutral body shapes and a skin-tone slider, clothed (shorts and a crop top, so the ribs/side are bare). Tattoos are decals in body-part UV space, **one UV island per limb or zone** |
 | Aging | Modelled, not cosmetic: line weight, depth, colour, placement, skin tone and years decide how a piece looks today |
 | The canvas remembers | A client's body is a persistent canvas across decades. Year-nine sleeves get planned around your year-two piece; your early work comes back to be covered or reworked. This is the headline feature |
-| Lose state | Going broke is a soft fail: the studio closes and you drop back to renting a chair with your clients and rep intact. No game-over screen **(default, see Q12)** |
+| Lose state | Going broke is a soft fail: the studio closes and you drop back to renting a chair with your clients and rep intact. No game-over screen (confirmed, Q12) |
 | End state | At year 30, or earlier by choice, a **Legacy screen** ends the run: the oldest piece that still reads, the client with the most pieces, the decade summaries, your apprentices' shops. The save stays playable after it |
 | Design board colour | Cream board with black ink in both themes; only the chrome around it follows the theme **(default, see Q10)** |
 | Blender | Studio interiors, furniture, machines, the mannequin base mesh (or a CC0 base, see PR 10). Design elements are vector art (SVG), not Blender |
@@ -293,20 +293,20 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 
 1. ~~**(PR 0)** City and world~~ **Answered: Mostograd.**
 2. ~~**(PR 0 / PR 8)** Era~~ **Answered: 2000–2030, social media arrives as a system in 2016.**
-3. **(PR 7)** Always start as an apprentice with a "Skip the broom" option (default), or apprentice only?
+3. ~~**(PR 7)** Career start~~ **Answered: apprentice, with a "Skip the broom" option.**
 4. ~~**(PR 4)** Session control~~ **Answered: trace-and-rhythm with pace meter.**
 5. **(PR 10)** Mannequin: Kelbo models it in Blender, or Claude Code sources a CC0 base mesh and Kelbo clothes it?
 6. ~~**(PR 1)** Element art~~ **Answered: a mix. Claude Code draws original SVG and pulls credited CC0 motifs for the rest (`art/CREDITS.md`).**
-7. **(PR 8)** TV show offer in Act 4: include it, or keep the endgame to conventions and apprentices?
+7. ~~**(PR 8)** TV show offer~~ **Answered: include it.**
 8. ~~**(PR 0 / PR 1)** Ribs/side placement~~ **Answered: in.** Crop top on the mannequin, high-pain side zones in `PLACEMENTS`.
-9. **(PR 4)** Kit as a build system (machine, needles, inks, voltage with deltas; default), or keep it to a single machine unlock track and let skills alone set the bands?
-10. **(PR 2)** Design board: cream in both themes (default), or a dark board under the dark theme?
-11. **(PR 7)** Staff pieces: shop rep + a separate Shop gallery, your body of work stays yours (default), or everything done under your roof counts as yours?
-12. **(PR 7)** Going broke: soft fail back to a rented chair (default), or a hard game over with a career summary?
-13. **(PR 8)** Reckonings: a few scripted once-per-career beats (default), or leave returns fully systemic with no scripted ones?
+9. ~~**(PR 4)** Kit~~ **Answered: a build system (machine, needles, inks, voltage with deltas).**
+10. ~~**(PR 2)** Design board~~ **Answered: cream in both themes.**
+11. ~~**(PR 7)** Staff pieces~~ **Answered: shop rep and a separate Shop gallery; your body of work stays yours.**
+12. ~~**(PR 7)** Going broke~~ **Answered: soft fail back to a rented chair.**
+13. ~~**(PR 8)** Reckonings~~ **Answered: a few scripted once-per-career beats.**
 14. ~~**(PR 0)** Title~~ **Answered: Ink.**
-15. **(PR 7)** Money: use Lombard's Mostograd currency (whatever Lombard settles on), or plain dollars? Ink only needs a symbol and the `PRICE_INDEX` era curve; it should match Lombard either way.
-16. **(PR 8)** Shared world with Lombard: keep the two games separate apart from the city (default), or allow light cross-references, e.g. Lombard's pawn shop as a place to sell old machines, or Lombard's mob demanding protection money once you open a studio? Anything involving the crime layer needs your call because Ink's tone is a working shop, not dark comedy.
+15. ~~**(PR 7)** Money~~ **Answered: rubles (₽), matching Lombard. `PRICE_INDEX` follows a ruble-like inflation curve.**
+16. ~~**(PR 8)** Shared world with Lombard~~ **Answered: light cross-references only (e.g. Lombard's pawn shop as a place to sell old machines). No crime layer, no mob.**
 
 ---
 
@@ -319,7 +319,7 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 ## Checklist
 
 - [x] PR 0: Scaffold, tabs, PWA, CLAUDE.md with content rules, save-code check
-- [ ] PR 1: Seeded rng, element library, placements, design scoring with skin contrast, aging model, state shape, node tests
+- [x] PR 1: Seeded rng, element library, placements, design scoring with skin contrast, aging model, state shape, node tests
 - [ ] PR 2: Body diagram SVG, design board with placement picker, deltas, flash wall
 - [ ] PR 3: Week clock with Next, market, clients, consult, memory, returns
 - [ ] PR 4: Kit, session mechanic, handedness and assist, client meters, multi-session

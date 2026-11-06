@@ -44,8 +44,9 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
 | `html/ld-libs.html`, `ld-sim.html`, `ld-vis.html` | one-line `<script>__ld(fraction,"message")</script>` loading-bar steps after the block they report |
 | **INK_SIM** | |
-| `sim/rng.js` | `<script>`, the INK_SIM IIFE open, the seeded rng (PR 1) |
-| `sim/elements.js` | `ELEMENTS`, `STYLES`, `PLACEMENTS`, `BODY_SHAPES` (PR 1) |
+| `sim/rng.js` | `<script>`, the INK_SIM IIFE open, `rng(seed)` (mulberry32 with `range`, `int`, `chance`, `pick`, `weighted`, `shuffle`, `normal`, `fork`), `hash`, `clamp`, `lerp` |
+| `sim/elements.js` | `COLOURS`, `STYLES`, `ELEMENTS` (the curated motif library, SVG paths in a 0..100 box), `LINE_WEIGHTS`, `elementById` |
+| `sim/placements.js` | `PLACEMENTS` (every allowed zone with flow lines, wrap, pain, visibility, sun, crease, UV island), `ISLANDS`, `BODY_SHAPES`, `placementBox` |
 | `sim/design.js` | `scoreDesign`, `SKIN_CONTRAST`, `COMBOS` stress report (PR 1) |
 | `sim/aging.js` | `age(tattoo, years)`, `COLOUR_FADE`, `PLACEMENT_WEAR` (PR 1) |
 | `sim/clients.js` | client generation, consult, memory, returns (PR 3) |
@@ -84,8 +85,17 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`. `h
 | `week` | number | 1..52 within the year |
 | `year` | number | 2000..2030 |
 | `cash` | number | money on hand |
+| `rate` | number | your hourly rate (PR 7: `RATE_BY_REP` × `PRICE_INDEX`); 0 while an apprentice |
+| `rep` | object | the three reputation tracks `{walkins, collectors, peers}` (`REP_TRACKS`, PR 5) |
+| `skills` | object | `{styles:{styleId:0..10}, consult, linework, shading, colour, speed}` (`SKILLS`, PR 7) |
+| `kit` | object | machine, needles, inks, voltage (PR 4) |
+| `clients` | array | client records (PR 3; shape in `docs/SIM-CONTRACT.md`), compacted past `CLIENT_CAP` (PR 7) |
+| `pieces` | array | every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5) |
+| `queue` | array | booked sessions, including later sessions of multi-session pieces (PR 3, PR 4) |
+| `studio` | object | `{stage: "apprentice"\|"chair"\|"studio"\|"legacy", staff:[]}` (PR 7) |
+| `goals` | object | `GOALS` done, id → `{w, y}` (PR 8) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
 | `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced` |
 | `bkAt` | number | when the last backup was made (ms), 0 = never |
 
-PR 1 adds the rest of the plan's shape (`rate`, `rep`, `skills`, `kit`, `clients`, `pieces`, `queue`, `studio`, `goals`).
+The sim's data shapes (designs, clients, elements, placements) are in `docs/SIM-CONTRACT.md`.
