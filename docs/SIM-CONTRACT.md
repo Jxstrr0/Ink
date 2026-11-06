@@ -34,7 +34,8 @@ SIM.ELEMENTS, SIM.STYLES, SIM.COLOURS, SIM.elementById(id)
 ```
 PLACEMENTS = { <id>: { id, name, region: "arm"|"leg"|"back"|"chest"|"side"|"neck"|"hand"|"foot"|"shoulder", side: "l"|"r"|null,
                island: UV island id, wrapMm (usable width), lengthMm (usable length), pain 0..1, visibility 0..1, sun 0..1,
-               crease: null or {at: 0..1 along the length, axis:"x"|"y"} (elbow, knee, wrist),
+               creases: [ {at: 0..1 along the length, axis:"x"|"y", name} ] (every joint; the forearm has elbow and wrist),
+               crease: creases[0] or null,
                flowDeg: dominant flow direction (0 = along the limb, down the board),
                flow: [ [[x,y],…], … ]  (2..5 polylines in the placement's 0..1 box, for the board and the flow score),
                curve: 0..1 (how much the surface wraps; ribs high, upper back low) } }
@@ -49,6 +50,7 @@ Allowed zones only: arms (forearm, upper arm, inner wrist area as part of forear
 
 ```
 { placement: PLACEMENTS id, sizeMm, style: STYLES id,
+  pos: {x, y} (optional, 0..1: where the piece's centre sits in the placement box; default the middle),
   elements: [ { id: ELEMENTS id, x, y, scale, rot, lineWeight, fill (0..1 shading), colour: COLOURS id or null (= black) } ] }
 ```
 
@@ -56,7 +58,7 @@ Allowed zones only: arms (forearm, upper arm, inner wrist area as part of forear
 
 ```
 { id, name, pronouns, age (18+), bodyShape: BODY_SHAPES id, skinTone 0..1, job,
-  traits: { pain, sun, aftercare, budget, loyalty, talkative, trusting } (each 0..1),
+  traits: { pain, sun, aftercare, budget, loyalty, talkative, trusting } (each 0..1; pain is pain TOLERANCE, 1 = sits like a rock),
   wants: { styles:{styleId:weight}, tags:[…], sizeMm:[min,max], colour: 0..1 (how much they want colour) },
   mustHaves: [ {kind:"tag"|"element"|"style"|"colour", v} ], dealbreakers: [ same shape ] }
 ```
@@ -94,3 +96,11 @@ Tables: COLOUR_FADE, PLACEMENT_WEAR, HEAL_GRADES (crisp, soft, patchy, blownout,
 ## Tests
 
 `tools/sim-test.js`: reads `src/manifest.txt`, concatenates the `sim/*.js` files in order, strips the first `<script>` and last `</script>` lines, runs it in `vm`, takes `INK_SIM`. Fixed seed. Scores ~15 `TEST_DESIGNS` against ~5 `TEST_CLIENTS` (both in `tools/sim-fixtures.js`), prints every sub-score and aging at 5/10/20, and asserts sanity orderings (e.g. tiny script reads worse than big script; watercolour fades faster than traditional; pale yellow on dark skin reads worse than on light skin; a ribs piece that fights the flow scores lower on flow). Exit 1 on failure.
+
+## Notes from PR 1
+
+- Colour goes on an element's fill; its lines stay black, except in watercolour (`COLOUR_LINES`).
+- An element's aspect comes from its SVG path's bounding box. Elements tagged `band`/`armband`/`wrap` run across the limb and may exceed the wrap width.
+- Job cover needs come from `JOB_COVER` (keywords in the job string) until PR 3 gives clients an explicit field.
+- Session `trauma` feeds the heal grade (PR 5), not aging directly.
+- Extra exports: `SIM.readabilityOf`, `SIM.FAMILY_SHAPE`, `SIM.RATE_DEFAULT`, `SIM.JOB_COVER`, `SIM.INK_TIERS`, `SIM.AGING`, `SIM.PRICE_INDEX`, `SIM.lineMm`.
