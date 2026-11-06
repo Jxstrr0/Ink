@@ -21,7 +21,7 @@ function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
 /* a stage change: the header, and the 3D shop's stage (PR 6) */
-function caStage(){if(typeof INK_VIS!=="undefined"&&typeof INK_VIS.setStudio==="function")try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice");}catch(e){}
+function caStage(){if(typeof INK_VIS!=="undefined"&&typeof INK_VIS.setStudio==="function")try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice");}catch(e){}if(typeof stMachine==="function")stMachine();
   if(typeof ST!=="undefined")ST.key="";renderHeader();}
 function crMine(){let n=0;for(const p of S.pieces)if(!p.by)n++;return n;}
 function renderCareer(){

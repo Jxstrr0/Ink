@@ -34,11 +34,14 @@ function stTattoos(who){
   const now=INK_SIM.weekIndex(S.week,S.year);
   return S.pieces.filter(p=>p.client===who.id&&p.design&&Array.isArray(p.design.elements)&&p.design.elements.length)
     .map(p=>({design:p.design,out:p.out||null,heal:p.heal||null,ink:p.ink||null,years:Math.max(0,(now-INK_SIM.weekIndex(p.w,p.y))/52),skinTone:who.tone,sun:who.sun!=null?who.sun:0.4}));}
+/* 0.1.14.0: the machine the kit uses lies up front on the 3D tray (coil, rotary; the wireless pen shows as the rotary) */
+function stMachine(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setMachine!=="function"||!S||!S.kit)return;
+  try{const m=INK_SIM.MACHINES[INK_SIM.kitClean(S.kit).machine];INK_VIS.setMachine(m?m.kind:"coil");}catch(e){}}
 function stMount(){if(!stGl())return false;INK_VIS.mount($("studioView"));INK_VIS.setStencil(null);return true;}
 /* put the client in the 3D chair and aim the camera */
 function stShow(who,view){
   if(!stMount())return;
-  const stage=(S.studio&&S.studio.stage)||"apprentice";INK_VIS.setStudio(stage);
+  const stage=(S.studio&&S.studio.stage)||"apprentice";INK_VIS.setStudio(stage);stMachine();
   if(!who){INK_VIS.setClient(null);INK_VIS.setView("consult");return;}
   INK_VIS.setClient({bodyShape:who.shape,skinTone:who.tone,skin:stSkin(who.tone)});
   const list=stTattoos(who);INK_VIS.setTattoos(list);
@@ -138,7 +141,7 @@ ${segHtml("kpSeg",[["machine","Machine"],["needles","Needles"],["ink","Ink"],["t
   const r=$("kpReset");if(r)r.addEventListener("click",()=>{const k=kpKit(),d0=INK_SIM.kitDefault();k.voltage=d0.voltage;k.stroke=d0.stroke;kpDone("Back to the usual tune");});}
 /* deltas from kit a to kit b (the Tune view compares against the default sliders) */
 function kpDeltaFrom(a,b){const keep=S.kit;S.kit=a;try{return kpDelta(b);}finally{S.kit=keep;}}
-function kpDone(msg){S.kit=INK_SIM.kitClean(S.kit);save();INK_SOUND.tick();if(msg)toast(msg);kpRender();}
+function kpDone(msg){S.kit=INK_SIM.kitClean(S.kit);stMachine();save();INK_SOUND.tick();if(msg)toast(msg);kpRender();}
 function kpBuy(kind,id){
   const price=INK_SIM.kitPrice(kind,id,S.year),k=kpKit(),o=k.owned;
   if((S.cash||0)<price){toast("Not enough cash");return;}

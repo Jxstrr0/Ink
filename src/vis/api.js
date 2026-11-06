@@ -9,7 +9,8 @@
      setTattoos(list)              [{design, out, heal, ink, years, skinTone, sun}]: repaints the skin only if it changed
      setStencil(design, {drag})    the purple stencil on its island; drag(pos, "move"|"end") is called while it is dragged
      setView(name, {placement, size, instant})   consult (face-on) | stencil (the limb) | session (close on the work) | reveal
-     setStudio(stage)              apprentice | chair | studio | legacy
+     setStudio(stage)              apprentice | chair | studio | legacy (0.1.14.0: a different room for each)
+     setMachine(kind)              coil | rotary | pen: the kit's machine goes up front on the tray (0.1.14.0)
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
    PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. PR 11: on Full and Ultra that also swaps
@@ -87,8 +88,9 @@ window.INK_VIS={
   setStencil(design,o){V.stencil=design&&design.elements&&design.elements.length?design:null;V.onStencil=o&&o.drag||null;if(!V.renderer)return;vsStencilApply();draw();},
   setView(name,o){if(!V.renderer){V.view=name;return;}vsView(name||"consult",o);},
   setStudio(stage){V.stage=stage||"apprentice";if(V.room){vsStage(V.stage);draw();}},
+  setMachine(kind){if(V.room){vsMachine(kind);draw();}else V.machine=kind==="rotary"||kind==="pen"?"rotary":"coil";},
   setReduced(b){V.reduced=!!b;},
-  stats(){const tri=o=>{let n=0;o.traverse(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
+  stats(){const tri=o=>{let n=0;o.traverseVisible(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
     return V.renderer?{tier:V.tier,body:V.body?(V.body.glb?V.body.glb.tris:bdTriangles(V.body.parts.concat([V.body.head]))):0,bodyModel:!!(V.body&&V.body.glb),room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
   /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
   _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,

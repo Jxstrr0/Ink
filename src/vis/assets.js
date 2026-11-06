@@ -11,7 +11,9 @@
    once (render on change still holds). The service worker caches everything under models/ as it is fetched.
    Models: metres, +Y up, the front facing +Z (Blender's -Y with the glTF exporter's +Y up), origin where `at` says
    (on the floor under the prop unless the note says otherwise); `rot` turns it round +Y. A model replaces every coded mesh
-   in its group and sits in that group, so it shows and hides with its stage exactly as the stand-in did.
+   in its group and sits in that group, so it shows and hides with its stage exactly as the stand-in did. `at` is the prop's
+   home spot; since 0.1.14.0 vis/studio.js moves the whole group per room (VR_PLACE: an origin and a turn) and the machine
+   and rotary per kit (VR_TRAY), so a model follows its stand-in into every room without any per-room numbers here.
    PR 11 (the Blender batch, tools/blender/): every prop file is in, and the mannequin (ASSETS.body) swaps in too. The model
    is one smooth skin ("skin" material) plus the bandeau and shorts ("cloth_top", "cloth_shorts"), with the game's UV atlas
    and two shape keys, "masc" and "femme" (Average is the basis). vaBodyApply puts it in the coded body's group with the
@@ -22,9 +24,11 @@
    loader flips v once per file. A file without those names or keys, or one that fails to load, leaves the coded body. ===== */
 const ASSETS={
   tex:{
-    floor:{mat:"floor",file:"models/textures/floor-parquet.jpg",repeat:[1.65,1.45],tint:"#c9b19a",rough:0.72,on:true},
-    wall:{mat:"plaster",file:"models/textures/wall-plaster.jpg",normal:"models/textures/wall-plaster-nor.jpg",normalScale:0.7,repeat:[2.8,1.4],tint:"#b68d6b",rough:0.95,on:true},
-    dado:{mat:"dado",file:"models/textures/dado-planks.jpg",repeat:[2.8,0.45],tint:"#b28361",rough:0.7,on:true}},
+    /* 0.1.14.0: a tint per room (null: that room keeps its coded floor or dado) */
+    floor:{mat:"floor",file:"models/textures/floor-parquet.jpg",repeat:[1.65,1.45],tints:{apprentice:"#8f7b68",chair:null,studio:"#c9b19a",legacy:"#a5826a"},rough:0.72,on:true},
+    wall:{mat:"plaster",file:"models/textures/wall-plaster.jpg",normal:"models/textures/wall-plaster-nor.jpg",normalScale:0.7,repeat:[2.8,1.4],
+      tints:{apprentice:"#8e9478",chair:"#d8decf",studio:"#c09a78",legacy:"#5e7a66"},rough:0.95,on:true},
+    dado:{mat:"dado",file:"models/textures/dado-planks.jpg",repeat:[2.8,0.45],tints:{apprentice:"#8c705a",chair:null,studio:"#b28361",legacy:"#a0704c"},rough:0.7,on:true}},
   props:{
     chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:true},
     station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:true},
@@ -53,13 +57,19 @@ function vaTexture(file,srgb,done){
   try{new THREE.TextureLoader().load(file,t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping;if(srgb)t.encoding=THREE.sRGBEncoding;
       e.st="in";e.tex=t;const w=e.wait;e.wait=[];for(const f of w)f(t);},
     undefined,()=>{e.st="failed";e.wait=[];});}catch(err){e.st="failed";}}
-/* put one texture entry on the room's material (only if that room is still the one on screen) */
+/* put one texture entry on each room's material (only if that room is still the one on screen). 0.1.14.0: every stage has
+   its own floor, walls and dado (room.stageMats); `tints` gives each stage's tint, and a stage tinted null keeps its coded
+   look (the rented chair's lino and tiles). Each stage gets its own copy of the texture, its repeat scaled to that room */
 function vaTexApply(room,a){
-  const m=room.mats&&room.mats[a.mat];if(!m||!m.isMeshStandardMaterial)return;
-  vaTexture(a.file,true,t=>{if(V.room!==room)return;const x=t;x.repeat.set(a.repeat[0],a.repeat[1]);if(x.anisotropy!==TIER[V.tier].aniso){x.anisotropy=TIER[V.tier].aniso;x.needsUpdate=true;}
-    m.map=x;m.color.copy(vsCol(a.tint||"#ffffff"));if(a.rough!=null)m.roughness=a.rough;m.needsUpdate=true;V.dirty=true;draw();
-    if(a.normal)vaTexture(a.normal,false,n=>{if(V.room!==room)return;const y=n;y.repeat.copy(x.repeat);
-      m.normalMap=y;m.normalScale.set(a.normalScale||1,a.normalScale||1);m.needsUpdate=true;V.dirty=true;draw();});});}
+  const sets=room.stageMats||{studio:room.mats};
+  vaTexture(a.file,true,t=>{if(V.room!==room)return;
+    for(const s in sets){const m=sets[s][a.mat],tint=a.tints?a.tints[s]:a.tint;if(!m||!m.isMeshStandardMaterial||tint===null||(a.tints&&tint===undefined))continue;
+      const k=(room.texScale&&room.texScale[s]&&room.texScale[s][a.mat])||[1,1],x=t.clone();x.needsUpdate=true;
+      x.repeat.set(a.repeat[0]*k[0],a.repeat[1]*k[1]);x.anisotropy=TIER[V.tier].aniso;
+      m.map=x;m.color.copy(vsCol(tint||"#ffffff"));if(a.rough!=null)m.roughness=a.rough;m.needsUpdate=true;
+      if(a.normal)vaTexture(a.normal,false,n=>{if(V.room!==room)return;const y=n.clone();y.needsUpdate=true;y.repeat.copy(x.repeat);
+        m.normalMap=y;m.normalScale.set(a.normalScale||1,a.normalScale||1);m.needsUpdate=true;V.dirty=true;draw();});}
+    V.dirty=true;draw();});}
 function vaModel(key,a,done,prep){
   const e=VA.props[key];
   if(e&&e.st==="in"){done(e.scene);return;}
