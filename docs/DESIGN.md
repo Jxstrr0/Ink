@@ -2,6 +2,16 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.3.0: clients, the consult and the week
+
+- **Career tab, Next:** the week clock. Next runs the weeks forward until someone is due in the chair, a walk-in arrives, a piece heals or an event fires, never more than 4 weeks at a time, and shows one line ("Weeks 22 to 25, 2004: …") with the week's log under it: walk-ins who left, returns, referrals, bookings, sittings moved. If anyone is waiting this week the first tap warns ("Skip them? Tap again"): walk-ins leave, sittings move to next week. The career stops at week 52 of 2030.
+- **Clients tab, This week:** the chair hours booked against the week's hours and the waiting list; walk-ins at the door (they leave at the end of the week); booked consults (clients coming back for a touch-up, an add-on, a sleeve or a cover-up, always naming their earlier piece and its year, and people sent by a client); the sittings due; what's coming up.
+- **The consult:** a short chat (3 to 5 exchanges) with the client's brief, written in Mostograd (the Old Bridge, Lodochnaya Embankment, Kanatnaya Street, the port, the White Nights). Every client is an adult and the consult says "ID checked, 18+". Questions reveal hidden must-haves, dealbreakers, pain tolerance, sun, budget and whether they cover up for work (more often with a better consult skill and a trusting, talkative client). A bad idea (tiny script, a portrait on a hand, fine line on a finger) can be talked out, gently or bluntly: win and the plan changes and they trust you more; lose and they may walk. It ends with a quote (fair, high or low): price, deposit and sittings from the design model; they accept or walk. The deposit goes straight into your cash. Choices replay the same way if you leave and come back.
+- **Designing for a booking:** "Design it" opens the board for that client with their body shape, skin tone, placement and style, and a bar with what they asked for and what you know. The board scores fit against what the consult found out, not what's still hidden. "Save to booking" puts the design on the sitting.
+- **Sittings:** until the session minigame arrives (PR 4), "Quick session" works a sitting out from your skills. Each sitting pays its share of the balance; the last one makes the piece, named the way the client would say it ("the rose on Darya's left forearm").
+- **Client list:** everyone you've consulted, newest first, with filters (All, Regulars, Booked, Walked) and a name search. A client's card shows what you know, a loyalty bar, their pieces as they look today (re-rendered from the design and aged by the model) and their history.
+- **Walk-ins** depend on the stage (an apprentice sees one now and then), the season and reputation; returns come from your pieces as they age and from loyalty; referrals arrive a few weeks after a good heal.
+
 ## 0.1.2.0: the design board
 
 - **Design tab, three views:** Body, Board and Flash, on a segmented control at the top.
