@@ -119,12 +119,13 @@ ${react?`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c
 ${g==="infected"?`<p class="rvNote">${fix?`Free fix booked for week ${fix.w}, ${fix.y}. Reputation took a hit.`:"Reputation took a hit."}</p>`:""}
 ${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc(c.first)} left a review`}</span>${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}
 <div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
-:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>`}</div>
+:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>${typeof evPostBtn==="function"&&evPostBtn(p)?`<p class="clMeta rvPost">Or share it: <button class="btn sm" data-rv="post">Post it</button></p>`:""}`}</div>
 </article>`;}
 function rvWire(after){
   const card=$("rvCard");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
     const p=rvPending();if(!p)return;
+    if(b.dataset.rv==="post"){if(typeof evPost==="function")evPost(p.id);b.disabled=true;return;}   // PR 8: posting doesn't close the reveal
     if(b.dataset.rv==="yes"){INK_SIM.setPortfolio(S,p,true);toast("In your portfolio");}
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
@@ -188,9 +189,10 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
+${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}</div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
 ${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
-  const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));}
+  const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));
+  if(typeof evPostWire==="function")evPostWire(()=>{if(!$("evOk"))gvOpen(p.id);});}
