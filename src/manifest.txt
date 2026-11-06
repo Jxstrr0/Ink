@@ -1,12 +1,14 @@
 # build order for index.html: one src/ path per line (node build.js concatenates them)
 html/head.html
 css/style.css
+css/ui-design.css
 html/body.html
 html/ld-libs.html
 sim/rng.js
 sim/elements.js
 sim/placements.js
 sim/design.js
+sim/flash.js
 sim/aging.js
 sim/clients.js
 sim/calendar.js
@@ -30,5 +32,6 @@ app/design.js
 app/session.js
 app/clients.js
 app/career.js
+app/bodymap.js
 app/help.js
 html/tail.html

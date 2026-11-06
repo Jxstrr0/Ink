@@ -1,0 +1,213 @@
+/* ===================== Ink: the Design tab (PR 2) =====================
+   The body diagram, the cream design board (cream with black ink in both themes; only the chrome around it follows the
+   theme), the selected element's toolbar, the element drawer in the sheet, the docked capsule with live deltas and the
+   aging strip, the stress report and the flash wall. Classes start with dz (board) or bm (body diagram).
+   Touch targets are 44 px. The deltas use colour AND shape (▲ / ▼), so they read colour-blind. */
+.dz{--dzUp:var(--ok);--dzDn:var(--crit);--dzNu:var(--gold)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.dzSeg{display:flex;margin:0 0 12px}
+.dzSeg button{flex:1;min-height:44px;font-size:14.5px;letter-spacing:.02em}
+.dzTag{display:inline-block;font:600 11px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:4px 8px;vertical-align:middle}
+.dzFull{display:flex;flex-direction:column;gap:4px;width:100%;font-size:12.5px}
+.dzFull select{width:100%;min-height:44px}
+.dz .sp{flex:1}
+
+/* ---- Body view ---- */
+.dzClientHd{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.dzClientHd h2{margin:0}
+.dzBodyCtl{margin:0 0 6px}
+.dzBodyCtl .seg{display:flex}
+.dzBodyCtl .seg button{flex:1;min-height:44px;padding:0 10px}
+.dzFigCol .seg{display:flex;margin:0 0 4px}
+.dzFigCol .seg button{flex:1;min-height:44px;padding:0 8px}
+.dzCap.mini .dzAge,.dzCap.mini .dzCapT{display:none}
+.dzCap.mini .dzMs{padding-right:0}
+.dzTone{margin:0 0 6px}
+.dzToneRow{display:flex;align-items:center;gap:10px}
+.dzToneRow input{flex:1}
+.dzToneChip{flex:0 0 28px;height:28px;border-radius:50%;border:2px solid var(--line)}
+input[type=range]{min-height:44px;accent-color:var(--red);background:transparent}
+.dzBodyGrid{display:grid;grid-template-columns:minmax(150px,1fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.dzFigWrap{background:radial-gradient(ellipse at 50% 40%,var(--panel2),transparent 70%);border-radius:var(--r);padding:4px 0}
+.bm{display:block;width:100%;height:auto;max-height:62vh;margin:0 auto;-webkit-user-select:none;user-select:none}
+.bmz{cursor:pointer;outline:none}
+.bmz .f{fill:var(--red);fill-opacity:0;stroke:var(--red);stroke-opacity:0;stroke-width:1.2;transition:fill-opacity .15s}
+.bmz .s{fill:none;stroke:var(--red);stroke-opacity:0;stroke-linecap:round;transition:stroke-opacity .15s}
+.bmz:hover .f,.bmz:focus-visible .f{fill-opacity:.22;stroke-opacity:.6}
+.bmz:hover .s,.bmz:focus-visible .s{stroke-opacity:.28}
+.bmz.on .f{fill-opacity:.5;stroke-opacity:.9}
+.bmz.on .s{stroke-opacity:.55}
+.bmz:focus-visible .f,.bmz:focus-visible .s{stroke-dasharray:3 2}
+.bmLbl{font:600 9px var(--ui);letter-spacing:.2em;fill:var(--mute)}
+.dzSpot h3{font-family:var(--disp);font-size:20px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:4px 0 8px}
+.dzSpot .kv{grid-template-columns:auto 1fr;gap:8px 10px;font-size:13.5px;align-items:start}
+.dzSpot .kv dd small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.dzBar{display:block;height:7px;border-radius:4px;background:var(--panel2);overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+.dzBar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red))}
+.dzGo{width:100%;margin-top:10px}
+.dzPlSel{margin-top:12px}
+
+/* ---- Board view: the bars above the board ---- */
+.dzBar1{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.dzSpotBtn{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-height:48px;padding:4px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.dzSpotBtn b{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dzSpotBtn small{color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dzSpotBtn:hover{border-color:var(--faint)}
+.dzStyle select{min-height:48px;max-width:42vw}
+.dzBar2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.dzBar2 .btn svg,.dzBar3 .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dzIb{border:1px solid var(--line);background:var(--panel)}
+.dzIb:disabled{opacity:.35;cursor:default}
+.dzIb:focus-visible,.dzChip:focus-visible,.dzSpotBtn:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzChip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute);font-weight:600;font-size:13.5px;cursor:pointer}
+.dzChip svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.dzChip.on{color:var(--text);border-color:var(--teal);background:var(--panel2);background:color-mix(in srgb,var(--teal) 18%,var(--panel))}
+.dzFlashTag{font:700 12px/1 var(--ui);letter-spacing:.04em;color:#fff8ef;background:var(--teal);border-radius:999px;padding:7px 10px}
+
+/* ---- the board itself: cream, black ink, both themes ---- */
+.dzBoardWrap{display:flex;justify-content:center;margin:0 0 10px}
+.dzBoard{position:relative;padding:0;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 2px 14px rgba(0,0,0,.25);max-width:100%}
+html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 2px 10px rgba(60,40,20,.12)}
+.dzSvg{display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.dzSvg:focus{outline:none}
+.dzBg{fill:var(--board)}
+.dzLimb{fill:#efe3cc;stroke:none}
+.dzLimbE{fill:url(#dzLimbG);stroke:#c7b494;stroke-width:.6}
+.dzRuler{stroke:#b39e7c;stroke-width:.4;fill:none}
+.dzRulT,.dzFootT,.dzCreaseT{font-family:var(--ui);fill:#8c7655}
+.dzFlow polyline{fill:none;stroke:#9b8058;stroke-opacity:.35;stroke-width:.5;stroke-dasharray:3 3;stroke-linecap:round}
+.dzCrease{stroke:#b3432c;stroke-opacity:.65;stroke-width:.7;stroke-dasharray:2 2}
+.dzCreaseT{fill:#a04a33;font-weight:600}
+.dzFoot{fill:none;stroke:#8c7655;stroke-opacity:.5;stroke-width:.4;stroke-dasharray:1.5 1.5}
+.dzFootT{font-weight:600}
+.dzEmpty{font-family:var(--disp);fill:#a08a66;letter-spacing:.06em;text-transform:uppercase}
+.dzEmpty.sub{font-family:var(--ui);text-transform:none;letter-spacing:0}
+.dzEl{cursor:grab;outline:none}
+.dzEl .hit{fill:transparent}
+.dzEl:focus-visible .hit{fill:rgba(63,143,134,.12)}
+.dzSelR{fill:rgba(63,143,134,.06);stroke:#2f7f77}
+.dzHdl{cursor:nwse-resize}
+.dzHdl .hit{fill:transparent}
+.dzHdl .dot{fill:#fffaf1;stroke:#2f7f77}
+.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round}
+
+/* ---- the toolbar under the board ---- */
+.dzTools{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:0 0 10px}
+.dzToolHint{margin:4px 0;color:var(--mute);font-size:13.5px}
+.dzToolHint.sm{font-size:12.5px;margin:6px 0 0}
+.dzToolHd{display:flex;align-items:center;gap:8px;margin:-4px 0 6px}
+.dzToolHd b{font-size:15px}
+.dzToolHd span{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
+.dzToolHd span.bad{color:var(--crit)}
+.dzToolHd em{font-style:normal}
+.dzDel{color:var(--crit)}
+.dzToolRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.dzStep{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
+.dzStep button{flex:0 0 44px;min-height:44px;border:0;background:transparent;color:var(--text);font-size:20px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzStep button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dzStep button:hover{background:var(--line)}
+.dzStep button:focus-visible{outline:2px solid var(--red2);outline-offset:-2px}
+.dzStep span{flex:1;text-align:center;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzFillL{flex-direction:row;align-items:center;gap:10px;margin-top:6px;font-size:13px}
+.dzFillL input{flex:1}
+.dzFillL span{min-width:3.2em;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+.dzSws{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dzSw{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer}
+.dzSw i{width:24px;height:24px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.dzSw.on{border-color:var(--text);box-shadow:inset 0 0 0 2px var(--text)}
+.dzSw.weak i{opacity:.35;background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(0,0,0,.45) 3px 4px)!important}
+.dzSw small{font-size:9.5px;line-height:1;color:var(--warn);font-weight:700;white-space:nowrap}
+.dzSw:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzBar3{margin:0 0 12px}
+
+/* ---- the docked capsule ---- */
+.dzCap{position:sticky;bottom:0;z-index:5;margin:12px 0 0;padding:8px 8px 6px;border-radius:14px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.dzMs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) minmax(0,1.5fr);gap:2px;padding-right:34px}
+.dzM{display:flex;flex-direction:column;align-items:center;min-width:0;padding:2px 0}
+.dzM .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dzM b{font-size:17px;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzM.money b{font-size:15px}
+.dzM.meh b{color:var(--warn)}
+.dzM.bad b{color:var(--crit)}
+.dzM .d{min-height:15px;font-size:11.5px;font-weight:700;line-height:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dzM .d.up{color:var(--dzUp)}
+.dzM .d.dn{color:var(--dzDn)}
+.dzM .d.nu{color:var(--dzNu)}
+.dzCapT{position:absolute;top:6px;right:6px;width:32px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzCapT svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.dzCap.shut .dzCapT svg{transform:rotate(180deg)}
+.dzCap.shut .dzAge{display:none}
+.dzAge{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.dzAgeL{flex:0 0 auto;width:46px;font-size:10px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dzAgeNone{font-size:12.5px;color:var(--faint)}
+.dzAgeF{flex:1;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.dzAgeI{width:44px;height:44px;border-radius:8px;background:var(--board);border:1px solid var(--boardLine);overflow:hidden}
+.dzAgeI svg{width:44px;height:44px;display:block}
+.dzAgeF figcaption{font-size:11px;line-height:1.1;color:var(--mute);white-space:nowrap}
+.dzAgeF figcaption b{font-size:13px;font-variant-numeric:tabular-nums}
+.dzAgeF b.ok{color:var(--text)}
+.dzAgeF b.meh{color:var(--warn)}
+.dzAgeF b.bad{color:var(--crit)}
+
+/* ---- the stress report ---- */
+.dzStress h2{margin-bottom:2px}
+.dzSub{margin:0 0 8px;color:var(--mute);font-size:13px}
+.dzSub b{color:var(--text);font-variant-numeric:tabular-nums}
+.dzSt{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.dzSt li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.35;padding:8px 10px;border-radius:10px;background:var(--panel2)}
+.dzSt .ic{flex:0 0 22px;height:22px;margin-top:-1px}
+.dzSt .ic svg{width:22px;height:22px;display:block}
+.dzSt .sev3{box-shadow:inset 3px 0 0 var(--crit)}
+.dzSt .sev3 .ic{color:var(--crit)}
+.dzSt .sev2{box-shadow:inset 3px 0 0 var(--warn)}
+.dzSt .sev2 .ic{color:var(--warn)}
+.dzSt .sev1 .ic{color:var(--mute)}
+.dzOk{display:flex;gap:8px;align-items:center;margin:4px 0;color:var(--ok);font-weight:600}
+.dzOk svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- the drawer (in the sheet) ---- */
+.dzDrF{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px}
+.dzDrF select{width:100%;min-height:44px}
+.dzDrFam{overflow-x:auto;margin:0 0 8px;-webkit-overflow-scrolling:touch}
+.dzDrFam .seg button{min-height:44px;padding:0 12px;white-space:nowrap}
+.dzSand{flex-direction:row;align-items:center;gap:10px;min-height:44px;font-size:13px;color:var(--mute);cursor:pointer}
+.dzSand input{width:22px;height:22px;accent-color:var(--red)}
+.dzDrG{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:6px}
+.dzTile{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;padding:8px 6px;border:1px solid var(--boardLine);border-radius:10px;background:var(--board);color:var(--boardInk);cursor:pointer;text-align:center}
+.dzTile svg{width:56px;height:56px}
+.dzTile b{font-size:12.5px;line-height:1.2}
+.dzTile small{display:flex;align-items:center;gap:3px;font-size:10.5px;color:#7c6a50;line-height:1.2}
+.dzTile small svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2}
+.dzTile:hover{border-color:#a99470}
+.dzTile:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzTile.lock{opacity:.5;filter:grayscale(1)}
+
+/* ---- the flash wall ---- */
+.dzFlHd h2{display:flex;align-items:center;gap:8px}
+.dzFls{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin:0 0 14px}
+.dzFl{display:flex;gap:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.dzFlArt{flex:0 0 96px;height:96px;display:flex;align-items:center;justify-content:center;background:var(--board);border-radius:10px}
+.dzFlArt svg{width:88px;height:88px}
+.dzFlTx{flex:1;min-width:0}
+.dzFlTx h3{font-family:var(--disp);font-weight:600;font-size:17px;letter-spacing:.04em;text-transform:uppercase;margin:0}
+.dzFlTx .hint{margin:4px 0;font-size:12.5px}
+.dzFlMeta{margin:2px 0;color:var(--mute);font-size:12px}
+.dzFlNum{display:flex;gap:10px;margin:4px 0 8px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.dzFlNum span+span::before{content:"·";margin-right:10px;color:var(--faint)}
+
+/* ---- narrow phones and landscape ---- */
+@media (max-width:420px){
+  .dzBodyGrid{grid-template-columns:1fr 1fr;gap:8px}
+  .dzToolRow{gap:4px}
+  .dzStep button{flex-basis:40px}
+  .dzM .l{font-size:9.5px;letter-spacing:.03em}
+  .dzM b{font-size:15.5px}
+  .dzM.money b{font-size:13.5px}
+  .dzAgeL{width:38px;font-size:9px}
+}
+@media (max-width:360px){.dzStep span{font-size:11px}.dzAgeL{display:none}}
+@media (orientation:landscape) and (max-height:560px){
+  .dzCap{position:relative}
+  .bm{max-height:80vh}
+}
+@media (prefers-reduced-motion:reduce){.bmz .f,.bmz .s,.dzCapT svg{transition:none}}
