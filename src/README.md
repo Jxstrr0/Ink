@@ -40,6 +40,7 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | file | what is in it |
 |---|---|
 | `html/head.html` | doctype, inline critical style, `<title>`, the `#boot` loading splash and its loader (`__ld`, `__ldGo`, `__ldDone`), Google Fonts (Space Grotesk, Oswald), the `<style>` line |
+| `css/ui-design.css` | the Design tab: body diagram, cream board, toolbar, drawer, capsule with deltas and aging strip, stress report, flash wall (PR 2) |
 | `css/style.css` | theme tokens (dark default, `html[data-theme=light]`), the app frame (header, `#panel`, bottom `#tabs`), cards, buttons, segmented controls, the sheet, toast, the update bar, the cream `.board`, reduced motion / transparency |
 | `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
 | `html/ld-libs.html`, `ld-sim.html`, `ld-vis.html` | one-line `<script>__ld(fraction,"message")</script>` loading-bar steps after the block they report |
@@ -47,7 +48,8 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `sim/rng.js` | `<script>`, the INK_SIM IIFE open, `rng(seed)` (mulberry32 with `range`, `int`, `chance`, `pick`, `weighted`, `shuffle`, `normal`, `fork`), `hash`, `clamp`, `lerp` |
 | `sim/elements.js` | `COLOURS`, `STYLES`, `ELEMENTS` (the curated motif library, SVG paths in a 0..100 box), `LINE_WEIGHTS`, `elementById` |
 | `sim/placements.js` | `PLACEMENTS` (every allowed zone with flow lines, wrap, pain, visibility, sun, crease, UV island), `ISLANDS`, `BODY_SHAPES`, `placementBox` |
-| `sim/design.js` | `scoreDesign`, `SKIN_CONTRAST`, `COMBOS` stress report (PR 1) |
+| `sim/design.js` | `scoreDesign`, `SKIN_CONTRAST`, `COMBOS` stress report (PR 1); `FLASH_DISCOUNT` and the board helpers `footprintOf`, `inkReads`, `elementBox`, `flowAt` (PR 2) |
+| `sim/flash.js` | `FLASH`: the pre-composed flash wall designs (data only, PR 2) |
 | `sim/aging.js` | `age(tattoo, years)`, `COLOUR_FADE`, `PLACEMENT_WEAR` (PR 1) |
 | `sim/clients.js` | client generation, consult, memory, returns (PR 3) |
 | `sim/calendar.js` | `advanceWeek(S)`, `WEEK` (PR 3) |
@@ -68,10 +70,11 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `app/savecode.js` | save codes: `buCode`, `buRead`, `buWrite`, the Back up / Restore sheets, backup files, `buPersist` |
 | `app/boot.js` | `showTab`, `renderAll`, the sheet (`openSheet`/`closeSheet`), Settings, PWA install and update bar, `start()` |
 | `app/studio.js` | `renderStudio` |
-| `app/design.js` | `renderDesign` |
+| `app/design.js` | `renderDesign`: the design board (Body, Board, Flash views), `DZ_SAMPLE_CLIENTS`, the working model `DZ`, undo/redo, drawer, capsule, stress report, flash wall (PR 2) |
 | `app/session.js` | `renderSession` (empty state when nobody is booked) |
 | `app/clients.js` | `renderClients` |
 | `app/career.js` | `renderCareer` |
+| `app/bodymap.js` | `bmSvg`: the front/back body diagram with a tappable zone per placement (PR 2) |
 | `app/help.js` | help overlays (PR 9); closes the app script |
 | `html/tail.html` | `<script>__ldGo(start)</script></body></html>` (no trailing newline) |
 
@@ -94,6 +97,8 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`. `h
 | `queue` | array | booked sessions, including later sessions of multi-session pieces (PR 3, PR 4) |
 | `studio` | object | `{stage: "apprentice"\|"chair"\|"studio"\|"legacy", staff:[]}` (PR 7) |
 | `goals` | object | `GOALS` done, id → `{w, y}` (PR 8) |
+| `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id until PR 3) |
+| `flash` | array | your own flash, saved from the board: `{id, name, design, w, y}`, at most `FLASH_MINE_CAP` (40) (PR 2) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
 | `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced` |
 | `bkAt` | number | when the last backup was made (ms), 0 = never |

@@ -47,7 +47,9 @@ function game(over) {
     settings: { theme: "light", gfx: "lite", gfxAuto: true, sound: false, reduced: false },
     clients: [{ id: "c1", name: "Darya Volkova · Дарья ✿", pronouns: "she/her", age: 31, skin: 0.42, history: [{ w: 12, y: 2003, k: "consult" }] }],
     pieces: [{ id: "p1", client: "c1", placement: "forearm_l", sizeMm: 90, style: "traditional", elements: [{ id: "rose", x: .5, y: .5, scale: 1, rot: 0, lineWeight: 5, fill: 1, colour: "red" }], out: { lineQuality: .82, depthQuality: .74 }, w: 14, y: 2003 }],
-    queue: []
+    queue: [],
+    board: { design: { placement: "forearm_l", sizeMm: 84.5, style: "traditional", pos: { x: .5, y: .42 }, flash: null, elements: [{ id: "rose_trad", x: .5, y: .4, scale: .7, rot: 0, lineWeight: 9, fill: .5, colour: "red" }, { id: "script_love", x: .5, y: .85, scale: .6, rot: 90, lineWeight: 5, fill: 0, colour: null }] }, bodyShape: "femme", skinTone: 0.62, client: "wk_roofer" },
+    flash: [{ id: "mf1", name: "Rose and banner", w: 3, y: 2001, design: { placement: "forearm_l", sizeMm: 90, style: "traditional", pos: { x: .5, y: .5 }, elements: [{ id: "rose_trad", x: .5, y: .5, scale: 1, rot: 0, lineWeight: 9, fill: .5, colour: "red" }] } }]
   }, over || {});
 }
 const seed = st => {
@@ -150,6 +152,11 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
     { v: 1, save: game({ week: null }), slots: [] },                                 // week not a number
     { v: 1, save: game({ clients: { 0: 1 } }), slots: [] },                          // clients not a list
     { v: 1, save: game({ pieces: "none" }), slots: [] },
+    { v: 1, save: game({ board: "forearm" }), slots: [] },                           // board not an object
+    { v: 1, save: game({ board: { design: { elements: "rose" } } }), slots: [] },    // design elements not a list
+    { v: 1, save: game({ board: { design: null, skinTone: "dark" } }), slots: [] },  // skin tone not a number
+    { v: 1, save: game({ flash: {} }), slots: [] },                                  // flash not a list
+    { v: 1, save: game({ flash: [{ id: "mf1", design: null }] }), slots: [] },       // a flash entry without a design
     { v: 2, save: game(), slots: [] },
     { v: 1, save: [game()], slots: [] },
     [game()], "just a string", 42, null
@@ -180,6 +187,9 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   assert(a.hydrate({ week: 5, year: 2001, settings: { theme: "light" } }));
   const s = plain(a.__get());
   assert.strictEqual(s.week, 5); assert.strictEqual(s.settings.theme, "light"); assert.strictEqual(s.settings.gfxAuto, true); assert.strictEqual(s.cash, 0);
+  assert.strictEqual(s.board.design, null); assert.strictEqual(s.board.bodyShape, "neutral"); assert.deepStrictEqual(s.flash, []);
+  assert(a.hydrate({ week: 6, board: { skinTone: 0.8 } }), "a board missing fields gets the defaults");
+  const t = plain(a.__get()); assert.strictEqual(t.board.skinTone, 0.8); assert.strictEqual(t.board.bodyShape, "neutral"); assert.strictEqual(t.board.client, "wk_office");
 });
 check("packing survives big, varied saves (LZW dictionary fills up)", () => {
   const a = load();
