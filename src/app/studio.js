@@ -5,14 +5,16 @@
    (stTattoos: years since the piece was made, its heal grade from PR 5, ink, the client's sun), and the sitting in
    progress shows as its purple stencil. Camera chips: Face-on (consult), The work (session, close on the newest piece) and
    Reveal; drag the view to look round (Lite allows less). stMount() puts the one WebGL canvas back in the Studio view
-   (the Session tab borrows it for 3D stencil placement).
+   (the Session tab borrows it for 3D stencil placement). 0.1.15.0: stRoom() tells the 3D shop which room (stShop: Arkady's
+   front room or the shop across town for a rented chair), the kit's machine (stMachine) and your flash for its walls (stFlash).
    The kit build panel (PR 4, plan Q9): S.kit is a machine, a tray of needle groupings (up to KIT_TRAY_MAX), an ink tier,
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
    (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
    INK_SIM.kitPrice (2000 rubles x the price index). PR 7: the shop's own cards (stage, build-out, staff) come from app/shop.js. */
 const ST={view:null,key:""};
-const ST_CAP={apprentice:"The back room at your mentor's shop",chair:"Your rented chair",studio:"Your studio",legacy:"Your studio, years on"};
+/* the caption under the 3D view, by room (0.1.15.0: the chair stage has two rooms, see stShop) */
+const ST_CAP={apprentice:"Arkady's back room",chair:"Your rented chair, across town",sedov:"Your chair in Arkady's front room",studio:"Your studio",legacy:"Your studio, years on"};
 function stGl(){return typeof INK_VIS!=="undefined"&&INK_VIS.ready();}
 function stSkin(t){return typeof bmSkin==="function"?bmSkin(t)[0]:"#dba57c";}
 /* a client record (real or a sample walk-in) as the 3D chair needs it */
@@ -34,14 +36,27 @@ function stTattoos(who){
   const now=INK_SIM.weekIndex(S.week,S.year);
   return S.pieces.filter(p=>p.client===who.id&&p.design&&Array.isArray(p.design.elements)&&p.design.elements.length)
     .map(p=>({design:p.design,out:p.out||null,heal:p.heal||null,ink:p.ink||null,years:Math.max(0,(now-INK_SIM.weekIndex(p.w,p.y))/52),skinTone:who.tone,sun:who.sun!=null?who.sun:0.4}));}
-/* 0.1.14.0: the machine the kit uses lies up front on the 3D tray (coil, rotary; the wireless pen shows as the rotary) */
+/* 0.1.14.0: the machine the kit uses lies up front on the 3D tray. 0.1.15.0: coil, rotary or the wireless pen, each its
+   own model; the spare at the back corner is the newest machine you own of another kind (none: the 3D default) */
 function stMachine(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setMachine!=="function"||!S||!S.kit)return;
-  try{const m=INK_SIM.MACHINES[INK_SIM.kitClean(S.kit).machine];INK_VIS.setMachine(m?m.kind:"coil");}catch(e){}}
+  try{const k=INK_SIM.kitClean(S.kit),M=INK_SIM.MACHINES,m=M[k.machine],kind=m?m.kind:"coil";
+    const own=(k.owned&&k.owned.machines||[]).map(id=>M[id]&&M[id].kind).filter(x=>x&&x!==kind);
+    INK_VIS.setMachine(kind,own.length?own[own.length-1]:null);}catch(e){}}
+/* 0.1.15.0: which shop the rented chair is in. Left on good terms (Arkady gave you his chair at the friend's split,
+   S.career.split "mentor"): the front room of Sedov's; else (left with his goodwill low, skipped the broom, or back in a
+   chair after your studio closed) the busy shop across town. Matches the chair card in app/shop.js */
+function stShop(){return(S.studio&&S.studio.stage)==="chair"&&S.career&&S.career.split==="mentor"?"sedov":null;}
+/* 0.1.15.0: your flash for the 3D walls, newest first, as the curated elements the board saved */
+function stFlash(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setFlash!=="function")return;
+  try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,elements:f.design.elements})));}catch(e){}}
+/* the room for the current stage: which shop, the kit's machine, your flash */
+function stRoom(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setStudio!=="function")return;
+  try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice",stShop());}catch(e){}stMachine();stFlash();}
 function stMount(){if(!stGl())return false;INK_VIS.mount($("studioView"));INK_VIS.setStencil(null);return true;}
 /* put the client in the 3D chair and aim the camera */
 function stShow(who,view){
   if(!stMount())return;
-  const stage=(S.studio&&S.studio.stage)||"apprentice";INK_VIS.setStudio(stage);stMachine();
+  stRoom();
   if(!who){INK_VIS.setClient(null);INK_VIS.setView("consult");return;}
   INK_VIS.setClient({bodyShape:who.shape,skinTone:who.tone,skin:stSkin(who.tone)});
   const list=stTattoos(who);INK_VIS.setTattoos(list);
@@ -52,7 +67,7 @@ function stShow(who,view){
 function renderStudio(){
   const stage=(S.studio&&S.studio.stage)||"apprentice",gl=stGl(),who=stWho();
   $("studioView").classList.toggle("nogl",!gl);
-  $("studioCap").textContent=gl?ST_CAP[stage]||ST_CAP.apprentice:"The 3D shop needs WebGL, which this browser has turned off";
+  $("studioCap").textContent=gl?ST_CAP[stShop()||stage]||ST_CAP.apprentice:"The 3D shop needs WebGL, which this browser has turned off";
   const n=who?S.pieces.filter(p=>p.client===who.id).length:0,work=who&&(who.live||n);
   const key=who?who.id+"|"+(who.live?"live":"")+"|"+n:"";
   if(key!==ST.key){ST.key=key;ST.view=who&&who.live?"session":who&&n&&who.why==="Your last client"?"reveal":"consult";}
