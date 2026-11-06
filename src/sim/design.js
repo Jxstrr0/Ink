@@ -103,6 +103,9 @@ const REGION_WORDS={
 /* styles whose colour goes on the lines too (no black outline); everywhere else an element's colour is its fill and
    its lines stay black, so a red traditional rose still has a black outline that reads on any skin */
 const COLOUR_LINES={watercolour:1};
+/* a flash design (FLASH in sim/flash.js, or the artist's own saved flash) is drawn already and the stencil exists:
+   design.flash set (or opts.flash) takes this share of the hours */
+const FLASH_DISCOUNT={hours:0.8};
 /* the default session outputs used for the aging prediction */
 const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.75};
 
@@ -151,7 +154,7 @@ function dzPathBox(d){
     x=ox+a[k-2];y=oy+a[k-1];
     if(lc==="m"){sx=x;sy=y;cmd=rel?"l":"L";}
   }
-  return n>1?{w:x1-x0,h:y1-y0}:null;
+  return n>1?{x:x0,y:y0,w:x1-x0,h:y1-y0}:null;
 }
 /* sample an SVG arc (endpoint form) via its centre, so a circle drawn as two half arcs gets its real height */
 function dzArcPts(x1,y1,rx,ry,phi,fa,fs,x2,y2,add){
@@ -511,6 +514,7 @@ function scoreDesign(design,client,skills,opts){
   let dsum=0,fsum=0,sw=0;for(const e of E.els){const a=e.area+1e-6;sw+=a;dsum+=a*e.detail;fsum+=a*e.fill;}
   const det=sw?dsum/sw:0.5,fl=sw?fsum/sw:0,speed=clamp(skills.speed||0,0,10);
   let hours=(HOURS.setup+E.inkedCm2*lerp(HOURS.perCm2Simple,HOURS.perCm2Detailed,det)*(1+HOURS.fill*fl)*(1+HOURS.colour*dzColourShare(E)))*lerp(HOURS.speedSlow,HOURS.speedFast,speed/10);
+  if(design.flash||opts.flash)hours*=FLASH_DISCOUNT.hours;
   hours=Math.max(HOURS.round*2,Math.round(hours/HOURS.round)*HOURS.round);
   const sessions=Math.max(1,Math.ceil(hours/lerp(SESSION_HOURS.easy,SESSION_HOURS.hard,clamp(((pf.pain||0)-0.25)/0.7,0,1))-1e-9));
   const rate=opts.rate!=null?opts.rate:RATE_DEFAULT.rate,rep=opts.repMult!=null?opts.repMult:1,year=opts.year!=null?opts.year:2000;
@@ -524,4 +528,17 @@ function scoreDesign(design,client,skills,opts){
 }
 SIM.scoreDesign=scoreDesign;
 SIM.LINE_MM=LINE_MM;SIM.FAMILY_SHAPE=FAMILY_SHAPE;SIM.SKIN_CONTRAST=SKIN_CONTRAST;SIM.COMBOS=COMBOS;SIM.DESIGN_WEIGHTS=DESIGN_WEIGHTS;
+/* helpers for the design board (app/design.js) */
+/* the piece's footprint in the design's normalised box: {x0, y0, w, h, cx, cy} (multiply by sizeMm for millimetres) */
+SIM.footprintOf=design=>{const E=dzElems(design||{});return{x0:E.fx0,y0:E.fy0,w:E.fw,h:E.fh,cx:E.cx,cy:E.cy};};
+/* how well an ink colour reads on a skin tone, 0..1 (SKIN_CONTRAST; under 0.45 reads faintly, under 0.2 not at all) */
+SIM.inkReads=(colourId,skinTone)=>dzContrast(dzColour(colourId).light,skinTone==null?0.3:skinTone);
+/* an element's path bounding box in its 0..100 viewBox {x, y, w, h}, the same box scoring takes its proportions from */
+SIM.elementBox=id=>{const d=dzDef(id),a=d.path?dzPathBox(d.path):null,b=d.fill&&d.fill!==d.path?dzPathBox(d.fill):null;
+  if(!a&&!b)return{x:0,y:0,w:100,h:100};if(!a||!b)return a||b;
+  const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);return{x,y,w:Math.max(a.x+a.w,b.x+b.w)-x,h:Math.max(a.y+a.h,b.y+b.h)-y};};
+/* the local flow direction (degrees, like rot) at a point in mm on a placement for a body shape */
+SIM.flowAt=(placementId,bodyShape,xMm,yMm)=>{const p=SIM.PLACEMENTS[placementId];if(!p)return 0;
+  return dzLocalFlow(dzFlowSegs(p,SIM.placementBox(placementId,bodyShape)),xMm,yMm,p.flowDeg||0);};
+SIM.FLASH_DISCOUNT=FLASH_DISCOUNT;
 SIM.HOURS=HOURS;SIM.SESSION_HOURS=SESSION_HOURS;SIM.RATE_DEFAULT=RATE_DEFAULT;SIM.JOB_COVER=JOB_COVER;SIM.lineMm=dzLineMm;

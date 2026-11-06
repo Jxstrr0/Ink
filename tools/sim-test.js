@@ -136,6 +136,13 @@ check("every sub-score spreads by at least 0.35", ["readability", "flow", "balan
 check("every score is 0..1", TEST_DESIGNS.every(t => Object.values(RES[t.id]).every(r => ["readability", "flow", "balance", "coherence", "fit", "total"].every(k => r[k] >= 0 && r[k] <= 1))));
 check("scoring is deterministic", JSON.stringify(SIM.scoreDesign(D("koi"), TEST_CLIENTS.dmitri, SKILLS)) === JSON.stringify(R("koi", "dmitri")));
 
+// the flash wall (PR 2)
+const FL = SIM.FLASH || [];
+check("FLASH has about a dozen designs", FL.length >= 10 && FL.length <= 20, FL.length + " designs");
+check("every FLASH element and placement exists", FL.every(f => SIM.PLACEMENTS[f.placement] && SIM.STYLES[f.style] && f.elements.every(e => SIM.elementById(e.id))));
+check("a flash design takes fewer hours than the same design drawn custom", FL.every(f => SIM.scoreDesign(Object.assign({}, f, { flash: f.id }), null, SKILLS).hours <= SIM.scoreDesign(f, null, SKILLS).hours) && SIM.scoreDesign(Object.assign({}, FL[0], { flash: FL[0].id }), null, SKILLS).hours < SIM.scoreDesign(FL[0], null, SKILLS).hours);
+check("board helpers: footprint, ink contrast, element box, flow", (() => { const fp = SIM.footprintOf(D("rose_trad")); return fp.w > 0 && fp.h > 0 && SIM.inkReads("black", 0.9) > SIM.inkReads("yellow", 0.9) && SIM.elementBox("rose_trad").w > 0 && Math.abs(SIM.flowAt("forearm_l", "neutral", 50, 120)) < 10 && Math.abs(SIM.flowAt("upperback", "neutral", 190, 120)) > 45; })());
+
 /* ---- timing ---- */
 const N = 10000, cl = Object.values(TEST_CLIENTS);
 const t0 = process.hrtime.bigint();
