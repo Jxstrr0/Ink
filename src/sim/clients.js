@@ -554,12 +554,13 @@ function styleDemand(styleId,year){
 }
 /* the brief and its style: weighted by the demand for the brief's styles, the segment boosts and the size the stage allows */
 function clChooseBrief(r,opts){
-  const year=opts.year,boost=opts.segBoost||{},sizes=opts.sizes||null;
+  const year=opts.year,boost=opts.segBoost||{},sizes=opts.sizes||null,sm=opts.styleMult||null;
+  const sd=s=>styleDemand(s,year)*(sm&&sm[s]||1);   // PR 7: a guest spot's or a staff artist's style pull
   const segW=list=>{let m=1;for(const s of list||[])m+=boost[s]||0;return m;};
   const ok=BRIEFS.filter(b=>(!b.from||year>=b.from)&&(!b.to||year<=b.to)&&(!sizes||sizes.indexOf(b.size)>=0)&&(!opts.theme||b.theme===opts.theme)&&(!opts.style||b.styles.indexOf(opts.style)>=0));
   const pool=ok.length?ok:BRIEFS;
-  const b=r.weighted(pool,x=>{let d=0;for(const s of x.styles)d+=styleDemand(s,year);return d/x.styles.length*segW(x.seg)*(x.w||1);});
-  const style=opts.style&&b.styles.indexOf(opts.style)>=0?opts.style:r.weighted(b.styles,s=>styleDemand(s,year)*segW(((SIM.STYLES||{})[s]||{}).clientSegments)*(s===b.styles[0]?1.3:1));
+  const b=r.weighted(pool,x=>{let d=0;for(const s of x.styles)d+=sd(s);return d/x.styles.length*segW(x.seg)*(x.w||1);});
+  const style=opts.style&&b.styles.indexOf(opts.style)>=0?opts.style:r.weighted(b.styles,s=>sd(s)*segW(((SIM.STYLES||{})[s]||{}).clientSegments)*(s===b.styles[0]?1.3:1));
   return{b,style};
 }
 /* id: the next free "c<n>" given S (scans S.clients, the newcomers waiting in the queue, and `taken`) */
@@ -579,7 +580,7 @@ function makeClient(r,opts){
   const year=opts.year||2000,week=opts.week||1;
   const pronouns=r.weighted(PRONOUNS,x=>x[1])[0];
   /* the brief first: it can ask for an age range and a job */
-  const pick=opts.briefId?{b:BRIEFS.find(x=>x.id===opts.briefId)||BRIEFS[0],style:null}:clChooseBrief(r,{year,segBoost:opts.segBoost,sizes:opts.sizes,theme:opts.theme,style:opts.style});
+  const pick=opts.briefId?{b:BRIEFS.find(x=>x.id===opts.briefId)||BRIEFS[0],style:null}:clChooseBrief(r,{year,segBoost:opts.segBoost,sizes:opts.sizes,theme:opts.theme,style:opts.style,styleMult:opts.styleMult});
   const B=pick.b,style=pick.style||opts.style||B.styles[0];
   const age=clAge(r,B.ages);
   const nm=clName(r,pronouns);
@@ -887,7 +888,8 @@ function clQuote(c,choiceId,r){
   if(ret&&ret.rule==="touchup")price=(weekIndex(c.week,c.year)-weekIndex(ret.w||c.week,ret.year||c.year))<Q.touchupFreeWeeks?0:price*Q.touchupMult;
   price=Math.round(price/Q.round)*Q.round;
   const deposit=price>0?Math.min(Math.round(price*Q.depositMax/Q.round)*Q.round,Math.max(Math.round(Q.depositMin*SIM.priceIndex(c.year)/Q.round)*Q.round,Math.round(price*Q.deposit/Q.round)*Q.round)):0;
-  const wtp=est.hours*lerp(Q.wtpLo,Q.wtpHi,t.budget||0.5)*SIM.priceIndex(c.year)*(1+Q.wtpLoyal*(client.loyalty||0));
+  const sigW=c.ask&&c.ask.sig?SIGNATURE.wtp*(client.theme==="collector"?SIGNATURE.collector/1.4:1):1;   // PR 7: "your thing" (collectors weight it more)
+  const wtp=est.hours*lerp(Q.wtpLo,Q.wtpHi,t.budget||0.5)*SIM.priceIndex(c.year)*(1+Q.wtpLoyal*(client.loyalty||0))*sigW;
   const ratio=wtp>0?price/wtp:0;
   const coll=client.theme==="collector"?1:0;
   const waitOk=lerp(Q.waitOk,Q.waitOkLoyal,client.loyalty||0)+coll*Q.waitOkCollector;
@@ -930,8 +932,9 @@ function consultCommit(S,c){
       sessionNo:1,sessions:n,price:q.price,deposit:q.deposit,paid:q.deposit,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0};
     if(c.ret)item.ret=c.ret;
     S.queue.push(item);
-    S.cash=(S.cash||0)+q.deposit;
+    cashIn(S,q.deposit,"deposit");
   }
+  if(S.skills&&SKILL_XP.consult)skillGain(S,"consult",(SKILL_XP.consult[c.outcome]||0)+(c.talk==="won"?SKILL_XP.consult.talkWon:0));   // PR 7
   return{client,item,isNew};
 }
 /* queue ids: q1, q2, ... (the max in the queue + 1, so ids are unique among live items) */
@@ -979,7 +982,7 @@ function scheduleReturns(S,r){
   const P=SIM.PLACEMENTS||{};
   for(const p of S.pieces){
     if(pending[p.client])continue;
-    const c=idx.get(p.client);if(!c||c.compact)continue;
+    const c=idx.get(p.client);if(!c)continue;   // PR 7: a compacted client can come back (expandClient below)
     const age=now-weekIndex(p.w,p.y);if(age<1)continue;
     for(const rule of RETURN_RULES){
       if(age<rule.after[0]||age>rule.after[1])continue;
@@ -990,6 +993,7 @@ function scheduleReturns(S,r){
       const pw=lerp(rule.p[0],rule.p[1],c.loyalty||0),len=rule.after[1]-rule.after[0]+1;
       const weekly=1-Math.pow(1-pw,1/len);
       if(!r.chance(weekly))continue;
+      if(c.compact)expandClient(S,c);
       let foreign=null;
       if(rule.foreign){
         /* someone else's work, from a year the client was already an adult */

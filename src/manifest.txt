@@ -18,6 +18,8 @@ sim/calendar.js
 sim/heal.js
 sim/session.js
 sim/kit.js
+sim/career.js
+sim/archive.js
 sim/market.js
 html/ld-sim.html
 sound/synth.js
