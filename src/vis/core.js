@@ -13,12 +13,12 @@
 const V={renderer:null,scene:null,camera:null,canvas:null,tier:"lite",dirty:true,looping:false,fps:null,_f:0,_t0:0,_last:0,raf:0,
   reduced:false,lastInput:0,drag:null,cam:null,onStencil:null,mats:null,body:null,room:null,ovMeshes:[],built:"",
   shape:"neutral",shapeW:{neutral:1,masc:0,femme:0},shapeTw:null,tone:0.3,skin:"#dba57c",clientOn:false,
-  tattoos:[],stencil:null,stage:"apprentice",view:"consult",viewOpt:{},ray:null};
+  tattoos:[],stencil:null,stage:"apprentice",machine:"coil",view:"consult",viewOpt:{},ray:null};
 const TIER={
   lite:{pr:1.5,aa:false,fpsCap:30,tex:1024,ov:512,std:false,shadows:false,shadowMap:0,aniso:1,minPx:1.15,orbit:[0.55,0.22]},
   full:{pr:1.5,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:1024,aniso:4,minPx:1,orbit:[1.1,0.4]},
   ultra:{pr:2,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:2048,aniso:8,minPx:1,orbit:[1.5,0.5]}};
-const ROOM={x:[-2.62,2.62],y:[0.14,2.6],z:[-2.22,2.42]};   // where the camera may go (inside the walls)
+const ROOM={x:[-2.62,2.62],y:[0.14,2.6],z:[-2.22,2.42]};   // where the camera may go (inside the walls); vsStage sets it per room (0.1.14.0)
 function hasGL(){return typeof THREE!=="undefined";}
 function vsCol(hex){return new THREE.Color(hex).convertSRGBToLinear();}
 /* a material for this tier: Lambert on Lite, Standard (roughness, a little metal) on Full and Ultra */

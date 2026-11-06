@@ -79,7 +79,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.13.1, November 2026)
+## Current status (0.1.14.0, November 2026)
+
+- 0.1.14.0 built (Kelbo's "room per stage"): `vis/studio.js` builds four rooms (`VR_ROOMS`: Arkady's back room, the rented chair in a busy shop, your studio, the legacy studio; each its own size, walls, floor, dado, window, door, dressing and light) and `vsStage` shows one, sets the lights and the camera box (`ROOM` in `vis/core.js`). The chair, armrests, station, lamp and stool are shared. Every named prop group is built at its home (`ASSETS.props[k].at`) and moved per room as a whole by `VR_PLACE` (origin and turn, `vrPlace`), so the `vis/assets.js` models follow their stand-ins; `vaTexApply` tints each room's floor/walls/dado per stage (`tints`, null keeps the coded lino and tiles). The kit's machine lies up front on the tray (`vsMachine`, `VR_TRAY`, `INK_VIS.setMachine(kind)`, called by `stMachine()` in `app/studio.js` from `stShow`, `kpDone` and `caStage`). The trophy cabinet has a coded stand-in. `INK_VIS.stats()` counts visible meshes only. No new S fields, no new keys.
 
 - 0.1.13.1: Kelbo's tuning of the 0.1.13.0 honours: `REP_TRACKS` gates lowered (the Drawbridge Prize peers 85 → 75, the magazine collectors 75 → 65); a new `GOALS` entry `drawbridge` ("Win the Drawbridge Prize", first place in `S.world.repEv.award`; ticks at once through `evGoalsNow` after the card, or on Next when the default entry is judged; `first_award` stays conventions only); the magazine is now Kontur, Mostograd's invented tattoo quarterly ("outline"; internal id `magazine` unchanged, so saves are untouched; the ИГЛА sign stays). No new S fields, no new localStorage keys.
 

@@ -2,6 +2,17 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.14.0: a room per career stage, your machine on the tray
+
+- **Four different places.** The Studio tab's 3D shop is now a different room at each stage of the career, instead of one room that gains a few props.
+  - **Arkady's back room** (apprentice): small and low, dingy green paint with brick showing through under a small high window onto the canal, worn floorboards, cardboard boxes of supplies, cluttered shelves on the back wall, a mop in its bucket, the broom, a practice table with fake skin pads and a practice forearm, Arkady's old flash pinned on a corkboard, and a bare bulb on a cord. His shop, not yours.
+  - **The rented chair**: a station in a busy shop with a high ceiling, black-and-cream lino, white tiles to shoulder height and strip lights. The shop's flash fills the wall behind you; a partition stands between you and the next artist, with three of your own sheets taped to it, and their chair and lamp beyond it. The canal window is on their side.
+  - **Your studio**: warm plaster over a dark dado, parquet, a round rug, the big canal window, the ИГЛА sign above the chair, your flash wall, the plant under the window, shelves and the waiting bench, a brass pendant.
+  - **The established studio** (legacy): bigger, deep green walls over a tall oak wainscot with a brass rail, a patterned rug, the trophy cabinet, framed photos of healed work, two plants, two brass pendants and a second artist's station by the window.
+  - Each room has its own light (warm and harsh in the back room, cool and bright under the strip lights, warm in your studios) and the camera stays inside its walls. The chair, the armrests, the client and your trolley, lamp and stool are the same in every room, so the camera views and dragging the stencil on the body work everywhere.
+- **Your machine on the tray.** The machine your kit uses (Studio tab › Your kit › Machine) now lies up front on the trolley, and the other one is set aside at the back corner: the coil for the used and new coils, the rotary for the rotary. The wireless pen shows as the rotary for now. It changes as soon as you pick another machine.
+- **Lite** keeps the coded rooms (about 2.2k to 3.6k triangles each, only one shows) and loads nothing from `models/`. **Full and Ultra** put the photo textures on every room with its own tint (the rented chair keeps its lino and tiles) and the Blender props follow their stand-ins into each room. The trophy cabinet now has a simple coded stand-in too, so Lite sees it.
+
 ## 0.1.13.1: honours a little nearer, a Drawbridge goal, Kontur
 
 - **Lower gates.** The Drawbridge Prize now opens at peers 75 (was 85) and the magazine feature at collectors 65 (was 75); the rep bars and the notes below use the new numbers.
