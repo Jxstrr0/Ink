@@ -9,8 +9,12 @@
      setTattoos(list)              [{design, out, heal, ink, years, skinTone, sun}]: repaints the skin only if it changed
      setStencil(design, {drag})    the purple stencil on its island; drag(pos, "move"|"end") is called while it is dragged
      setView(name, {placement, size, instant})   consult (face-on) | stencil (the limb) | session (close on the work) | reveal
-     setStudio(stage)              apprentice | chair | studio | legacy (0.1.14.0: a different room for each)
-     setMachine(kind)              coil | rotary | pen: the kit's machine goes up front on the tray (0.1.14.0)
+     setStudio(stage, shop)        apprentice | chair | studio | legacy (0.1.14.0: a different room for each); shop (0.1.15.0):
+                                   "sedov" makes the chair stage the front room of Arkady's shop, null the shop across town
+     setMachine(kind, spare)       coil | rotary | pen: the kit's machine goes up front on the tray (0.1.14.0), spare (0.1.15.0,
+                                   another kind) at the back corner, the third put away
+     setFlash(list)                0.1.15.0: your flash sheets, newest first, [{name, sizeMm, elements}], for the flash walls
+                                   of your studio and legacy studio and the rented chair's partition; repaints only on a change
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
    PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. PR 11: on Full and Ultra that also swaps
@@ -87,8 +91,9 @@ window.INK_VIS={
   setTattoos(list){V.tattoos=Array.isArray(list)?list:[];if(!V.renderer)return;if(dcCompose(V.tattoos,V.shape)){V.dirty=true;draw();}},
   setStencil(design,o){V.stencil=design&&design.elements&&design.elements.length?design:null;V.onStencil=o&&o.drag||null;if(!V.renderer)return;vsStencilApply();draw();},
   setView(name,o){if(!V.renderer){V.view=name;return;}vsView(name||"consult",o);},
-  setStudio(stage){V.stage=stage||"apprentice";if(V.room){vsStage(V.stage);draw();}},
-  setMachine(kind){if(V.room){vsMachine(kind);draw();}else V.machine=kind==="rotary"||kind==="pen"?"rotary":"coil";},
+  setStudio(stage,shop){vsStage(stage||"apprentice",shop===undefined?null:shop);if(V.room)draw();},
+  setMachine(kind,spare){vsMachine(kind,spare);if(V.room)draw();},
+  setFlash(list){if(vsFlash(list)&&V.room)draw();},
   setReduced(b){V.reduced=!!b;},
   stats(){const tri=o=>{let n=0;o.traverseVisible(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
     return V.renderer?{tier:V.tier,body:V.body?(V.body.glb?V.body.glb.tris:bdTriangles(V.body.parts.concat([V.body.head]))):0,bodyModel:!!(V.body&&V.body.glb),room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},

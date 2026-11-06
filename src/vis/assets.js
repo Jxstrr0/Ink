@@ -14,6 +14,8 @@
    in its group and sits in that group, so it shows and hides with its stage exactly as the stand-in did. `at` is the prop's
    home spot; since 0.1.14.0 vis/studio.js moves the whole group per room (VR_PLACE: an origin and a turn) and the machine
    and rotary per kit (VR_TRAY), so a model follows its stand-in into every room without any per-room numbers here.
+   0.1.15.0: the wireless pen has its own slot (`pen`, models/ink-machine-pen.glb), and the texture tints have a row for
+   the fifth room, `sedov` (the rented chair in the front room of Arkady's shop).
    PR 11 (the Blender batch, tools/blender/): every prop file is in, and the mannequin (ASSETS.body) swaps in too. The model
    is one smooth skin ("skin" material) plus the bandeau and shorts ("cloth_top", "cloth_shorts"), with the game's UV atlas
    and two shape keys, "masc" and "femme" (Average is the basis). vaBodyApply puts it in the coded body's group with the
@@ -25,15 +27,16 @@
 const ASSETS={
   tex:{
     /* 0.1.14.0: a tint per room (null: that room keeps its coded floor or dado) */
-    floor:{mat:"floor",file:"models/textures/floor-parquet.jpg",repeat:[1.65,1.45],tints:{apprentice:"#8f7b68",chair:null,studio:"#c9b19a",legacy:"#a5826a"},rough:0.72,on:true},
+    floor:{mat:"floor",file:"models/textures/floor-parquet.jpg",repeat:[1.65,1.45],tints:{apprentice:"#8f7b68",chair:null,sedov:"#a88f78",studio:"#c9b19a",legacy:"#a5826a"},rough:0.72,on:true},
     wall:{mat:"plaster",file:"models/textures/wall-plaster.jpg",normal:"models/textures/wall-plaster-nor.jpg",normalScale:0.7,repeat:[2.8,1.4],
-      tints:{apprentice:"#8e9478",chair:"#d8decf",studio:"#c09a78",legacy:"#5e7a66"},rough:0.95,on:true},
-    dado:{mat:"dado",file:"models/textures/dado-planks.jpg",repeat:[2.8,0.45],tints:{apprentice:"#8c705a",chair:null,studio:"#b28361",legacy:"#a0704c"},rough:0.7,on:true}},
+      tints:{apprentice:"#8e9478",chair:"#d8decf",sedov:"#a2a67e",studio:"#c09a78",legacy:"#5e7a66"},rough:0.95,on:true},
+    dado:{mat:"dado",file:"models/textures/dado-planks.jpg",repeat:[2.8,0.45],tints:{apprentice:"#8c705a",chair:null,sedov:"#9a7656",studio:"#b28361",legacy:"#a0704c"},rough:0.7,on:true}},
   props:{
     chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:true},
     station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:true},
     machine:{file:"models/ink-machine-coil.glb",at:[0.78,0.81,0.37],rot:0.4,on:true},
     rotary:{file:"models/ink-machine-rotary.glb",at:[0.79,0.81,0.22],rot:-0.3,on:true},   // 0.1.12.0: the rotary pen beside the coil
+    pen:{file:"models/ink-machine-pen.glb",at:[0.79,0.81,0.22],rot:-0.3,on:true},   // 0.1.15.0: the wireless pen (same spot as the rotary; vsMachine shows two of the three)
     lamp:{file:"models/ink-lamp.glb",at:[1.05,0,-0.45],rot:0,on:true},
     stool:{file:"models/ink-stool.glb",at:[0.95,0,0.86],rot:0,on:true},
     shelves:{file:"models/ink-shelves.glb",at:[-2.66,0,-0.6],rot:Math.PI/2,on:true},

@@ -473,7 +473,7 @@ function dzSaveFlash(){
   const names=[...new Set(DZ.m.els.map(e=>nm(dzDef(e.id).name)))].slice(0,2).map((n,i)=>i&&!/script$/.test(n)?n.toLowerCase():n);
   let k=1;while(S.flash.some(f=>f.id==="mf"+k))k++;
   const d=dzToDesign();d.flash=null;
-  S.flash.push({id:"mf"+k,name:names.join(" and "),design:d,w:S.week,y:S.year});save();
+  S.flash.push({id:"mf"+k,name:names.join(" and "),design:d,w:S.week,y:S.year});save();if(typeof stFlash==="function")stFlash();
   toast("Saved to your flash");}
 function dzFlashCard(f,mine){
   const m=dzFromDesign(f.design||f),sc=INK_SIM.scoreDesign(Object.assign({},f.design||f,{flash:f.id,placement:DZ.m.placement}),dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined});
@@ -492,7 +492,7 @@ function dzRenderFlash(){
   $("dzView").addEventListener("click",e=>{
     const u=e.target.closest("[data-use]"),dl=e.target.closest("[data-del]");
     if(u){const f=wall.find(x=>x.id===u.dataset.use)||mine.find(x=>x.id===u.dataset.use);if(f)dzUseFlash(f);}
-    if(dl){const i=mine.findIndex(x=>x.id===dl.dataset.del);if(i>=0){mine.splice(i,1);save();renderDesign();toast("Deleted from your flash");}}});}
+    if(dl){const i=mine.findIndex(x=>x.id===dl.dataset.del);if(i>=0){mine.splice(i,1);save();if(typeof stFlash==="function")stFlash();renderDesign();toast("Deleted from your flash");}}});}
 function dzUseFlash(f){
   const src=JSON.parse(JSON.stringify(f.design||f)),box=dzBox();
   src.flash=f.id;src.pos={x:.5,y:.5};
