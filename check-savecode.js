@@ -288,12 +288,14 @@ check("PR 7: with the sim, a packed career round trips through a code and hydrat
 check("PR 8: the world, goals, rivals and a closed shop are checked", () => {
   const a = load();
   for (const sv of [game({ world: "events" }), game({ world: { pending: {} } }), game({ world: { pending: [{ kind: "undercut" }] } }), game({ world: { social: { followers: "lots" } } }),
-    game({ world: { social: { posts: [["p1", 2, 3]] } } }), game({ world: { fired: [] } }), game({ goals: [] }), game({ career: { rivals: "none" } }), game({ career: { closed: { until: "soon" } } })]) {
+    game({ world: { social: { posts: [["p1", 2, 3]] } } }), game({ world: { fired: [] } }), game({ goals: [] }), game({ career: { rivals: "none" } }), game({ career: { closed: { until: "soon" } } }),
+    game({ world: { repEv: [] } }), game({ world: { repEv: { award: "first" } } }), game({ world: { repEv: { flash_day: { n: "many" } } } })]) {
     const body = a.buZip(new TextEncoder().encode(JSON.stringify({ v: 1, at: 0, ver: "t", save: sv, slots: [] })));
     assert.strictEqual(msg(a, "INK1:" + body + a.buSum(body)), "bad", JSON.stringify({ world: sv.world, goals: sv.goals, career: sv.career }));
   }
   const ok = game({ goals: { first_heal: { w: 9, y: 2000 } }, world: { fired: { pawn: { w: 3, y: 2012, machine: "coil_used" } }, plan: {}, pending: [{ id: "e1", kind: "copy", until: 600 }], nextEv: 2, mods: {},
-    social: { on: { w: 1, y: 2016 }, followers: 812, posts: [[12, 830, 1400]], viral: null, booked: 3, bad: 0, gained: 42 } },
+    social: { on: { w: 1, y: 2016 }, followers: 812, posts: [[12, 830, 1400]], viral: null, booked: 3, bad: 0, gained: 42 },
+    repEv: { flash_day: { last: 700, n: 2, sittings: 23 }, friday_13: { last: null, n: 0, sittings: 0 }, magazine: [{ w: 9, y: 2021, at: 1101, piece: "p40", yes: true }], award: [{ y: 2027, place: 2, score: 0.61, pieces: ["p40", "p12"] }] } },
     career: { mentor: { goodwill: 0.5 }, rivals: [{ id: "heron", status: "open", str: 0.4 }], closed: { until: 640, w: 10, y: 2012 } } });
   live(a, ok); assert.deepStrictEqual(plain(a.buRead(a.buCode()).data.save), ok);
 });
@@ -303,6 +305,9 @@ check("PR 8: with the sim, a new career has a world; an old save gets one on hyd
   assert.strictEqual(S.v != null, true);
   const b = load(true); assert(b.hydrate({ week: 5, year: 2004 }));
   const T = plain(b.__get()); assert(T.world && T.world.social && T.goals && typeof T.goals === "object", "a save from before PR 8 gets a world and goals");
+  assert(S.world.repEv && Array.isArray(S.world.repEv.award) && S.world.repEv.flash_day.n === 0, "0.1.13.0: a new career has an empty REP_EVENTS history");
+  const d = load(true); assert(d.hydrate({ week: 5, year: 2012, world: { fired: {}, pending: [], social: { followers: 9, posts: [] } } }));
+  const D = plain(d.__get()); assert(D.world.repEv && Array.isArray(D.world.repEv.magazine) && D.world.repEv.friday_13.sittings === 0 && D.world.social.followers === 9, "a 0.1.12 world gets repEv on hydrate and keeps the rest");
   const r = load(true).buRead(a.buCode()); const c = load(true); assert(c.hydrate(r.data.save));
   assert.deepStrictEqual(plain(c.__get()).world, S.world, "the world round trips through a code");
 });

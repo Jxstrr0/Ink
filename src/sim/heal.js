@@ -63,14 +63,16 @@ const HEAL_APOLOGY=[
   "That's on my shop, and I'm sorry. The touch-up is free, whenever your skin is ready."
 ];
 /* the reputation tracks (S.rep, each 0..100). unlocks: segment -> the track value it starts pulling at (market.js reads
-   WALKINS.seg weights; a segment under its unlock pulls nothing). events: for PR 8 (conventions, guest spots, ...) */
+   WALKINS.seg weights; a segment under its unlock pulls nothing). events: event -> the track value it opens at; every one
+   is in the game: flash_day, friday_13, magazine and award are sim/events.js REP_EVENTS; waiting_list is Act 4
+   (sim/career.js legacyNeed); guest_spot is GUEST.peers and convention the capital's CONVENTIONS entry (sim/career.js) */
 const REP_TRACKS={
   walkins:{name:"Walk-ins",says:"speed and price: quick, fair, open doors",
     unlocks:{walk_in:0,first_timer:0,students:15,trades:25},
     events:{flash_day:40,friday_13:60}},
   collectors:{name:"Collectors",says:"custom work and style: people who plan a body of work",
     unlocks:{creatives:10,memorial:15,collector:25,large_scale:45},
-    events:{waiting_list:50,magazine:75}},
+    events:{waiting_list:60,magazine:75}},
   peers:{name:"Peers",says:"clean heals: what other artists notice",
     unlocks:{old_school:20,cover_up:35},
     events:{guest_spot:30,convention:55,award:85}}

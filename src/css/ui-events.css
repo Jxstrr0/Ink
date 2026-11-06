@@ -1,11 +1,14 @@
 /* ===================== ui-events.css: events, trends, social media, rivals, goals, conventions, cover-ups (PR 8) =====================
    The event cards and the shop-closed banner on the Career tab, what's in demand, the social card, rival shops, the goals
    list, the piece pickers in the post and convention sheets, convention results, and the cover-up layer and score on the
-   design board (which stays cream with black ink in both themes). Theme tokens only, so the light theme follows; no motion. */
+   design board (which stays cream with black ink in both themes). Theme tokens only, so the light theme follows; no motion.
+   0.1.13.0: the reputation event cards (flash day, Friday 13th, Igla, the Drawbridge Prize) are edged in teal. */
 .evClosed{border:1px solid var(--crit);background:var(--panel2)}
 .evClosed p{margin:4px 0 0}
 .evCard{border-left:3px solid var(--gold)}
 .evCard p{margin:6px 0}
+.evRepCard{border-left-color:var(--teal)}
+.evRepCard .clK{color:var(--teal)}
 .evCh{flex-wrap:wrap}
 .evCh .btn{flex:1 1 auto;min-height:44px}
 .evTop{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}

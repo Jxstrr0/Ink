@@ -355,7 +355,7 @@ Referrals still skip patchy, blown-out and infected heals (`calendar.js`).
 | track | what moves it | client segments it unlocks (`unlocks`: the value a `WALKINS.seg` segment starts pulling at) | events (`events`, for PR 8) |
 |---|---|---|---|
 | `walkins` (speed and price) | a heal: crisp +0.3, soft +0.18, patchy -0.2, blown out -0.6, infected -1.5; a flash piece +0.12; a piece 60 mm or smaller +0.08; a review +0.25 per star from 3 | `walk_in` 0, `first_timer` 0, `students` 15, `trades` 25 | `flash_day` 40, `friday_13` 60 |
-| `collectors` (custom work and style) | a custom (not flash) piece when it heals: (0.15 + 0.003 per mm up to 250 mm, + 0.06 in a style you hold at 6+) x the grade (crisp 1, soft 0.7, patchy 0.2, blown out -0.6, infected -1.2); a review +0.12 per star from 3; the portfolio +0.5 (and -0.5 taking it out) | `creatives` 10, `memorial` 15, `collector` 25, `large_scale` 45 | `waiting_list` 50, `magazine` 75 |
+| `collectors` (custom work and style) | a custom (not flash) piece when it heals: (0.15 + 0.003 per mm up to 250 mm, + 0.06 in a style you hold at 6+) x the grade (crisp 1, soft 0.7, patchy 0.2, blown out -0.6, infected -1.2); a review +0.12 per star from 3; the portfolio +0.5 (and -0.5 taking it out) | `creatives` 10, `memorial` 15, `collector` 25, `large_scale` 45 | `waiting_list` 60, `magazine` 75 |
 | `peers` (clean heals) | a heal: crisp +0.3, soft +0.08, patchy -0.3, blown out -1, infected -2.5; a review +0.05 per star from 3 | `old_school` 20, `cover_up` 35 | `guest_spot` 30, `convention` 55, `award` 85 |
 
 - A piece moves reputation when it **heals**, not when it's finished (every piece heals two weeks on).
@@ -363,6 +363,20 @@ Referrals still skip patchy, blown-out and infected heals (`calendar.js`).
 - `SIM.repWeek(S)`: every track loses `REP.decayWeek` (0.15%) of itself each week (the heals hook calls it after the heals), so a reputation has to be kept up.
 - `SIM.setPortfolio(S, piece, on)`: healed pieces only; sets or removes `piece.portfolio` and moves collectors by `REP.portfolio.collectors` with no soft cap, so taking it out gives back exactly what putting it in gave.
 - `SIM.repUnlocked(S, track, id)` (a segment or event id), `SIM.repNext(S, track) -> {id, kind:"segment"|"event", at}` or null.
+- 0.1.13.0: every event is in the game. `waiting_list` is 60, the number Act 4 checks (`legacyNeed` reads it from this table); `guest_spot` and `convention` are PR 7's invitations; `flash_day`, `friday_13`, `magazine` and `award` are `REP_EVENTS` (below).
+
+### Reputation events (0.1.13.0, `sim/events.js`)
+
+`REP_EVENTS[id]` = `{track, head, choices, dflt, wait, ...}`; each is gated by its `REP_TRACKS` number (`SIM.repEventAt(id)`), never for an apprentice, and arrives as an ordinary `S.world.pending` card (`repEv: true`, resolved by `SIM.eventChoose`; left alone it takes `dflt`). Draws use `r.fork("rev:<id>")`, so they shift no other numbers.
+
+| id | when | choices (default) | what it does |
+|---|---|---|---|
+| `flash_day` | walk-ins open, `minFlash` 3 own sheets in `S.flash`, `chance` 0.05 a week, `cool` 26 weeks since the last offer | `run` / `skip` (skip) | `base + perRep x walkins + int(0, spread)` sittings (6, 0.08, 3) at `price` 1,500 ₽ less `supplies` 250 (x price index; ledger `flashday`, `supplies`), rep `{walkins 2.5, peers 0.8}` plus walk-ins `own.walkins x min(1, sheets / own.full)`, xp `{speed 0.06, linework 0.04}` |
+| `friday_13` | a week that holds a real Friday 13 (`SIM.friday13Weeks(y) -> [{w, month, date}]`; week w is days 7(w-1)+1 .. 7w of the year), walk-ins open | `run` / `skip` (skip), `wait` 1 | sittings (10, 0.12, 4) at 1,300 ₽ less 200 (ledger `friday13`), rep `{walkins 3, peers 0.3}`, xp `{speed 0.08}` |
+| `magazine` | fewer than `max` 3 features, `cool` 260 weeks since the last, `chance` 0.04, at least `portfolio` 4 portfolio pieces healed (not infected) reading `LEGACY.reads` or better | `yes` / `no` (no) | yes: rep `{collectors 4, walkins 2, peers 1}` and, with walk-ins open, a collector consult (`from: "magazine"`); no: peers +0.3. Either way a record in `repEv.magazine` |
+| `award` | week 48, none this year, at least `minPieces` 2 healed candidates (`convCandidates(S).healed`) | `enter` / `pass` (enter) | `SIM.awardJudge(S, r) -> {prize, y, place, score, pieces}`: the top `pieces` 3 healed candidates, score = `healed x mean heal quality + sig x share in your signature style x strength + normal(0, sd 0.05)`; places at 0.66 / 0.58 / 0.5 pay 30,000 / 15,000 / 7,000 ₽ (x index, ledger `award`); rep peers 3 / 2 / 1 / 0.3 and collectors 2.5 / 1.5 / 0.8 / 0 by place (none last) |
+
+Flash-day and Friday sittings are tallied (`repEv.<id>.n`, `.sittings`, money, rep, xp), not added as pieces, so the save and `advanceWeek` stay small. `S.world.repEv` is in `worldFresh`; `worldEnsure` (hydrate) adds or repairs it on older saves, and `buOk` checks its shape.
 - `market.js` `mkSegBoost`: each track's `WALKINS.seg` weights x the track / 100, except that a segment under its unlock pulls nothing.
 
 ## Which S fields PR 5 adds or writes

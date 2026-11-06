@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.12.0";
+const VERSION="0.1.13.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -75,7 +75,7 @@ if(typeof addEventListener==="function"){addEventListener("pagehide",saveFlush);
 function saveJson(){return JSON.stringify(SIMOK("packSave")?INK_SIM.packSave(S):S);}
 function snapshot(){return JSON.parse(saveJson());}
 function saveFull(e){const now=Date.now();if(now-SAVE_WARN.at<SAVE_WARN.gap||typeof document==="undefined")return;SAVE_WARN.at=now;
-  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save");
+  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save","warn");
   if(typeof openSheet!=="function"||typeof buBackupOpen!=="function"||(typeof sheetOn==="function"&&sheetOn()))return;
   openSheet("Storage full",`<p style="margin-top:0">This browser wouldn't let Ink save (its storage is full or blocked). Your career is still open here, but it may be lost when you close the page.</p>
 <p class="hint">Make a backup code now and keep it in your notes. Clearing a save slot you don't need (Settings › Save) frees room too.</p>
@@ -118,4 +118,8 @@ function applyTheme(){const t=S.settings.theme||"dark";const eff=t==="auto"?(mat
 function applySettings(){applyTheme();document.documentElement.classList.toggle("noanim",!!S.settings.reduced);INK_SOUND.setOn(S.settings.sound!==false);applyGfx();}
 
 /* ---- toast ---- */
-function toast(msg){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");if(typeof INK_SOUND!=="undefined")INK_SOUND.chime();clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
+/* toast(msg, kind): kind names why it matters. Only the kinds in TOAST_CHIME play the chime (0.1.13.0); every other toast
+   (a hint, a confirmation, "Saved to slot 2") shows silently */
+const TOAST_CHIME={goal:1,event:1,heal:1,reveal:1,piece:1,money:1,milestone:1,warn:1};
+function toast(msg,kind){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");
+  if(kind&&TOAST_CHIME[kind]&&typeof INK_SOUND!=="undefined")INK_SOUND.chime();clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
