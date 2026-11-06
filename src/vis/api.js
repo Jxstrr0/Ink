@@ -11,7 +11,8 @@
      setView(name, {placement, size, instant})   consult (face-on) | stencil (the limb) | session (close on the work) | reveal
      setStudio(stage)              apprentice | chair | studio | legacy
      setReduced(bool)              camera moves and shape changes become instant
-     stats() -> {triangles, body, room, tier}   for the phone test ===== */
+     stats() -> {triangles, body, room, tier}   for the phone test
+   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. ===== */
 function vsBuild(){
   if(!V.renderer)return;const T=TIER[V.tier],key=V.tier;if(V.built===key)return;V.built=key;
   const s=V.scene;while(s.children.length)s.remove(s.children[0]);
@@ -31,7 +32,8 @@ function vsBuild(){
   s.add(B.grp);B.grp.visible=V.clientOn;
   vsApplyShape(V.shapeW);vsStage(V.stage);
   dcCompose(V.tattoos,V.shape);vsStencilApply();
-  vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();}
+  vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();
+  vaLoad(V.room);}   // PR 10: photo textures and Blender props on Full / Ultra (vis/assets.js); nothing on Lite
 function vsApplyShape(w){V.shapeW=w;if(V.body)bdApplyShape(V.body.parts,w);vsArmrests(w);V.dirty=true;}
 function vsAfterShape(){if(V.view!=="consult")vsView(V.view,V.viewOpt);}
 function vsStencilApply(){
@@ -87,7 +89,7 @@ window.INK_VIS={
   stats(){const tri=o=>{let n=0;o.traverse(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
     return V.renderer?{tier:V.tier,body:V.body?bdTriangles(V.body.parts.concat([V.body.head])):0,room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
   /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
-  _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,
+  _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,
     hit:(cx,cy,pl)=>{const q=vsHit({clientX:cx,clientY:cy}),z=bdZone(pl);return q&&z&&q.isl===z.isl?bdZonePos(z,q.x,q.y):null;}})
 };
 })();
