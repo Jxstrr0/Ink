@@ -77,7 +77,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.5.0, November 2026)
+## Current status (0.1.6.0, November 2026)
+
+- PR 6 built: the 3D mannequin (`vis/body.js`: seated, three shapes on one topology with identical UVs, one UV island per zone in true mm, bandeau and shorts, about 6.6k triangles), decals (`vis/decals.js`: element paths drawn per island with aging blur/fade/spread from `INK_SIM.age` and the piece's heal, one texture per client, 1024 Lite / 2048 Full and Ultra), the shop (`vis/studio.js`: stages apprentice/chair/studio/legacy, night canal window, about 2.7k triangles, no shadows on Lite), render on change with camera presets. The Studio tab shows who's in the chair with their pieces; the Session tab places the stencil on the body in 3D (drag, turn with `INK_SIM.sessionRotate`, Flat view fallback in `S.settings.flatStencil`).
 
 - PR 5 built: heals two weeks after a piece (`sim/heal.js` `healPiece`, `HEAL`: crisp, slightly soft, patchy, blown out, infected from the session outputs and the client's aftercare), loyalty, reviews and a free fix after an infection; the three reputation tracks (`REP_TRACKS`, `REP`, 0..100 in `S.rep`, gating `WALKINS.seg` segments); the reveal on the Career tab (`S.reveals`, fresh against healed with the stencil ghost, reaction, review, portfolio prompt); the body of work as the Clients tab's Work view (`app/gallery.js`, renders cached per piece and whole year). Shapes: `docs/SIM-CONTRACT.md` PR 5.
 

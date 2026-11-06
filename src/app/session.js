@@ -3,7 +3,9 @@
      the lobby    sittings due this week (booked from the Clients tab, with a design), a sample walk-in's piece waiting for its
                   next sitting, and Practice on fake skin (pick the board's design or a flash piece). The empty state says
                   "No one in the chair. Book a client from the Clients tab." with a Practice button.
-     placement    drag the purple stencil on the placement box; flow and creases are re-checked (INK_SIM.stencilCheck).
+     placement    drag the purple stencil on the client's body in 3D (PR 6: the one WebGL canvas is borrowed from the Studio
+                  view), or on the flat placement box (fake skin, no WebGL, or the "Flat view" toggle, S.settings.flatStencil);
+                  turn it 15 degrees a tap (INK_SIM.sessionRotate); flow and creases are re-checked (INK_SIM.stencilCheck).
      the chair    linework (plan Q4: trace-and-rhythm), then shading and colour zones. Four stacked canvases: base (skin and
                   the purple stencil), fill (shading and colour), ink (the lines you lay, drawn bit by bit from your finger)
                   and overlay (the pacing marker, the finger dot; only the rectangles that changed are cleared). The frame loop
@@ -172,18 +174,26 @@ function seRenderPlace(){
   const chk=SE.place||(SE.place=INK_SIM.stencilCheck(d,sess.client?Object.assign({},sess.client,{bodyShape:sess.bodyShape,skinTone:sess.skinTone}):null,sess.skills));
   const mx=W*0.12,my=L*0.05,skin=seSkinRgb(sess.skinTone),dark=sess.skinTone>0.6;
   const els=seEls(d,box),sw=INK_SIM.lineMm(5);
+  /* PR 6: on a client the stencil goes on the 3D body (fake skin stays flat); Settings keeps the flat box as a fallback */
+  const can3d=sess.kind!=="practice"&&typeof stGl==="function"&&stGl(),in3d=can3d&&!S.settings.flatStencil;
   host.innerHTML=`<div class="se">${seTopHtml(sess)}
-<div class="card"><h2>Place the stencil</h2><p class="hint" style="margin-top:0">Drag it where it sits best on the ${esc(P?P.name.toLowerCase():"skin")}. Flow and creases are checked again.</p>
-<div class="sePlaceWrap"><svg id="sePlace" class="sePlace" viewBox="${dzR2(-mx)} ${dzR2(-my)} ${dzR2(W+2*mx)} ${dzR2(L+2*my)}" role="application" aria-label="Stencil on the ${esc(P?P.name:"skin")}, drag to move">
+<div class="card"><h2>Place the stencil</h2><p class="hint" style="margin-top:0">Drag it where it sits best on the ${esc(P?P.name.toLowerCase():"skin")}${in3d?"; drag off it to look around":""}. Flow and creases are checked again.</p>
+${in3d?`<div class="sePlace3d" id="sePlace3d"></div>`:`<div class="sePlaceWrap"><svg id="sePlace" class="sePlace" viewBox="${dzR2(-mx)} ${dzR2(-my)} ${dzR2(W+2*mx)} ${dzR2(L+2*my)}" role="application" aria-label="Stencil on the ${esc(P?P.name:"skin")}, drag to move">
 <rect x="0" y="0" width="${W}" height="${L}" rx="${dzR2(Math.min(W,L)*0.12)}" fill="${seRgb(skin)}"/>
 <g class="seFlow">${(P?P.flow:[]).map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>
 ${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(c.at*L)}" y2="${dzR2(c.at*L)}"/><text class="seCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at*L-2)}" font-size="${dzR2(Math.max(4,W*0.06))}" text-anchor="middle">${esc(c.name)}</text>`).join("")}
 <g id="sePlaceG" class="seStencilG" style="color:${dark?SE_STENCIL.dark:SE_STENCIL.light}">${els.map(e=>{const df=INK_SIM.elementById(e.id),b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
-    return`<g transform="${dzTf(e)}"><path d="${df.path}" fill="none" stroke="currentColor" stroke-width="${dzR4(sw/k)}" stroke-linecap="round" stroke-linejoin="round"/></g>`;}).join("")}</g></svg></div>
-<div class="seChk"><span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}</div>
+    return`<g transform="${dzTf(e)}"><path d="${df.path}" fill="none" stroke="currentColor" stroke-width="${dzR4(sw/k)}" stroke-linecap="round" stroke-linejoin="round"/></g>`;}).join("")}</g></svg></div>`}
+<div class="row seRot"><button class="btn sm" data-serot="-15" aria-label="Turn the stencil 15 degrees anticlockwise">⟲ 15°</button><button class="btn sm" data-serot="15" aria-label="Turn the stencil 15 degrees clockwise">⟳ 15°</button>
+${can3d?`<button class="btn sm" id="seFlat" aria-pressed="${!in3d}">${in3d?"Flat view":"3D view"}</button>`:""}</div>
+<div class="seChk" id="seChk">${seChkHtml(chk)}</div>
 <div class="row"><button class="btn pri" id="seGo">${INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line"?"Start lining":"Start"}</button><button class="btn" id="seCancel">Not now</button></div></div></div>`;
   $("seGo").addEventListener("click",()=>{INK_SIM.sessionStart(sess);save();INK_SOUND.tick();renderSession();});
   $("seCancel").addEventListener("click",seCancel);
+  host.querySelectorAll("[data-serot]").forEach(b=>b.addEventListener("click",()=>{SE.place=INK_SIM.sessionRotate(sess,+b.dataset.serot);save();INK_SOUND.tick();
+    if(in3d){seChkUpdate();se3dStencil(sess);}else seRenderPlace();}));
+  const fb=$("seFlat");if(fb)fb.addEventListener("click",()=>{S.settings.flatStencil=in3d;save();INK_SOUND.tick();seRenderPlace();});
+  if(in3d){se3dPlace(sess);return;}
   /* drag */
   const svg=$("sePlace"),g=$("sePlaceG");let drag=null;
   const pt=ev=>{const m=svg.getScreenCTM();if(!m)return{x:0,y:0};const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const q=p.matrixTransform(m.inverse());return{x:q.x,y:q.y};};
@@ -192,6 +202,23 @@ ${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(
   const end=()=>{if(!drag)return;const dr=drag;drag=null;if(Math.abs(dr.dx)+Math.abs(dr.dy)<0.5){g.removeAttribute("transform");return;}
     SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});save();seRenderPlace();};
   svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);}
+function seChkHtml(chk){
+  return`<span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}`;}
+function seChkUpdate(){const e=$("seChk");if(e&&SE.place)e.innerHTML=seChkHtml(SE.place);}
+/* the 3D placement: the client on the chair with their other pieces, the purple stencil on the limb. A drag on the stencil
+   moves it live (raycast to the body's UV, then placement mm, in vis/core.js); letting go places it in the sim, which
+   re-checks flow and creases. A drag off the stencil orbits the camera */
+function se3dStencil(sess){
+  const h=(pos,ph)=>{if(ph==="move"){INK_VIS.setStencil(Object.assign({},sess.design,{pos}),{drag:h});return;}
+    SE.place=INK_SIM.sessionPlace(sess,pos);save();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
+  INK_VIS.setStencil(sess.design,{drag:h});}
+function se3dPlace(sess){
+  const el=$("sePlace3d");if(!el||!INK_VIS.mount(el))return;
+  const tone=sess.skinTone!=null?sess.skinTone:0.3,d=sess.design;
+  INK_VIS.setClient({bodyShape:sess.bodyShape||"neutral",skinTone:tone,skin:stSkin(tone)});
+  const c=sess.client;INK_VIS.setTattoos(c&&c.id?stTattoos({id:c.id,tone,sun:(c.traits||{}).sun}):[]);
+  se3dStencil(sess);
+  INK_VIS.setView("stencil",{placement:d.placement,size:d.sizeMm});}
 function seCancel(){
   const sess=SE.sess;if(!sess)return;
   if(sess.next>sess.start||sess.cur){toast("You've started: end the sitting instead");return;}
