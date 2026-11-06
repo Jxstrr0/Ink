@@ -12,15 +12,18 @@
      CONV_JUDGE    conventions: fresh-work and healed-work categories, booth sales, collectors, rivals' booths
      GOALS         the career's goals (S.goals: id -> {w, y}); checkGoals marks them
      EVENTS        the event sheets: how long a choice waits, and every line they say
+     REP_EVENTS    the reputation events REP_TRACKS names (0.1.13.0): flash days, the Friday 13th special, a feature in
+                   Igla (an invented Mostograd magazine) and the Drawbridge Prize (the Guild's yearly award, healed work)
    S.world (worldFresh): {fired {reckoning id: {w, y, ...}}, plan {first_year: week index}, pending [events waiting for a
    choice], nextEv, mods {rate: {mult, until}, fresh: until}, social {on {w,y} | null, followers, posts [[piece no, week
-   index, reach]], viral {piece, w, y} | null, booked, bad, gained}}. Rivals live in S.career.rivals; a closed shop in
+   index, reach]], viral {piece, w, y} | null, booked, bad, gained}, repEv (REP_EVENTS' history, below)}. Rivals live in S.career.rivals; a closed shop in
    S.career.closed {until, w, y} (sim/career.js, the inspection).
    Functions: SIM.worldFresh, SIM.worldEnsure(S), SIM.trendMult(style, year), SIM.trendNow(S), SIM.postPiece(S, pieceId),
    SIM.canPost(S, piece), SIM.followersTarget(S), SIM.eventChoose(S, id, choice), SIM.reckoningChoose(S, itemId, choice),
    SIM.onReturn(item, S), SIM.rivalsCopy(S, sig, ctx), SIM.rivalWalkins(S, out), SIM.coverOld(S, item),
-   SIM.coverScore(design, old, box), SIM.convCandidates(S), SIM.checkGoals(S, slow), SIM.goalList(S).
-   WEEK_HOOKS.events = evWeek (closure, expired choices, social, rivals, reckonings, cover-ups, goals) and
+   SIM.coverScore(design, old, box), SIM.convCandidates(S), SIM.checkGoals(S, slow), SIM.goalList(S),
+   SIM.friday13Weeks(year), SIM.awardJudge(S, r), SIM.repEventAt(id).
+   WEEK_HOOKS.events = evWeek (closure, expired choices, social, rivals, reckonings, reputation events, cover-ups, goals) and
    WEEK_HOOKS.trend = evTrend (a k:"trend" line when a wave starts, peaks or fades). Every draw is forked from the
    week's rng (ctx.r) or rng(S.seed), so the same save always plays out the same way. Private helpers start with ev. ===== */
 
@@ -172,13 +175,57 @@ const EVENTS={wait:3,
   goal:"Goal reached: {name}."
 };
 
+/* the reputation events REP_TRACKS names (0.1.13.0): each opens at its track's REP_TRACKS[track].events[id] number and
+   arrives as a choice card (S.world.pending, like a rival's move). Rubles are 2000 rubles x SIM.priceIndex(year).
+     flash_day   a day of small, cheap pieces off your own flash wall: many quick sittings, walk-ins and peers notice
+     friday_13   the old Friday-the-13th flash special, only in a week that really holds a Friday the 13th (calendar
+                 weeks are days 1-7, 8-14, ... of the year, so the date is exact; week 52 runs to 30 or 31 December)
+     magazine    Igla, Mostograd's tattoo quarterly (invented), features you once your collectors and portfolio are there
+     award       the Drawbridge Prize, the Mostograd Tattoo Guild's yearly award, judged on your best healed pieces
+   S.world.repEv (worldFresh): {flash_day {last, n, sittings}, friday_13 {last, n, sittings}, magazine [{w, y, at (week index), piece, yes}],
+   award [{y, place, score, pieces [ids]}]}; last is the week index the card was last offered */
+const REP_EVENTS={
+  flash_day:{track:"walkins",head:"Flash day",minFlash:3,chance:0.05,cool:26,wait:3,
+    sittings:{base:6,perRep:0.08,spread:3},price:1500,supplies:250,rep:{walkins:2.5,peers:0.8},own:{walkins:1,full:12},xp:{speed:0.06,linework:0.04},
+    text:"The shop next door says a flash day pulled a queue round the block. You've got {sheets} sheets of your own on the wall: small pieces, first come, first served, one fixed price.",
+    choices:[["run","Run a flash day"],["skip","Not this time"]],dflt:"skip",
+    says:{run:"Ten till close, one small piece after another: {n} of them off your wall, {top} the favourite. {pay} in the till after supplies. Artists from two other shops dropped by to watch.",
+      skip:"You keep the week as it is. Booked clients only."}},
+  friday_13:{track:"walkins",head:"Friday the 13th",wait:1,
+    sittings:{base:10,perRep:0.12,spread:4},price:1300,supplies:200,rep:{walkins:3,peers:0.3},xp:{speed:0.08},
+    text:"Friday the 13th falls this week ({date}). The old trick: small flash at a lucky price, the door open till the last one in the queue.",
+    choices:[["run","Run the Friday 13th special"],["skip","Keep a normal week"]],dflt:"skip",
+    says:{run:"The queue starts before you've unlocked the door. {n} small pieces by midnight, thirteens and black cats mostly. {pay} after supplies, and half the embankment knows your name.",
+      skip:"You let the date pass. Somebody else's shop has the queue this year."}},
+  magazine:{track:"collectors",head:"Igla magazine",name:"Igla",portfolio:4,chance:0.04,cool:260,max:3,wait:4,
+    rep:{yes:{collectors:4,walkins:2,peers:1},no:{peers:0.3}},
+    text:"Igla, the city's tattoo quarterly, wants to feature you: an interview in the shop and a photographer for your healed portfolio. They'd lead with {piece}.",
+    choices:[["yes","Do the interview"],["no","Turn it down"]],dflt:"no",
+    says:{yes:"The issue comes out with {piece} across two pages and you squinting at the camera on Kanatnaya Street. Collectors start quoting it at you.",
+      no:"You tell them you'd rather the work did the talking. A few artists hear about it and approve."},
+    met:"I read about you in Igla. I've kept the page."},
+  award:{track:"peers",head:"The Drawbridge Prize",name:"the Drawbridge Prize",by:"the Mostograd Tattoo Guild",week:48,pieces:3,minPieces:2,wait:2,
+    score:{healed:1,sig:0.1},sd:0.05,places:[0.66,0.58,0.5],prize:[30000,15000,7000],
+    rep:{peers:[3,2,1,0.3],collectors:[2.5,1.5,0.8,0]},
+    text:"The Mostograd Tattoo Guild has put you up for the Drawbridge Prize. The judges look at healed work only: three pieces, a year old or more.",
+    choices:[["enter","Send your best healed pieces"],["pass","Not this year"]],dflt:"enter",
+    says:{won:"{place} at the Drawbridge Prize, for {pieces}. {prize} and a brass plaque for the wall.",none:"No placing this year. The judges liked {pieces}, but the winners' work had more years on it.",
+      pass:"You let the nomination go. The Guild will ask again."}}
+};
+const REP_EV_PLACE=["","First place","Second place","Third place"];
+const REP_EV_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 /* ---- the state's world field (also used by app/state.js freshState through SIM.worldFresh) ---- */
 function worldFresh(){return{fired:{},plan:{},pending:[],nextEv:1,mods:{},
-  social:{on:null,followers:0,posts:[],viral:null,booked:0,bad:0,gained:0}};}
+  social:{on:null,followers:0,posts:[],viral:null,booked:0,bad:0,gained:0},
+  repEv:{flash_day:{last:null,n:0,sittings:0},friday_13:{last:null,n:0,sittings:0},magazine:[],award:[]}};}
 function worldEnsure(S){
   if(!S.world||typeof S.world!=="object"||Array.isArray(S.world))S.world=worldFresh();else caFill(S.world,worldFresh());
   if(!Array.isArray(S.world.pending))S.world.pending=[];
   if(!Array.isArray(S.world.social.posts))S.world.social.posts=[];
+  const RE=S.world.repEv;if(!RE||typeof RE!=="object"||Array.isArray(RE))S.world.repEv=worldFresh().repEv;   // 0.1.13.0: older saves get it here
+  else{for(const k of ["magazine","award"])if(!Array.isArray(RE[k]))RE[k]=[];
+    for(const k of ["flash_day","friday_13"])if(!RE[k]||typeof RE[k]!=="object"||Array.isArray(RE[k]))RE[k]={last:null,n:0,sittings:0};}
   if(!S.goals||typeof S.goals!=="object"||Array.isArray(S.goals))S.goals={};
   careerEnsure(S);evRivalsFix(S);
   return S.world;}
@@ -278,7 +325,7 @@ function rivalWalkins(S,out){
 function evPush(S,ctx,ev,text){
   const W=S.world;ev.id="e"+(W.nextEv++);ev.w=S.week;ev.y=S.year;ev.until=evNow(S)+(ev.wait||EVENTS.wait);ev.text=text;
   if(ev.rival){const rv=evRivals(S).find(x=>x.id===ev.rival);if(rv)rv.last=evNow(S);}
-  W.pending.push(ev);evLog(ctx,"event",text,{ev:ev.id,rival:ev.rival||undefined});return ev;}
+  W.pending.push(ev);evLog(ctx,"event",text,{ev:ev.id,rival:ev.rival||undefined,repEv:ev.repEv?ev.kind:undefined});return ev;}
 function evRivalsWeek(S,ctx){
   const L=evRivals(S),now=ctx.now,st=caStage(S),r=ctx.r.fork("rivals"),repSum=evRepSum(S),Rs=RIVAL.str;
   /* openings */
@@ -342,7 +389,8 @@ function eventChoose(S,id,choice){
   const ev=W.pending[i];W.pending.splice(i,1);
   const ok=(ev.choices||[]).some(c=>c[0]===choice)?choice:ev.dflt;
   const rv=ev.rival?evRivals(S).find(x=>x.id===ev.rival):null,r=rng(S.seed).fork("choose:"+ev.id+":"+ok);
-  const f=EV_DO[ev.kind];const text=f?(rv||!ev.rival?f(S,ev,ok,rv||{acts:{}},r):"They've closed since."):"";
+  const f=EV_DO[ev.kind],g=EV_REP_DO[ev.kind];
+  const text=g?g(S,ev,ok,r):f?(rv||!ev.rival?f(S,ev,ok,rv||{acts:{}},r):"They've closed since."):"";
   if(rv&&rv.acts)rv.acts[ev.kind]=(rv.acts[ev.kind]||0)+(ev.kind==="poach"||ev.kind==="copy"?0:1);
   return{ok:true,kind:ev.kind,choice:ok,text};}
 
@@ -539,6 +587,88 @@ function convJudge(S,inv,picks){
   C.conv.push(rec);
   return Object.assign({},rec,{metClient:met,rivals});}
 
+/* ===================== reputation events (REP_EVENTS, 0.1.13.0) ===================== */
+/* the number a track must reach for an event: REP_TRACKS is the one source */
+const evRepAt=id=>{const E=REP_EVENTS[id],t=REP_TRACKS[E.track];return t&&t.events&&t.events[id]!=null?t.events[id]:101;};
+const evRepOk=(S,id)=>((S.rep&&+S.rep[REP_EVENTS[id].track])||0)>=evRepAt(id);
+/* friday13Weeks(year) -> [{w, month, date}]: the calendar weeks that hold a Friday the 13th (week w is days 7(w-1)+1 to
+   7w of the year; days 365-366 count in week 52). Pure date maths, cached per year */
+const EV_F13={};
+function friday13Weeks(y){
+  if(EV_F13[y])return EV_F13[y];const out=[],j1=Date.UTC(y,0,1);
+  for(let m=0;m<12;m++){const t=Date.UTC(y,m,13);if(new Date(t).getUTCDay()!==5)continue;
+    const doy=Math.round((t-j1)/864e5);out.push({w:Math.min(WEEKS_PER_YEAR,Math.floor(doy/7)+1),month:m,date:"Friday 13 "+REP_EV_MONTHS[m]});}
+  return EV_F13[y]=out;}
+/* sittings for a flash day or the Friday special: base + perRep x walk-ins + a little luck */
+function evRepSittings(S,E,r){const k=E.sittings;return Math.max(1,Math.round(k.base+k.perRep*((S.rep&&+S.rep.walkins)||0)+r.int(0,k.spread)));}
+/* the portfolio pieces a magazine would shoot: healed, your own, reading well today, best first */
+function evPortfolio(S,max){const out=[];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(p.by||!p.portfolio||!p.heal||p.heal==="infected")continue;const rd=caReads(S,p);if(rd>=LEGACY.reads)out.push({p,rd});}
+  return out.sort((a,b)=>b.rd-a.rd).slice(0,max||out.length).map(x=>x.p);}
+function evRepWeek(S,ctx){
+  const W=S.world,RE=W.repEv,now=ctx.now,st=caStage(S);
+  if(st==="apprentice")return;
+  const busy=k=>W.pending.some(e=>e.kind===k);
+  /* a flash day: walk-ins at REP_TRACKS, three sheets of your own flash, the shop open */
+  const F=REP_EVENTS.flash_day,fd=RE.flash_day,mine=(S.flash||[]).length;
+  if(evRepOk(S,"flash_day")&&walkinsOpen(S)&&mine>=F.minFlash&&!busy("flash_day")&&(fd.last==null||now-fd.last>=F.cool)&&ctx.r.fork("rev:flash_day").chance(F.chance)){
+    fd.last=now;evPush(S,ctx,{kind:"flash_day",repEv:true,choices:F.choices,dflt:F.dflt,wait:F.wait},evFill(F.text,{sheets:mine}));}
+  /* Friday the 13th: only in a week that really has one */
+  const T=REP_EVENTS.friday_13,fr=RE.friday_13,f13=friday13Weeks(S.year).find(x=>x.w===S.week);
+  if(f13&&evRepOk(S,"friday_13")&&walkinsOpen(S)&&!busy("friday_13")&&fr.last!==now){
+    fr.last=now;evPush(S,ctx,{kind:"friday_13",repEv:true,date:f13.date,choices:T.choices,dflt:T.dflt,wait:T.wait},evFill(T.text,{date:f13.date}));}
+  /* Igla: collectors at REP_TRACKS, a portfolio worth a photographer, at most max features, years apart */
+  const M=REP_EVENTS.magazine,mg=RE.magazine,lastM=mg.length?mg[mg.length-1].at:null;
+  if(evRepOk(S,"magazine")&&mg.length<M.max&&!busy("magazine")&&(lastM==null||now-lastM>=M.cool)&&ctx.r.fork("rev:magazine").chance(M.chance)){
+    const pf=evPortfolio(S,M.portfolio);
+    if(pf.length>=M.portfolio)evPush(S,ctx,{kind:"magazine",repEv:true,piece:pf[0].id,choices:M.choices,dflt:M.dflt,wait:M.wait},evFill(M.text,{piece:pf[0].name}));}
+  /* the Drawbridge Prize: once a year, peers at REP_TRACKS, enough healed work to judge */
+  const A=REP_EVENTS.award;
+  if(S.week===A.week&&evRepOk(S,"award")&&!busy("award")&&!RE.award.some(x=>x.y===S.year)&&convCandidates(S).healed.length>=A.minPieces)
+    evPush(S,ctx,{kind:"award",repEv:true,choices:A.choices,dflt:A.dflt,wait:A.wait},A.text);}
+/* the day itself (a flash day or the Friday special): sittings, money after supplies, reputation and a little speed */
+function evRepDay(S,id,r){
+  const E=REP_EVENTS[id],n=evRepSittings(S,E,r),pay=evRub(S,n*(E.price-E.supplies));
+  cashIn(S,evRub(S,n*E.price),id==="flash_day"?"flashday":"friday13");cashOut(S,evRub(S,n*E.supplies),"supplies");
+  for(const k in E.rep)repAdd(S,k,E.rep[k]);
+  for(const k in E.xp)skillGain(S,k,E.xp[k]);
+  const rec=S.world.repEv[id];rec.n++;rec.sittings+=n;
+  return{n,pay};}
+const EV_REP_DO={
+  flash_day(S,ev,ch,r){const E=REP_EVENTS.flash_day;if(ch!=="run")return evFill(E.says.skip,{});
+    const d=evRepDay(S,"flash_day",r),mine=S.flash||[];
+    repAdd(S,"walkins",E.own.walkins*Math.min(1,mine.length/E.own.full));   // a full wall of your own sheets draws a bigger crowd
+    const top=mine.length?mine[r.int(0,mine.length-1)].name:"the swallows";
+    return evFill(E.says.run,{n:d.n,top:String(top).toLowerCase(),pay:evFmt(d.pay)});},
+  friday_13(S,ev,ch,r){const E=REP_EVENTS.friday_13;if(ch!=="run")return evFill(E.says.skip,{});
+    const d=evRepDay(S,"friday_13",r);return evFill(E.says.run,{n:d.n,pay:evFmt(d.pay)});},
+  magazine(S,ev,ch,r){const E=REP_EVENTS.magazine,p=S.pieces.find(x=>x.id===ev.piece),o={piece:p?p.name:"your best piece"};
+    S.world.repEv.magazine.push({w:S.week,y:S.year,at:evNow(S),piece:ev.piece||null,yes:ch==="yes"});
+    for(const k in E.rep[ch==="yes"?"yes":"no"])repAdd(S,k,E.rep[ch==="yes"?"yes":"no"][k]);
+    if(ch==="yes"&&walkinsOpen(S)){const rc=r.fork("met"),c=makeClient(rc,{id:clNextId(S),year:S.year,week:S.week,stage:caStage(S),src:"referral",theme:"collector",badIdea:false});
+      c.brief=E.met+" "+c.brief;const due=weekFrom(evNow(S)+rc.int(2,4));
+      S.queue.push({id:queueId(S),kind:"consult",src:"referral",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:c.brief,ask:c.ask,from:"magazine"});}
+    return evFill(E.says[ch==="yes"?"yes":"no"],o);},
+  award(S,ev,ch,r){const E=REP_EVENTS.award;if(ch!=="enter")return evFill(E.says.pass,{});
+    const res=awardJudge(S,r);if(!res.pieces.length)return evFill(E.says.pass,{});
+    const names=res.pieces.map(id=>{const p=S.pieces.find(x=>x.id===id);return p?p.label:"";}).filter(Boolean);
+    const list=names.length>1?names.slice(0,-1).join(", ")+" and "+names[names.length-1]:names[0]||"your work";
+    return res.place?evFill(E.says.won,{place:REP_EV_PLACE[res.place],pieces:"the "+list,prize:evFmt(res.prize)}):evFill(E.says.none,{pieces:"the "+list});}
+};
+/* awardJudge(S, r) -> {place 0..3, score, prize, pieces [ids]}: the best healed pieces (convCandidates), their mean
+   healed score (how they read today, how they healed, their years) and how true they are to your signature, plus a little
+   luck. Records the result in S.world.repEv.award, pays the prize and moves peers and collectors by place */
+function awardJudge(S,r){
+  worldEnsure(S);const E=REP_EVENTS.award,pk=convCandidates(S).healed.slice(0,E.pieces),sig=signatureOf(S);
+  if(!pk.length)return{place:0,score:0,prize:0,pieces:[]};
+  const q=pk.reduce((a,p)=>a+evHealedQ(S,p),0)/pk.length,on=pk.filter(p=>sig.ready&&p.design.style===sig.style).length/pk.length;
+  const score=caR3(E.score.healed*q+E.score.sig*on*sig.strength+r.normal(0,E.sd));
+  const place=score>=E.places[0]?1:score>=E.places[1]?2:score>=E.places[2]?3:0,prize=place?evRub(S,E.prize[place-1]):0;
+  if(prize)cashIn(S,prize,"award");
+  for(const k in E.rep)repAdd(S,k,E.rep[k][place?place-1:3]);
+  const rec={y:S.year,place,score,pieces:pk.map(p=>p.id)};S.world.repEv.award.push(rec);
+  return Object.assign({prize},rec);}
+
 /* ===================== goals ===================== */
 const EV_GOAL_CHECK={
   first_heal:S=>S.pieces.some(p=>!p.by&&p.heal==="crisp"),
@@ -575,6 +705,7 @@ function evWeek(S,ctx){
   evSocialWeek(S,ctx);
   evRivalsWeek(S,ctx);
   evReckonWeek(S,ctx);
+  evRepWeek(S,ctx);
   if(st!=="apprentice"&&walkinsOpen(S)&&((S.rep&&S.rep.peers)||0)>=COVER_PUZZLE.peers&&!S.queue.some(q=>q.puzzle)&&ctx.r.fork("puzzle").chance(COVER_PUZZLE.chance))
     evCoverPuzzle(S,ctx,ctx.r.fork("puzzleClient"),null);
   for(const id of checkGoals(S,ctx.yearRolled||now%13===0)){const g=GOALS.find(x=>x.id===id);evLog(ctx,"goal",evFill(EVENTS.goal,{name:g.name}),{goal:id});}
@@ -582,7 +713,8 @@ function evWeek(S,ctx){
 
 WEEK_HOOKS.events=evWeek;WEEK_HOOKS.trend=evTrend;
 SIM.TREND_WAVES=TREND_WAVES;SIM.SOCIAL=SOCIAL;SIM.RIVALS=RIVALS;SIM.RIVAL=RIVAL;SIM.RECKONINGS=RECKONINGS;SIM.COVER_PUZZLE=COVER_PUZZLE;
-SIM.COVER_SCORE=COVER_SCORE;SIM.CONV_JUDGE=CONV_JUDGE;SIM.GOALS=GOALS;SIM.EVENTS=EVENTS;
+SIM.COVER_SCORE=COVER_SCORE;SIM.CONV_JUDGE=CONV_JUDGE;SIM.GOALS=GOALS;SIM.EVENTS=EVENTS;SIM.REP_EVENTS=REP_EVENTS;
+SIM.friday13Weeks=friday13Weeks;SIM.awardJudge=awardJudge;SIM.repEventAt=evRepAt;
 SIM.worldFresh=worldFresh;SIM.worldEnsure=worldEnsure;SIM.trendMult=trendMult;SIM.trendNow=trendNow;
 SIM.followersTarget=followersTarget;SIM.canPost=canPost;SIM.postPiece=postPiece;SIM.eventChoose=eventChoose;
 SIM.onReturn=onReturn;SIM.reckoningChoose=reckoningChoose;SIM.rivalsCopy=rivalsCopy;SIM.rivalWalkins=rivalWalkins;

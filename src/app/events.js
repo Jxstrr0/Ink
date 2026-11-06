@@ -5,12 +5,17 @@
                     or copying; the pawn shop on the canal), each with its buttons and what happens if you leave it
      evLowerHtml()  what's in demand (INK_SIM.trendNow), social media from 2016 (followers, far-away bookings, Post a
                     healed piece), rival shops, and the career's goals
-     evWire()       their buttons. evAfterLog(log) toasts goals reached after Next.
+     evWire()       their buttons. evAfterLog(log) toasts goals reached and reputation events after Next (both chime).
+   0.1.13.0: the reputation events (sim/events.js REP_EVENTS: a flash day, the Friday 13th special, a feature in Igla, the
+   Drawbridge Prize) arrive as the same choice cards, headed from EV_HEAD, with the first choice (the one that does something) highlighted; evRepHtml is their history on the Career tab.
    Sheets: evPostSheet (pick a healed piece to post), evConvOpen (pick a fresh and a healed piece for a convention, then
    the results), evReckonOpen (a reckoning: your old piece then and now, and three choices). evPostBtn(p) is the
    "Post it" button the piece sheet and the reveal use. Cover-ups draw on the design board (app/design.js dzOld). */
 const EV={};
 const EV_TACTIC={undercut:"undercuts on price",poach:"poaches artists",copy:"copies flash"};
+/* each card's heading: rivals' moves, the pawn shop, and the reputation events (their own heads in REP_EVENTS) */
+const EV_HEAD={undercut:"A rival shop",poach:"A rival shop",copy:"A rival shop",pawn:"The pawn shop"};
+function evHead(kind){const R=INK_SIM.REP_EVENTS&&INK_SIM.REP_EVENTS[kind];return R?R.head:EV_HEAD[kind]||"This week";}
 function evOn(){return SIMOK("worldEnsure");}
 function evStyle(id){return(INK_SIM.STYLES[id]||{}).name||id;}
 function evWeekStr(wi){const w=INK_SIM.weekFrom(wi);return`week ${w.w}${w.y!==S.year?", "+w.y:""}`;}
@@ -22,8 +27,8 @@ function evTopHtml(){
   if(C&&C.closed){const u=INK_SIM.weekFrom(C.closed.until);
     h+=`<div class="card evClosed" role="status"><span class="clK">Closed by the inspector</span><p><b>The shop is shut until week ${u.w}, ${u.y}.</b> ${esc(gvCapS(C.closed.why||""))}. Walk-ins go elsewhere and booked sittings move to the day you reopen.</p></div>`;}
   for(const e of W.pending){const dl=(e.choices||[]).find(c=>c[0]===e.dflt);
-    h+=`<div class="card evCard" data-ev="${esc(e.id)}"><span class="clK">${e.kind==="pawn"?"The pawn shop":"A rival shop"} · week ${e.w}, ${e.y}</span><p>${esc(e.text)}</p>
-<div class="row evCh">${(e.choices||[]).map(c=>`<button class="btn sm${c[0]===e.dflt?"":" pri"}" data-evc="${esc(c[0])}">${esc(c[1])}</button>`).join("")}</div>
+    h+=`<div class="card evCard${e.repEv?" evRepCard":""}" data-ev="${esc(e.id)}" data-kind="${esc(e.kind)}"><span class="clK">${esc(evHead(e.kind))} · week ${e.w}, ${e.y}</span><p>${esc(e.text)}</p>
+<div class="row evCh">${(e.choices||[]).map((c,i)=>`<button class="btn sm${(e.repEv?i===0:c[0]!==e.dflt)?" pri":""}" data-evc="${esc(c[0])}">${esc(c[1])}</button>`).join("")}</div>
 <p class="clMeta">Leave it past ${esc(evWeekStr(e.until))} and it's “${esc(dl?dl[1].toLowerCase():"")}”.</p></div>`;}
   return h;}
 
@@ -50,9 +55,16 @@ ${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name
 function evGoalsHtml(){
   const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
   return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span>${g.done&&typeof shGoalCard==="function"?`<button class="btn sm shBtn" data-gcard="${esc(g.id)}" aria-label="Share card: ${esc(g.name)}">${SH_ICON}Card</button>`:""}</li>`).join("")}</ul></div>`;}
+/* the reputation events so far: flash days and Friday 13ths run, Igla features, the Drawbridge Prize */
+function evRepHtml(){
+  const R=S.world.repEv;if(!R)return"";const fd=R.flash_day||{},fr=R.friday_13||{},mg=(R.magazine||[]).filter(m=>m.yes),aw=R.award||[];
+  if(!fd.n&&!fr.n&&!mg.length&&!aw.length)return"";
+  const pl=n=>["no placing","first place","second place","third place"][n]||"";
+  return`<div class="card evRepH"><h2>Days and honours</h2><dl class="kv">${fd.n?`<dt>Flash days</dt><dd>${fd.n} (${fd.sittings} pieces)</dd>`:""}${fr.n?`<dt>Friday 13th specials</dt><dd>${fr.n} (${fr.sittings} pieces)</dd>`:""}
+${mg.length?`<dt>Featured in Igla</dt><dd>${mg.map(m=>m.y).join(", ")}</dd>`:""}${aw.length?`<dt>The Drawbridge Prize</dt><dd>${aw.map(a=>`${a.y}: ${pl(a.place)}`).join(" · ")}</dd>`:""}</dl></div>`;}
 function evLowerHtml(){
   if(!evOn())return"";INK_SIM.worldEnsure(S);
-  return evTrendHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
+  return evTrendHtml()+evRepHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
 function evWire(){
   document.querySelectorAll(".evCard").forEach(card=>card.addEventListener("click",e=>{const b=e.target.closest("[data-evc]");if(!b)return;
     const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;evGoalsNow();
@@ -65,12 +77,15 @@ function evWire(){
    Returns the goals reached; quiet=true leaves the toast to the caller */
 function evGoalsNow(quiet){
   if(!SIMOK("checkGoals"))return[];const ids=INK_SIM.checkGoals(S,false);if(!ids.length)return ids;save();
-  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`),2700);}
+  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`,"goal"),2700);}
   return ids;}
-/* goals reached after Next: one toast */
+/* goals reached after Next: one toast; else a reputation event that just arrived (its card is at the top of the tab) */
 function evAfterLog(log){
-  const g=(log||[]).filter(l=>l.k==="goal");if(!g.length)return;
-  setTimeout(()=>toast(g[0].text+(g.length>1?` (and ${g.length-1} more)`:"")),300);}
+  const g=(log||[]).filter(l=>l.k==="goal");
+  if(g.length){setTimeout(()=>toast(g[0].text+(g.length>1?` (and ${g.length-1} more)`:""),"goal"),300);return;}
+  const e=(log||[]).find(l=>l.k==="event"&&l.repEv);if(e){setTimeout(()=>toast(`${evHead(e.repEv)}: your choice is at the top of the Career tab`,"event"),300);return;}
+  const h=(log||[]).filter(l=>l.k==="heal"&&l.piece&&S.reveals.indexOf(l.piece)>=0);
+  if(h.length)setTimeout(()=>toast(h.length>1?`${h.length} bandages come off: the reveals are on the Career tab`:"A bandage comes off: the reveal is on the Career tab","heal"),300);}
 
 /* ---- social: posting ---- */
 function evPostable(){const out=[];if(!evOn())return out;
@@ -130,7 +145,7 @@ function evReckonOpen(q){
 <div class="evChoices">${Object.keys(R.choices).map(k=>`<button class="btn${k===Object.keys(R.choices)[0]?" pri":""}" data-rc="${esc(k)}">${esc(R.choices[k].label)}</button>`).join("")}</div>`);
   $("sheetBody").querySelectorAll("[data-rc]").forEach(b=>b.addEventListener("click",()=>{
     const r=INK_SIM.reckoningChoose(S,q.id,b.dataset.rc);if(!r.ok)return;save();INK_SOUND.tick();
-    if(r.consult){closeSheet();toast(r.text);clStartConsult(q.id);return;}
+    if(r.consult){closeSheet();toast(r.text,"event");clStartConsult(q.id);return;}
     $("sheetBody").innerHTML=`<p>${esc(r.text)}</p>${r.item?`<p class="hint">A free sitting is booked for week ${r.item.w}, ${r.item.y}. The design is the old one; open it on the board to rework it.</p>`:""}<div class="row"><button class="btn pri" id="evOk">OK</button></div>`;
     $("evOk").addEventListener("click",closeSheet);if(typeof renderClients==="function"&&curTab==="clients")renderClients();}));
   return true;}
