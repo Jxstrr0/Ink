@@ -307,7 +307,7 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 14. ~~**(PR 0)** Title~~ **Answered: Ink.**
 15. ~~**(PR 7)** Money~~ **Answered: rubles (₽), matching Lombard. `PRICE_INDEX` follows a ruble-like inflation curve.**
 16. ~~**(PR 8)** Shared world with Lombard~~ **Answered: light cross-references only (e.g. Lombard's pawn shop as a place to sell old machines). No crime layer, no mob.**
-17. ~~**(0.1.13.0)** The unbuilt `REP_TRACKS` events~~ **Answered: build them as data-driven choice cards (`REP_EVENTS` in `sim/events.js`): a flash day off your own wall, the Friday 13th special on real dates, a feature in Igla (an invented Mostograd magazine) and the Drawbridge Prize, a yearly award judged on your best healed pieces.**
+17. ~~**(0.1.13.0)** The unbuilt `REP_TRACKS` events~~ **Answered: build them as data-driven choice cards (`REP_EVENTS` in `sim/events.js`): a flash day off your own wall, the Friday 13th special on real dates, a feature in Kontur (an invented Mostograd tattoo quarterly, "outline") and the Drawbridge Prize, a yearly award judged on your best healed pieces.**
 18. ~~**(0.1.13.0)** Share cards~~ **Answered: a piece card shows the client's first name ("Olga's forearm") and keeps the credit line.**
 19. ~~**(0.1.13.0)** Tips with Skip the broom~~ **Answered: a career started with Skip the broom starts with tips off; Settings › Help turns them on. A full start keeps them on.**
 20. ~~**(0.1.13.0)** The toast chime~~ **Answered: only important toasts chime (the `TOAST_CHIME` kinds in `app/state.js`); the rest are silent.**
