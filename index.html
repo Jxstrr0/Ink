@@ -433,6 +433,141 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .crLog .k-referral .crK,.crLog .k-return .crK{color:var(--teal)}
 .crLog .k-left .crK,.crLog .k-gaveup .crK{color:var(--warn)}
 @media (prefers-reduced-motion:reduce){.clB{transition:none}}
+/* ===================== Ink: the Session tab and the Studio kit panel (PR 4) =====================
+   The chair (.se): the top card with the client and the pain/fatigue meters (bars with notches, a hatch or dot pattern and
+   an icon, so they read without colour), the stage (the care rail on the free hand's side and the four stacked canvases),
+   the steady-hand gauge, the zone meter, liner chips and the results card. The kit panel (.kp): the summary and option
+   rows with ▲/▼ deltas. Light theme overrides and reduced motion at the bottom. Skin is skin in both themes. */
+.se .clK{display:block}
+.seTop{padding:10px 12px}
+.seTopT{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.seTopT .clK{width:100%}
+.seTopT b{font-size:16px}
+.seProg{margin-left:auto;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.seMeters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.seMeter{display:grid;grid-template-columns:18px auto 1fr auto;align-items:center;gap:6px;font-size:12.5px;color:var(--mute);position:relative}
+.seMI svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;display:block}
+.seMeter.pain .seMI{color:var(--red2)}
+.seMeter.fatigue .seMI{color:var(--teal)}
+.seMB{position:relative;height:12px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+.seMB i{position:absolute;left:0;top:0;bottom:0;border-radius:6px 0 0 6px;transition:width .15s}
+.seMeter.pain .seMB i{background:repeating-linear-gradient(135deg,var(--red) 0 4px,var(--red2) 4px 7px)}
+.seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.35) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
+.seMB s{position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(25% - 1px),var(--bg) calc(25% - 1px) 25%,transparent 25% calc(50% - 1px),var(--bg) calc(50% - 1px) 50%,transparent 50% calc(75% - 1px),var(--bg) calc(75% - 1px) 75%,transparent 75%);opacity:.7}
+.seMV{font-variant-numeric:tabular-nums;min-width:2ch;text-align:right;color:var(--text);font-weight:600}
+.seWarn{display:none;position:absolute;right:-2px;top:-9px;width:16px;height:14px;font-size:10px;font-weight:800;line-height:15px;text-align:center;color:#fff;background:var(--crit);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.seMeter.hi .seWarn{display:block}
+.seMeter.hi .seMV{color:var(--crit)}
+
+/* the stage: rail on the free hand's side */
+.seStage{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.se[data-hand="left"] .seStage{flex-direction:row-reverse}
+.seRail{flex:0 0 52px;display:flex;flex-direction:column;gap:6px}
+.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:58px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:600;cursor:pointer}
+.seAct svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.seAct em{font-style:normal;font-size:9.5px;color:var(--mute);font-weight:500}
+.seAct:hover{border-color:var(--faint)}
+.seAct:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+#seStop{margin-top:auto;color:var(--red2)}
+.seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none}
+.seWrap canvas{position:absolute;left:0;top:0;display:block}
+#seOver{touch-action:none;cursor:crosshair}
+.seDot{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #2f7f77;background:rgba(47,127,119,.25);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.seDot::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(47,127,119,.6);animation:sePulse 1.4s ease-out infinite}
+.seDot.still::after{animation:none;border-style:dashed}
+.seDot.nudge{animation:seNudge .35s}
+@keyframes sePulse{from{transform:scale(.6);opacity:1}to{transform:scale(1.3);opacity:0}}
+@keyframes seNudge{0%,100%{margin-left:0}25%{margin-left:-5px}75%{margin-left:5px}}
+
+/* under the stage: gauge, status, tools */
+.seUnder{display:flex;flex-direction:column;gap:6px}
+.seGauge,.seZone{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+.seGL{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.seGT,.seZT{position:relative;height:18px;border-radius:9px;background:var(--panel2);border:1px solid var(--line)}
+.seGT .band{position:absolute;top:2px;bottom:2px;border-radius:6px;background:rgba(111,191,138,.35);border:1.5px solid var(--ok)}
+.seGT .rush{position:absolute;top:0;bottom:0;right:0;border-radius:0 9px 9px 0;background:repeating-linear-gradient(135deg,rgba(224,87,79,.45) 0 3px,transparent 3px 7px)}
+.seGT i{position:absolute;top:-5px;width:0;height:0;margin-left:-7px;border:7px solid transparent;border-top:10px solid var(--text);border-bottom:0;transition:left .06s linear}
+.seGT i::after{content:"";position:absolute;left:-1px;top:-1px;width:2px;height:22px;background:var(--text)}
+.seGT i.rush{border-top-color:var(--crit)}
+.seGT i.rush::after{background:var(--crit)}
+.seZT{overflow:visible}
+.seZT i{position:absolute;left:0;top:0;bottom:0;border-radius:9px 0 0 9px;opacity:.9}
+.seZT .tgt{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:var(--text);border-radius:2px}
+.seZT .over{position:absolute;top:0;bottom:0;right:0;border-radius:0 9px 9px 0;background:repeating-linear-gradient(135deg,rgba(224,87,79,.45) 0 3px,transparent 3px 7px)}
+.seStatus{margin:0;min-height:1.4em;font-size:13.5px;color:var(--text)}
+.seTools .row{gap:10px}
+.seLiners{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:44px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.seChipL svg{grid-row:1/3;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.seChipL b{font-size:13.5px}
+.seChipL span{font-size:11px;color:var(--mute)}
+.seChipL.on{border-color:var(--red);box-shadow:inset 0 -3px 0 var(--red);background:var(--panel2)}
+.seChipL.hint{border-style:dashed;border-color:var(--gold)}
+.seChipL:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.seLw{margin:0;font-size:12.5px;color:var(--mute)}
+.seLw.bad{color:var(--warn)}
+.seLw.ok span{color:var(--ok)}
+
+/* placement */
+.sePlaceWrap{display:flex;justify-content:center;background:var(--panel2);border-radius:10px;padding:8px;margin:6px 0 8px}
+.sePlace{width:100%;max-height:min(52vh,460px);touch-action:none;cursor:grab}
+.seFlow polyline{fill:none;stroke:rgba(60,40,20,.28);stroke-width:.6;stroke-dasharray:2 2}
+.seCrease{stroke:rgba(150,40,30,.6);stroke-width:.7;stroke-dasharray:3 2}
+.seCreaseT{fill:rgba(120,30,20,.75);font-family:var(--ui)}
+.seChk{margin:0 0 8px}
+.seChkFlow{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--panel2);margin-bottom:4px}
+.seIss{margin:3px 0;font-size:13.5px}
+.seIss.crit span{color:var(--crit)}
+.seIss.warn span,.seIss.minor span{color:var(--warn)}
+.seIss.ok span{color:var(--ok)}
+
+/* lobby and results */
+.seDue{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.seDue:first-of-type{border-top:0}
+.seDueT{flex:1;display:flex;flex-direction:column;min-width:0}
+.seGrow{flex:1 1 180px}
+.seGrow select{width:100%}
+.seKitLine{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.seKitLine p{margin:0;flex:1 1 200px;font-size:13.5px}
+.seNextB,.seResB{display:flex;gap:12px;align-items:flex-start}
+.seRen{flex:0 0 auto;width:112px;height:112px;border-radius:10px;border:1px solid var(--line)}
+.seNextB p{margin:0 0 4px}
+.seResMsg{color:var(--warn);font-weight:600;margin:4px 0}
+.seRes .kv{flex:1;font-size:13.5px}
+.seRes .kv .hint{display:block;font-size:11.5px;margin:0}
+.seRes .clChips{margin:10px 0 4px}
+
+/* the kit panel */
+.kpSum{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin:4px 0 12px}
+.kpSum div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column}
+.kpSum span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+.kpSum b{font-size:16px;font-variant-numeric:tabular-nums}
+.kpSum em{font-style:normal;font-size:11px;color:var(--mute)}
+.kp .seg{margin-bottom:10px;display:flex}
+.kp .seg button{flex:1;padding:0 6px}
+.kpRow{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.kpRow:first-child{border-top:0}
+.kpRow.on .kpRT b::after{content:" ✓";color:var(--ok)}
+.kpRT{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.kpRT .hint{margin:0;font-size:12.5px}
+.kpRB{flex:0 0 auto}
+.kpUse{font-size:12.5px;font-weight:700;color:var(--ok)}
+.kpDs{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.kpD{font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}
+.kpD.up{color:var(--ok);border-color:currentColor}
+.kpD.dn{color:var(--crit);border-color:currentColor;border-style:dashed}
+.kpD.n{color:var(--mute)}
+.kpSl{display:flex;flex-direction:column;gap:4px;width:100%;font-size:13px;color:var(--text);margin-top:4px}
+.kpSl span{display:flex;justify-content:space-between}
+.kpSl input{width:100%;accent-color:var(--red);min-height:32px}
+.kpVs{margin:10px 0 0;font-size:12.5px;color:var(--mute)}
+#kpReset{margin-top:10px}
+
+@media (max-width:380px){.seMeters{grid-template-columns:1fr}.seRen{width:88px;height:88px}}
+@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}}
+html[data-theme=light] .seMB s{opacity:.9}
+html[data-theme=light] .seGT .band{background:rgba(47,138,82,.18)}
+html[data-theme=light] .seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.5) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
 </style>
 
 <div id="app">
@@ -1218,8 +1353,9 @@ const COLOUR_LINES={watercolour:1};
 /* a flash design (FLASH in sim/flash.js, or the artist's own saved flash) is drawn already and the stencil exists:
    design.flash set (or opts.flash) takes this share of the hours */
 const FLASH_DISCOUNT={hours:0.8};
-/* the default session outputs used for the aging prediction */
-const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.75};
+/* the default session outputs used for the aging prediction. trauma is the one output where lower is better (skin damage
+   from the session, 0 = none); aging doesn't read it, the heal grade does (PR 5) */
+const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.25};
 
 /* ---- small helpers ---- */
 function dzLineMm(rl){
@@ -1710,13 +1846,14 @@ SIM.FLASH=FLASH;
      - the session (depthQuality: too shallow falls out, too deep blows out; lineQuality: ragged edges start soft;
        saturation: badly packed colour starts faded). trauma feeds the heal grade in PR 5, not aging directly,
      - the heal (HEAL_GRADES: a patchy heal starts with spread already applied, a blowout with a big one),
-     - the ink (INK_TIERS until sim/kit.js has INKS), and the style's ageFactor (a nudge for what the numbers miss).
+     - the ink (INKS in sim/kit.js: the one table of ink tiers, read here at call time), and the style's ageFactor (a nudge
+       for what the numbers miss).
    Thin lines don't get wider so much as spread to nothing: the same ink over a wider area reads paler (the dilution term),
    so a 1RL line fades much faster than a 14RL one. Packed solid fill does not dilute.
    readability is the design re-scored with the aged lines and faded ink (design.js dzReadability), so 9 mm script closes up
    within a few years while a bold 80 mm rose still reads at 20.
      tattoo = {design, out:{lineQuality, depthQuality, saturation, trauma} (default 0.75), heal: HEAL_GRADES id or null,
-               ink: INK_TIERS / INKS id or null, skinTone, sun}
+               ink: INKS id (sim/kit.js) or null = standard, skinTone, sun}
    Private helpers start with ag. ===== */
 
 /* share of pigment lost per year (an exponential rate) at baseline wear, by colour id */
@@ -1734,8 +1871,8 @@ const HEAL_GRADES={
   infected:{name:"infected",spread0:0.45,blur0:0.35,fade0:0.25,rate:1.3}
 };
 const AG_NO_HEAL={spread0:0,blur0:0,fade0:0,rate:1};   // heal null: the prediction before the heal is known
-/* ink quality until the kit's INKS exist */
-const INK_TIERS={budget:{name:"budget",fade:1.25,spread:1.1},standard:{name:"standard",fade:1,spread:1},premium:{name:"premium",fade:0.82,spread:0.95}};
+/* ink quality comes from INKS in sim/kit.js (loaded after this file, read at call time); this is the fallback if it's missing */
+const AG_INK_NONE={fade:1,spread:1};
 /* the model's own knobs */
 const AGING={
   spreadK:0.065,spreadExp:0.75,       // spread mm = spreadK x years^spreadExp x multipliers (+ the heal's head start)
@@ -1755,8 +1892,8 @@ function agEnv(t,p){
   p=p||(SIM.PLACEMENTS&&SIM.PLACEMENTS[design.placement])||{region:"arm",sun:0.5};
   const wear=PLACEMENT_WEAR[p.region]||{spread:1,fade:1};
   const heal=(t.heal&&HEAL_GRADES[t.heal])||AG_NO_HEAL;
-  const kitInks=SIM.INKS;
-  const ink=(t.ink&&(INK_TIERS[t.ink]||(kitInks&&kitInks[t.ink])))||INK_TIERS.standard;
+  const inks=SIM.INKS||{};
+  const ink=(t.ink&&inks[t.ink])||inks.standard||AG_INK_NONE;
   const tone=t.skinTone!=null?t.skinTone:0.3,sun=(t.sun!=null?t.sun:0.4)*(p.sun!=null?p.sun:0.5)*(1-AGING.skinShield*tone);
   const st=(SIM.STYLES||{})[design.style],af=st&&st.ageFactor!=null?st.ageFactor:0.6;
   const styleM=lerp(AGING.styleLo,AGING.styleHi,af),dq=clamp(out.depthQuality,0,1);
@@ -1789,7 +1926,7 @@ function agAge(t,years,E,tol){
   return{blur:dzR(sw?b/sw:0),fade:dzR(sw?f/sw:0),spread:dzR(sw?s/sw:0),readability:dzR(R.score)};
 }
 function age(tattoo,years){return agAge(tattoo||{},years,null,0);}
-SIM.age=age;SIM.COLOUR_FADE=COLOUR_FADE;SIM.PLACEMENT_WEAR=PLACEMENT_WEAR;SIM.HEAL_GRADES=HEAL_GRADES;SIM.INK_TIERS=INK_TIERS;SIM.AGING=AGING;
+SIM.age=age;SIM.COLOUR_FADE=COLOUR_FADE;SIM.PLACEMENT_WEAR=PLACEMENT_WEAR;SIM.HEAL_GRADES=HEAL_GRADES;SIM.AGING=AGING;
 /* ===== sim/clients.js: client generation, the consult, memory and returns (PR 3) =====
    Everyone who sits in the chair is a persistent record (docs/SIM-CONTRACT.md "A client (full record)"). All of them are
    adults: makeClient draws an age from AGE_BANDS (18..75) and never anything younger. Mostograd is a port city, so most
@@ -3029,8 +3166,706 @@ function finishSession(S,itemId,res){
 
 SIM.WEEK=WEEK;SIM.WEEK_HOOKS=WEEK_HOOKS;SIM.WEEK_ORDER=WEEK_ORDER;SIM.weekHours=weekHours;SIM.careerOver=careerOver;
 SIM.advanceWeek=advanceWeek;SIM.nextStop=nextStop;SIM.finishSession=finishSession;
-/* ===== sim/session.js: the tattoo session: trace-and-rhythm scoring, client meters, outputs (PR 4) ===== */
-/* ===== sim/kit.js: the kit: MACHINES, NEEDLES, INKS, voltage (PR 4) ===== */
+/* ===== sim/session.js: the tattoo session: stencil, trace-and-rhythm scoring, shading, client meters, outputs (PR 4) =====
+   A pure, deterministic model of one sitting in the chair. The app feeds it pointer samples in millimetres on the
+   placement box (time in ms) and it keeps every running number in a plain object `sess` that saves as JSON (numbers and
+   short strings only: never pointer streams). The same samples always give the same scores. Nothing here is random.
+
+   The stencil. sessionPlan turns a design into what you tattoo: every element's SVG path is flattened (M L H V C S Q T A Z,
+   absolute and relative), moved into placement millimetres exactly the way the board draws it (app/design.js dzTf: the
+   piece's pos on the box, the element's x/y in the footprint, its scale and rot) and resampled every STENCIL.stepMm into a
+   stroke. Strokes are split into STENCIL.segMm segments for scoring. Elements with fill > 0 give a zone from their fill path:
+   black or grey fills are shading zones, coloured fills are colour zones. The work list is every stroke, then every
+   shading zone, then every colour zone; each item carries a share of the piece's hours (scoreDesign hours less setup) by its
+   length or its area x fill. A piece of N sittings (scoreDesign sessions, or the booking's) splits that list at 1/N, 2/N...
+   of the hours, so the first sitting is mostly linework. A sitting that ends early leaves the rest to the next one.
+
+   Linework (plan Q4: trace-and-rhythm). The player starts on the dot and follows the stroke while a pacing marker runs at the
+   target pace (PACE.frac of the view per second x the kit's pace). Each sample is projected onto the stroke (forward only, and never further than the finger moved, so loops, crossings
+   and sharp corners work); pace is the finger's own speed over the last PACE.speedMs. Per segment, time-weighted:
+     accuracy  = how close to the line (ACC; the tolerance is the kit's accFrac of the view, so it is the same on screen)
+     pace      = how near the target speed, flat inside the band (kitBands paceBand: skill, machine, voltage, Assist)
+     depth     = needle hit / pace (slow = deep, digging in; fast = shallow): DEPTH
+   segment quality = accuracy x pace, a blowout (BLOW) if you rushed past the band for PACE.blowMs inside it, and every
+   restart (lifting and putting the finger back, or stopping for PACE.stopMs and going again) is a join (JOIN). A liner that
+   doesn't lay the line weight the element wants costs quality (LW_FIT). Lingering adds trauma.
+   Shading and colour. Hold and sweep inside a shading zone, or swipe back and forth in a colour zone: the zone's saturation
+   meter fills by the distance swept inside it (or within ZONE.slop of its edge) (ZONE), fastest with a mag, at a steady sweep speed, and colour packs properly only while
+   you keep reversing (COLOUR). Past the zone's target (its fill) + ZONE.slack you are overworking the skin: trauma.
+   Client meters. A sitting has a clock in hours that moves with the work (a stroke traced at pace uses its share of the
+   hours; tracing slower uses more). pain rises with the placement's pain, the client's pain TOLERANCE (traits.pain, 1 =
+   tough), the machine and voltage, how long they've sat, and any trauma you cause; fatigue rises steadily, faster in pain.
+   Break (BREAK), numbing cream (NUMB: a consumable that costs rubles) and chat (CHAT: helps with a talkative client) push
+   back. Either meter at 1 ends the sitting: the piece continues next time. Practice on fake skin has no meters.
+   Outputs (aging.js tattoo.out): lineQuality, depthQuality, saturation (0..1, higher is better), trauma (0..1, LOWER is
+   better), plus sessionsUsed, blowouts, joins.
+
+   API (all pure; sess is the only thing changed, and only by the functions that say so):
+     SIM.sessionNew(o) -> sess        o = {design, client (or null), skills, kit, settings:{assist}, bodyShape, skinTone,
+                                       kind: "practice"|"sample"|"booked", itemId, part, partsTotal, progress, year, week}
+     SIM.sessionPlan(sess) -> plan    {box, strokes:[{el, lw, colour, pts:[x0,y0,x1,...], cum, len, segs}], zones:[{el, kind,
+                                       colour, target, polys:[[x,y,...]], area, box}], items:[{k:"line"|"shade"|"colour", i, w}],
+                                       hours, parts, dots}  (cached; never saved)
+     SIM.sessionBands(sess)           the kit bands plus paceMmS, accMm, view (mm)
+     SIM.sessionPlace(sess, pos)      move the stencil before the first line (pos 0..1 in the box); returns stencilCheck
+     SIM.stencilCheck(design, client, skills) -> {flow, issues:[{id, sev, text}]}   flow and crease, re-checked
+     SIM.sessionItem(sess) -> the current item (with .stroke or .zone) or null
+     SIM.penDown / penMove / penUp(sess, t, x, y) -> live {ok, r (pace ratio), d (mm off), u, rushed, stopped, blow, sat,
+                                       inside, pain, fatigue, stop, done}   (mutate sess)
+     SIM.sessionSetLiner(sess, id), SIM.sessionNextItem(sess) (leave a zone / give up the rest of a line), SIM.sessionAction(
+       sess, "break"|"numb"|"chat") -> {ok, why, cost, talk}  (mutate sess)
+     SIM.sessionFinish(sess) -> {done, early, stop, out, sitting, progress, part, partsTotal, sessionsUsed}   (pure)
+     SIM.sessionXp(result, sess, skills) -> {linework, shading, colour, speed, styles:{id:+x}}   SKILL_XP
+     SIM.sessionPainRate(sess) -> pain per hour now;  SIM.sessionSynth(sess, opts) -> contacts for tests
+   Private helpers start with ss. ===== */
+
+/* the stencil */
+const STENCIL={curveStep:2.5,stepMm:1,minStrokeMm:2.5,segMm:8,minZoneMm2:8,lineW:1,zoneW:0.12,colourW:1.2,viewPad:0.06,minView:24};
+/* pace: target = view size x frac per second x the kit's pace. A ratio over 1 + band x rush is rushing */
+const PACE={frac:0.11,speedMs:120,smoothMs:60,warmMs:160,stop:0.15,go:0.45,stopMs:350,rush:1.25,blowMs:110,fall:0.38,backMm:3,aheadMm:0.6,aheadK:1.4,
+  startSlop:3.2,endSlop:1.6,doneShare:0.94};
+/* accuracy: full marks inside acc mm (a little off-centre is fine), falling to nothing at acc x (1 + fall) */
+const ACC={minMm:1,inner:0.25,fall:2};
+/* depth: depth = hit / ratio^paceExp; scored by how far log(depth) is from 0 against the kit's depthTol */
+const DEPTH={paceExp:0.6,deep:0.3,minRatio:0.15};
+const BLOW={q:0.6};                       // a segment with a blowout keeps this share of its quality
+const JOIN={q:0.9};                       // each join keeps this share of the stroke's quality
+/* the line weight the element wants against the liner in use: per LINE_WEIGHTS step outside its band */
+const LW_FIT={under:0.82,over:0.86,overRush:0.85,passTrauma:0.015};
+/* zones: one full pass of saturation = sqrt(area) x passes mm of sweeping. Sweep speed band as view shares per second */
+const ZONE={slop:0.02,slopMin:1.2,passes:3.2,slack:0.12,vLo:0.04,vHi:0.45,depthW:0.6};
+const COLOUR={windowMs:550,minLegShare:0.015,sweepK:0.35,turnDot:-0.2};
+/* skin trauma: per hour of work, per second lingering on a line (x log depth past DEPTH.deep), each blowout, overworking a zone, holding still in a zone */
+const TRAUMA={perHour:0.035,linger:0.02,blow:0.05,over:0.6,dig:0.05};
+/* the client's meters: per hour. pain = k x (placement pain + floor) x tolerance factor x machine x (1 + ramp x hours) */
+const PAIN={k:0.24,floor:0.1,tolLo:1.6,tolHi:0.55,ramp:0.25,trauma:0.6,limit:1};
+const FATIGUE={k:0.15,pain:0.45,limit:1};
+const BREAK={hours:0.25,pain:0.4,fatigue:0.28,fade:0.65,max:4};
+const NUMB={price:250,mult:0.45,now:0.25,hours:2,max:1};   // price in 2000 rubles x priceIndex
+const CHAT={hours:0.75,fatigue:0.6,max:3,quiet:0.3,annoy:0.04};
+const CLOCK={maxDt:0.3};                  // seconds: a longer gap between samples counts as this much work time
+/* XP for a sitting (added straight onto the 0..10 skill levels), less as the level climbs */
+const SKILL_XP={practice:{linework:0.05,shading:0.04,colour:0.04,style:0.02,speed:0.01},
+  sample:{linework:0.08,shading:0.06,colour:0.06,style:0.04,speed:0.015},
+  booked:{linework:0.1,shading:0.08,colour:0.08,style:0.05,speed:0.02},
+  diminish:0.75,floor:0.3};
+
+/* ---- the SVG flattener: path data -> subpaths [{pts:[x,y,...], closed}] in path units ---- */
+function ssFlatten(d){
+  const tk=String(d||"").match(/[a-zA-Z]|-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g)||[];
+  const N={m:2,l:2,h:1,v:1,c:6,s:4,q:4,t:2,a:7,z:0},subs=[];
+  let cur=null,i=0,cmd="",x=0,y=0,sx=0,sy=0,c2x=0,c2y=0,qx=0,qy=0,prev="";
+  const start=(px,py)=>{cur={pts:[px,py],closed:false};subs.push(cur);};
+  const to=(px,py)=>{if(!cur)start(x,y);cur.pts.push(px,py);};
+  const steps=l=>clamp(Math.ceil(l/STENCIL.curveStep),3,48);
+  const cubic=(x0,y0,x1,y1,x2,y2,x3,y3)=>{
+    const n=steps(Math.hypot(x1-x0,y1-y0)+Math.hypot(x2-x1,y2-y1)+Math.hypot(x3-x2,y3-y2));
+    for(let j=1;j<=n;j++){const t=j/n,u=1-t;to(u*u*u*x0+3*u*u*t*x1+3*u*t*t*x2+t*t*t*x3,u*u*u*y0+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y3);}};
+  const quad=(x0,y0,x1,y1,x2,y2)=>{
+    const n=steps(Math.hypot(x1-x0,y1-y0)+Math.hypot(x2-x1,y2-y1));
+    for(let j=1;j<=n;j++){const t=j/n,u=1-t;to(u*u*x0+2*u*t*x1+t*t*x2,u*u*y0+2*u*t*y1+t*t*y2);}};
+  while(i<tk.length){
+    if(/[a-zA-Z]/.test(tk[i])){cmd=tk[i++];
+      if(cmd==="z"||cmd==="Z"){if(cur){cur.closed=true;if(x!==sx||y!==sy)cur.pts.push(sx,sy);}x=sx;y=sy;cur=null;prev="z";continue;}}
+    const lc=cmd.toLowerCase(),k=N[lc];if(!k){i++;continue;}
+    const a=tk.slice(i,i+k).map(Number);i+=k;if(a.length<k||a.some(v=>isNaN(v)))break;
+    const rel=cmd!==cmd.toUpperCase(),ox=rel?x:0,oy=rel?y:0;
+    if(lc==="m"){x=ox+a[0];y=oy+a[1];sx=x;sy=y;start(x,y);cmd=rel?"l":"L";}
+    else if(lc==="l"){x=ox+a[0];y=oy+a[1];to(x,y);}
+    else if(lc==="h"){x=ox+a[0];to(x,y);}
+    else if(lc==="v"){y=oy+a[0];to(x,y);}
+    else if(lc==="c"){cubic(x,y,ox+a[0],oy+a[1],ox+a[2],oy+a[3],ox+a[4],oy+a[5]);c2x=ox+a[2];c2y=oy+a[3];x=ox+a[4];y=oy+a[5];}
+    else if(lc==="s"){const r1x=prev==="c"||prev==="s"?2*x-c2x:x,r1y=prev==="c"||prev==="s"?2*y-c2y:y;
+      cubic(x,y,r1x,r1y,ox+a[0],oy+a[1],ox+a[2],oy+a[3]);c2x=ox+a[0];c2y=oy+a[1];x=ox+a[2];y=oy+a[3];}
+    else if(lc==="q"){quad(x,y,ox+a[0],oy+a[1],ox+a[2],oy+a[3]);qx=ox+a[0];qy=oy+a[1];x=ox+a[2];y=oy+a[3];}
+    else if(lc==="t"){const cx=prev==="q"||prev==="t"?2*x-qx:x,cy=prev==="q"||prev==="t"?2*y-qy:y;
+      quad(x,y,cx,cy,ox+a[0],oy+a[1]);qx=cx;qy=cy;x=ox+a[0];y=oy+a[1];}
+    else if(lc==="a"){const ex=ox+a[5],ey=oy+a[6];ssArc(x,y,a[0],a[1],a[2],a[3],a[4],ex,ey,to);x=ex;y=ey;}
+    prev=lc;
+  }
+  return subs.filter(s=>s.pts.length>=4);
+}
+/* an SVG arc (endpoint form) sampled through its centre; ends exactly on (x2, y2) */
+function ssArc(x1,y1,rx,ry,phi,fa,fs,x2,y2,to){
+  rx=Math.abs(rx);ry=Math.abs(ry);if(!rx||!ry||(x1===x2&&y1===y2)){to(x2,y2);return;}
+  const c=Math.cos(phi*Math.PI/180),s=Math.sin(phi*Math.PI/180),dx=(x1-x2)/2,dy=(y1-y2)/2;
+  const xp=c*dx+s*dy,yp=-s*dx+c*dy,lam=xp*xp/(rx*rx)+yp*yp/(ry*ry);
+  if(lam>1){const k=Math.sqrt(lam);rx*=k;ry*=k;}
+  const num=rx*rx*ry*ry-rx*rx*yp*yp-ry*ry*xp*xp,den=rx*rx*yp*yp+ry*ry*xp*xp;
+  const co=(fa===fs?-1:1)*Math.sqrt(Math.max(0,num/(den||1)));
+  const cxp=co*rx*yp/ry,cyp=-co*ry*xp/rx,cx=c*cxp-s*cyp+(x1+x2)/2,cy=s*cxp+c*cyp+(y1+y2)/2;
+  const ang=(ux,uy,vx,vy)=>Math.atan2(ux*vy-uy*vx,ux*vx+uy*vy);
+  const t1=ang(1,0,(xp-cxp)/rx,(yp-cyp)/ry);let dt=ang((xp-cxp)/rx,(yp-cyp)/ry,(-xp-cxp)/rx,(-yp-cyp)/ry);
+  if(!fs&&dt>0)dt-=2*Math.PI;else if(fs&&dt<0)dt+=2*Math.PI;
+  const n=clamp(Math.ceil(Math.abs(dt)*Math.max(rx,ry)/STENCIL.curveStep),4,64);
+  for(let i=1;i<n;i++){const t=t1+dt*i/n,ex=rx*Math.cos(t),ey=ry*Math.sin(t);to(c*ex-s*ey+cx,s*ex+c*ey+cy);}
+  to(x2,y2);
+}
+/* resample a polyline every `step` mm: {pts, cum, len} */
+function ssResample(p,step){
+  let L=0;const raw=[0];for(let i=2;i<p.length;i+=2){L+=Math.hypot(p[i]-p[i-2],p[i+1]-p[i-1]);raw.push(L);}
+  if(L<=0)return{pts:[p[0],p[1]],cum:[0],len:0};
+  const n=Math.max(1,Math.round(L/step)),pts=[],cum=[];let j=1;
+  for(let k=0;k<=n;k++){const u=L*k/n;while(j<raw.length-1&&raw[j]<u)j++;
+    const a=raw[j-1],b=raw[j],t=b>a?(u-a)/(b-a):0;pts.push(lerp(p[2*j-2],p[2*j],t),lerp(p[2*j-1],p[2*j+1],t));cum.push(u);}
+  return{pts,cum,len:L};
+}
+function ssAreaOf(poly){let a=0;for(let i=0,n=poly.length;i<n;i+=2){const j=(i+2)%n;a+=poly[i]*poly[j+1]-poly[j]*poly[i+1];}return a/2;}
+/* inside a zone, or within slop mm of its edge (a finger is wider than a sliver of leaf) */
+function ssNear(polys,x,y,slop){if(ssInside(polys,x,y))return true;if(!(slop>0))return false;const s2=slop*slop;
+  for(const p of polys)for(let i=0,n=p.length,j=n-2;i<n;j=i,i+=2){const ax=p[j],ay=p[j+1],dx=p[i]-ax,dy=p[i+1]-ay,l2=dx*dx+dy*dy||1e-9;
+    const t=clamp(((x-ax)*dx+(y-ay)*dy)/l2,0,1),qx=ax+t*dx-x,qy=ay+t*dy-y;if(qx*qx+qy*qy<=s2)return true;}
+  return false;}
+function ssInside(polys,x,y){let c=false;
+  for(const p of polys)for(let i=0,n=p.length,j=n-2;i<n;j=i,i+=2){const yi=p[i+1],yj=p[j+1];
+    if((yi>y)!==(yj>y)&&x<(p[j]-p[i])*(y-yi)/(yj-yi)+p[i])c=!c;}
+  return c;}
+
+/* ---- the plan: stencil strokes, zones and the work list for a design (cached by design + body shape) ---- */
+const ssPlanCache=new Map();
+function ssPlanFor(design,bodyShape,client,skills,parts){
+  const key=JSON.stringify([design,bodyShape||"neutral",parts||0]);
+  const hit=ssPlanCache.get(key);if(hit)return hit;
+  const P=SIM.PLACEMENTS[design.placement]||null;
+  const box=P?SIM.placementBox(design.placement,bodyShape):{wrapMm:120,lengthMm:240};
+  const sz=design.sizeMm||50,pos=design.pos||{x:0.5,y:0.5},fp=SIM.footprintOf(design);
+  const strokes=[],zones=[];let dots=0;
+  (design.elements||[]).forEach((el,ei)=>{
+    const def=SIM.elementById(el.id);if(!def)return;
+    const b=SIM.elementBox(el.id),k=((el.scale!=null?el.scale:0.5)*sz)/Math.max(b.w,b.h,1e-6),bcx=b.x+b.w/2,bcy=b.y+b.h/2;
+    const mx=pos.x*box.wrapMm+((el.x!=null?el.x:0.5)-fp.cx)*sz,my=pos.y*box.lengthMm+((el.y!=null?el.y:0.5)-fp.cy)*sz;
+    const th=(el.rot||0)*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
+    const tf=p=>{const o=[];for(let i=0;i<p.length;i+=2){const px=(p[i]-bcx)*k,py=(p[i+1]-bcy)*k;o.push(mx+px*cs-py*sn,my+px*sn+py*cs);}return o;};
+    const lw=el.lineWeight!=null?el.lineWeight:(def.lineWeightDefault||7);
+    const colour=el.colour||null,lineCol=colour&&(design.style==="watercolour"||!(el.fill>0))?colour:null;
+    for(const sp of ssFlatten(def.path)){
+      const r=ssResample(tf(sp.pts),STENCIL.stepMm);
+      if(r.len<STENCIL.minStrokeMm){dots++;continue;}
+      const segs=[],ns=Math.max(1,Math.round(r.len/STENCIL.segMm));for(let s=0;s<ns;s++)segs.push(r.len*(s+1)/ns);
+      strokes.push({el:ei,lw,colour:lineCol,pts:r.pts,cum:r.cum,len:r.len,segs,closed:sp.closed,detail:def.detail||0.5});
+    }
+    if(def.fill&&el.fill>0){
+      const polys=ssFlatten(def.fill).map(sp=>tf(sp.pts));
+      const area=Math.abs(polys.reduce((s,p)=>s+ssAreaOf(p),0))||Math.max(0,...polys.map(p=>Math.abs(ssAreaOf(p))));
+      if(area>=STENCIL.minZoneMm2){
+        let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of polys)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
+        const col=colour&&colour!=="black"&&colour!=="grey";
+        zones.push({el:ei,kind:col?"colour":"shade",colour:colour||"black",target:clamp(el.fill,0.05,1),polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2});
+      }
+    }
+  });
+  const sc=SIM.scoreDesign(design,client||null,skills||{});
+  const items=[];
+  strokes.forEach((s,i)=>items.push({k:"line",i,raw:s.len*STENCIL.lineW*(0.8+0.4*s.detail)}));
+  zones.forEach((z,i)=>{if(z.kind==="shade")items.push({k:"shade",i,raw:z.area*z.target*STENCIL.zoneW});});
+  zones.forEach((z,i)=>{if(z.kind==="colour")items.push({k:"colour",i,raw:z.area*z.target*STENCIL.zoneW*STENCIL.colourW});});
+  const work=Math.max(0.25,sc.hours-((SIM.HOURS&&SIM.HOURS.setup)||0.5)),tot=items.reduce((s,it)=>s+it.raw,0)||1;
+  let cw=0;for(const it of items){it.w=it.raw/tot*work;cw+=it.w;it.cw=cw;delete it.raw;}
+  const plan={key,box,sizeMm:sz,strokes,zones,items,hours:sc.hours,work,parts:Math.max(1,parts||sc.sessions),price:sc.price,dots,
+    pain:P?P.pain:0.4,placement:design.placement};
+  if(ssPlanCache.size>40)ssPlanCache.clear();
+  ssPlanCache.set(key,plan);
+  return plan;
+}
+function ssPlan(sess){return ssPlanFor(sess.design,sess.bodyShape,sess.client,sess.skills,sess.partsTotal);}
+/* where this sitting's work ends: the items up to part/partsTotal of the hours (at least one item past `next`) */
+function ssSitEnd(plan,next,part,partsTotal){
+  const n=plan.items.length;if(part>=partsTotal)return n;
+  const B=plan.work*part/partsTotal*0.985;let j=next+1;
+  while(j<n&&plan.items[j-1].cw<B)j++;
+  return Math.min(n,j);
+}
+/* the view: the bounding box of this sitting's work, padded (pace and tolerance scale with it) */
+function ssSitView(plan,a,b){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(let i=a;i<b;i++){const it=plan.items[i];
+    if(it.k==="line"){const p=plan.strokes[it.i].pts;for(let j=0;j<p.length;j+=2){x0=Math.min(x0,p[j]);x1=Math.max(x1,p[j]);y0=Math.min(y0,p[j+1]);y1=Math.max(y1,p[j+1]);}}
+    else{const z=plan.zones[it.i];x0=Math.min(x0,z.box[0]);y0=Math.min(y0,z.box[1]);x1=Math.max(x1,z.box[2]);y1=Math.max(y1,z.box[3]);}}
+  if(x0>x1){x0=0;y0=0;x1=plan.box.wrapMm;y1=plan.box.lengthMm;}
+  const size=Math.max(STENCIL.minView,x1-x0,y1-y0),pad=size*STENCIL.viewPad,cx=(x0+x1)/2,cy=(y0+y1)/2;
+  const w=Math.max(x1-x0,STENCIL.minView*0.6)+2*pad,h=Math.max(y1-y0,STENCIL.minView*0.6)+2*pad;
+  return{x0:dsR(cx-w/2),y0:dsR(cy-h/2),w:dsR(w),h:dsR(h),size:dsR(size)};
+}
+const dsR=v=>Math.round(v*1000)/1000;
+
+/* ---- the session object ---- */
+function ssEmptyAcc(){return{lineLen:0,lineQ:0,depthW:0,depthQ:0,blow:0,joins:0,trauma:0,sittings:0,hours:0};}
+function sessionNew(o){
+  o=o||{};
+  const kind=o.kind||"sample",design=JSON.parse(JSON.stringify(o.design||{}));
+  const cl=o.client||null,practice=kind==="practice";
+  const tr=cl&&cl.traits||{};
+  const sess={v:1,kind,itemId:o.itemId||null,clientId:cl?cl.id||null:null,
+    client:practice||!cl?null:{name:cl.name||"Client",pronouns:cl.pronouns||"",traits:{pain:tr.pain!=null?tr.pain:0.5,talkative:tr.talkative!=null?tr.talkative:0.5,sun:tr.sun!=null?tr.sun:0.4}},
+    design,bodyShape:o.bodyShape||(cl&&cl.bodyShape)||"neutral",skinTone:o.skinTone!=null?o.skinTone:(cl&&cl.skinTone!=null?cl.skinTone:0.3),
+    kit:SIM.kitClean(o.kit),settings:{assist:!!(o.settings&&o.settings.assist)},
+    skills:{linework:+((o.skills||{}).linework)||0,shading:+((o.skills||{}).shading)||0,colour:+((o.skills||{}).colour)||0,speed:+((o.skills||{}).speed)||0,
+      styles:Object.assign({},(o.skills||{}).styles||{})},
+    year:o.year||2000,week:o.week||1,part:o.part||1,partsTotal:0,phase:"place",
+    next:0,start:0,end:0,view:null,liner:null,cur:null,zsat:[],acc:ssEmptyAcc(),
+    sit:{lineLen:0,lineQ:0,depthW:0,depthQ:0,blow:0,joins:0,trauma:0,zoneWork:{shade:0,colour:0}},
+    m:{pain:0,fatigue:0,clock:0,breaks:0,numbH:0,numbs:0,chatH:0,chats:0},stop:null,pen:null};
+  if(practice)sess.partsTotal=1;
+  else sess.partsTotal=o.partsTotal||ssPlanFor(design,sess.bodyShape,sess.client,sess.skills,0).parts;
+  const plan=ssPlan(sess),pr=o.progress||null;
+  sess.zsat=plan.zones.map((z,i)=>pr&&Array.isArray(pr.zsat)&&typeof pr.zsat[i]==="number"?pr.zsat[i]:0);
+  if(pr){sess.next=clamp(pr.next|0,0,plan.items.length);sess.acc=Object.assign(ssEmptyAcc(),pr.acc||{});sess.cur=pr.cur||null;
+    if(sess.next>0||sess.cur)sess.phase="work";}
+  ssStartSitting(sess);
+  return sess;
+}
+function ssStartSitting(sess){
+  const plan=ssPlan(sess);
+  sess.start=sess.next;sess.end=ssSitEnd(plan,sess.next,sess.part,sess.partsTotal);
+  sess.view=ssSitView(plan,sess.start,sess.end);
+  const first=plan.items.slice(sess.start,sess.end).find(it=>it.k==="line");
+  sess.liner=ssBestLiner(sess,first?plan.strokes[first.i].lw:7);
+}
+/* the liner on the tray whose clean band holds this line weight (or the nearest) */
+function ssBestLiner(sess,lw){
+  const B=SIM.kitBands(sess.kit,sess.skills,sess.settings),LW=SIM.LINE_WEIGHTS;let best=null,bd=1e9;
+  for(const l of B.liners){const d=lw<l.lo?LW.indexOf(l.lo)-LW.indexOf(lw):lw>l.hi?LW.indexOf(lw)-LW.indexOf(l.hi):0;
+    const dd=d*10+Math.abs(LW.indexOf(l.rl)-LW.indexOf(lw));if(dd<bd){bd=dd;best=l.id;}}
+  return best;
+}
+const ssBandCache=new Map();
+function ssBands(sess){
+  const key=JSON.stringify([sess.kit,sess.skills.linework,sess.skills.shading,sess.skills.colour,sess.settings.assist,sess.liner,sess.view&&sess.view.size]);
+  let b=ssBandCache.get(key);if(b)return b;
+  b=Object.assign({},SIM.kitBands(sess.kit,sess.skills,sess.settings,{liner:sess.liner}));
+  const v=sess.view?sess.view.size:50;
+  b.view=v;b.paceMmS=v*PACE.frac*b.pace;b.accMm=Math.max(ACC.minMm,v*b.accFrac);
+  if(ssBandCache.size>60)ssBandCache.clear();ssBandCache.set(key,b);
+  return b;
+}
+function sessionItem(sess){
+  const plan=ssPlan(sess);if(sess.next>=sess.end||sess.next>=plan.items.length)return null;
+  const it=plan.items[sess.next];
+  return Object.assign({idx:sess.next},it,it.k==="line"?{stroke:plan.strokes[it.i]}:{zone:plan.zones[it.i]});
+}
+/* stencil placement (only before any work): move the piece's centre, rebuild the plan, re-check flow and creases */
+function stencilCheck(design,client,skills){
+  const sc=SIM.scoreDesign(design,client||null,skills||{});
+  const ids={crease:1,crease_near:1,too_wide:1,too_long:1,against_flow:1,against_shape:1};
+  return{flow:sc.flow,issues:sc.stress.filter(s=>ids[s.id])};
+}
+function sessionPlace(sess,pos){
+  if(sess.next>0||sess.cur||sess.acc.sittings>0)return stencilCheck(sess.design,sess.client,sess.skills);
+  sess.design.pos={x:dsR(clamp(pos.x,0,1)),y:dsR(clamp(pos.y,0,1))};
+  ssStartSitting(sess);
+  return stencilCheck(sess.design,sess.client,sess.skills);
+}
+
+/* ---- the meters: advance the sitting clock by dH hours of work (and add any trauma) ---- */
+function sessionPainRate(sess){
+  if(sess.kind==="practice"||!sess.client)return 0;
+  const plan=ssPlan(sess),b=ssBands(sess),tol=clamp(sess.client.traits.pain,0,1);
+  return PAIN.k*(plan.pain+PAIN.floor)*lerp(PAIN.tolLo,PAIN.tolHi,tol)*b.pain*(1+PAIN.ramp*sess.m.clock)*(sess.m.numbH>0?NUMB.mult:1);
+}
+function ssClock(sess,dH,dT){
+  const m=sess.m;dT=dT||0;
+  const b=ssBands(sess);dT+=TRAUMA.perHour*b.trauma*dH;
+  sess.acc.trauma+=dT;sess.sit.trauma+=dT;
+  if(sess.kind==="practice"||!sess.client){m.clock+=dH;return;}
+  const rate=sessionPainRate(sess);
+  m.pain+=rate*dH+dT*PAIN.trauma;
+  const talk=clamp(sess.client.traits.talkative,0,1);
+  m.fatigue+=FATIGUE.k*(1+FATIGUE.pain*Math.min(1,m.pain))*(m.chatH>0?1-CHAT.fatigue*talk:1)*dH;
+  m.clock+=dH;m.numbH=Math.max(0,m.numbH-dH);m.chatH=Math.max(0,m.chatH-dH);
+  if(!sess.stop){if(m.pain>=PAIN.limit)sess.stop="pain";else if(m.fatigue>=FATIGUE.limit)sess.stop="fatigue";}
+}
+
+/* ---- linework ---- */
+function ssProject(st,x,y,u0,u1){
+  const c=st.cum,p=st.pts;let lo=0,hi=c.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(c[mid]<u0)lo=mid+1;else hi=mid;}
+  let best=1e18,bu=u0;const i0=Math.max(1,lo);
+  for(let i=i0;i<c.length&&c[i-1]<=u1;i++){
+    const ax=p[2*i-2],ay=p[2*i-1],dx=p[2*i]-ax,dy=p[2*i+1]-ay,l2=dx*dx+dy*dy||1e-9;
+    const t=clamp(((x-ax)*dx+(y-ay)*dy)/l2,0,1),qx=ax+t*dx-x,qy=ay+t*dy-y,d=qx*qx+qy*qy;
+    if(d<best){best=d;bu=c[i-1]+t*(c[i]-c[i-1]);}
+  }
+  return{u:bu,d:Math.sqrt(best)};
+}
+function ssPointAt(st,u){
+  const c=st.cum,p=st.pts;u=clamp(u,0,st.len);let lo=1,hi=c.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;if(c[mid]<u)lo=mid+1;else hi=mid;}
+  const i=Math.max(1,lo),a=c[i-1],b=c[i],t=b>a?(u-a)/(b-a):0;
+  return[lerp(p[2*i-2],p[2*i],t),lerp(p[2*i-1],p[2*i+1],t)];
+}
+function ssNewCur(st){const n=st.segs.length,z=()=>new Array(n).fill(0);return{u:0,T:z(),A:z(),P:z(),PT:z(),D:z(),R:z(),B:z(),joins:0,contacts:0,t:0,linger:0};}
+function ssLwSteps(sess,lw){
+  const b=ssBands(sess),LW=SIM.LINE_WEIGHTS,i=LW.indexOf(lw);if(i<0||!b.liner)return 0;
+  if(lw>b.lineBand[1])return i-LW.indexOf(b.lineBand[1]);
+  if(lw<b.lineBand[0])return-(LW.indexOf(b.lineBand[0])-i);
+  return 0;
+}
+function ssLive(sess,o){const m=sess.m;return Object.assign({ok:true,pain:dsR(m.pain),fatigue:dsR(m.fatigue),clock:dsR(m.clock),stop:sess.stop},o||{});}
+function penDown(sess,t,x,y){
+  const it=sessionItem(sess);if(!it||sess.phase!=="work")return{ok:false,why:"none"};
+  if(it.k==="line"){
+    const st=it.stroke,b=ssBands(sess);if(!sess.cur)sess.cur=ssNewCur(st);
+    const c=sess.cur,at=ssPointAt(st,c.u),slop=Math.max(b.accMm*PACE.startSlop,b.view*0.05);
+    if(Math.hypot(x-at[0],y-at[1])>slop)return{ok:false,why:"start",at};
+    if(c.contacts>0&&c.u<st.len-PACE.endSlop){c.joins++;sess.sit.joins++;}
+    c.contacts++;
+    sess.pen={k:"line",t0:t,t,x,y,u:c.u,v:null,still:0,stopped:false,hx:[x],hy:[y],ht:[t]};
+    return ssLive(sess,{u:c.u,r:0,d:Math.hypot(x-at[0],y-at[1])});
+  }
+  sess.pen={k:it.k,t0:t,t,x,y,dx:0,dy:0,leg:0,lastRev:-1e9};
+  const b=ssBands(sess);return ssLive(sess,{inside:ssNear(it.zone.polys,x,y,Math.max(ZONE.slopMin,b.view*ZONE.slop)),sat:dsR(sess.zsat[it.i])});
+}
+function penMove(sess,t,x,y){
+  const pen=sess.pen,it=sessionItem(sess);if(!pen||!it)return{ok:false,why:"up"};
+  const dt=(t-pen.t)/1000;if(dt<=0)return ssLive(sess,{});
+  const dtc=Math.min(dt,CLOCK.maxDt),b=ssBands(sess);
+  if(pen.k==="line"){
+    const st=it.stroke,c=sess.cur;
+    const ahead=Math.hypot(x-pen.x,y-pen.y)*PACE.aheadK+PACE.aheadMm;   // progress can't outrun the finger (no jumping across a loop)
+    const pr=ssProject(st,x,y,Math.max(0,pen.u-PACE.backMm),pen.u+ahead);
+    /* pace is the finger's own speed over the last PACE.speedMs (a chord, so touch jitter averages out); du is progress */
+    pen.hx.push(x);pen.hy.push(y);pen.ht.push(t);
+    while(pen.ht.length>2&&pen.ht[1]<=t-PACE.speedMs){pen.hx.shift();pen.hy.shift();pen.ht.shift();}
+    const du=Math.max(0,pr.u-pen.u),inst=Math.hypot(x-pen.hx[0],y-pen.hy[0])/Math.max(1e-3,(t-pen.ht[0])/1000);
+    const al=1-Math.exp(-dt*1000/PACE.smoothMs);
+    pen.v=pen.v==null?inst:pen.v+(inst-pen.v)*al;
+    const r=pen.v/b.paceMmS;
+    let joinNow=false;
+    if(r<PACE.stop){pen.still+=dt*1000;if(pen.still>=PACE.stopMs)pen.stopped=true;}
+    else{if(pen.stopped&&r>PACE.go){c.joins++;sess.sit.joins++;joinNow=true;pen.stopped=false;}if(r>=PACE.go)pen.still=0;}
+    const u=pen.u+du,s=Math.min(st.segs.length-1,st.segs.findIndex(e=>u<=e+1e-9)<0?st.segs.length-1:st.segs.findIndex(e=>u<=e+1e-9));
+    const steps=ssLwSteps(sess,st.lw),band=b.paceBand,rushAt=1+band*PACE.rush*(steps<0?Math.pow(LW_FIT.overRush,-steps):1);
+    const accF=pr.d<=b.accMm?1-ACC.inner*Math.pow(pr.d/b.accMm,2):Math.max(0,(1-ACC.inner)*(1-(pr.d-b.accMm)/(b.accMm*ACC.fall)));
+    const lr=Math.abs(Math.log(Math.max(r,1e-3))),lb=Math.log(1+band);
+    const paceF=lr<=lb?1:Math.exp(-Math.pow((lr-lb)/PACE.fall,2));
+    const depth=b.hit/Math.pow(Math.max(r,DEPTH.minRatio),DEPTH.paceExp),ld=Math.log(depth);
+    const depthF=Math.exp(-Math.pow(ld/b.depthTol,2));
+    const warm=t-pen.t0<PACE.warmMs;
+    c.T[s]+=dtc;c.A[s]+=dtc*accF;c.D[s]+=dtc*depthF;
+    if(!warm&&!pen.stopped){c.P[s]+=dtc*paceF;c.PT[s]+=dtc;}
+    const rushed=!warm&&r>rushAt;let blow=false;
+    if(rushed){c.R[s]+=dt*1000;if(c.R[s]>=PACE.blowMs&&!c.B[s]){c.B[s]=1;blow=true;}}
+    let dT=0;if(ld>DEPTH.deep&&!warm)dT+=dtc*(ld-DEPTH.deep)*TRAUMA.linger*b.trauma;
+    if(blow)dT+=TRAUMA.blow*b.trauma;
+    c.t+=dtc;
+    const target=st.len/b.paceMmS;
+    ssClock(sess,it.w*dtc/Math.max(0.5,target),dT);
+    pen.t=t;pen.x=x;pen.y=y;pen.u=u;c.u=u;
+    return ssLive(sess,{u:dsR(u),r:dsR(r),d:dsR(pr.d),rushed,stopped:pen.stopped,blow,join:joinNow,seg:s,acc:dsR(accF),pace:dsR(paceF)});
+  }
+  /* zones */
+  const z=it.zone,dx=x-pen.x,dy=y-pen.y,dist=Math.hypot(dx,dy),slop=Math.max(ZONE.slopMin,b.view*ZONE.slop);
+  const inside=ssNear(z.polys,x,y,slop)&&ssNear(z.polys,pen.x,pen.y,slop);
+  const vRel=dist/dt/b.view;let f=0,dT=0,depthF=1;
+  if(inside){
+    f=vRel<ZONE.vLo?vRel/ZONE.vLo:vRel>ZONE.vHi?ZONE.vHi/vRel:1;
+    depthF=vRel<ZONE.vLo?lerp(0.55,1,vRel/ZONE.vLo):vRel>ZONE.vHi?Math.max(0.3,ZONE.vHi/vRel):1;
+    if(vRel<ZONE.vLo*0.5)dT+=TRAUMA.dig*b.trauma*dtc;
+    if(pen.k==="colour"){
+      if(dist>1e-6){const ux=dx/dist,uy=dy/dist;
+        if(pen.leg>0&&(ux*pen.dx+uy*pen.dy)<COLOUR.turnDot){if(pen.leg>=b.view*COLOUR.minLegShare)pen.lastRev=t;pen.leg=0;}
+        pen.dx=ux;pen.dy=uy;pen.leg+=dist;}
+      if(t-pen.lastRev>COLOUR.windowMs)f*=COLOUR.sweepK;
+    }
+  }
+  const rate=pen.k==="colour"?b.colour:b.shade;
+  const dSat=inside?dist/(Math.sqrt(z.area)*ZONE.passes)*rate*f:0;
+  const before=sess.zsat[it.i],after=before+dSat,lim=z.target+ZONE.slack;
+  const over=Math.max(0,after-lim)-Math.max(0,before-lim);
+  if(over>0)dT+=over*TRAUMA.over*b.trauma;
+  sess.zsat[it.i]=after;
+  if(dSat>0){const w=dSat*ZONE.depthW*Math.sqrt(z.area)/10;sess.acc.depthW+=w;sess.acc.depthQ+=w*depthF;sess.sit.depthW+=w;sess.sit.depthQ+=w*depthF;sess.sit.zoneWork[pen.k]+=dSat;}
+  ssClock(sess,it.w*dSat/Math.max(0.1,z.target),dT);
+  pen.t=t;pen.x=x;pen.y=y;
+  return ssLive(sess,{inside,sat:dsR(after),target:z.target,over:after>lim,f:dsR(f)});
+}
+function penUp(sess,t){
+  const pen=sess.pen;sess.pen=null;const it=sessionItem(sess);
+  if(!pen||!it)return ssLive(sess,{done:false});
+  if(pen.k==="line"){
+    const st=it.stroke,c=sess.cur;
+    if(c&&c.u>=Math.min(st.len-PACE.endSlop,st.len*PACE.doneShare)){ssFinishStroke(sess);return ssLive(sess,{done:true,lineDone:true});}
+    return ssLive(sess,{done:false,u:c?dsR(c.u):0});
+  }
+  return ssLive(sess,{done:false});
+}
+/* score the current stroke from its segment sums and move on */
+function ssFinishStroke(sess){
+  const it=sessionItem(sess);if(!it||it.k!=="line"){sess.cur=null;return null;}
+  const st=it.stroke,c=sess.cur||ssNewCur(st),n=st.segs.length;
+  let sq=0,sd=0,blows=0,last=null,lastD=null;
+  for(let s=0;s<n;s++){
+    const s0=s?st.segs[s-1]:0;let q,dq;
+    if(c.T[s]>0){const acc=c.A[s]/c.T[s],pace=c.PT[s]>0?c.P[s]/c.PT[s]:1;q=acc*pace*(c.B[s]?BLOW.q:1);dq=c.D[s]/c.T[s];last=q;lastD=dq;}
+    else if(c.u>=st.segs[s]-1e-9&&last!=null){q=last;dq=lastD;}   // skimmed past in one sample
+    else if(c.u>s0){q=(last!=null?last:0.5)*clamp((c.u-s0)/(st.segs[s]-s0),0,1);dq=lastD!=null?lastD:0.5;}
+    else{q=0;dq=0;}
+    if(c.B[s])blows++;
+    const L=st.segs[s]-s0;sq+=q*L;sd+=dq*L;
+  }
+  const steps=ssLwSteps(sess,st.lw);
+  const lwF=steps>0?Math.pow(LW_FIT.under,steps):steps<0?Math.pow(LW_FIT.over,-steps):1;
+  const q=clamp(sq/st.len*Math.pow(JOIN.q,c.joins)*lwF,0,1),dq=clamp(sd/st.len,0,1);
+  for(const A of [sess.acc,sess.sit]){A.lineLen+=st.len;A.lineQ+=q*st.len;A.depthW+=st.len;A.depthQ+=dq*st.len;A.blow+=blows;}
+  sess.acc.joins+=c.joins;
+  if(steps>0)ssClock(sess,0,LW_FIT.passTrauma*steps);
+  sess.cur=null;sess.next++;
+  const res={q:dsR(q),depth:dsR(dq),blowouts:blows,joins:c.joins,lwSteps:steps};
+  sess.lastStroke=res;
+  ssAfterItem(sess);
+  return res;
+}
+function ssAfterItem(sess){
+  const plan=ssPlan(sess);
+  if(sess.next>=sess.end||sess.next>=plan.items.length){if(!sess.stop)sess.stop="done";return;}
+  const it=plan.items[sess.next];
+  if(it.k==="line"){const lw=plan.strokes[it.i].lw,B=SIM.kitBands(sess.kit,sess.skills,sess.settings,{liner:sess.liner});
+    if(!(lw>=B.lineBand[0]&&lw<=B.lineBand[1])){const best=ssBestLiner(sess,lw);if(best)sess.autoLiner=best;}else sess.autoLiner=null;}
+}
+function sessionSetLiner(sess,id){
+  const B=SIM.kitBands(sess.kit,sess.skills,sess.settings);if(!B.liners.some(l=>l.id===id))return false;
+  if(sess.pen)return false;sess.liner=id;sess.autoLiner=null;return true;
+}
+/* leave the current zone (or give up the rest of the current line) */
+function sessionNextItem(sess){
+  const it=sessionItem(sess);if(!it||sess.pen)return false;
+  if(it.k==="line"){ssFinishStroke(sess);return true;}
+  sess.next++;ssAfterItem(sess);return true;
+}
+function sessionAction(sess,kind){
+  const m=sess.m;
+  if(sess.kind==="practice"||!sess.client)return{ok:false,why:"Fake skin doesn't need a break."};
+  if(kind==="break"){
+    if(m.breaks>=BREAK.max)return{ok:false,why:"They want to get it finished, not another break."};
+    const eff=Math.pow(BREAK.fade,m.breaks);m.pain*=1-BREAK.pain*eff;m.fatigue*=1-BREAK.fatigue*eff;m.breaks++;m.clock+=BREAK.hours;
+    return{ok:true,eff:dsR(eff)};}
+  if(kind==="numb"){
+    if(m.numbs>=NUMB.max)return{ok:false,why:"The cream is already on."};
+    m.numbs++;m.numbH=NUMB.hours;m.pain*=1-NUMB.now;
+    return{ok:true,cost:Math.round(NUMB.price*(SIM.priceIndex?SIM.priceIndex(sess.year):1)/10)*10};}
+  if(kind==="chat"){
+    if(m.chats>=CHAT.max)return{ok:false,why:"You've talked yourselves out."};
+    if(m.chatH>0)return{ok:false,why:"You're already chatting."};
+    m.chats++;const talk=clamp(sess.client.traits.talkative,0,1);m.chatH=CHAT.hours;
+    if(talk<CHAT.quiet)m.fatigue+=CHAT.annoy;
+    return{ok:true,talk:dsR(talk)};}
+  return{ok:false,why:"?"};
+}
+/* the piece's outputs from progress */
+function ssOut(acc,zsat,plan,b){
+  const lineQ=acc.lineLen>0?acc.lineQ/acc.lineLen:1,depthQ=acc.depthW>0?acc.depthQ/acc.depthW:0.75;
+  let sw=0,ss=0;plan.zones.forEach((z,i)=>{const w=z.area*z.target;sw+=w;ss+=w*Math.min(1,(zsat[i]||0)/z.target);});
+  const sat=sw>0?clamp(ss/sw*b.sat,0,1):clamp(b.sat*(0.72+0.28*depthQ),0,1);
+  return{lineQuality:dsR(clamp(lineQ,0,1)),depthQuality:dsR(clamp(depthQ,0,1)),saturation:dsR(sat),trauma:dsR(1-Math.exp(-acc.trauma))};
+}
+function sessionFinish(sess){
+  const plan=ssPlan(sess),b=ssBands(sess),done=sess.next>=plan.items.length;
+  const acc=Object.assign({},sess.acc,{sittings:sess.acc.sittings+1,hours:dsR(sess.acc.hours+sess.m.clock)});
+  const progress={next:sess.next,zsat:sess.zsat.map(dsR),acc,cur:done?null:sess.cur};
+  const out=ssOut(acc,sess.zsat,plan,b),S0=sess.sit;
+  const sitting={lineQuality:S0.lineLen>0?dsR(S0.lineQ/S0.lineLen):null,depthQuality:S0.depthW>0?dsR(S0.depthQ/S0.depthW):null,
+    blowouts:S0.blow,joins:S0.joins,trauma:dsR(1-Math.exp(-S0.trauma)),hours:dsR(sess.m.clock),items:sess.next-sess.start,pain:dsR(sess.m.pain),fatigue:dsR(sess.m.fatigue)};
+  const early=!done&&sess.next<sess.end;
+  return{done,early,stop:sess.stop||(early?"artist":"done"),out:Object.assign({},out,{sessionsUsed:acc.sittings,blowouts:acc.blow,joins:acc.joins}),
+    sitting,progress,part:sess.part,partsTotal:sess.partsTotal,sessionsUsed:acc.sittings,
+    nextPart:done?null:early?sess.part:Math.min(sess.part+1,sess.partsTotal),left:plan.items.length-sess.next};
+}
+function sessionXp(res,sess,skills){
+  const T=SKILL_XP[sess.kind]||SKILL_XP.sample,sk=skills||{},o={styles:{}};
+  const g=(k,q)=>{const lvl=clamp(+sk[k]||0,0,10);return dsR(T[k]*(SKILL_XP.floor+(1-SKILL_XP.floor)*clamp(q,0,1))*(1-SKILL_XP.diminish*lvl/10));};
+  const S0=sess.sit,lq=S0.lineLen>0?S0.lineQ/S0.lineLen:0;
+  o.linework=S0.lineLen>0?g("linework",lq):0;
+  o.shading=S0.zoneWork.shade>0?g("shading",res.out.saturation):0;
+  o.colour=S0.zoneWork.colour>0?g("colour",res.out.saturation):0;
+  o.speed=g("speed",1-res.out.trauma);
+  const st=sess.design.style;if(st){const lvl=clamp(+((sk.styles||{})[st])||0,0,10);o.styles[st]=dsR(T.style*(1-SKILL_XP.diminish*lvl/10)*(0.5+0.5*lq));}
+  return o;
+}
+/* a synthetic trace of the current stroke for tests: {speed (x target pace), noise (mm, deterministic wobble), dtMs,
+   stopAt (share of the stroke), stopMs, lift (true: lift and come back instead of stopping)} -> [[t,x,y],...] contacts */
+function sessionSynth(sess,o){
+  o=o||{};const it=sessionItem(sess);if(!it||it.k!=="line")return[];
+  const st=it.stroke,b=ssBands(sess),v=b.paceMmS*(o.speed||1),dt=o.dtMs||16,u0=sess.cur?sess.cur.u:0,out=[];
+  let t=o.t0||0,u=u0,cur=[],stopped=false,k=0;
+  const wob=uu=>(o.noise||0)*Math.sin(uu*(o.wave||0.35)+0.4)*Math.cos(uu*(o.wave||0.35)*0.37);   // a slow hand wobble
+  const pt=uu=>{const a=ssPointAt(st,uu),b2=ssPointAt(st,Math.min(st.len,uu+0.5)),nx=-(b2[1]-a[1]),ny=b2[0]-a[0],nl=Math.hypot(nx,ny)||1,w=wob(uu);return[a[0]+nx/nl*w,a[1]+ny/nl*w];};
+  const push=uu=>{const p=pt(uu);cur.push([t,p[0],p[1]]);k++;};
+  push(u);
+  while(u<st.len){
+    t+=dt;u=Math.min(st.len,u+v*dt/1000);
+    if(o.stopAt!=null&&!stopped&&u>=st.len*o.stopAt){
+      stopped=true;
+      if(o.lift){push(u);out.push(cur);cur=[];t+=o.stopMs||600;push(u);continue;}
+      const tEnd=t+(o.stopMs||600);while(t<tEnd){push(u);t+=dt;}
+    }
+    push(u);
+  }
+  out.push(cur);
+  return out;
+}
+/* run contacts through the pen (tests and the browser check) */
+function sessionTrace(sess,contacts){let last=null;
+  for(const c of contacts){if(!c.length)continue;const d=penDown(sess,c[0][0],c[0][1],c[0][2]);if(!d.ok)return d;
+    for(let i=1;i<c.length;i++)penMove(sess,c[i][0],c[i][1],c[i][2]);last=penUp(sess,c[c.length-1][0]);}
+  return last;}
+function sessionResume(sess){sess.pen=null;return sess;}
+function sessionStart(sess){if(sess.phase==="place")sess.phase="work";return sess;}
+
+SIM.STENCIL=STENCIL;SIM.PACE=PACE;SIM.ACC=ACC;SIM.DEPTH=DEPTH;SIM.BLOW=BLOW;SIM.JOIN=JOIN;SIM.LW_FIT=LW_FIT;SIM.ZONE=ZONE;
+SIM.COLOUR_PACK=COLOUR;SIM.TRAUMA=TRAUMA;SIM.PAIN=PAIN;SIM.FATIGUE=FATIGUE;SIM.BREAK=BREAK;SIM.NUMB=NUMB;SIM.CHAT=CHAT;SIM.SKILL_XP=SKILL_XP;
+SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.sessionBands=ssBands;SIM.sessionPlace=sessionPlace;
+SIM.stencilCheck=stencilCheck;SIM.sessionItem=sessionItem;SIM.sessionStart=sessionStart;SIM.sessionResume=sessionResume;
+SIM.penDown=penDown;SIM.penMove=penMove;SIM.penUp=penUp;SIM.sessionSetLiner=sessionSetLiner;SIM.sessionNextItem=sessionNextItem;
+SIM.sessionAction=sessionAction;SIM.sessionFinish=sessionFinish;SIM.sessionXp=sessionXp;SIM.sessionPainRate=sessionPainRate;
+SIM.sessionSynth=sessionSynth;SIM.sessionTrace=sessionTrace;SIM.pointAt=ssPointAt;SIM.insideZone=ssInside;
+/* ===== sim/kit.js: the kit: MACHINES, NEEDLES, INKS, VOLTAGE and STROKE, and the session bands they give (PR 4) =====
+   The kit is a build system (plan Q9): a machine, a tray of needle groupings, an ink tier and two sliders. Nothing in the
+   game depends on it except the session (sim/session.js reads the bands) and aging (sim/aging.js reads INKS for fade and
+   spread). INKS is the one table of ink tiers: aging.js reads SIM.INKS at call time, and SIM.INK_TIERS is the same object.
+     kit = {machine: MACHINES id, needles: [NEEDLES ids on the tray], ink: INKS id, voltage, stroke (mm),
+            owned: {machines:[ids], needles:[ids], inks:[ids]}}    (S.kit; KIT_DEFAULT is the apprentice's starter kit)
+     SIM.kitBands(kit, skills, settings, opts?) -> the session bands (below). opts.liner picks the liner in use (default the
+       first liner on the tray). settings.assist widens the bands and slows the marker (ASSIST).
+     SIM.kitDeltas(kitA, kitB, skills?, settings?) -> what changing kitA into kitB does, for the Studio build panel:
+       {band, pace, lineLo, lineHi, shade, trauma, fade} (band/pace/shade/trauma/fade are ratios - 1, so +0.12 = 12% more;
+       lineLo/lineHi are steps in LINE_WEIGHTS for the tray's whole line range)
+     SIM.kitPrice(kind, id, year) -> rubles in that year (prices in the tables are 2000 rubles x SIM.priceIndex(year))
+     SIM.kitClean(kit) -> a valid kit (unknown ids dropped, sliders clamped, the starter kit for anything missing)
+   The bands:
+     paceBand   how far your speed may stray from the target pace and still count as steady (0.35 = within 35%)
+     accFrac    how far off the stencil line still counts as on it, as a share of the view size (session.js turns it to mm)
+     pace       the target pace multiplier (1 = PACE.frac of the view per second); faster machines set a quicker marker
+     hit        how hard the needle hits at the target pace (1 = ideal depth); depthTol how forgiving depth is
+     trauma     multiplier on skin trauma; pain the machine's share of the client's pain rate
+     shade, colour   saturation per unit of sweeping (mags fill fastest)
+     lineBand [lo, hi] RL the liner in use lays cleanly; lineAll [lo, hi] for the whole tray; lineMm [lo, hi] in mm
+     fade, spread, sat    the ink tier (sat caps how solid colour and black pack)
+     buzz       the machine's synth profile (sound/synth.js)
+   Private helpers start with kt. ===== */
+
+/* machines. band widens the pace band, trauma multiplies skin damage, depth widens the depth tolerance, pain adds to the
+   client's pain rate; buzz is the synth voice {wave, hz (base pitch), cut (lowpass Hz), rough (rattle 0..1)}. price is
+   2000 rubles; from = the first year you can buy one */
+const MACHINES={
+  coil_used:{id:"coil_used",name:"Used coil",kind:"coil",band:0.88,trauma:1.15,depth:0.85,pain:1.08,price:2500,from:2000,
+    note:"Your mentor's old spare. Loud, runs hot, a little unsteady.",buzz:{wave:"sawtooth",hz:118,cut:2400,rough:0.4}},
+  coil:{id:"coil",name:"Coil machine",kind:"coil",band:1,trauma:1,depth:1,pain:1,price:7000,from:2000,
+    note:"A new pair of coils. The classic buzz, punchy for lining.",buzz:{wave:"sawtooth",hz:128,cut:2800,rough:0.15}},
+  rotary:{id:"rotary",name:"Rotary",kind:"rotary",band:1.14,trauma:0.86,depth:1.08,pain:0.94,price:14000,from:2000,
+    note:"Quiet and smooth. Gentler on skin, a softer hit for shading.",buzz:{wave:"triangle",hz:92,cut:1500,rough:0.05}},
+  pen:{id:"pen",name:"Wireless pen",kind:"pen",band:1.3,trauma:0.76,depth:1.15,pain:0.9,price:32000,from:2014,
+    note:"Battery pen, no cord, no clip cord drag. The steadiest hand money can buy.",buzz:{wave:"sine",hz:84,cut:1000,rough:0.02}}
+};
+/* needle groupings. A liner lays line weights `reach` steps either side of its own grouping in one clean pass; shade is
+   how fast it fills a shaded or coloured zone (mags are made for it). price is 2000 rubles for a box */
+const NEEDLES={
+  "1RL":{id:"1RL",name:"1RL liner",kind:"liner",rl:1,reach:1,shade:0.2,price:300},
+  "3RL":{id:"3RL",name:"3RL liner",kind:"liner",rl:3,reach:1,shade:0.3,price:250},
+  "5RL":{id:"5RL",name:"5RL liner",kind:"liner",rl:5,reach:1,shade:0.38,price:250},
+  "7RL":{id:"7RL",name:"7RL liner",kind:"liner",rl:7,reach:1,shade:0.45,price:280},
+  "9RL":{id:"9RL",name:"9RL liner",kind:"liner",rl:9,reach:1,shade:0.52,price:300},
+  "11RL":{id:"11RL",name:"11RL liner",kind:"liner",rl:11,reach:1,shade:0.58,price:320},
+  "14RL":{id:"14RL",name:"14RL liner",kind:"liner",rl:14,reach:1,shade:0.64,price:350},
+  "7M1":{id:"7M1",name:"7 magnum",kind:"mag",rl:null,shade:1,price:300},
+  "9M1":{id:"9M1",name:"9 magnum",kind:"mag",rl:null,shade:1.2,price:340},
+  "13RM":{id:"13RM",name:"13 curved mag",kind:"mag",rl:null,shade:1.45,price:420},
+  "15RM":{id:"15RM",name:"15 curved mag",kind:"mag",rl:null,shade:1.65,price:480}
+};
+/* ink tiers, brand-less. fade and spread multiply the aging model's rates; sat caps how solid it packs. price 2000 rubles */
+const INKS={
+  budget:{id:"budget",name:"Budget",fade:1.25,spread:1.1,sat:0.86,price:600,note:"Cheap and thin. Greys out early."},
+  standard:{id:"standard",name:"Standard",fade:1,spread:1,sat:1,price:2200,note:"What most shops pour."},
+  premium:{id:"premium",name:"Premium",fade:0.82,spread:0.95,sat:1.08,price:5200,note:"Dense pigment. Packs solid, holds for decades."}
+};
+/* the two sliders */
+const VOLTAGE={min:5,max:10,def:7,step:0.1,unit:"V"};
+const STROKE={min:2.5,max:4.5,def:3.5,step:0.1,unit:"mm"};
+/* how the sliders and the rest turn into bands. dv = volts over VOLTAGE.def, ds = mm over STROKE.def */
+const KIT_TUNE={
+  paceBase:0.36,accBase:0.03,depthTol:0.45,   // pace band (share), stencil tolerance (share of the view), depth tolerance (log)
+  paceV:0.09,paceS:0.1,                      // target pace per volt and per mm of stroke
+  bandV:0.07,bandS:0.06,bandFloor:0.45,      // the band narrows per volt / mm (never below bandFloor of itself)
+  hitV:0.05,hitS:0.09,                       // the needle hits harder per volt / mm
+  traumaV:0.08,traumaS:0.12,                 // trauma per volt / mm
+  painV:0.04,                                // pain per volt
+  shadeS:0.12,shadeV:0.04,colour:0.85,       // shading fills faster with a longer stroke; colour packs at this share of shade
+  noMag:0.55,                                // with no mag on the tray, the biggest liner shades at this share of its rate
+  skillBand:0.45,skillAcc:0.35,skillDepth:0.4,skillShade:0.3   // skill 10 adds these shares
+};
+/* Assist (Settings): a wider pace band and stencil tolerance, a slower marker */
+const ASSIST={band:1.6,acc:1.4,slow:0.75};
+/* the apprentice's starter kit (freshState in app/state.js writes the same literal) */
+const KIT_DEFAULT={machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,
+  owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}};
+const KIT_TRAY_MAX=5;   // groupings on the tray at once
+
+function ktCopy(o){return JSON.parse(JSON.stringify(o));}
+function kitClean(kit){
+  const k=kit&&typeof kit==="object"?kit:{},d=KIT_DEFAULT;
+  const ow=k.owned&&typeof k.owned==="object"?k.owned:{};
+  const list=(a,T,def)=>{const v=Array.isArray(a)?a.filter((x,i)=>T[x]&&a.indexOf(x)===i):[];return v.length?v:def.slice();};
+  const owned={machines:list(ow.machines,MACHINES,d.owned.machines),needles:list(ow.needles,NEEDLES,d.owned.needles),inks:list(ow.inks,INKS,d.owned.inks)};
+  const num=(v,R)=>typeof v==="number"&&isFinite(v)?clamp(Math.round(v*10)/10,R.min,R.max):R.def;
+  let needles=list(k.needles,NEEDLES,d.needles).filter(n=>owned.needles.indexOf(n)>=0).slice(0,KIT_TRAY_MAX);
+  if(!needles.length)needles=owned.needles.slice(0,KIT_TRAY_MAX);
+  return{machine:MACHINES[k.machine]&&owned.machines.indexOf(k.machine)>=0?k.machine:owned.machines[0],
+    needles,ink:INKS[k.ink]&&owned.inks.indexOf(k.ink)>=0?k.ink:owned.inks[0],
+    voltage:num(k.voltage,VOLTAGE),stroke:num(k.stroke,STROKE),owned};
+}
+/* a liner's clean range in LINE_WEIGHTS terms */
+function ktLinerBand(n){
+  const LW=SIM.LINE_WEIGHTS||[1,3,5,7,9,11,14],i=LW.indexOf(n.rl);
+  if(i<0)return[n.rl,n.rl];
+  return[LW[Math.max(0,i-n.reach)],LW[Math.min(LW.length-1,i+n.reach)]];
+}
+function kitBands(kit,skills,settings,opts){
+  kit=kit||KIT_DEFAULT;skills=skills||{};opts=opts||{};
+  const T=KIT_TUNE,m=MACHINES[kit.machine]||MACHINES[KIT_DEFAULT.machine],ink=INKS[kit.ink]||INKS[KIT_DEFAULT.ink];
+  const v=typeof kit.voltage==="number"?clamp(kit.voltage,VOLTAGE.min,VOLTAGE.max):VOLTAGE.def;
+  const s=typeof kit.stroke==="number"?clamp(kit.stroke,STROKE.min,STROKE.max):STROKE.def;
+  const dv=v-VOLTAGE.def,ds=s-STROKE.def,assist=!!(settings&&settings.assist);
+  const sk=k=>clamp(+skills[k]||0,0,10)/10;
+  const narrow=Math.max(T.bandFloor,(1-T.bandV*dv)*(1-T.bandS*ds));
+  const ns=(Array.isArray(kit.needles)?kit.needles:[]).map(id=>NEEDLES[id]).filter(Boolean);
+  const liners=ns.filter(n=>n.kind==="liner").map(n=>{const b=ktLinerBand(n);return{id:n.id,rl:n.rl,lo:b[0],hi:b[1]};});
+  const mags=ns.filter(n=>n.kind==="mag");
+  const act=liners.find(l=>l.id===opts.liner)||liners[0]||null;
+  const lineBand=act?[act.lo,act.hi]:[1,1];
+  const lineAll=liners.length?[Math.min(...liners.map(l=>l.lo)),Math.max(...liners.map(l=>l.hi))]:[1,1];
+  const mm=rl=>SIM.lineMm?SIM.lineMm(rl):rl*0.12;
+  let shade0=mags.length?Math.max(...mags.map(n=>n.shade)):0;
+  if(!shade0){const big=ns.filter(n=>n.kind==="liner").sort((a,b)=>b.rl-a.rl)[0];shade0=big?big.shade*T.noMag:0.1;}
+  const machineShade=lerp(1,1/m.trauma,0.5);
+  const shade=shade0*(1+T.shadeS*ds)*(1+T.shadeV*dv)*machineShade;
+  return{
+    paceBand:T.paceBase*m.band*narrow*(1+T.skillBand*sk("linework"))*(assist?ASSIST.band:1),
+    accFrac:T.accBase*Math.sqrt(m.band)*Math.sqrt(narrow)*(1+T.skillAcc*sk("linework"))*(assist?ASSIST.acc:1),
+    pace:(1+T.paceV*dv)*(1+T.paceS*ds)*(assist?ASSIST.slow:1),
+    hit:(1+T.hitV*dv)*(1+T.hitS*ds),
+    depthTol:T.depthTol*m.depth*(1+T.skillDepth*sk("linework")),
+    trauma:m.trauma*(1+T.traumaV*dv)*(1+T.traumaS*ds),
+    pain:m.pain*(1+T.painV*dv),
+    shade:shade*(1+T.skillShade*sk("shading")),
+    colour:shade*T.colour*(1+T.skillShade*sk("colour")),
+    liner:act?act.id:null,liners,lineBand,lineAll,lineMm:[mm(lineAll[0]),mm(lineAll[1])],
+    fade:ink.fade,spread:ink.spread,sat:ink.sat,
+    buzz:m.buzz,machine:m.id,ink:ink.id,assist
+  };
+}
+function kitDeltas(a,b,skills,settings){
+  const A=kitBands(a,skills,settings),B=kitBands(b,skills,settings),LW=SIM.LINE_WEIGHTS||[1,3,5,7,9,11,14];
+  const r=(x,y)=>Math.round((y/x-1)*1000)/1000,st=v=>LW.indexOf(v);
+  return{band:r(A.paceBand,B.paceBand),pace:r(A.pace,B.pace),lineLo:st(B.lineAll[0])-st(A.lineAll[0]),lineHi:st(B.lineAll[1])-st(A.lineAll[1]),
+    shade:r(A.shade,B.shade),trauma:r(A.trauma,B.trauma),fade:r(A.fade,B.fade)};
+}
+function kitPrice(kind,id,year){
+  const T=kind==="machine"?MACHINES:kind==="needle"?NEEDLES:INKS,it=T[id];if(!it)return 0;
+  const pi=SIM.priceIndex?SIM.priceIndex(year||2000):1;
+  return Math.round(it.price*pi/50)*50;
+}
+SIM.MACHINES=MACHINES;SIM.NEEDLES=NEEDLES;SIM.INKS=INKS;SIM.INK_TIERS=INKS;SIM.VOLTAGE=VOLTAGE;SIM.STROKE=STROKE;
+SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
+SIM.kitBands=kitBands;SIM.kitDeltas=kitDeltas;SIM.kitPrice=kitPrice;SIM.kitClean=kitClean;SIM.kitDefault=()=>ktCopy(KIT_DEFAULT);
 /* ===== sim/market.js: walk-in generation and PRICE_INDEX by year (PR 3). Last sim file: it closes the INK_SIM IIFE. ===== */
 /* PRICE_INDEX: what a ruble buys, by year (2000 = 1.0). A ruble-like curve: 10-14%/yr inflation in the early 2000s, a
    2008-09 and a 2015 jump, easing to about 4-7%/yr later (about x4 by the mid-2010s, x8.7 by 2030). Rates, rent and
@@ -3095,9 +3930,13 @@ if(typeof module!=="undefined"&&module.exports)module.exports=INK_SIM;
 <script>__ld(.5,"Shop sim loaded")</script>
 <script>
 /* ===================== Ink: INK_SOUND (sound/synth.js) =====================
-   A small Web Audio synth. The audio context is made on the first tap (browsers block sound before one). PR 0 has only
-   the UI tick; PR 4 adds the machine buzz whose pitch follows the trace pace and whose timbre follows the machine.
+   A small Web Audio synth. The audio context is made on the first tap (browsers block sound before one). tick() is the UI
+   click. The machine buzz (PR 4): buzzStart(profile) on a finger down in the Session tab, buzzSet(ratio, rushed) as it moves,
+   buzzStop() on lift. The profile is the machine's (sim/kit.js MACHINES buzz: wave, hz, cut, rough), so a used coil rattles
+   and a pen hums; the pitch follows your pace (BUZZ.pitchLo + pitchK x pace ratio) and a rushed stroke makes it stutter (a
+   square LFO gating the level). Parameters move by plain .value writes (no automation queue to pile up on a busy phone).
    Everything is quiet when S.settings.sound is off. */
+const BUZZ={vol:0.06,pitchLo:0.8,pitchK:0.28,pitchMax:1.6,rattle:0.5,stutterHz:12,stutter:0.85,attack:0.02,release:0.04};
 const INK_SOUND=(function(){
 let ctx=null,master=null,on=true;
 function init(){if(ctx)return true;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;ctx=new A();master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);return true;}catch(e){ctx=null;return false;}}
@@ -3106,7 +3945,24 @@ function tick(){if(!on||!init())return;try{if(ctx.state==="suspended")ctx.resume
   o.type="triangle";o.frequency.setValueAtTime(1400,t);o.frequency.exponentialRampToValueAtTime(700,t+.04);
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.08,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.06);
   o.connect(g);g.connect(master);o.start(t);o.stop(t+.07);}catch(e){}}
-return{init,tick,setOn(v){on=!!v;},isOn(){return on;}};
+/* the machine buzz: oscillator -> lowpass -> rattle (AM at half the pitch, depth from the machine's rough) -> level; the
+   stutter LFO adds to the level only while rushed */
+let bz=null;
+function buzzStart(p){if(!on||!init())return;try{if(ctx.state==="suspended")ctx.resume();buzzStop();p=p||{};
+  const t=ctx.currentTime,hz=p.hz||120,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),am=ctx.createGain(),g=ctx.createGain();
+  const lfo=ctx.createOscillator(),lg=ctx.createGain(),st=ctx.createOscillator(),sg=ctx.createGain();
+  o.type=p.wave||"sawtooth";o.frequency.value=hz*BUZZ.pitchLo;f.type="lowpass";f.frequency.value=p.cut||2400;f.Q.value=0.8;
+  lfo.type="square";lfo.frequency.value=hz/2;lg.gain.value=(p.rough||0)*BUZZ.rattle;am.gain.value=1;
+  st.type="square";st.frequency.value=BUZZ.stutterHz;sg.gain.value=0;
+  g.gain.setValueAtTime(0,t);g.gain.setTargetAtTime(BUZZ.vol,t,BUZZ.attack);
+  o.connect(f);f.connect(am);am.connect(g);g.connect(master);lfo.connect(lg);lg.connect(am.gain);st.connect(sg);sg.connect(g.gain);
+  o.start(t);lfo.start(t);st.start(t);bz={o,f,g,lfo,st,sg,hz,rushed:false};}catch(e){bz=null;}}
+function buzzSet(r,rushed){if(!bz)return;try{
+  bz.o.frequency.value=bz.hz*Math.min(BUZZ.pitchMax,BUZZ.pitchLo+BUZZ.pitchK*Math.max(0,r||0));
+  if(!!rushed!==bz.rushed){bz.rushed=!!rushed;bz.sg.gain.value=rushed?BUZZ.vol*BUZZ.stutter:0;}}catch(e){}}
+function buzzStop(){if(!bz)return;const b=bz;bz=null;try{const t=ctx.currentTime;b.sg.gain.value=0;b.g.gain.cancelScheduledValues(t);b.g.gain.setTargetAtTime(0,t,BUZZ.release);
+  [b.o,b.lfo,b.st].forEach(x=>x.stop(t+BUZZ.release*6));}catch(e){}}
+return{init,tick,buzzStart,buzzSet,buzzStop,setOn(v){on=!!v;if(!on)buzzStop();},isOn(){return on;}};
 })();
 </script>
 <script>
@@ -3178,7 +4034,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.3.0";
+const VERSION="0.1.4.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -3193,11 +4049,15 @@ function freshState(){return{
   v:SAVE_V,
   week:1,            // 1..52 within the year
   year:2000,         // 2000..2030
-  cash:0,
+  cash:3000,         // money on hand; an apprentice starts with a little saved for needles and ink (PR 4)
   rate:0,            // your hourly rate (PR 7: RATE_BY_REP x PRICE_INDEX); 0 while an apprentice
   rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks (REP_TRACKS, PR 5)
   skills:{styles:{},consult:0,linework:0,shading:0,colour:0,speed:0},   // levels 0..10; styles keyed by STYLES id (SKILLS, PR 7)
-  kit:{},            // machine, needles, inks, voltage (PR 4)
+  kit:{machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}},
+                     // the kit (PR 4, sim/kit.js KIT_DEFAULT): machine, the needle groupings on the tray, ink tier, voltage (V),
+                     // stroke (mm) and what you own. tools/session-test.js checks this literal matches KIT_DEFAULT
+  session:null,      // the chair (PR 4): null, or {live: the sitting in progress (INK_SIM.sessionNew's object, numbers only)
+                     // or null, next: a sample walk-in's piece waiting for its next sitting or null}
   clients:[],        // client records (PR 3); full for the CLIENT_CAP most recent/loyal, compacted after (PR 7)
   pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5)
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
@@ -3208,7 +4068,7 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false},
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false},   // handed and assist: the session (PR 4)
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();
@@ -3222,8 +4082,12 @@ function hydrate(o){
   if(o.settings!=null&&(typeof o.settings!=="object"||Array.isArray(o.settings)))return false;
   const f=freshState();
   const ob=o.board&&typeof o.board==="object"&&!Array.isArray(o.board)?o.board:{};
-  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob)});
+  const ok=o.kit&&typeof o.kit==="object"&&!Array.isArray(o.kit)?o.kit:{};
+  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
+    kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  if(S.session!=null&&(typeof S.session!=="object"||Array.isArray(S.session)))S.session=null;
+  if(typeof INK_SIM!=="undefined"&&INK_SIM.kitClean)S.kit=INK_SIM.kitClean(S.kit);   // unknown ids dropped, sliders clamped
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
@@ -3352,6 +4216,14 @@ function buSaveOk(o){
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
   if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
+  if("kit" in o){const k=o.kit;if(!buObj(k))return false;   // PR 4: an old save's kit:{} is fine (hydrate fills the starter kit)
+    if("needles" in k&&!(Array.isArray(k.needles)&&k.needles.every(n=>typeof n==="string")))return false;
+    for(const f of ["voltage","stroke"])if(f in k&&!buNum(k[f]))return false;
+    for(const f of ["machine","ink"])if(f in k&&typeof k[f]!=="string")return false;
+    if("owned" in k){if(!buObj(k.owned))return false;for(const f of ["machines","needles","inks"])if(f in k.owned&&!Array.isArray(k.owned[f]))return false;}}
+  if("session" in o&&o.session!=null){const s=o.session;if(!buObj(s))return false;   // PR 4: the chair, numbers only
+    for(const f of ["live","next"])if(s[f]!=null&&(!buObj(s[f])||!buObj(s[f].design)||!Array.isArray(s[f].design.elements)))return false;
+    if(s.live&&!buNum(s.live.next))return false;}
   return buTry(o);}
 /* load a copy the way the game would (hydrate), then put the running game back exactly as it was */
 function buTry(o){const keepS=S;let ok=false;
@@ -3490,6 +4362,9 @@ function openSettings(){
 <section><h3>Graphics</h3><div class="row">${segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||"")}</div>
 <div class="row" style="margin-top:8px">${segHtml("setGfxAuto",[["1","Auto-adjust on"],["0","Off"]],st.gfxAuto===false?0:1)}</div>
 <p class="hint">Lite is the phone default. Auto-adjust steps down a tier if the studio stutters.</p></section>
+<section><h3>Session</h3><div class="row">${segHtml("setHand",[["right","Right-handed"],["left","Left-handed"]],st.handed==="left"?"left":"right")}</div>
+<div class="row" style="margin-top:8px">${segHtml("setAssist",[["0","Assist off"],["1","Assist on"]],st.assist?1:0)}</div>
+<p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
 <section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
 <section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
 <div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div></section>
@@ -3503,6 +4378,8 @@ function openSettings(){
   seg("setReduced",v=>{st.reduced=v==="1";applySettings();});
   seg("setGfx",v=>{st.gfx=v||null;PERF.manual=true;perfReset(true);applyGfx();});
   seg("setGfxAuto",v=>{st.gfxAuto=v==="1";PERF.dropped=PERF.manual=false;perfReset(true);});
+  seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
+  seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
@@ -3554,11 +4431,98 @@ function start(){
   window.__ldDone&&__ldDone();}
 /* ===================== app/studio.js: the Studio tab =====================
    The shop at its current stage: the 3D view on top (INK_VIS; a placeholder room until PR 6), then the shop's cards.
-   PR 4 adds the kit build panel here; PR 7 the studio build-out, staff and money. */
+   The kit build panel (PR 4, plan Q9): S.kit is a machine, a tray of needle groupings (up to KIT_TRAY_MAX), an ink tier,
+   voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
+   the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
+   (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
+   INK_SIM.kitPrice (2000 rubles x the price index). PR 7 adds the studio build-out, staff and money here. */
+const KP={sec:"machine"};
+/* the deltas the panel shows: key, label, which way is good (1 up, -1 down, 0 neither) */
+const KP_DELTAS=[{k:"band",l:"steady band",good:1},{k:"pace",l:"marker speed",good:0},{k:"shade",l:"shading speed",good:1},
+  {k:"trauma",l:"skin trauma",good:-1},{k:"fade",l:"ink fade",good:-1}];
 function renderStudio(){
   $("studioBody").innerHTML=`<div class="card"><h2>The shop</h2>
 <p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
-<dl class="kv"><dt>Stage</dt><dd>Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;}
+<dl class="kv"><dt>Stage</dt><dd>Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
+<div class="card kp" id="kp"></div>`;
+  if(typeof INK_SIM.kitBands==="function")kpRender();else $("kp").remove();}
+function kpKit(){S.kit=INK_SIM.kitClean(S.kit);return S.kit;}
+function kpSet(){return{assist:!!S.settings.assist};}
+function kpSummary(kit){
+  const B=INK_SIM.kitBands(kit,S.skills,kpSet()),mm=v=>v.toFixed(2).replace(/0$/,"");
+  return`<div class="kpSum">
+<div><span>Steady band</span><b>±${Math.round(B.paceBand*100)}%</b></div>
+<div><span>Lines</span><b>${B.lineAll[0]}–${B.lineAll[1]}RL</b><em>${mm(B.lineMm[0])}–${mm(B.lineMm[1])} mm</em></div>
+<div><span>Shading</span><b>×${B.shade.toFixed(2)}</b></div>
+<div><span>Skin trauma</span><b>×${B.trauma.toFixed(2)}</b></div>
+<div><span>Ink fade</span><b>×${B.fade.toFixed(2)}</b></div></div>`;}
+/* ▲/▼ chips for changing the kit into `to` */
+function kpDelta(to){
+  const kit=kpKit(),d=INK_SIM.kitDeltas(kit,to,S.skills,kpSet()),out=[];
+  for(const m of KP_DELTAS){const v=d[m.k];if(!v||Math.abs(v)<0.005)continue;
+    const cls=m.good===0?"n":(v>0)===(m.good>0)?"up":"dn";
+    out.push(`<span class="kpD ${cls}"><span aria-hidden="true">${v>0?"▲":"▼"}</span> ${Math.round(Math.abs(v)*100)}% ${m.l}</span>`);}
+  if(d.lineLo||d.lineHi){const B=INK_SIM.kitBands(to,S.skills,kpSet()),A=INK_SIM.kitBands(kit,S.skills,kpSet());
+    const better=d.lineLo<=0&&d.lineHi>=0,worse=d.lineLo>=0&&d.lineHi<=0;
+    out.push(`<span class="kpD ${better?"up":worse?"dn":"n"}"><span aria-hidden="true">${better?"▲":worse?"▼":"◆"}</span> lines ${A.lineAll[0]}–${A.lineAll[1]} → ${B.lineAll[0]}–${B.lineAll[1]}RL</span>`);}
+  return out.length?`<div class="kpDs">${out.join("")}</div>`:`<div class="kpDs"><span class="kpD n">No change to the session</span></div>`;}
+function kpWith(ch){return INK_SIM.kitClean(Object.assign(JSON.parse(JSON.stringify(kpKit())),ch));}
+function kpBuyBtn(kind,id,from){
+  const price=INK_SIM.kitPrice(kind,id,S.year);
+  if(from&&S.year<from)return`<button class="btn sm" disabled>From ${from}</button>`;
+  return`<button class="btn sm" data-buy="${kind}:${id}"${(S.cash||0)<price?" disabled":""}>Buy ${fmtMoney(price)}</button>`;}
+function kpRender(){
+  const host=$("kp");if(!host)return;const kit=kpKit(),o=kit.owned,live=typeof seLive==="function"&&seLive();
+  let body="";
+  if(KP.sec==="machine")body=Object.values(INK_SIM.MACHINES).map(m=>{const own=o.machines.includes(m.id),use=kit.machine===m.id;
+    return`<div class="kpRow${use?" on":""}"><div class="kpRT"><b>${esc(m.name)}</b><span class="hint">${esc(m.note)}</span>${use?"":kpDelta(kpWith({machine:m.id,owned:Object.assign({},o,{machines:o.machines.concat(own?[]:[m.id])})}))}</div>
+<div class="kpRB">${use?`<span class="kpUse">In use</span>`:own?`<button class="btn sm pri" data-use="machine:${m.id}">Use</button>`:kpBuyBtn("machine",m.id,m.from)}</div></div>`;}).join("");
+  else if(KP.sec==="needles"){
+    const N=Object.values(INK_SIM.NEEDLES),full=kit.needles.length>=INK_SIM.KIT_TRAY_MAX;
+    body=`<p class="hint" style="margin-top:0">On the tray: ${kit.needles.length} of ${INK_SIM.KIT_TRAY_MAX}. A liner lays its own line weight and the one either side in a clean pass; mags fill shading and colour.</p>`+
+    N.map(n=>{const own=o.needles.includes(n.id),on=kit.needles.includes(n.id);
+      const what=n.kind==="liner"?`lays ${INK_SIM.LINE_WEIGHTS[Math.max(0,INK_SIM.LINE_WEIGHTS.indexOf(n.rl)-1)]}–${INK_SIM.LINE_WEIGHTS[Math.min(INK_SIM.LINE_WEIGHTS.length-1,INK_SIM.LINE_WEIGHTS.indexOf(n.rl)+1)]}RL`:`shading ×${n.shade}`;
+      const to=on?kit.needles.filter(x=>x!==n.id):kit.needles.concat([n.id]);
+      const dl=(on&&kit.needles.length>1)||(!on&&!full)?kpDelta(kpWith({needles:to,owned:Object.assign({},o,{needles:o.needles.concat(own?[]:[n.id])})})):"";
+      return`<div class="kpRow sm${on?" on":""}"><div class="kpRT"><b>${esc(n.name)}</b><span class="hint">${what}</span>${dl}</div>
+<div class="kpRB">${own?(on?`<button class="btn sm" data-tray="${n.id}"${kit.needles.length<=1?" disabled":""} aria-pressed="true">On tray ✓</button>`:`<button class="btn sm" data-tray="${n.id}"${full?" disabled":""} aria-pressed="false">Add to tray</button>`):kpBuyBtn("needle",n.id)}</div></div>`;}).join("");}
+  else if(KP.sec==="ink")body=Object.values(INK_SIM.INKS).map(i=>{const own=o.inks.includes(i.id),use=kit.ink===i.id;
+    return`<div class="kpRow${use?" on":""}"><div class="kpRT"><b>${esc(i.name)} ink</b><span class="hint">${esc(i.note)}</span>${use?"":kpDelta(kpWith({ink:i.id,owned:Object.assign({},o,{inks:o.inks.concat(own?[]:[i.id])})}))}</div>
+<div class="kpRB">${use?`<span class="kpUse">In use</span>`:own?`<button class="btn sm pri" data-use="ink:${i.id}">Use</button>`:kpBuyBtn("ink",i.id)}</div></div>`;}).join("");
+  else{const V=INK_SIM.VOLTAGE,T=INK_SIM.STROKE,d0=INK_SIM.kitDefault();
+    body=`<label class="kpSl"><span>Voltage <b id="kpVv">${kit.voltage.toFixed(1)} V</b></span><input type="range" id="kpV" min="${V.min}" max="${V.max}" step="${V.step}" value="${kit.voltage}"></label>
+<p class="hint">Higher runs the machine faster and hits harder: a quicker marker and a narrower steady band, more trauma, and it hurts more.</p>
+<label class="kpSl"><span>Stroke <b id="kpSv">${kit.stroke.toFixed(1)} mm</b></span><input type="range" id="kpS" min="${T.min}" max="${T.max}" step="${T.step}" value="${kit.stroke}"></label>
+<p class="hint">A long stroke packs and shades faster but is harder on skin; a short one is gentle and precise.</p>
+<p class="kpVs">Against ${d0.voltage} V and ${d0.stroke} mm:</p><div id="kpTuneD">${kpDeltaFrom(kpWith({voltage:d0.voltage,stroke:d0.stroke}),kit)}</div>
+<button class="btn sm" id="kpReset">Back to ${d0.voltage} V, ${d0.stroke} mm</button>`;}
+  host.innerHTML=`<h2>Your kit</h2>${live?`<p class="hint" style="margin-top:0">There's a sitting in the chair: changes count from the next one.</p>`:""}${kpSummary(kit)}
+${segHtml("kpSeg",[["machine","Machine"],["needles","Needles"],["ink","Ink"],["tune","Tune"]],KP.sec)}<div class="kpBody">${body}</div>`;
+  $("kpSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;KP.sec=b.dataset.v;INK_SOUND.tick();kpRender();});
+  host.querySelectorAll("[data-use]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.use.split(":");kpKit()[k]=id;kpDone(`${k==="machine"?INK_SIM.MACHINES[id].name:INK_SIM.INKS[id].name+" ink"} in use`);}));
+  host.querySelectorAll("[data-tray]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.tray,k=kpKit();
+    if(k.needles.includes(id)){if(k.needles.length<=1)return;k.needles=k.needles.filter(x=>x!==id);}else{if(k.needles.length>=INK_SIM.KIT_TRAY_MAX)return;k.needles.push(id);}
+    kpDone();}));
+  host.querySelectorAll("[data-buy]").forEach(b=>b.addEventListener("click",()=>kpBuy(...b.dataset.buy.split(":"))));
+  const sl=(id,key,lab,unit)=>{const el=$(id);if(!el)return;el.addEventListener("input",()=>{const k=kpKit();k[key]=Math.round(+el.value*10)/10;$(lab).textContent=k[key].toFixed(1)+" "+unit;
+      $("kpTuneD").innerHTML=kpDeltaFrom(kpWith({voltage:INK_SIM.kitDefault().voltage,stroke:INK_SIM.kitDefault().stroke}),k);const s=host.querySelector(".kpSum");if(s)s.outerHTML=kpSummary(k);});
+    el.addEventListener("change",()=>save());};
+  sl("kpV","voltage","kpVv","V");sl("kpS","stroke","kpSv","mm");
+  const r=$("kpReset");if(r)r.addEventListener("click",()=>{const k=kpKit(),d0=INK_SIM.kitDefault();k.voltage=d0.voltage;k.stroke=d0.stroke;kpDone("Back to the usual tune");});}
+/* deltas from kit a to kit b (the Tune view compares against the default sliders) */
+function kpDeltaFrom(a,b){const keep=S.kit;S.kit=a;try{return kpDelta(b);}finally{S.kit=keep;}}
+function kpDone(msg){S.kit=INK_SIM.kitClean(S.kit);save();INK_SOUND.tick();if(msg)toast(msg);kpRender();}
+function kpBuy(kind,id){
+  const price=INK_SIM.kitPrice(kind,id,S.year),k=kpKit(),o=k.owned;
+  if((S.cash||0)<price){toast("Not enough cash");return;}
+  const T=kind==="machine"?INK_SIM.MACHINES:kind==="needle"?INK_SIM.NEEDLES:INK_SIM.INKS,it=T[id];if(!it)return;
+  if(kind==="machine"&&it.from&&S.year<it.from)return;
+  S.cash-=price;
+  if(kind==="machine"){o.machines.push(id);k.machine=id;}
+  else if(kind==="ink"){o.inks.push(id);k.ink=id;}
+  else{o.needles.push(id);if(k.needles.length<INK_SIM.KIT_TRAY_MAX)k.needles.push(id);}
+  renderHeader();kpDone(`Bought: ${it.name}${kind==="ink"?" ink":""} (${fmtMoney(price)})`);
+  const c=$("studioBody").querySelector(".kv dd:last-child");if(c)c.textContent=fmtMoney(S.cash);}
 /* ===================== app/design.js: the Design tab, the design board (PR 2) =====================
    Three views on a segmented control:
      Body   the body diagram (app/bodymap.js): pick the spot, the body shape and the skin tone, and the sample walk-in.
@@ -3573,7 +4537,9 @@ function renderStudio(){
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
    The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
    booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
-   memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved. */
+   memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved.
+   Under the board (PR 4): Tattoo this (the booking it's designing for, or a sample walk-in: app/session.js seTattooThis) and
+   Practice on fake skin. */
 const DZ_SAMPLE_CLIENTS=[
   {id:"wk_office",name:"Darya",blurb:"accountant, first tattoo",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
    traits:{pain:.4,sun:.2,aftercare:.8,budget:.6,loyalty:.6,talkative:.5,trusting:.6},
@@ -3772,7 +4738,9 @@ function dzRenderBoardView(){
 <button class="dzChip${DZ.snap?" on":""}" id="dzSnap" aria-pressed="${DZ.snap}" title="Rotation snaps to the flow of the limb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3c-2 6 2 12 0 18M17 3c-2 6 2 12 0 18"/></svg>Snap to flow</button>
 <span class="sp"></span>${m.flash?`<span class="dzFlashTag" id="dzFlashTag" title="Flash: ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours">Flash −${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% h</span>`:""}</div>
 <div id="dzTools" class="dzTools"></div>
-<div class="row dzBar3"><button class="btn sm" id="dzSaveFl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save to my flash</button>
+<div class="row dzBar3"><button class="btn sm pri" id="dzTattoo"${m.els.length?"":" disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>Tattoo this</button>
+<button class="btn sm" id="dzPractice"${m.els.length?"":" disabled"}>Practice on fake skin</button>
+<button class="btn sm" id="dzSaveFl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save to my flash</button>
 <button class="btn sm" id="dzClear"${m.els.length?"":" disabled"}>Clear board</button></div>
 <div class="card dzStress" id="dzStress"></div>`;
   $("dzSpotBtn").addEventListener("click",()=>{DZ.view="body";renderDesign();});
@@ -3782,6 +4750,8 @@ function dzRenderBoardView(){
   $("dzSnap").addEventListener("click",()=>{DZ.snap=!DZ.snap;const b=$("dzSnap");b.classList.toggle("on",DZ.snap);b.setAttribute("aria-pressed",DZ.snap);
     if(DZ.snap&&DZ.sel>=0)dzChange(()=>dzSnapEl(DZ.m.els[DZ.sel]));toast(DZ.snap?"Rotation snaps to the flow":"Free rotation");});
   $("dzSaveFl").addEventListener("click",dzSaveFlash);
+  if(typeof seTattooThis==="function"){$("dzTattoo").addEventListener("click",seTattooThis);$("dzPractice").addEventListener("click",()=>{SE.pick="board";seStartPractice("board");});}
+  else{$("dzTattoo").remove();$("dzPractice").remove();}
   $("dzClear").addEventListener("click",()=>{if(!DZ.m.els.length)return;dzChange(()=>{DZ.m.els=[];DZ.m.flash=null;DZ.m.fsig=null;DZ.sel=-1;});$("dzClear").disabled=true;toast("Board cleared (Undo brings it back)");});
   dzRenderBoard();dzRenderTools();dzRenderStress();dzSyncUndo();
   const bw=$("dzBoardWrap");
@@ -3992,7 +4962,8 @@ function dzAddEl(d){
   const e={id:d.id,mx:box.wrapMm/2+(n%4)*6,my:box.lengthMm/2+(n%4)*6,mm,rot:0,lineWeight:d.lineWeightDefault,fill:d.fill?(d.fill===d.path?1:0.5):0,colour:null};
   dzChange(()=>{if(!n&&!d.styles.includes(DZ.m.style))DZ.m.style=d.styles[0];if(DZ.snap)dzSnapEl(e);DZ.m.els.push(e);DZ.sel=DZ.m.els.length-1;});
   if(DZ.view!=="board"){DZ.view="board";renderDesign();}
-  else{const s=$("dzStyleSel");if(s)s.value=DZ.m.style;const c=$("dzClear");if(c)c.disabled=false;}}
+  else{const s=$("dzStyleSel");if(s)s.value=DZ.m.style;const c=$("dzClear");if(c)c.disabled=false;}
+  for(const id of ["dzTattoo","dzPractice"]){const b=$(id);if(b)b.disabled=!DZ.m.els.length;}}
 
 /* ---- flash: the wall and your own ---- */
 function dzSaveFlash(){
@@ -4048,14 +5019,498 @@ function dzKeysOnce(){
     if(a){ev.preventDefault();dzTool(a);const g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.focus({preventScroll:true});}
     if(k==="Escape"&&DZ.sel>=0){dzSelect(-1);}
   });}
-/* ===================== app/session.js: the Session tab =====================
-   The chair: stencil placement, linework (trace-and-rhythm), shading, colour packing, the client's pain and fatigue
-   meters (PR 4). Empty state while nobody is booked in. */
+/* ===================== app/session.js: the Session tab, the chair (PR 4) =====================
+   The tattoo session on top of sim/session.js (INK_SIM.sessionNew and friends). Four screens:
+     the lobby    sittings due this week (booked from the Clients tab, with a design), a sample walk-in's piece waiting for its
+                  next sitting, and Practice on fake skin (pick the board's design or a flash piece). The empty state says
+                  "No one in the chair. Book a client from the Clients tab." with a Practice button.
+     placement    drag the purple stencil on the placement box; flow and creases are re-checked (INK_SIM.stencilCheck).
+     the chair    linework (plan Q4: trace-and-rhythm), then shading and colour zones. Four stacked canvases: base (skin and
+                  the purple stencil), fill (shading and colour), ink (the lines you lay, drawn bit by bit from your finger)
+                  and overlay (the pacing marker, the finger dot; only the rectangles that changed are cleared). The frame loop
+                  runs only while a finger is down, capped at SE_FPS (30 on Lite). With reduced motion the marker is a static
+                  highlight of the next stretch of line. Meters: steady hand (pace ratio against the band), pain and fatigue
+                  (bars with notches, a hatch or dot pattern and an icon, so they read without colour), and the saturation
+                  meter in zones. Break, Numb (costs rubles) and Chat sit on a rail on your free hand's side (Settings ›
+                  Session › Handedness). Liner chips say what each needle lays ("lays 1–5RL").
+     results      the sitting's numbers, XP, money and what happens next.
+   Where the work comes from:
+     booked       sessionStartBooked(item), called by the Clients tab (app/clients.js clSession). Progress between sittings
+                  rides on the queue item (item.progress, numbers only); INK_SIM.finishSession books the next sitting or makes
+                  the piece and pays. A last sitting cut short (pain or fatigue) keeps the item and moves it a week, unpaid.
+     sample       "Tattoo this" on the Design tab with a sample walk-in: a one-off test. Pays SE_PAY.sample of the price per
+                  sitting; the next sitting can start straight away (S.session.next) since sample clients aren't on the calendar.
+     practice     fake skin: no pain, no fatigue, no money, no piece, only XP (SKILL_XP.practice).
+   S.session = {live: the sitting in progress (the sim's object: numbers and short strings, saved at every finger lift and
+   every action, so a reload resumes it), next: a sample piece waiting for its next sitting}. A finished piece gets heal:null
+   and healDue {w, y} SE_HEAL_WEEKS on (PR 5 shows the heal). window.__inkSessFps() reports the loop's frame rate. */
+const SE_PAY={sample:0.35};          // a sample walk-in pays you this share of the price, split across its sittings (the shop keeps the rest)
+const SE_HEAL_WEEKS=2;               // the heal is due this many weeks after the last sitting
+const SE_FPS={lite:30,full:60,ultra:60};
+const SE_DPR={lite:1.5,full:2,ultra:2.5};
+const SE_SKIN=[[0,[243,217,192]],[0.35,[217,169,130]],[0.65,[168,113,74]],[1,[91,58,38]]];   // skin tone 0..1 to a colour
+const SE_FAKE=[236,214,186];         // practice skin: a pale rubber pad
+const SE_STENCIL={light:"#6a3fc8",dark:"#cbb6ff",w:1.1,cur:2.4,alpha:0.7};
+const SE_LAYOUT={rail:56,minH:240,maxH:620,chrome:310,ahead:0.8};   // px; ahead = seconds of line the reduced-motion highlight shows
+const SE_CHAT=["They tell you the bridges went up before they could get home last night. Two hours on the wrong bank.",
+  "Talk turns to the canal ice. Nobody on the embankment trusts it before January.",
+  "They ask how long you've been at this. Long enough to stop shaking, you say.",
+  "A long story about their grandmother's tram route out on the ring road.",
+  "You compare notes on the best dumplings near the market by the river.",
+  "They want to know what the flash wall looked like when the shop opened."];
+const SE_ICON={
+  pain:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  fatigue:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  breakB:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3v3M12 3v3"/></svg>',
+  numb:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M7 13h10"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>',
+  needle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>'};
+const SE={sess:null,result:null,pick:"",place:null,c:null,v:null,s:1,ox:0,oy:0,dpr:1,down:null,q:[],fillDirty:false,baseDirty:false,
+  raf:0,lastF:0,frames:0,fpsT:0,fpsN:0,dirty:[],r:0,rushed:false,live:null,stopArm:0,stopT:0,status:"",ro:null};
+
+/* ---- small helpers ---- */
+function seSlot(){if(!S.session||typeof S.session!=="object")S.session={live:null,next:null};return S.session;}
+function seLive(){return S.session&&S.session.live||null;}
+function seReduced(){return!!S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);}
+function seRgb(c){return`rgb(${c.map(Math.round).join(",")})`;}
+function seSkinRgb(t,practice){if(practice)return SE_FAKE;t=clamp(t==null?0.3:t,0,1);
+  for(let i=1;i<SE_SKIN.length;i++){const a=SE_SKIN[i-1],b=SE_SKIN[i];if(t<=b[0]){const k=(t-a[0])/(b[0]-a[0]);return a[1].map((v,j)=>v+(b[1][j]-v)*k);}}
+  return SE_SKIN[SE_SKIN.length-1][1];}
+function seColHex(c){const C=INK_SIM.COLOURS[c||"black"];return C?C.hex:DZ_INK;}
+function seWeek(o){return INK_SIM.weekFrom(INK_SIM.weekIndex(S.week,S.year)+o);}
+function seDue(q){return q.kind==="session"&&INK_SIM.weekIndex(q.w,q.y)<=INK_SIM.weekIndex(S.week,S.year);}
+function seHasDesign(d){return!!(d&&Array.isArray(d.elements)&&d.elements.length);}
+function seOpts(){return{skills:S.skills,kit:S.kit,settings:{assist:!!S.settings.assist},year:S.year,week:S.week};}
+function sePct(v){return Math.round(clamp(v||0,0,1)*100)+"%";}
+function seItemCounts(sess){const plan=INK_SIM.sessionPlan(sess);let line=0,shade=0,colour=0;
+  for(let i=sess.start;i<sess.end;i++){const k=plan.items[i].k;if(k==="line")line++;else if(k==="shade")shade++;else colour++;}return{line,shade,colour,plan};}
+/* the elements of a design in placement millimetres (the same transform as the board and sim/session.js) */
+function seEls(design,box){const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5},fp=INK_SIM.footprintOf(design);
+  return(design.elements||[]).filter(e=>INK_SIM.elementById(e.id)).map(e=>({id:e.id,mx:pos.x*box.wrapMm+((e.x!=null?e.x:.5)-fp.cx)*sz,my:pos.y*box.lengthMm+((e.y!=null?e.y:.5)-fp.cy)*sz,
+    mm:(e.scale!=null?e.scale:.5)*sz,rot:e.rot||0,lineWeight:e.lineWeight||7,fill:e.fill||0,colour:e.colour||null}));}
+/* a finished-looking render of a design on skin, fitted to the piece; soft when the lines were poor */
+function seRender(design,skin,out,bodyShape){
+  const box=INK_SIM.placementBox(design.placement,bodyShape)||{wrapMm:100,lengthMm:200},els=seEls(design,box);
+  if(!els.length)return"";
+  const sz=design.sizeMm||50,cx=design.pos.x*box.wrapMm,cy=design.pos.y*box.lengthMm,pad=sz*0.12;
+  const blur=out?Math.max(0,(0.9-out.lineQuality)*1.6):0,op=out?0.55+0.45*out.saturation:1;
+  return`<svg class="seRen" viewBox="${dzR2(cx-sz/2-pad)} ${dzR2(cy-sz/2-pad)} ${dzR2(sz+2*pad)} ${dzR2(sz+2*pad)}" style="background:${seRgb(skin)}" aria-hidden="true"><g style="opacity:${dzR2(op)};${blur>0.05?`filter:blur(${dzR2(blur*sz/100)}px)`:""}">${els.map(e=>dzElSvg(e,design.style)).join("")}</g></svg>`;}
+
+/* ---- starting a sitting ---- */
+function seBegin(sess){
+  const slot=seSlot();slot.live=sess;SE.sess=sess;SE.result=null;SE.status="";SE.place=null;
+  if(sess.kind==="practice")INK_SIM.sessionStart(sess);
+  save();INK_SOUND.init();
+  if(curTab!=="session")showTab("session");else renderSession();
+  $("panel").scrollTop=0;}
+function seBusy(){const L=seLive();if(!L)return false;toast("Finish the sitting in the chair first");if(curTab!=="session")showTab("session");return true;}
+/* a booked sitting (the Clients tab's Start session button) */
+function sessionStartBooked(q){
+  if(!q)return;const L=seLive();
+  if(L){if(L.itemId===q.id){showTab("session");return;}seBusy();return;}
+  if(!seHasDesign(q.design)){toast("Design it first");return;}
+  const c=INK_SIM.findClient(S,q.client);if(!c){toast("That client isn't on your books");return;}
+  const sess=INK_SIM.sessionNew(Object.assign(seOpts(),{design:q.design,client:c,kind:"booked",itemId:q.id,part:q.sessionNo||1,partsTotal:q.sessions||1,
+    progress:q.progress||null,bodyShape:c.bodyShape||"neutral",skinTone:c.skinTone!=null?c.skinTone:0.3}));
+  seBegin(sess);}
+/* "Tattoo this" on the board: the booking it's designing for, or else a sample walk-in */
+function seTattooThis(){
+  if(seBusy())return;
+  const d=dzToDesign();if(!d.elements.length){toast("Put something on the board first");return;}
+  if(S.board.item){const q=S.queue.find(x=>x.id===S.board.item);
+    if(q){q.design=d;dzStore();
+      if(!seDue(q)){toast(`Their sitting is week ${q.w}, ${q.y}. Saved to the booking.`);return;}
+      return sessionStartBooked(q);}}
+  const c=dzClient(),slot=seSlot();
+  if(slot.next)toast("The unfinished sample piece is set aside");
+  slot.next=null;
+  seBegin(INK_SIM.sessionNew(Object.assign(seOpts(),{design:d,client:c,kind:"sample",bodyShape:S.board.bodyShape||c.bodyShape,skinTone:S.board.skinTone!=null?S.board.skinTone:c.skinTone})));}
+function seContinueSample(){
+  if(seBusy())return;const slot=seSlot(),n=slot.next;if(!n)return;
+  const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===n.client)||DZ_SAMPLE_CLIENTS[0];
+  slot.next=null;
+  seBegin(INK_SIM.sessionNew(Object.assign(seOpts(),{design:n.design,client:c,kind:"sample",part:n.part,partsTotal:n.partsTotal,progress:n.progress,bodyShape:n.bodyShape,skinTone:n.skinTone})));}
+/* practice on fake skin: the board's design or a flash piece */
+function sePracticeDesigns(){
+  const out=[];const d=typeof DZ!=="undefined"&&DZ.m?dzToDesign():S.board.design;
+  if(seHasDesign(d))out.push({id:"board",name:"What's on the board",design:d});
+  for(const f of INK_SIM.FLASH)out.push({id:f.id,name:f.name,design:{placement:f.placement,style:f.style,flash:f.id,sizeMm:f.sizeMm,pos:{x:.5,y:.5},elements:f.elements}});
+  return out;}
+function seStartPractice(id){
+  if(seBusy())return;
+  const all=sePracticeDesigns(),p=all.find(x=>x.id===id)||all.find(x=>x.id==="fl_moon")||all[0];if(!p)return;
+  seBegin(INK_SIM.sessionNew(Object.assign(seOpts(),{design:p.design,client:null,kind:"practice",bodyShape:"neutral",skinTone:0.2})));}
+
+/* ---- the tab ---- */
 function renderSession(){
-  $("sessionBody").innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="9" rx="1.5"/><path d="M10.5 12v4h3v-4"/><path d="M12 16v5"/><path d="M15 6h3a2 2 0 0 1 0 4h-3"/></svg>
+  const host=$("sessionBody");
+  if(typeof INK_SIM.sessionNew!=="function"){host.innerHTML=`<div class="card"><p class="hint">The session model isn't in this build.</p></div>`;return;}
+  seStopLoop();
+  const L=seLive();
+  if(L){if(SE.sess!==L){SE.sess=INK_SIM.sessionResume(L);SE.place=null;}
+    return L.phase==="place"?seRenderPlace():seRenderChair();}
+  SE.sess=null;
+  if(SE.result)return seRenderResult();
+  seRenderLobby();}
+
+/* ---- the lobby ---- */
+function seRenderLobby(){
+  const host=$("sessionBody"),slot=seSlot();
+  const due=S.queue.filter(seDue).sort((a,b)=>INK_SIM.weekIndex(a.w,a.y)-INK_SIM.weekIndex(b.w,b.y));
+  const n=slot.next,picks=sePracticeDesigns();
+  if(!picks.some(p=>p.id===SE.pick))SE.pick=picks.some(p=>p.id==="board")?"board":"fl_moon";
+  const K=INK_SIM.kitClean(S.kit),M=INK_SIM.MACHINES[K.machine],I=INK_SIM.INKS[K.ink];
+  let h=`<div class="se">`;
+  if(due.length)h+=`<div class="card"><h2>In the chair this week</h2>${due.map(q=>{const c=INK_SIM.findClient(S,q.client),ready=seHasDesign(q.design);
+    return`<div class="seDue"><div class="seDueT"><b>${esc(c?c.name:"A client")}</b><span class="clMeta">${ready?esc(INK_SIM.pieceLabel(q.design)):"needs a design"} · sitting ${q.sessionNo||1} of ${q.sessions||1}${q.progress?" · carrying on":""}</span></div>
+${ready?`<button class="btn sm pri" data-seq="${q.id}">Start</button>`:`<button class="btn sm" data-sedz="${q.id}">Design it</button>`}</div>`;}).join("")}</div>`;
+  if(n){const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===n.client);
+    h+=`<div class="card seNext"><h2>Unfinished</h2><div class="seNextB">${seRender(n.design,seSkinRgb(n.skinTone),null,n.bodyShape)}<div><p><b>${esc(c?c.name:"A walk-in")}</b>'s ${esc(INK_SIM.pieceLabel(n.design))}</p>
+<p class="clMeta">Sitting ${n.part} of ${n.partsTotal}. A sample walk-in: they can sit again straight away.</p>
+<div class="row"><button class="btn sm pri" id="seCont">Next sitting</button><button class="btn sm" id="seDrop">Let it go</button></div></div></div></div>`;}
+  if(!due.length&&!n)h+=`<div class="card empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="9" rx="1.5"/><path d="M10.5 12v4h3v-4"/><path d="M12 16v5"/><path d="M15 6h3a2 2 0 0 1 0 4h-3"/></svg>
 <p><b>No one in the chair.</b></p><p>Book a client from the Clients tab.</p>
-<button class="btn" id="toClients">Go to Clients</button></div>`;
-  $("toClients").addEventListener("click",()=>showTab("clients"));}
+<div class="row" style="justify-content:center"><button class="btn pri" id="sePracQ">Practice on fake skin</button><button class="btn" id="toClients">Go to Clients</button></div></div>`;
+  h+=`<div class="card" id="sePracCard"><h2>Practice on fake skin</h2><p class="hint" style="margin-top:0">A rubber pad on the bench: no client, no pain, no money. Every line still teaches your hand.</p>
+<div class="row"><label class="seGrow"><span>Design</span><select id="sePick">${picks.map(p=>`<option value="${p.id}"${p.id===SE.pick?" selected":""}>${esc(p.name)}</option>`).join("")}</select></label>
+<button class="btn pri" id="sePrac">Start practice</button></div></div>
+<div class="card seKitLine"><span class="clK">Your kit</span><p>${esc(M.name)} · ${K.needles.join(" ")} · ${esc(I.name)} ink · ${K.voltage} V</p><button class="btn sm" id="seKit">Change in Studio</button></div></div>`;
+  host.innerHTML=h;
+  host.querySelectorAll("[data-seq]").forEach(b=>b.addEventListener("click",()=>{const q=S.queue.find(x=>x.id===b.dataset.seq);if(q)sessionStartBooked(q);}));
+  host.querySelectorAll("[data-sedz]").forEach(b=>b.addEventListener("click",()=>clDesignFor(b.dataset.sedz)));
+  const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
+  on("seCont",seContinueSample);
+  on("seDrop",()=>{seSlot().next=null;save();toast("Let it go");renderSession();});
+  on("sePracQ",()=>seStartPractice(SE.pick));on("sePrac",()=>seStartPractice(SE.pick));
+  on("toClients",()=>showTab("clients"));on("seKit",()=>showTab("studio"));
+  $("sePick").addEventListener("change",e=>{SE.pick=e.target.value;});}
+
+/* ---- placement: drag the stencil, re-check flow and creases ---- */
+function seRenderPlace(){
+  const sess=SE.sess,host=$("sessionBody"),d=sess.design,P=INK_SIM.PLACEMENTS[d.placement];
+  const box=INK_SIM.placementBox(d.placement,sess.bodyShape)||{wrapMm:100,lengthMm:200},W=box.wrapMm,L=box.lengthMm;
+  const chk=SE.place||(SE.place=INK_SIM.stencilCheck(d,sess.client?Object.assign({},sess.client,{bodyShape:sess.bodyShape,skinTone:sess.skinTone}):null,sess.skills));
+  const mx=W*0.12,my=L*0.05,skin=seSkinRgb(sess.skinTone),dark=sess.skinTone>0.6;
+  const els=seEls(d,box),sw=INK_SIM.lineMm(5);
+  host.innerHTML=`<div class="se">${seTopHtml(sess)}
+<div class="card"><h2>Place the stencil</h2><p class="hint" style="margin-top:0">Drag it where it sits best on the ${esc(P?P.name.toLowerCase():"skin")}. Flow and creases are checked again.</p>
+<div class="sePlaceWrap"><svg id="sePlace" class="sePlace" viewBox="${dzR2(-mx)} ${dzR2(-my)} ${dzR2(W+2*mx)} ${dzR2(L+2*my)}" role="application" aria-label="Stencil on the ${esc(P?P.name:"skin")}, drag to move">
+<rect x="0" y="0" width="${W}" height="${L}" rx="${dzR2(Math.min(W,L)*0.12)}" fill="${seRgb(skin)}"/>
+<g class="seFlow">${(P?P.flow:[]).map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>
+${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(c.at*L)}" y2="${dzR2(c.at*L)}"/><text class="seCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at*L-2)}" font-size="${dzR2(Math.max(4,W*0.06))}" text-anchor="middle">${esc(c.name)}</text>`).join("")}
+<g id="sePlaceG" class="seStencilG" style="color:${dark?SE_STENCIL.dark:SE_STENCIL.light}">${els.map(e=>{const df=INK_SIM.elementById(e.id),b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
+    return`<g transform="${dzTf(e)}"><path d="${df.path}" fill="none" stroke="currentColor" stroke-width="${dzR4(sw/k)}" stroke-linecap="round" stroke-linejoin="round"/></g>`;}).join("")}</g></svg></div>
+<div class="seChk"><span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}</div>
+<div class="row"><button class="btn pri" id="seGo">${INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line"?"Start lining":"Start"}</button><button class="btn" id="seCancel">Not now</button></div></div></div>`;
+  $("seGo").addEventListener("click",()=>{INK_SIM.sessionStart(sess);save();INK_SOUND.tick();renderSession();});
+  $("seCancel").addEventListener("click",seCancel);
+  /* drag */
+  const svg=$("sePlace"),g=$("sePlaceG");let drag=null;
+  const pt=ev=>{const m=svg.getScreenCTM();if(!m)return{x:0,y:0};const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const q=p.matrixTransform(m.inverse());return{x:q.x,y:q.y};};
+  svg.addEventListener("pointerdown",ev=>{drag={p:pt(ev),pos:Object.assign({},d.pos||{x:.5,y:.5}),dx:0,dy:0};svg.setPointerCapture(ev.pointerId);ev.preventDefault();});
+  svg.addEventListener("pointermove",ev=>{if(!drag)return;const p=pt(ev);drag.dx=p.x-drag.p.x;drag.dy=p.y-drag.p.y;g.setAttribute("transform",`translate(${dzR2(drag.dx)} ${dzR2(drag.dy)})`);});
+  const end=()=>{if(!drag)return;const dr=drag;drag=null;if(Math.abs(dr.dx)+Math.abs(dr.dy)<0.5){g.removeAttribute("transform");return;}
+    SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});save();seRenderPlace();};
+  svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);}
+function seCancel(){
+  const sess=SE.sess;if(!sess)return;
+  if(sess.next>sess.start||sess.cur){toast("You've started: end the sitting instead");return;}
+  seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
+
+/* ---- the chair ---- */
+function seTopHtml(sess){
+  const cnt=seItemCounts(sess),it=INK_SIM.sessionItem(sess),practice=sess.kind==="practice";
+  const done=sess.next-sess.start,tot=sess.end-sess.start;
+  const who=practice?"Fake skin":esc(sess.client?sess.client.name:"Client");
+  const tag=practice?"Practice":sess.kind==="sample"?"Sample walk-in":"Booked";
+  return`<div class="card seTop"><div class="seTopT"><span class="clK">${tag}</span><b>${who}</b><span class="clMeta">${esc(INK_SIM.pieceLabel(sess.design))}${sess.partsTotal>1?` · sitting ${sess.part} of ${sess.partsTotal}`:""}</span>
+<span class="seProg" id="seProg">${seProgText(sess,it,done,tot,cnt)}</span></div>
+${practice?"":`<div class="seMeters">${seMeterHtml("pain","Pain",sess.m.pain)}${seMeterHtml("fatigue","Fatigue",sess.m.fatigue)}</div>`}</div>`;}
+function seProgText(sess,it,done,tot,cnt){
+  if(!it)return`${tot} of ${tot} done`;
+  const k=it.k==="line"?"Line":it.k==="shade"?"Shading":"Colour";
+  return`${k} · ${done+1} of ${tot} · ${(sess.m.clock).toFixed(1)} h`;}
+function seMeterHtml(k,label,v){v=clamp(v||0,0,1);
+  return`<div class="seMeter ${k}${v>=0.75?" hi":""}" id="seM_${k}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}">
+<span class="seMI">${SE_ICON[k]}</span><span class="seML">${label}</span><span class="seMB"><i style="width:${(v*100).toFixed(1)}%"></i><s></s></span><span class="seMV">${Math.round(v*100)}</span><span class="seWarn" aria-hidden="true">!</span></div>`;}
+function seRenderChair(){
+  const sess=SE.sess,host=$("sessionBody"),practice=sess.kind==="practice",hand=S.settings.handed==="left"?"left":"right";
+  const numbCost=Math.round(INK_SIM.NUMB.price*INK_SIM.priceIndex(sess.year)/10)*10;
+  const rail=practice?`<button class="seAct" id="seStop" aria-label="End practice">${SE_ICON.stop}<span>End</span></button>`
+    :`<button class="seAct" id="seBreak" aria-label="Break">${SE_ICON.breakB}<span>Break</span></button>
+<button class="seAct" id="seNumb" aria-label="Numbing cream, ${fmtMoney(numbCost)}">${SE_ICON.numb}<span>Numb</span><em>${fmtMoney(numbCost)}</em></button>
+<button class="seAct" id="seChat" aria-label="Chat">${SE_ICON.chat}<span>Chat</span></button>
+<button class="seAct" id="seStop" aria-label="End the sitting">${SE_ICON.stop}<span>End</span></button>`;
+  host.innerHTML=`<div class="se" data-hand="${hand}">${seTopHtml(sess)}
+<div class="seStage"><div class="seRail" role="group" aria-label="Client care">${rail}</div>
+<div class="seWrap" id="seWrap"><canvas id="seBase"></canvas><canvas id="seFill"></canvas><canvas id="seInk"></canvas><canvas id="seOver" aria-label="Skin: trace the stencil" role="img"></canvas>
+<div class="seDot" id="seDot" aria-hidden="true"></div></div></div>
+<div class="seUnder"><div id="seGauge"></div><p class="seStatus" id="seStatus" role="status" aria-live="polite"></p><div class="seTools" id="seTools"></div></div></div>`;
+  const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
+  on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);
+  seLayout();seRenderUnder();seWireCanvas();
+  const wrap=$("seWrap");
+  if(window.ResizeObserver){if(SE.ro)SE.ro.disconnect();let w0=wrap.clientWidth;SE.ro=new ResizeObserver(()=>{if(Math.abs(wrap.clientWidth-w0)>2&&$("seWrap")===wrap){w0=wrap.clientWidth;seLayout();}});SE.ro.observe(wrap);}
+  if(sess.stop)setTimeout(()=>{if(SE.sess===sess&&!SE.down)seEnd();},400);}
+/* canvas sizes and the mm -> px mapping, then a full redraw */
+function seLayout(){
+  const sess=SE.sess,wrap=$("seWrap");if(!sess||!wrap)return;
+  const v=sess.view,cw=Math.max(160,wrap.clientWidth);
+  const ch=Math.round(clamp(Math.min(innerHeight-SE_LAYOUT.chrome,cw*v.h/v.w*1.05+8),SE_LAYOUT.minH,SE_LAYOUT.maxH));
+  wrap.style.height=ch+"px";
+  const tier=perfTier(),dpr=Math.min(window.devicePixelRatio||1,SE_DPR[tier]||1.5);
+  SE.dpr=dpr;SE.v=v;SE.s=Math.min(cw/v.w,ch/v.h);SE.ox=(cw-v.w*SE.s)/2;SE.oy=(ch-v.h*SE.s)/2;SE.cw=cw;SE.ch=ch;
+  SE.c={};for(const k of ["Base","Fill","Ink","Over"]){const c=$("se"+k);c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);c.style.width=cw+"px";c.style.height=ch+"px";
+    const x=c.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);SE.c[k.toLowerCase()]=x;}
+  SE.dirty=[];SE.minDt=1000/(SE_FPS[tier]||30)-2;
+  seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
+const seX=x=>SE.ox+(x-SE.v.x0)*SE.s,seY=y=>SE.oy+(y-SE.v.y0)*SE.s;
+function sePath(c,p,close){c.beginPath();c.moveTo(seX(p[0]),seY(p[1]));for(let i=2;i<p.length;i+=2)c.lineTo(seX(p[i]),seY(p[i+1]));if(close)c.closePath();}
+function seLinerMm(sess){const n=INK_SIM.NEEDLES[sess.liner];return INK_SIM.lineMm(n&&n.rl?n.rl:7);}
+/* base: skin (a little darker at the edges of the limb) and the purple stencil, the current item bolder */
+function seDrawBase(){
+  const sess=SE.sess,c=SE.c.base,plan=INK_SIM.sessionPlan(sess),practice=sess.kind==="practice";
+  const skin=seSkinRgb(sess.skinTone,practice),dark=!practice&&sess.skinTone>0.6;
+  c.clearRect(0,0,SE.cw,SE.ch);c.fillStyle=seRgb(skin);c.fillRect(0,0,SE.cw,SE.ch);
+  const g=c.createLinearGradient(0,0,SE.cw,0),sh=seRgb(skin.map(v=>v*0.82));
+  g.addColorStop(0,sh);g.addColorStop(0.18,"rgba(0,0,0,0)");g.addColorStop(0.82,"rgba(0,0,0,0)");g.addColorStop(1,sh);
+  c.globalAlpha=practice?0.25:0.5;c.fillStyle=g;c.fillRect(0,0,SE.cw,SE.ch);c.globalAlpha=1;
+  if(practice){c.strokeStyle="rgba(0,0,0,.07)";c.lineWidth=1;for(let y=8;y<SE.ch;y+=16){c.beginPath();c.moveTo(0,y);c.lineTo(SE.cw,y);c.stroke();}}
+  const col=dark?SE_STENCIL.dark:SE_STENCIL.light;
+  c.strokeStyle=col;c.lineCap="round";c.lineJoin="round";
+  for(let i=sess.next;i<sess.end;i++){const it=plan.items[i],cur=i===sess.next;
+    c.globalAlpha=cur?0.95:SE_STENCIL.alpha;
+    if(it.k==="line"){c.setLineDash([]);c.lineWidth=cur?SE_STENCIL.cur:SE_STENCIL.w;sePath(c,plan.strokes[it.i].pts,false);c.stroke();}
+    else{const z=plan.zones[it.i];c.setLineDash(cur?[]:[4,4]);c.lineWidth=cur?SE_STENCIL.cur:SE_STENCIL.w;for(const p of z.polys){sePath(c,p,true);c.stroke();}
+      if(cur){c.globalAlpha=0.12;c.fillStyle=col;for(const p of z.polys){sePath(c,p,true);c.fill("evenodd");}}}}
+  c.setLineDash([]);c.globalAlpha=1;SE.baseDirty=false;}
+/* fill: every zone at its saturation; overworked skin goes angry red */
+function seDrawFills(clip){
+  const sess=SE.sess,c=SE.c.fill,plan=INK_SIM.sessionPlan(sess);
+  c.save();if(clip){c.beginPath();c.rect(clip[0],clip[1],clip[2],clip[3]);c.clip();c.clearRect(clip[0],clip[1],clip[2],clip[3]);}else c.clearRect(0,0,SE.cw,SE.ch);
+  plan.zones.forEach((z,i)=>{const s=sess.zsat[i]||0;if(s<=0)return;
+    c.globalAlpha=clamp(s,0,1)*0.92;c.fillStyle=seColHex(z.colour);
+    c.beginPath();for(const p of z.polys){c.moveTo(seX(p[0]),seY(p[1]));for(let j=2;j<p.length;j+=2)c.lineTo(seX(p[j]),seY(p[j+1]));c.closePath();}c.fill("evenodd");
+    const over=s-(z.target+INK_SIM.ZONE.slack);
+    if(over>0){c.globalAlpha=clamp(over*1.5,0,0.5);c.fillStyle="#c0392f";c.fill("evenodd");}});
+  c.restore();SE.fillDirty=false;}
+/* ink: lines finished before (drawn clean along the stencil) and the part of the current line already laid */
+function seDrawInkAll(){
+  const sess=SE.sess,c=SE.c.ink,plan=INK_SIM.sessionPlan(sess);c.clearRect(0,0,SE.cw,SE.ch);c.lineCap="round";c.lineJoin="round";
+  const lw=Math.max(1.2,seLinerMm(sess)*SE.s);
+  for(let i=0;i<Math.min(sess.next,plan.items.length);i++){const it=plan.items[i];if(it.k!=="line")continue;const st=plan.strokes[it.i];
+    c.strokeStyle=st.colour?seColHex(st.colour):DZ_INK;c.lineWidth=Math.max(1.2,INK_SIM.lineMm(st.lw)*SE.s);sePath(c,st.pts,false);c.stroke();}
+  const it=INK_SIM.sessionItem(sess);
+  if(it&&it.k==="line"&&sess.cur&&sess.cur.u>0){const st=it.stroke,pts=[];for(let u=0;u<sess.cur.u;u+=1){const p=INK_SIM.pointAt(st,u);pts.push(p[0],p[1]);}
+    const e=INK_SIM.pointAt(st,sess.cur.u);pts.push(e[0],e[1]);c.strokeStyle=st.colour?seColHex(st.colour):DZ_INK;c.lineWidth=lw;sePath(c,pts,false);c.stroke();}}
+/* the dot to start (or carry on) a line: a DOM element so its pulse is CSS (none with reduced motion) and costs no frames */
+function seDot(){
+  const sess=SE.sess,d=$("seDot");if(!d)return;const it=INK_SIM.sessionItem(sess);
+  if(!it||it.k!=="line"||SE.down||sess.stop){d.hidden=true;return;}
+  const p=INK_SIM.pointAt(it.stroke,sess.cur?sess.cur.u:0);d.hidden=false;d.style.transform=`translate(${(seX(p[0])).toFixed(1)}px,${(seY(p[1])).toFixed(1)}px)`;
+  d.classList.toggle("still",seReduced());}
+/* overlay: clear only what was drawn last frame, then the marker (or the static highlight) and the finger */
+function seDrawOver(now){
+  const sess=SE.sess,c=SE.c.over;if(!c)return;
+  for(const r of SE.dirty)c.clearRect(r[0],r[1],r[2],r[3]);SE.dirty=[];
+  const it=INK_SIM.sessionItem(sess),d=SE.down;if(!it||!d)return;
+  const mark=(x0,y0,x1,y1,pad)=>SE.dirty.push([Math.min(x0,x1)-pad,Math.min(y0,y1)-pad,Math.abs(x1-x0)+2*pad,Math.abs(y1-y0)+2*pad]);
+  if(it.k==="line"){
+    const st=it.stroke,b=INK_SIM.sessionBands(sess);
+    if(seReduced()){const u0=sess.cur?sess.cur.u:0,u1=Math.min(st.len,u0+b.paceMmS*SE_LAYOUT.ahead);if(u1>u0){const pts=[];for(let u=u0;u<u1;u+=1){const p=INK_SIM.pointAt(st,u);pts.push(p[0],p[1]);}
+      const e=INK_SIM.pointAt(st,u1);pts.push(e[0],e[1]);c.strokeStyle="rgba(63,143,134,.55)";c.lineWidth=9;c.lineCap="round";sePath(c,pts,false);c.stroke();
+      let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(let i=0;i<pts.length;i+=2){x0=Math.min(x0,seX(pts[i]));x1=Math.max(x1,seX(pts[i]));y0=Math.min(y0,seY(pts[i+1]));y1=Math.max(y1,seY(pts[i+1]));}mark(x0,y0,x1,y1,8);}}
+    else{const um=Math.min(st.len,d.u0+b.paceMmS*Math.max(0,now-d.t0)/1000),p=INK_SIM.pointAt(st,um),x=seX(p[0]),y=seY(p[1]);
+      c.beginPath();c.arc(x,y,9,0,Math.PI*2);c.strokeStyle="#2f7f77";c.lineWidth=3;c.stroke();c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fillStyle="#2f7f77";c.fill();mark(x,y,x,y,14);}}
+  if(d.x!=null){const x=seX(d.x),y=seY(d.y),rad=it.k==="line"?5:Math.max(8,Math.sqrt(it.zone.area)*0.12*SE.s);
+    c.beginPath();c.arc(x,y,rad,0,Math.PI*2);c.strokeStyle=SE.rushed?"#c0392f":"rgba(22,18,14,.75)";c.lineWidth=SE.rushed?3:1.5;c.stroke();mark(x,y,x,y,rad+4);}}
+/* the loop: only while a finger is down, at most SE_FPS */
+function seKick(){if(!SE.raf)SE.raf=requestAnimationFrame(seLoop);}
+function seStopLoop(){if(SE.raf)cancelAnimationFrame(SE.raf);SE.raf=0;}
+function seLoop(now){
+  SE.raf=0;if(!SE.sess||!$("seOver"))return;
+  if(now-SE.lastF<SE.minDt){if(SE.down||SE.q.length)SE.raf=requestAnimationFrame(seLoop);return;}
+  if(SE.lastF&&SE.down){SE.fpsT+=Math.min(250,now-SE.lastF);SE.fpsN++;}
+  SE.lastF=now;SE.frames++;
+  seFlushInk();
+  if(SE.fillDirty){const it=INK_SIM.sessionItem(SE.sess);if(it&&it.zone){const z=it.zone.box,p=12;seDrawFills([seX(z[0])-p,seY(z[1])-p,(z[2]-z[0])*SE.s+2*p,(z[3]-z[1])*SE.s+2*p]);}else seDrawFills();}
+  seDrawOver(now);seUpdateLive();
+  if(SE.down||SE.q.length)SE.raf=requestAnimationFrame(seLoop);else SE.lastF=0;}
+window.__inkSessFps=()=>({fps:SE.fpsT>0?Math.round(SE.fpsN/(SE.fpsT/1000)*10)/10:null,frames:SE.frames,cap:SE_FPS[perfTier()]||30,tier:perfTier()});
+/* ink laid since the last frame, straight from the finger */
+function seFlushInk(){
+  if(!SE.q.length)return;const c=SE.c.ink,sess=SE.sess,it=INK_SIM.sessionItem(sess);
+  const st=it&&it.stroke,lw=Math.max(1.2,seLinerMm(sess)*SE.s);c.lineCap="round";c.lineJoin="round";
+  for(const s of SE.q){c.strokeStyle=st&&st.colour?seColHex(st.colour):DZ_INK;
+    if(s[4]==="blow"){c.globalAlpha=0.28;c.lineWidth=lw*3.2;c.beginPath();c.moveTo(seX(s[0]),seY(s[1]));c.lineTo(seX(s[2]),seY(s[3]));c.stroke();}
+    c.globalAlpha=s[4]==="rush"?0.7:1;c.lineWidth=lw;c.beginPath();c.moveTo(seX(s[0]),seY(s[1]));c.lineTo(seX(s[2]),seY(s[3]));c.stroke();}
+  c.globalAlpha=1;SE.q.length=0;}
+/* meters, the steady-hand needle and the zone meter, from the last live result */
+function seUpdateLive(){
+  const sess=SE.sess;if(!sess)return;
+  for(const k of ["pain","fatigue"]){const el=$("seM_"+k);if(!el)continue;const v=clamp(sess.m[k],0,1),pc=Math.round(v*100);
+    if(el._v===pc)continue;el._v=pc;el.querySelector("i").style.width=(v*100).toFixed(1)+"%";el.querySelector(".seMV").textContent=pc;el.setAttribute("aria-valuenow",pc);el.classList.toggle("hi",v>=0.75);}
+  const n=$("seNeedle");if(n){const x=seGaugeX(SE.r);if(Math.abs((n._x||0)-x)>0.3){n._x=x;n.style.left=x.toFixed(1)+"%";}n.classList.toggle("rush",!!SE.rushed);}
+  const zb=$("seZoneBar");if(zb){const it=INK_SIM.sessionItem(sess);if(it&&it.zone){const s=sess.zsat[it.i]||0,top=seZoneTop(it.zone);zb.style.width=(clamp(s/top,0,1)*100).toFixed(1)+"%";
+    const zv=$("seZoneV");if(zv)zv.textContent=Math.round(Math.min(s/it.zone.target,9.99)*100)+"%";}}}
+/* the steady-hand gauge: log2 of the pace ratio from 1/4 to 4 */
+function seGaugeX(r){return clamp((Math.log2(Math.max(r||0,1/4))+2)/4,0,1)*100;}
+function seZoneTop(z){return(z.target+INK_SIM.ZONE.slack)*1.35;}
+function seRenderUnder(){
+  const sess=SE.sess,it=INK_SIM.sessionItem(sess),g=$("seGauge"),tools=$("seTools");if(!g)return;
+  const b=INK_SIM.sessionBands(sess),L=INK_SIM.kitBands(sess.kit,sess.skills,sess.settings,{liner:sess.liner});
+  if(!it){g.innerHTML="";tools.innerHTML="";seStatus(sess.stop==="done"?"That's this sitting done.":"");return;}
+  if(it.k==="line"){
+    const lo=seGaugeX(1/(1+b.paceBand)),hi=seGaugeX(1+b.paceBand),rush=seGaugeX(1+b.paceBand*INK_SIM.PACE.rush);
+    g.innerHTML=`<div class="seGauge" role="img" aria-label="Steady hand: keep the needle in the middle band"><span class="seGL">Slow</span><div class="seGT">
+<b class="band" style="left:${lo.toFixed(1)}%;width:${(hi-lo).toFixed(1)}%"></b><b class="rush" style="left:${rush.toFixed(1)}%"></b><i id="seNeedle" style="left:${seGaugeX(SE.r).toFixed(1)}%"></i></div><span class="seGL">Rushed</span></div>`;
+    const lw=it.stroke.lw,fits=lw>=L.lineBand[0]&&lw<=L.lineBand[1],alt=fits?null:(L.liners.find(l=>lw>=l.lo&&lw<=l.hi)||{}).id||sess.autoLiner;
+    tools.innerHTML=`<div class="seLiners" role="group" aria-label="Liner">${L.liners.map(l=>`<button class="seChipL${l.id===sess.liner?" on":""}${alt===l.id?" hint":""}" data-li="${l.id}" aria-pressed="${l.id===sess.liner}">${SE_ICON.needle}<b>${l.id}</b><span>lays ${l.lo}–${l.hi}RL</span></button>`).join("")}</div>
+<p class="seLw ${fits?"ok":"bad"}"><span aria-hidden="true">${fits?"✓":"▲"}</span> This line wants ${lw}RL${fits?"":`: ${alt?`switch to ${alt}`:"nothing on the tray lays it cleanly (add one in Studio)"}`}</p>`;
+    tools.querySelectorAll("[data-li]").forEach(bt=>bt.addEventListener("click",()=>{if(INK_SIM.sessionSetLiner(sess,bt.dataset.li)){INK_SOUND.tick();save();seRenderUnder();seDrawInkAll();}}));
+    if(!SE.status)seStatus(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace.");}
+  else{
+    const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
+    g.innerHTML=`<div class="seZone"><span class="seGL">${col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
+<i id="seZoneBar" style="width:${(clamp(s/top,0,1)*100).toFixed(1)}%;background:${seColHex(z.colour)}"></i><b class="tgt" style="left:${(z.target/top*100).toFixed(1)}%"></b><b class="over" style="left:${((z.target+INK_SIM.ZONE.slack)/top*100).toFixed(1)}%"></b></div><span class="seGL" id="seZoneV">${Math.round(s/z.target*100)}%</span></div>`;
+    const cnt=seItemCounts(sess),left=sess.end-sess.next;
+    tools.innerHTML=`<div class="row"><button class="btn sm${s>=z.target?" pri":""}" id="seNextZ">${left>1?"Next zone":"Finish"}</button><span class="hint">${cnt.shade+cnt.colour>0?`${left} zone${left>1?"s":""} left`:""}</span></div>`;
+    $("seNextZ").addEventListener("click",()=>{if(SE.down)return;INK_SIM.sessionNextItem(sess);SE.status="";save();seAfterItem();});
+    if(!SE.status)seStatus(col?"Swipe back and forth inside the zone to pack the colour in.":"Hold and sweep inside the zone. Fill it to the line, no further.");}}
+function seStatus(t){SE.status=t;const e=$("seStatus");if(e&&e.textContent!==t)e.textContent=t;}
+function seAfterItem(){
+  const sess=SE.sess;
+  seDrawBase();seDrawInkAll();seDrawFills();seDot();SE.status="";
+  const p=$("seProg");if(p){const cnt=seItemCounts(sess);p.textContent=seProgText(sess,INK_SIM.sessionItem(sess),sess.next-sess.start,sess.end-sess.start,cnt);}
+  seRenderUnder();
+  if(sess.stop)seEnd();}
+/* pointer input -> the sim, in mm on the placement box, with the event's own timestamps */
+function seWireCanvas(){
+  const over=$("seOver"),sess=SE.sess;
+  const mm=ev=>{const r=over.getBoundingClientRect();return[(ev.clientX-r.left-SE.ox)/SE.s+SE.v.x0,(ev.clientY-r.top-SE.oy)/SE.s+SE.v.y0];};
+  over.addEventListener("pointerdown",ev=>{
+    if(SE.down||sess.stop||sess.phase!=="work")return;ev.preventDefault();
+    const it=INK_SIM.sessionItem(sess);if(!it)return;
+    const [x,y]=mm(ev),t=ev.timeStamp||performance.now(),live=INK_SIM.penDown(sess,t,x,y);
+    if(!live.ok){if(live.why==="start"){seStatus("Start on the dot.");const d=$("seDot");if(d){d.classList.remove("nudge");void d.offsetWidth;d.classList.add("nudge");}}return;}
+    try{over.setPointerCapture(ev.pointerId);}catch(e){}
+    SE.down={id:ev.pointerId,t0:t,u0:live.u||0,x,y,item:it.idx};SE.r=0;SE.rushed=false;
+    if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
+    if(it.k==="line")INK_SOUND.buzzStart(INK_SIM.sessionBands(sess).buzz);else INK_SOUND.buzzStart(Object.assign({},INK_SIM.sessionBands(sess).buzz,{hz:INK_SIM.sessionBands(sess).buzz.hz*0.9}));
+    seDot();seKick();});
+  over.addEventListener("pointermove",ev=>{
+    const d=SE.down;if(!d||ev.pointerId!==d.id)return;ev.preventDefault();
+    const evs=ev.getCoalescedEvents?ev.getCoalescedEvents():[];
+    for(const e of (evs.length?evs:[ev])){const [x,y]=mm(e),t=e.timeStamp||performance.now();
+      const live=INK_SIM.penMove(sess,t,x,y);if(!live.ok)continue;
+      if(live.r!=null){SE.r=live.r;SE.rushed=!!live.rushed;}
+      if(live.sat!=null){SE.fillDirty=true;SE.rushed=false;if(live.over&&!SE.overTold){SE.overTold=true;seStatus("Overworking the skin: move on.");}}
+      else SE.q.push([d.x,d.y,x,y,live.blow?"blow":live.rushed?"rush":""]);
+      if(live.blow)seStatus("Blowout: ink spread under the skin. Ease off.");
+      else if(live.join)seStatus("A join: keep the line moving.");
+      d.x=x;d.y=y;}
+    INK_SOUND.buzzSet(SE.r,SE.rushed);seKick();},{passive:false});
+  const up=ev=>{
+    const d=SE.down;if(!d||ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
+    seFlushInk();SE.down=null;
+    const live=INK_SIM.penUp(sess,ev.timeStamp||performance.now());
+    seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
+    save();
+    if(live.lineDone){const ls=sess.lastStroke;SE.status="";seAfterItem();
+      if(ls&&!sess.stop)seStatus(`Line done: ${Math.round(ls.q*100)}% clean${ls.blowouts?`, ${ls.blowouts} blowout${ls.blowouts>1?"s":""}`:""}${ls.joins?`, ${ls.joins} join${ls.joins>1?"s":""}`:""}.`);}
+    else{seDot();if(sess.stop)seEnd();else if(INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line")seStatus("Lifted. Carry on from the dot.");}};
+  over.addEventListener("pointerup",up);over.addEventListener("pointercancel",up);}
+/* Break, Numb, Chat */
+function seAction(k){
+  const sess=SE.sess;if(!sess||SE.down)return;
+  if(k==="numb"){const cost=Math.round(INK_SIM.NUMB.price*INK_SIM.priceIndex(sess.year)/10)*10;if(sess.m.numbs<INK_SIM.NUMB.max&&(S.cash||0)<cost){toast(`Numbing cream is ${fmtMoney(cost)}. Not enough cash.`);return;}}
+  const r=INK_SIM.sessionAction(sess,k);
+  if(!r.ok){toast(r.why);return;}
+  INK_SOUND.tick();
+  if(k==="break")toast(r.eff>0.6?"A cigarette on the back step. They come back steadier.":"Another break. It helps less each time.");
+  if(k==="numb"){S.cash-=r.cost;renderHeader();toast(`Numbing cream on: ${fmtMoney(r.cost)}. It takes the edge off for a couple of hours.`);}
+  if(k==="chat"){const line=SE_CHAT[(sess.m.chats+((sess.client&&sess.client.name)||"").length)%SE_CHAT.length];
+    toast(r.talk<INK_SIM.CHAT.quiet?"They'd rather not talk. It wears on them.":line);}
+  save();seUpdateLive();const p=$("seProg");if(p)p.textContent=seProgText(sess,INK_SIM.sessionItem(sess),sess.next-sess.start,sess.end-sess.start,seItemCounts(sess));}
+function seStopTap(){
+  const sess=SE.sess;if(!sess||SE.down)return;
+  if(sess.next===sess.start&&!sess.cur&&!(sess.zsat||[]).some((v,i)=>v>0)){seCancelChair();return;}
+  if(!SE.stopArm){SE.stopArm=1;clearTimeout(SE.stopT);toast(sess.kind==="practice"?"Tap End again to stop practising":"Tap End again to finish the sitting here");
+    SE.stopT=setTimeout(()=>{SE.stopArm=0;},2600);return;}
+  SE.stopArm=0;clearTimeout(SE.stopT);seEnd();}
+function seCancelChair(){const sess=SE.sess;seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
+
+/* ---- the end of a sitting ---- */
+const SE_STOP_TEXT={pain:"They couldn't take any more today.",fatigue:"They're worn out. Time to stop.",artist:"You called it there.",done:""};
+function seEnd(){
+  const sess=SE.sess;if(!sess||SE.down||SE.ending)return;SE.ending=true;
+  try{
+    const res=INK_SIM.sessionFinish(sess),xp=INK_SIM.sessionXp(res,sess,S.skills);
+    seAddXp(xp);
+    const R={kind:sess.kind,res,xp,paid:0,piece:null,next:null,who:sess.client?sess.client.name:"Fake skin",design:sess.design,skin:seSkinRgb(sess.skinTone,sess.kind==="practice"),
+      bodyShape:sess.bodyShape,msg:SE_STOP_TEXT[res.stop]||"",part:sess.part,partsTotal:sess.partsTotal,item:null};
+    if(sess.kind==="booked")seFinishBooked(sess,res,R);
+    else if(sess.kind==="sample")seFinishSample(sess,res,R);
+    seSlot().live=null;SE.sess=null;SE.result=R;
+    save();renderHeader();
+    INK_SOUND.tick();renderSession();$("panel").scrollTop=0;
+  }finally{SE.ending=false;}}
+function seAddXp(xp){
+  const sk=S.skills||(S.skills={styles:{}});
+  for(const k of ["linework","shading","colour","speed"])if(xp[k])sk[k]=Math.round(Math.min(10,(+sk[k]||0)+xp[k])*1000)/1000;
+  if(!sk.styles)sk.styles={};for(const st in xp.styles||{})sk.styles[st]=Math.round(Math.min(10,(+sk.styles[st]||0)+xp.styles[st])*1000)/1000;}
+function sePieceExtras(piece,sess,res){
+  Object.assign(piece,{heal:null,healDue:seWeek(SE_HEAL_WEEKS),sessionsUsed:res.sessionsUsed,blowouts:res.out.blowouts,joins:res.out.joins,ink:sess.kit.ink,machine:sess.kit.machine});}
+/* booked: progress rides on the queue item; finishSession pays and books the next sitting or makes the piece */
+function seFinishBooked(sess,res,R){
+  const q=S.queue.find(x=>x.id===sess.itemId);
+  if(!q){R.msg="The booking has gone from the book, so this sitting wasn't paid.";return;}
+  const last=(q.sessionNo||1)>=(q.sessions||1);
+  if(!res.done&&last){   // the last sitting cut short: they come back next week to finish, paid then
+    q.progress=res.progress;const w=seWeek(1);q.w=w.w;q.y=w.y;
+    R.next={w:w.w,y:w.y,again:true};R.item=q.id;return;}
+  if(res.done&&!last)q.sessions=q.sessionNo||1;   // finished ahead of plan: this is the last sitting, the balance is paid now
+  q.progress=res.done?null:res.progress;
+  const out=Object.assign({},res.out);
+  const fin=INK_SIM.finishSession(S,q.id,{design:q.design,out,heal:null});if(!fin)return;
+  R.paid=fin.paid;
+  if(S.board.item===q.id)S.board.item=fin.next?fin.next.id:null;
+  if(fin.piece){sePieceExtras(fin.piece,sess,res);R.piece=fin.piece.name;}
+  else if(fin.next){R.next={w:fin.next.w,y:fin.next.y};R.item=fin.next.id;R.part=q.sessionNo||1;}}
+/* sample walk-in: paid a share each sitting; the piece is made when the work is done */
+function seFinishSample(sess,res,R){
+  const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===sess.clientId)||DZ_SAMPLE_CLIENTS[0];
+  const price=INK_SIM.scoreDesign(sess.design,c,S.skills,{year:S.year}).price;
+  const pay=Math.round(price*SE_PAY.sample/Math.max(1,sess.partsTotal)/10)*10;
+  if(res.sitting.items>0){S.cash=(S.cash||0)+pay;R.paid=pay;}
+  if(res.done){
+    const p=INK_SIM.addPiece(S,{client:{id:c.id,first:c.name,history:[],pieces:[]},design:sess.design,out:Object.assign({},res.out),heal:null,price});
+    sePieceExtras(p,sess,res);R.piece=p.name;seSlot().next=null;}
+  else{seSlot().next={client:c.id,design:sess.design,bodyShape:sess.bodyShape,skinTone:sess.skinTone,progress:res.progress,part:res.nextPart,partsTotal:sess.partsTotal};R.next={now:true};}}
+function seRenderResult(){
+  const R=SE.result,res=R.res,host=$("sessionBody"),s=res.sitting,o=res.out;
+  const title=R.kind==="practice"?"Practice done":R.piece?"Piece finished":res.early?"Stopped early":`Sitting ${R.part} of ${R.partsTotal} done`;
+  const xp=["linework","shading","colour","speed"].filter(k=>R.xp[k]>0).map(k=>`<span class="clChip">+${R.xp[k].toFixed(2)} ${k}</span>`).concat(Object.keys(R.xp.styles||{}).map(k=>`<span class="clChip">+${R.xp.styles[k].toFixed(2)} ${esc((INK_SIM.STYLES[k]||{}).name||k)}</span>`));
+  const row=(l,v,hint)=>`<dt>${l}</dt><dd>${v}${hint?` <span class="hint">${hint}</span>`:""}</dd>`;
+  let next="";
+  if(R.piece)next=`<p><b>${esc(R.piece.charAt(0).toUpperCase()+R.piece.slice(1))}</b> is done. The heal shows in two weeks.</p>`;
+  else if(R.next&&R.next.now)next=`<p>There's more to do. A sample walk-in can sit again straight away.</p>`;
+  else if(R.next&&R.next.again)next=`<p>The piece isn't finished. They're booked back for week ${R.next.w}, ${R.next.y} to finish it; the balance is paid then.</p>`;
+  else if(R.next)next=`<p>Next sitting: week ${R.next.w}, ${R.next.y}.</p>`;
+  host.innerHTML=`<div class="se"><div class="card seRes"><span class="clK">${esc(R.who)}</span><h2>${title}</h2>${R.msg?`<p class="seResMsg">${esc(R.msg)}</p>`:""}
+<div class="seResB">${seRender(R.design,R.skin,o,R.bodyShape)}<dl class="kv">
+${s.lineQuality!=null?row("Lines",sePct(s.lineQuality)):""}${s.depthQuality!=null?row("Depth",sePct(s.depthQuality)):""}
+${row("Saturation",sePct(o.saturation))}${row("Trauma",sePct(o.trauma),"lower is better")}
+${row("Blowouts",s.blowouts)}${row("Joins",s.joins)}${row("Time",s.hours.toFixed(1)+" h")}
+${R.kind!=="practice"?row("Pain at the end",sePct(s.pain)):""}${R.paid?row("Paid",fmtMoney(R.paid)):""}</dl></div>
+${xp.length?`<div class="clChips">${xp.join("")}</div>`:""}${next}
+<div class="row">${R.next&&R.next.now?`<button class="btn pri" id="seResNext">Next sitting</button>`:""}<button class="btn${R.next&&R.next.now?"":" pri"}" id="seResOk">Done</button>${R.kind==="booked"?`<button class="btn" id="seResCl">Clients</button>`:""}${R.kind==="practice"?`<button class="btn" id="seResAgain">Again</button>`:""}</div></div></div>`;
+  const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
+  on("seResOk",()=>{SE.result=null;renderSession();});
+  on("seResNext",()=>{SE.result=null;seContinueSample();});
+  on("seResCl",()=>{SE.result=null;showTab("clients");});
+  on("seResAgain",()=>{SE.result=null;seStartPractice(SE.pick);});}
 /* ===================== app/clients.js: the Clients tab (PR 3) =====================
    Two views on a segmented control:
      This week  who is at the door (walk-ins, who leave at the end of the week), booked consults (returns and referrals),
@@ -4301,6 +5756,7 @@ ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
+  if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
   if(crWaiting().n&&!CR.arm){CR.arm=1;clearTimeout(CR.armT);CR.armT=setTimeout(()=>{CR.arm=0;if(curTab==="career")renderCareer();},4000);INK_SOUND.tick();renderCareer();return;}
   CR.arm=0;clearTimeout(CR.armT);
   if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}
