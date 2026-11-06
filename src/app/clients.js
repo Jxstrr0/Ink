@@ -7,6 +7,7 @@
      Clients    everyone who has come through the door, newest first, with filters and a search; tap one for their card:
                 what you know, their pieces as they look today (re-rendered from the design and the aging model), and
                 their history.
+     Work       the body of work (PR 5, app/gallery.js gvRenderWork): every piece as it looks today, with filters.
    The consult replaces the tab while it runs: the chat transcript, 3 to 5 options a turn, then the quote. It is a pure
    state machine in sim/clients.js; this file only draws it. Each choice's dice are forked from the save's seed, the
    client, the week and the choice, so leaving and coming back replays the same answers. Nothing is written until the
@@ -46,9 +47,9 @@ function renderClients(){
   if(typeof INK_SIM.consultStart!=="function"){host.innerHTML=`<div class="card"><p class="hint">The client model isn't in this build.</p></div>`;return;}
   if(CL.consult)return clRenderConsult();
   const n=S.clients.length;
-  host.innerHTML=`<div class="cl">${segHtml("clSeg",[["week","This week"],["list",`Clients${n?` · ${n}`:""}`]],CL.view)}<div id="clView"></div></div>`;
+  host.innerHTML=`<div class="cl">${segHtml("clSeg",[["week","This week"],["list",`Clients${n?` · ${n}`:""}`],["work","Work"]],CL.view)}<div id="clView"></div></div>`;
   $("clSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===CL.view)return;CL.view=b.dataset.v;INK_SOUND.tick();renderClients();});
-  if(CL.view==="list")clRenderList();else clRenderWeek();}
+  if(CL.view==="list")clRenderList();else if(CL.view==="work"&&typeof gvRenderWork==="function")gvRenderWork($("clView"));else clRenderWeek();}
 
 /* ---- This week ---- */
 function clCard(q){
@@ -59,7 +60,7 @@ function clCard(q){
     const ready=!!(q.design&&q.design.elements&&q.design.elements.length);
     return`<article class="clQ ses"><header><span class="clK">In the chair</span><h3>${esc(c.name)}</h3><span class="clMeta">${clAge(c)} · ${esc(c.pronouns)}</span></header>
 <p class="clAsk">${esc(clAskLine(a))}</p>
-<p class="clMeta">Sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h · ${fmtMoney(q.price||0)} (${fmtMoney(q.deposit||0)} paid up front)${q.moved?` · moved ${q.moved}×`:""}</p>
+<p class="clMeta">Sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h · ${q.fix?"free fix after an infection":`${fmtMoney(q.price||0)} (${fmtMoney(q.deposit||0)} paid up front)`}${q.moved?` · moved ${q.moved}×`:""}</p>
 <p class="clDz ${ready?"ok":"todo"}"><span aria-hidden="true">${ready?"●":"○"}</span> ${ready?`Design ready: ${esc(label)}`:"Needs a design"}</p>
 <div class="row"><button class="btn sm${ready?"":" pri"}" data-dz="${q.id}">${ready?"Edit design":"Design it"}</button><button class="btn sm${ready?" pri":""}" data-ses="${q.id}"${ready?"":" disabled"}>${typeof sessionStartBooked==="function"?"Start session":"Quick session"}</button></div></article>`;}
   const exp=q.expires!=null?INK_SIM.weekFrom(q.expires):null;
@@ -195,16 +196,18 @@ function clPieceToday(p,c){
   return{svg:dzMini(m,"",`filter:blur(${dzR2(Math.max(0,(a.blur||0)*pxPer))}px) saturate(${dzR2(1-fd*0.9)});opacity:${dzR2(1-fd*0.7)}`,a.spread||0),a,yrs};}
 const CL_HIST={consult:h=>`Consult: ${h.outcome==="accepted"?"booked":h.outcome==="walked"?"walked out":"no booking"}${h.talk==="won"?", talked out of a bad idea":h.talk==="lost"?", the talk went badly":""}${h.quote?` (${fmtMoney(h.quote.price)})`:""}`,
   piece:h=>`Finished ${h.name||"a piece"}`,session:h=>`Sitting ${h.n} of ${h.of}`,review:h=>`Review: ${"★".repeat(h.stars||0)}${"☆".repeat(5-(h.stars||0))} “${h.text||""}”`,
-  referral:h=>{const r=clReal(h.client);return`Sent you ${r?r.first:"a friend"}`;},note:h=>h.text||"",heal:h=>`Healed: ${h.grade||""}`};
+  referral:h=>{const r=clReal(h.client);return`Sent you ${r?r.first:"a friend"}`;},note:h=>h.text||"",heal:h=>`Healed: ${(INK_SIM.HEAL_GRADES[h.grade]||{}).name||h.grade||""}`};
 function clOpenClient(id){
   const c=INK_SIM.findClient(S,id);if(!c)return;
   const pcs=(c.pieces||[]).map(pid=>S.pieces.find(p=>p.id===pid)).filter(Boolean);
   const ref=clReal(c.referredBy),since=c.since||{};
   const pieceHtml=pcs.length?`<div class="clPcs">${pcs.map(p=>{const t=clPieceToday(p,c),r=t.a.readability,cls=r<0.35?"bad":r<0.6?"meh":"ok";
-    return`<figure class="clPc"><div class="clPcA board">${t.svg}</div><figcaption><b>${esc(p.name)}</b><span class="clMeta">${p.y} · ${t.yrs<1?"fresh":Math.floor(t.yrs)+" yr"} · reads <b class="${cls}">${Math.round(r*100)}</b>${p.heal?` · healed ${esc(p.heal)}`:""}</span></figcaption></figure>`;}).join("")}</div>`:`<p class="hint">No pieces yet.</p>`;
+    return`<figure class="clPc"${typeof gvOpen==="function"?` data-gp="${esc(p.id)}" role="button" tabindex="0"`:""}><div class="clPcA board">${t.svg}</div><figcaption><b>${esc(p.name)}</b><span class="clMeta">${p.y} · ${t.yrs<1?"fresh":Math.floor(t.yrs)+" yr"} · reads <b class="${cls}">${Math.round(r*100)}</b>${p.heal?` · healed ${esc((INK_SIM.HEAL_GRADES[p.heal]||{}).name||p.heal)}`:""}${p.portfolio?" · ★ portfolio":""}</span></figcaption></figure>`;}).join("")}</div>`:`<p class="hint">No pieces yet.</p>`;
   const hist=(c.history||[]).slice(-30).reverse().map(h=>{const f=CL_HIST[h.kind];return f?`<li><span class="clMeta">Wk ${h.w}, ${h.y}</span> ${esc(f(h))}</li>`:"";}).join("");
   openSheet(c.name,`<section><dl class="kv"><dt>Age</dt><dd>${clAge(c)}</dd><dt>Pronouns</dt><dd>${esc(c.pronouns)}</dd><dt>Job</dt><dd>${esc(c.job||"")}</dd>
 <dt>First seen</dt><dd>Week ${since.w||"?"}, ${since.y||"?"}${ref?` · sent by ${esc(ref.name)}`:""}</dd><dt>Loyalty</dt><dd>${clLoyal(c.loyalty)}</dd></dl>
 <div class="clChips" style="margin-top:10px">${clWhat(c)||`<span class="clMeta">You haven't found out much about them yet.</span>`}</div></section>
 <section><h3>Their pieces, as they look today</h3>${pieceHtml}</section>
-<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);}
+<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);
+  const pc=$("sheetBody").querySelector(".clPcs");
+  if(pc&&typeof gvOpen==="function"){const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();gvOpen(f.dataset.gp);}};pc.addEventListener("click",go);pc.addEventListener("keydown",go);}}
