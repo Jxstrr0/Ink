@@ -106,8 +106,9 @@ const COLOUR_LINES={watercolour:1};
 /* a flash design (FLASH in sim/flash.js, or the artist's own saved flash) is drawn already and the stencil exists:
    design.flash set (or opts.flash) takes this share of the hours */
 const FLASH_DISCOUNT={hours:0.8};
-/* the default session outputs used for the aging prediction */
-const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.75};
+/* the default session outputs used for the aging prediction. trauma is the one output where lower is better (skin damage
+   from the session, 0 = none); aging doesn't read it, the heal grade does (PR 5) */
+const DEFAULT_OUT={lineQuality:0.75,depthQuality:0.75,saturation:0.75,trauma:0.25};
 
 /* ---- small helpers ---- */
 function dzLineMm(rl){

@@ -7,13 +7,14 @@
      - the session (depthQuality: too shallow falls out, too deep blows out; lineQuality: ragged edges start soft;
        saturation: badly packed colour starts faded). trauma feeds the heal grade in PR 5, not aging directly,
      - the heal (HEAL_GRADES: a patchy heal starts with spread already applied, a blowout with a big one),
-     - the ink (INK_TIERS until sim/kit.js has INKS), and the style's ageFactor (a nudge for what the numbers miss).
+     - the ink (INKS in sim/kit.js: the one table of ink tiers, read here at call time), and the style's ageFactor (a nudge
+       for what the numbers miss).
    Thin lines don't get wider so much as spread to nothing: the same ink over a wider area reads paler (the dilution term),
    so a 1RL line fades much faster than a 14RL one. Packed solid fill does not dilute.
    readability is the design re-scored with the aged lines and faded ink (design.js dzReadability), so 9 mm script closes up
    within a few years while a bold 80 mm rose still reads at 20.
      tattoo = {design, out:{lineQuality, depthQuality, saturation, trauma} (default 0.75), heal: HEAL_GRADES id or null,
-               ink: INK_TIERS / INKS id or null, skinTone, sun}
+               ink: INKS id (sim/kit.js) or null = standard, skinTone, sun}
    Private helpers start with ag. ===== */
 
 /* share of pigment lost per year (an exponential rate) at baseline wear, by colour id */
@@ -31,8 +32,8 @@ const HEAL_GRADES={
   infected:{name:"infected",spread0:0.45,blur0:0.35,fade0:0.25,rate:1.3}
 };
 const AG_NO_HEAL={spread0:0,blur0:0,fade0:0,rate:1};   // heal null: the prediction before the heal is known
-/* ink quality until the kit's INKS exist */
-const INK_TIERS={budget:{name:"budget",fade:1.25,spread:1.1},standard:{name:"standard",fade:1,spread:1},premium:{name:"premium",fade:0.82,spread:0.95}};
+/* ink quality comes from INKS in sim/kit.js (loaded after this file, read at call time); this is the fallback if it's missing */
+const AG_INK_NONE={fade:1,spread:1};
 /* the model's own knobs */
 const AGING={
   spreadK:0.065,spreadExp:0.75,       // spread mm = spreadK x years^spreadExp x multipliers (+ the heal's head start)
@@ -52,8 +53,8 @@ function agEnv(t,p){
   p=p||(SIM.PLACEMENTS&&SIM.PLACEMENTS[design.placement])||{region:"arm",sun:0.5};
   const wear=PLACEMENT_WEAR[p.region]||{spread:1,fade:1};
   const heal=(t.heal&&HEAL_GRADES[t.heal])||AG_NO_HEAL;
-  const kitInks=SIM.INKS;
-  const ink=(t.ink&&(INK_TIERS[t.ink]||(kitInks&&kitInks[t.ink])))||INK_TIERS.standard;
+  const inks=SIM.INKS||{};
+  const ink=(t.ink&&inks[t.ink])||inks.standard||AG_INK_NONE;
   const tone=t.skinTone!=null?t.skinTone:0.3,sun=(t.sun!=null?t.sun:0.4)*(p.sun!=null?p.sun:0.5)*(1-AGING.skinShield*tone);
   const st=(SIM.STYLES||{})[design.style],af=st&&st.ageFactor!=null?st.ageFactor:0.6;
   const styleM=lerp(AGING.styleLo,AGING.styleHi,af),dq=clamp(out.depthQuality,0,1);
@@ -86,4 +87,4 @@ function agAge(t,years,E,tol){
   return{blur:dzR(sw?b/sw:0),fade:dzR(sw?f/sw:0),spread:dzR(sw?s/sw:0),readability:dzR(R.score)};
 }
 function age(tattoo,years){return agAge(tattoo||{},years,null,0);}
-SIM.age=age;SIM.COLOUR_FADE=COLOUR_FADE;SIM.PLACEMENT_WEAR=PLACEMENT_WEAR;SIM.HEAL_GRADES=HEAL_GRADES;SIM.INK_TIERS=INK_TIERS;SIM.AGING=AGING;
+SIM.age=age;SIM.COLOUR_FADE=COLOUR_FADE;SIM.PLACEMENT_WEAR=PLACEMENT_WEAR;SIM.HEAL_GRADES=HEAL_GRADES;SIM.AGING=AGING;
