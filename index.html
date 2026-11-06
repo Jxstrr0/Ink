@@ -666,6 +666,86 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 .crRepX{grid-area:x}
 @media (max-width:380px){.gvGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.gvBigA{width:104px;height:104px}}
 @media (prefers-reduced-transparency:reduce){.gvPort{box-shadow:none}}
+/* ===================== ui-career.css: the career, the shop, scenes, slots (PR 7) =====================
+   The act card on the Career tab (Arkady's word, the one-line goal, the step list, chores), invitations, money and
+   skills; the shop cards on the Studio tab (build-out levels, artists); the shop-closed scene and the Legacy screen;
+   the save slots and the New career sheet. Theme tokens only, so the light theme follows; no motion. */
+.caSay{margin:8px 0 10px;padding:10px 12px;border-left:3px solid var(--gold);background:var(--panel2);border-radius:0 10px 10px 0;font-size:15px;font-style:italic}
+.caSay cite{display:block;margin-top:4px;font-style:normal;font-size:12.5px;color:var(--mute)}
+.caSay cite::before{content:"— "}
+.caGoal{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;margin:0 0 10px}
+.caGoal b{font-size:15.5px}
+.caSteps{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:var(--mute)}
+.caSteps li{display:flex;gap:8px;align-items:baseline}
+.caSteps li::before{content:"";flex:0 0 auto;width:9px;height:9px;border:1.5px solid var(--faint);border-radius:50%;transform:translateY(1px)}
+.caSteps li.done{color:var(--faint);text-decoration:line-through}
+.caSteps li.done::before{background:var(--ok);border-color:var(--ok)}
+.caSteps li.now{color:var(--text);font-weight:600}
+.caSteps li.now::before{border-color:var(--red);background:var(--red)}
+.caRow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.caBar{min-width:80px}
+.caChores{display:flex;flex-wrap:wrap;gap:6px}
+.caChores .btn{flex:1 1 calc(50% - 6px);min-height:44px;text-align:left;justify-content:flex-start}
+.caNeed{list-style:none;margin:4px 0;padding:0;font-size:14px;display:flex;flex-direction:column;gap:3px;color:var(--mute)}
+.caNeed li.ok{color:var(--ok)}
+.caLater{font-style:italic}
+.caProj{display:flex;flex-direction:column;gap:8px}
+.caPr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.caPr .clMeta{grid-column:1}
+.caPr .btn,.caPr .ok{grid-column:2;grid-row:1/span 2}
+.caPast{margin:4px 0;padding-left:18px;font-size:14px}
+.caInvR{padding:10px 0;border-top:1px solid var(--line)}
+.caInvR:first-of-type{border-top:0;padding-top:0}
+.caInvR p{margin:0 0 8px}
+.caMoney .kv dd.in{color:var(--ok)}
+.caMoney .kv dd.out{color:var(--mute)}
+.caSkL{display:flex;flex-direction:column;gap:8px}
+.caSkR{display:grid;grid-template-columns:minmax(0,1fr) 90px 34px;gap:10px;align-items:center}
+.caSkR>span:first-child{display:flex;flex-direction:column;min-width:0}
+.caPr .ok,.shB .ok{color:var(--ok)}.shS .warn{color:var(--warn)}.caAct .crit{color:var(--crit)}
+
+/* ---- the shop (Studio tab) ---- */
+.shBs{display:flex;flex-direction:column}
+.shB{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.shB:first-child{border-top:0;padding-top:0}
+.shBN{display:flex;flex-direction:column;gap:2px;min-width:0}
+.shLv{display:flex;gap:4px;margin-top:2px}
+.shLv i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.shLv i.on{background:var(--gold)}
+.shS{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.shS:first-of-type{border-top:0;padding-top:0}
+.shSH{display:flex;flex-direction:column}
+.shCut b{min-width:40px;text-align:center;font-variant-numeric:tabular-nums}
+.shCut .btn{min-width:44px;min-height:40px}
+.shSel select{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);padding:0 10px}
+
+/* ---- scenes and the Legacy screen ---- */
+.lgScene.card{border-color:var(--gold)}
+.lgScene h2{margin-top:2px}
+.lgKeep{margin:8px 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.lgBig{font-family:var(--disp);font-size:24px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 4px}
+.lgPair{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
+.lgPair p{margin:0}
+.lgFig{margin:0;cursor:pointer}
+.lgFig .gvSvg{width:96px;height:96px;border-radius:10px;display:block}
+.lgFig figcaption{font-size:12px;color:var(--mute);margin-top:2px;text-align:center}
+.lgDec{display:flex;flex-direction:column;gap:6px}
+.lgDecR{display:grid;grid-template-columns:52px 1fr 40px;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+
+/* ---- save slots and New career ---- */
+.slList{display:flex;flex-direction:column}
+.slR{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.slR:first-child{border-top:0}
+.slN{display:flex;flex-direction:column}
+.slOpt{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;padding:14px;margin:0 0 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+.slOpt b{font-size:17px}
+.slOpt span{font-size:13.5px;color:var(--mute)}
+.slOpt.pri{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.slOpt:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+/* the reputation bar's look, outside the reputation grid */
+.caBar,.lgDecR .crRepB,.caSkR .crRepV,.lgDecR b{grid-area:auto}
+.caRow .caBar{width:100%}
+.lgLine{padding-left:12px;border-left:3px solid var(--gold)}
 </style>
 
 <div id="app">
@@ -2581,12 +2661,13 @@ function styleDemand(styleId,year){
 }
 /* the brief and its style: weighted by the demand for the brief's styles, the segment boosts and the size the stage allows */
 function clChooseBrief(r,opts){
-  const year=opts.year,boost=opts.segBoost||{},sizes=opts.sizes||null;
+  const year=opts.year,boost=opts.segBoost||{},sizes=opts.sizes||null,sm=opts.styleMult||null;
+  const sd=s=>styleDemand(s,year)*(sm&&sm[s]||1);   // PR 7: a guest spot's or a staff artist's style pull
   const segW=list=>{let m=1;for(const s of list||[])m+=boost[s]||0;return m;};
   const ok=BRIEFS.filter(b=>(!b.from||year>=b.from)&&(!b.to||year<=b.to)&&(!sizes||sizes.indexOf(b.size)>=0)&&(!opts.theme||b.theme===opts.theme)&&(!opts.style||b.styles.indexOf(opts.style)>=0));
   const pool=ok.length?ok:BRIEFS;
-  const b=r.weighted(pool,x=>{let d=0;for(const s of x.styles)d+=styleDemand(s,year);return d/x.styles.length*segW(x.seg)*(x.w||1);});
-  const style=opts.style&&b.styles.indexOf(opts.style)>=0?opts.style:r.weighted(b.styles,s=>styleDemand(s,year)*segW(((SIM.STYLES||{})[s]||{}).clientSegments)*(s===b.styles[0]?1.3:1));
+  const b=r.weighted(pool,x=>{let d=0;for(const s of x.styles)d+=sd(s);return d/x.styles.length*segW(x.seg)*(x.w||1);});
+  const style=opts.style&&b.styles.indexOf(opts.style)>=0?opts.style:r.weighted(b.styles,s=>sd(s)*segW(((SIM.STYLES||{})[s]||{}).clientSegments)*(s===b.styles[0]?1.3:1));
   return{b,style};
 }
 /* id: the next free "c<n>" given S (scans S.clients, the newcomers waiting in the queue, and `taken`) */
@@ -2606,7 +2687,7 @@ function makeClient(r,opts){
   const year=opts.year||2000,week=opts.week||1;
   const pronouns=r.weighted(PRONOUNS,x=>x[1])[0];
   /* the brief first: it can ask for an age range and a job */
-  const pick=opts.briefId?{b:BRIEFS.find(x=>x.id===opts.briefId)||BRIEFS[0],style:null}:clChooseBrief(r,{year,segBoost:opts.segBoost,sizes:opts.sizes,theme:opts.theme,style:opts.style});
+  const pick=opts.briefId?{b:BRIEFS.find(x=>x.id===opts.briefId)||BRIEFS[0],style:null}:clChooseBrief(r,{year,segBoost:opts.segBoost,sizes:opts.sizes,theme:opts.theme,style:opts.style,styleMult:opts.styleMult});
   const B=pick.b,style=pick.style||opts.style||B.styles[0];
   const age=clAge(r,B.ages);
   const nm=clName(r,pronouns);
@@ -2914,7 +2995,8 @@ function clQuote(c,choiceId,r){
   if(ret&&ret.rule==="touchup")price=(weekIndex(c.week,c.year)-weekIndex(ret.w||c.week,ret.year||c.year))<Q.touchupFreeWeeks?0:price*Q.touchupMult;
   price=Math.round(price/Q.round)*Q.round;
   const deposit=price>0?Math.min(Math.round(price*Q.depositMax/Q.round)*Q.round,Math.max(Math.round(Q.depositMin*SIM.priceIndex(c.year)/Q.round)*Q.round,Math.round(price*Q.deposit/Q.round)*Q.round)):0;
-  const wtp=est.hours*lerp(Q.wtpLo,Q.wtpHi,t.budget||0.5)*SIM.priceIndex(c.year)*(1+Q.wtpLoyal*(client.loyalty||0));
+  const sigW=c.ask&&c.ask.sig?SIGNATURE.wtp*(client.theme==="collector"?SIGNATURE.collector/1.4:1):1;   // PR 7: "your thing" (collectors weight it more)
+  const wtp=est.hours*lerp(Q.wtpLo,Q.wtpHi,t.budget||0.5)*SIM.priceIndex(c.year)*(1+Q.wtpLoyal*(client.loyalty||0))*sigW;
   const ratio=wtp>0?price/wtp:0;
   const coll=client.theme==="collector"?1:0;
   const waitOk=lerp(Q.waitOk,Q.waitOkLoyal,client.loyalty||0)+coll*Q.waitOkCollector;
@@ -2957,8 +3039,9 @@ function consultCommit(S,c){
       sessionNo:1,sessions:n,price:q.price,deposit:q.deposit,paid:q.deposit,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0};
     if(c.ret)item.ret=c.ret;
     S.queue.push(item);
-    S.cash=(S.cash||0)+q.deposit;
+    cashIn(S,q.deposit,"deposit");
   }
+  if(S.skills&&SKILL_XP.consult)skillGain(S,"consult",(SKILL_XP.consult[c.outcome]||0)+(c.talk==="won"?SKILL_XP.consult.talkWon:0));   // PR 7
   return{client,item,isNew};
 }
 /* queue ids: q1, q2, ... (the max in the queue + 1, so ids are unique among live items) */
@@ -3006,7 +3089,7 @@ function scheduleReturns(S,r){
   const P=SIM.PLACEMENTS||{};
   for(const p of S.pieces){
     if(pending[p.client])continue;
-    const c=idx.get(p.client);if(!c||c.compact)continue;
+    const c=idx.get(p.client);if(!c)continue;   // PR 7: a compacted client can come back (expandClient below)
     const age=now-weekIndex(p.w,p.y);if(age<1)continue;
     for(const rule of RETURN_RULES){
       if(age<rule.after[0]||age>rule.after[1])continue;
@@ -3017,6 +3100,7 @@ function scheduleReturns(S,r){
       const pw=lerp(rule.p[0],rule.p[1],c.loyalty||0),len=rule.after[1]-rule.after[0]+1;
       const weekly=1-Math.pow(1-pw,1/len);
       if(!r.chance(weekly))continue;
+      if(c.compact)expandClient(S,c);
       let foreign=null;
       if(rule.foreign){
         /* someone else's work, from a year the client was already an adult */
@@ -3059,7 +3143,7 @@ SIM.referral=referral;SIM.scheduleReturns=scheduleReturns;SIM.proxyDesign=clProx
      aging     on a year boundary: clients turn a year older and pieces cross a year (PR 5 re-renders them)
      bookings  walk-ins from market.js, returns (RETURN_RULES), referrals (REFERRAL), then the week's chair hours are
                filled from the queue; sessions that don't fit move to next week
-     costs     rent, supplies, staff (PR 7: a no-op here)
+     costs     the shop's cut, supplies, rent, staff, sales (PR 7: sim/career.js careerWeek replaces the stub)
      events    queued events, reckonings, inspections (PR 8: a no-op here)
      trend     the trend wave (PR 8: a no-op here)
    Later PRs replace a stub by assigning SIM.WEEK_HOOKS.<name> = function(S, ctx){...}. ctx = {r (an rng forked for that hook and
@@ -3248,7 +3332,7 @@ function finishSession(S,itemId,res){
   const i=S.queue.findIndex(q=>q.id===itemId);if(i<0)return null;
   const q=S.queue[i];S.queue.splice(i,1);
   const balance=Math.max(0,(q.price||0)-(q.deposit||0)),share=Math.round(balance/Math.max(1,q.sessions||1));
-  S.cash=(S.cash||0)+share;
+  cashIn(S,share,"sitting");   // PR 7: through the ledger (sim/career.js)
   const design=res.design||q.design||null;
   if((q.sessionNo||1)<(q.sessions||1)){
     const due=weekFrom(clNow(S)+WEEK.sessionGap);
@@ -3461,13 +3545,19 @@ function hlBookFix(S,piece,c){
 function healPiece(S,piece,r,log){
   if(!piece||piece.heal)return piece&&piece.heal;
   const real=findClient(S,piece.client);
-  const guest=!real&&typeof SIM.guestClient==="function"?SIM.guestClient(piece.client):null;
+  const staff=!!piece.by;   // PR 7: a staff artist's piece (sim/career.js): the shop's reputation, the Shop gallery, no reveal
+  const guest=!real&&piece.guest?{traits:{aftercare:piece.guest.a,sun:piece.guest.s},loyalty:0.4,skinTone:piece.guest.t}
+    :!real&&typeof SIM.guestClient==="function"?SIM.guestClient(piece.client):null;
   const c=real||{id:piece.client,first:"",traits:(guest&&guest.traits)||{},loyalty:guest&&guest.loyalty!=null?guest.loyalty:0.3,history:[]};
   const g=healGrade(piece,hlAftercare(c),r.fork("grade:"+piece.id));
   piece.heal=g;piece.healW=S.week;piece.healY=S.year;
   const name=HEAL_GRADES[g].name;
   let text="The bandage comes off "+piece.name+": "+(g==="infected"?"it got infected.":"healed "+name+".");
   if(real){clientLog(real,{w:S.week,y:S.year,kind:"heal",piece:piece.id,grade:g});loyaltyBump(real,g);}
+  if(staff){   /* the shop's name, not yours: a staff infection hits the shop */
+    if(typeof shopRepHeal==="function")shopRepHeal(S,piece);
+    if(g==="infected"&&log)log.push({k:"event",text:"A client of "+(typeof staffName==="function"?staffName(S,piece.by):"one of your artists")+"'s got infected. It's on the shop.",piece:piece.id,staff:piece.by});
+    return g;}
   /* reputation: the heal, then the review */
   repApply(S,repHealDelta(S,piece));
   const rv=writeReview(c,piece,r.fork("review:"+piece.id));
@@ -3475,6 +3565,7 @@ function healPiece(S,piece,r,log){
     if(!real)piece.review={stars:rv.stars,text:rv.text};
     const st=rv.stars-3;repApply(S,{walkins:st*REP.review.walkins,collectors:st*REP.review.collectors,peers:st*REP.review.peers});
   }
+  if(S.career&&S.studio&&S.studio.stage==="apprentice"&&S.career.mentor&&typeof caGoodwill==="function")caGoodwill(S,g==="crisp"?MENTOR.goodwill.crisp:g==="soft"?0:MENTOR.goodwill.bad);   // PR 7
   if(g==="infected"&&real&&!real.compact){
     const fx=hlBookFix(S,piece,real);
     text+=" A free fix is booked for week "+fx.w+", "+fx.y+".";
@@ -4206,6 +4297,817 @@ function kitPrice(kind,id,year){
 SIM.MACHINES=MACHINES;SIM.NEEDLES=NEEDLES;SIM.INKS=INKS;SIM.INK_TIERS=INKS;SIM.VOLTAGE=VOLTAGE;SIM.STROKE=STROKE;
 SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
 SIM.kitBands=kitBands;SIM.kitDeltas=kitDeltas;SIM.kitPrice=kitPrice;SIM.kitClean=kitClean;SIM.kitDefault=()=>ktCopy(KIT_DEFAULT);
+/* ===== sim/career.js: the career (PR 7): the four acts, the mentor, money, the studio build-out, staff, the signature,
+   skills, conventions and guest spots, Act 4's offers, the soft fail and the Legacy summary =====
+   Tables (every tuning number lives here; rubles are 2000 rubles x SIM.priceIndex(year) unless a comment says otherwise):
+     ACTS             the four acts: apprentice (years 1-3), chair (3-8), studio (8-20), legacy (20-30); S.studio.stage
+     MENTOR           Arkady Sedov, who runs the shop on Kanatnaya Street where you start, and his lines by topic
+     APPRENTICE_STEPS Act 1 is the tutorial: one-line goals in order, each with the tab it happens on and a check
+     CHORES           what an apprentice does for Arkady; each one moves the clock a week
+     FRIENDS          free pieces on friends in Act 1
+     CHAIR_SPLIT      the share of your takings the shop keeps while you rent a chair (and Arkady's cut while you apprentice)
+     RATE_BY_REP      your hourly rate: S.rate = (base by act + reputation) x signature x PRICE_INDEX
+     SUPPLIES, LEASE, MARKETING, STUDIO_STAGES, VIBES   what the work and the shop cost, and what the build-out does
+     STAFF            hired artists: style, skill, ego, the shop's cut, poach risk; STAFF_NAMES-free (names from clients.js)
+     NOSHOW, INSPECTION, BROKE   deposits kept when people don't show, health inspections, the soft fail
+     SIGNATURE        what you do most, and what it does once it shows
+     SKILLS           the skills and what each one does; SKILL_XP (sim/session.js) gains consult and chore XP here
+     CONVENTIONS, GUEST_SPOTS, LEGACY_OFFERS, APPRENTICES   events of Acts 2 to 4
+     LEGACY           the Legacy screen's numbers
+   Functions (S in, S changed; rng forked from S.seed + a label, never Math.random):
+     SIM.careerEnsure(S)  fills S.career / S.studio for an old or bare save     SIM.cashIn / cashOut(S, amount, kind)
+     SIM.apprenticeSteps(S), SIM.mentorLine(S, topic, sub)                      SIM.doChore(S, id) -> log (one week on)
+     SIM.friendBooking(S), SIM.rentChair(S), SIM.leaseStudio(S), SIM.goLegacy(S), SIM.softFail(S), SIM.skipBroom(S)
+     SIM.buildUp(S, key), SIM.setVibe, SIM.setMarketing, SIM.staffCandidates(S), SIM.hireStaff(S, cand), SIM.letGo(S, id)
+     SIM.simStaffSession(staff, design, {kit, shop, r}) -> session outputs        SIM.signatureOf(S)
+     SIM.enterInvite(S, id, yes), SIM.takeApprentice(S), SIM.legacyAct(S, id), SIM.legacySummary(S)
+     WEEK_HOOKS.costs = careerWeek: the shop's cut, supplies, rent, staff, apprentices, sales, no-shows, inspections,
+     invites, the soft fail, the client archive (sim/archive.js). Private helpers start with ca. ===== */
+
+const ACTS={
+  apprentice:{act:1,name:"Apprentice",years:[0,3]},
+  chair:{act:2,name:"Rented chair",years:[3,8]},
+  studio:{act:3,name:"Your studio",years:[8,20]},
+  legacy:{act:4,name:"Legacy",years:[20,30]}
+};
+/* the mentor: an old-school traditional artist with a canal-side shop. Lines are picked stably per week (hash), so a
+   screen reads the same until the clock moves */
+const MENTOR={
+  name:"Arkady Sedov",first:"Arkady",addr:"Arkady Lvovich",shop:"Sedov's on Kanatnaya Street",style:"traditional",
+  goodwill:{start:0.5,chore:0.015,practice:0.01,friend:0.03,walkin:0.04,crisp:0.02,bad:-0.02,onTime:0.08,early:-0.12,earlyPerYear:-0.18,max:1},
+  splitAt:0.55,          // goodwill at or above this: his chair at CHAIR_SPLIT.mentor when you leave
+  loanAt:0.6,            // goodwill at or above this: he covers you once when the studio is about to close (BROKE.loan)
+  lines:{
+    intro:["Broom's behind the door. Everyone starts on the floor, even the famous ones.","You want to tattoo? First you learn to keep a shop clean enough to tattoo in."],
+    chore:["Good. A clean shop is half the work.","Floor's done. Now the tubes, and do them properly.","You're quicker than last week. Don't get sloppy about it.","The customers notice a clean counter before they notice the flash."],
+    practice:["Again. Slower. The machine does the work, you just steer it.","Better. Your lines still wobble at the ends. Finish the stroke.","Fake skin forgives you. People won't. Keep at it."],
+    flash:["That's a sheet. Not a good one yet, but a sheet.","Bold lines, few colours. It has to read from across the street.","Put it on the wall. Let's see if anyone picks it."],
+    friend:["Your friend? Fine. Free means you can't blame the money if it goes wrong.","Small, simple, clean. Don't show off on a friend."],
+    walkin:["Someone's paying for your work now. Act like it.","A paying stranger. Talk to them properly before you touch them."],
+    idle:["Quiet week. Draw something.","When the door's quiet, the pencil isn't.","Sweep, then draw. That's the job between clients."],
+    crisp:["That healed like it should. Remember how your hand felt.","Clean. I'd have put that one on my wall."],
+    soft:["It settled soft. Your depth wanders when you get tired.","Not bad. Not crisp either. Slow down on the long lines."],
+    patchy:["Patchy. You weren't packing it. Watch the saturation.","They'll need a touch-up. Do it for free and do it right."],
+    blownout:["Blown out. You went too deep and too fast. Feel the skin.","That spread. Ease off the voltage and slow your hand."],
+    infected:["An infection in my shop. We go over every step of the setup tonight.","Never again. Gloves, film, wrap, every time. Every time."],
+    ready:["Three years. You're ready for your own chair. I'll miss the help.","Time you had your own chair. Come back and show me your work."],
+    early:["Leaving already? Fine. Don't come asking for favours.","You're not ready, but you won't hear it from me twice. Go."],
+    onTime:["Go on, then. My door's open if you need it.","You did your time properly. That counts for something round here."],
+    later:{high:["Arkady drops by and looks at your wall for a long time. 'Good,' he says.","Arkady sends a client your way. 'Tell them I said hello.'"],
+           low:["You pass Arkady on the embankment. He nods and keeps walking.","Word gets back that Arkady thinks you left too soon."]},
+    loan:["Arkady turns up with an envelope. 'Pay me back when you can. Not before.'"],
+    broke:{high:["Arkady comes round with a thermos. 'Everyone loses a shop once. Rent a chair, keep your clients, start again.'"],
+           low:["You hear Arkady heard. He doesn't call."]}
+  }
+};
+/* Act 1 is the tutorial: a one-line goal at a time, each on the tab where it happens */
+const APPRENTICE_STEPS=[
+  {id:"chore",goal:"Do a chore for Arkady: sweep up and clean the tubes.",tab:"career",how:"Career tab › Chores"},
+  {id:"practice",goal:"Practise on fake skin: follow the stencil at a steady pace.",tab:"session",how:"Session tab › Practice"},
+  {id:"flash",goal:"Draw a flash sheet: put a design together and save it to your flash.",tab:"design",how:"Design tab › Save to my flash"},
+  {id:"friend",goal:"A friend wants a small one, free. Design it and tattoo it.",tab:"career",how:"Career tab › Do a friend"},
+  {id:"walkin",goal:"Take a paying walk-in: consult them, design it, finish the piece.",tab:"clients",how:"Career tab › Next, then Clients"},
+  {id:"chair",goal:"Finish your three years (week 1, 2003), or leave early and rent a chair.",tab:"career",how:"Career tab › Rent a chair"}
+];
+const CHORES=[
+  {id:"sweep",name:"Sweep up and clean the tubes",xp:{speed:0.012},text:"You sweep, scrub the tubes and wipe every surface down."},
+  {id:"stencils",name:"Trace stencils for Arkady",xp:{linework:0.03},text:"You trace a stack of Arkady's stencils. Your lines get steadier."},
+  {id:"counter",name:"Mind the front counter",xp:{consult:0.04},text:"You talk to people who come in to look. Most of them only want to look."},
+  {id:"autoclave",name:"Run the autoclave and set up stations",xp:{shading:0.012},text:"Bags, wraps, the autoclave log. The boring part that keeps people safe."}
+];
+const FRIENDS={max:3,sizes:["tiny","small"],loyalty:0.55,
+  lines:["You've been promising me one for months. Something small. I'll bring the beer.","I trust you. Mostly. Something little, somewhere I can hide it.","Practise on me. I mean it. Just keep it small."]};
+/* the share of your takings (sittings and deposits) the shop keeps: Arkady's cut while you apprentice, a chair's split after */
+const CHAIR_SPLIT={apprentice:0.65,mentor:0.3,standard:0.4};
+/* your hourly rate in 2000 rubles: base by act + per point of each reputation track, x (1 + sig x signature strength) */
+const RATE_BY_REP={base:{apprentice:0,chair:700,studio:850,legacy:1100},perRep:{walkins:2,collectors:6,peers:3},sig:0.15,lighting:0.03,round:50};
+const SUPPLIES={perHour:110,shopPerHour:90};   // gloves, film, needles, ink: per booked chair hour (yours; staff hours in the shop)
+const LEASE={deposit:60000,rentWeek:2600,utilities:500,salvage:2000,
+  need:{year:2006,repSum:90}};                 // lease from 2006, or earlier with walk-ins + collectors + peers >= repSum
+const MARKETING=[{name:"Word of mouth",cost:0,walkins:0},{name:"Posters and the local paper",cost:700,walkins:0.1},
+  {name:"Radio and magazines",cost:2200,walkins:0.22},{name:"Everything going",cost:5200,walkins:0.34}];
+/* the build-out: each part has levels; cost[i] buys level i+1 */
+const STUDIO_STAGES={
+  stations:{name:"Stations",says:"chairs for the artists you hire",cost:[45000,70000,100000,140000],upkeep:400,
+    levels:["One guest station","Two stations","Three stations","Four stations"]},
+  waiting:{name:"Waiting area",says:"a sofa, a kettle, the portfolio books: more walk-ins stay",cost:[18000,35000,60000],walkins:0.1,
+    levels:["A bench and a kettle","A proper sofa","A lounge with the books"]},
+  flash:{name:"Flash wall",says:"framed flash: walk-ins pick off the wall, and sheets sell",cost:[12000,25000,45000],walkins:0.05,sales:280,
+    levels:["A few sheets","A full wall","Framed and lit"]},
+  steril:{name:"Sterilisation room",says:"its own room for the autoclave: cleaner heals, easier inspections",cost:[30000,55000,90000],trauma:0.035,inspect:0.1,
+    levels:["An autoclave corner","A sealed room","Hospital standard"]},
+  lighting:{name:"Lighting",says:"daylight lamps over every station: steadier lines",cost:[15000,30000,55000],staffLine:0.02,
+    levels:["Daylight bulbs","Arm lamps","Shadowless lighting"]},
+  storefront:{name:"Storefront",says:"how the shop looks from the street: the vibe sets who walks in",cost:[22000,45000,80000],walkins:0.07,
+    levels:["A painted sign","A proper window","A shopfront people photograph"]}
+};
+/* the storefront vibe: who it pulls in (added to the reputation tracks' WALKINS.seg pull, x storefront level) */
+const VIBES={
+  street:{name:"Street shop",says:"walk-ins, first-timers, students, quick flash",seg:{walk_in:0.6,first_timer:0.5,students:0.4},walkins:0.08},
+  gallery:{name:"Gallery",says:"collectors and big custom work; fewer walk-ins",seg:{collector:0.7,large_scale:0.5,creatives:0.4},walkins:-0.06},
+  parlour:{name:"Old-school parlour",says:"regulars, trades and cover-ups",seg:{old_school:0.6,trades:0.4,cover_up:0.5},walkins:0.02}
+};
+/* hired artists. fairCut(skill) = the shop's cut a fair shop takes from an artist that good */
+const STAFF={
+  candidates:3,refreshWeeks:13,skill:[2,8],cutFair:[0.5,0.3],ego:[0.1,0.9],poach:[0.6,1.4],hireFee:4000,
+  perWeek:0.7,rate:{base:650,perSkill:70},grow:0.025,
+  loyalty:{start:0.45,fair:0.004,unfair:-0.006,slack:0.02},poachBase:0.0045,
+  out:{line:0.46,lineSkill:0.045,depth:0.45,depthSkill:0.044,sat:0.5,satSkill:0.04,trauma:0.55,traumaSkill:-0.04,sd:0.06,blowSkill:0.35},
+  shopRep:{crisp:0.4,soft:0.15,patchy:-0.4,blownout:-1,infected:-3},shopRepDecay:0.002,shopWalkins:0.4
+};
+const NOSHOW={base:0.05,loyal:-0.045};          // chance a first sitting with a deposit doesn't show; the deposit stays
+const INSPECTION={gap:[26,44],first:[8,20],base:0.72,shopRep:0.001,recentInfect:-0.15,fine:9000,passRep:1,failRep:-4,min:0.2,max:0.98};
+const BROKE={floor:-15000,weeks:4,restart:2000,loan:30000};   // floor and restart in 2000 rubles x PRICE_INDEX
+/* the signature: what you do most. Past `pieces` of your own with a top style share of `share`, it shows */
+const SIGNATURE={pieces:12,share:0.32,full:60,askChance:0.32,collector:1.6,wtp:1.18,conv:0.15,
+  lines:["I've seen your {style} work around the canal. I want your thing, the way you do it.","A friend has one of yours. I want the same hand on me: your {style}, your way.","Everyone on the embankment knows your {style}. That's what I came for."]};
+const SKILLS={
+  linework:{name:"Linework",says:"steadier pace band and wider accuracy in the chair"},
+  shading:{name:"Shading",says:"shading zones pack faster"},
+  colour:{name:"Colour",says:"colour zones pack faster"},
+  speed:{name:"Speed",says:"less trauma per hour"},
+  consult:{name:"Consult",says:"questions reveal more; clients trust you sooner"},
+  styles:{name:"Styles",says:"each style's level unlocks its elements on the board"}
+};
+/* conventions: the local fair is open from Act 2; the bigger ones want peers at REP_TRACKS.peers.events.convention */
+const CONVENTIONS=[
+  {id:"mostograd_fair",name:"the Mostograd Tattoo Fair",where:"in the old port warehouses",week:38,fee:2500,travel:0,peers:0,prize:[12000,6000,3000]},
+  {id:"capital_expo",name:"the big convention in the capital",where:"a night train away",week:16,fee:6000,travel:7000,peers:55,prize:[40000,18000,8000]},
+  {id:"baltic_show",name:"the Baltic coast show",where:"by the sea",week:27,fee:4500,travel:5000,peers:40,prize:[25000,12000,5000]}
+];
+const CONV_SCORE={portfolio:0.35,skill:0.25,peers:0.2,sig:0.2,sd:0.08,places:[0.7,0.6,0.5],rep:{peers:[4,2.5,1.5,0.6],collectors:[3,2,1,0.3]},styleXp:0.12};
+const GUEST_SPOTS=[
+  {id:"capital",name:"the capital",travel:9000,weeks:2,walkins:1.8,styles:{realism:1.5,fineline:1.5,geometric:1.3}},
+  {id:"resort",name:"a seaside resort on the Gulf",travel:5000,weeks:2,walkins:1.6,styles:{watercolour:1.6,fineline:1.4,lettering:1.3}},
+  {id:"river_port",name:"a southern river port",travel:6000,weeks:2,walkins:1.5,styles:{traditional:1.5,japanese:1.4,blackwork:1.3}}
+];
+const GUEST={peers:30,chance:0.035,rep:{peers:1.2,walkins:0.6}};
+/* Act 4: one-time projects and the TV offer (plan Q7: money against credibility, in PR 7) */
+const LEGACY_OFFERS={
+  book:{name:"A flash book",cost:40000,needFlash:10,weekly:550,rep:{collectors:2,walkins:2},says:"your flash, printed and bound. Royalties every week"},
+  line:{name:"A product line",cost:80000,weekly:1100,rep:{peers:-3,walkins:3},says:"aftercare balm and prints with your name on. Money, and a little sneer from other artists"},
+  conv:{name:"Your own convention",cost:150000,income:120000,rep:{peers:6,collectors:4},says:"a weekend at the old port warehouses with your name on the poster"},
+  tv:{name:"The TV offer",pay:400000,rep:{walkins:10,peers:-8,collectors:-6},decline:{peers:2},collectors:45,year:2024,
+      says:"a channel wants you for a tattoo makeover show. Good money; other artists will roll their eyes"}
+};
+const APPRENTICES={stipend:1200,weeks:104,bond:{start:0.45,week:0.003,sd:0.08,staffAt:0.55},skill:[1,3],grow:0.03,
+  rivalLines:["opened a shop across the canal","took a chair in the capital and talks about you in interviews","runs a street shop on the outer ring"]};
+const LEGACY={reads:0.45};
+const CAREER_COMPACT_EVERY=4;   // weeks between client-archive passes (sim/archive.js)
+
+/* ---- the state's career fields (also used by app/state.js freshState through SIM.careerFresh) ---- */
+function careerFresh(){return{
+  mentor:{goodwill:MENTOR.goodwill.start,left:null,loan:false},
+  steps:{},chores:0,practice:0,friends:[],paid:0,
+  sig:{n:0,at:0,styles:{},els:{},places:{}},
+  money:{cur:{in:{},out:{}},prev:null,total:{in:0,out:0}},
+  broke:0,fails:0,scene:null,invites:[],conv:[],guest:null,offers:{},apprentices:[],alumni:[],rivals:[],
+  reached:{},books:"open",legacySeen:false,skipped:false,insp:null,cand:null};}
+function studioFresh(){return{stage:"apprentice",staff:[],build:{stations:0,waiting:0,flash:0,steril:0,lighting:0,storefront:0},
+  vibe:"street",marketing:0,rep:0,lease:null,nextStaff:1};}
+function caFill(dst,src){for(const k in src){if(dst[k]==null)dst[k]=src[k];else if(src[k]&&typeof src[k]==="object"&&!Array.isArray(src[k])&&typeof dst[k]==="object"&&!Array.isArray(dst[k]))caFill(dst[k],src[k]);}return dst;}
+/* a save from before PR 7 (or a bare test state) gets a career with Act 1's tutorial already behind it (old:true), so an
+   apprentice mid-way through isn't suddenly cut off from walk-ins */
+function careerEnsure(S){
+  if(!S.career||typeof S.career!=="object"||Array.isArray(S.career)){S.career=careerFresh();S.career.old=true;}else caFill(S.career,careerFresh());
+  if(!S.studio||typeof S.studio!=="object")S.studio=studioFresh();else caFill(S.studio,studioFresh());
+  if(!Array.isArray(S.studio.staff))S.studio.staff=[];
+  return S.career;}
+const caPI=S=>SIM.priceIndex(S.year);
+const caRub=(S,v)=>Math.round(v*caPI(S)/10)*10;
+const caStage=S=>(S.studio&&S.studio.stage)||"apprentice";
+const caR3=v=>Math.round(v*1000)/1000;
+function caLog(ctx,k,text,extra){if(ctx&&ctx.log)ctx.log.push(Object.assign({k,text},extra||{}));}
+
+/* ---- money: every ruble in or out goes through these, so the week has a ledger ---- */
+function cashIn(S,amt,kind){amt=Math.round(+amt||0);if(!amt)return 0;S.cash=(S.cash||0)+amt;
+  if(S.career&&S.career.money){const m=S.career.money;m.cur.in[kind]=(m.cur.in[kind]||0)+amt;m.total.in+=amt;}return amt;}
+function cashOut(S,amt,kind){amt=Math.round(+amt||0);if(!amt)return 0;S.cash=(S.cash||0)-amt;
+  if(S.career&&S.career.money){const m=S.career.money;m.cur.out[kind]=(m.cur.out[kind]||0)+amt;m.total.out+=amt;}return amt;}
+function caSum(o){let s=0;for(const k in o||{})s+=o[k];return s;}
+
+/* ---- the rate ---- */
+function rateFor(S){
+  const st=caStage(S),R=RATE_BY_REP;if(!R.base[st])return 0;
+  let r=R.base[st];for(const k in R.perRep)r+=R.perRep[k]*((S.rep&&+S.rep[k])||0);
+  const sig=signatureOf(S);r*=1+R.sig*(sig.ready?sig.strength:0);
+  r*=1+R.lighting*((S.studio&&S.studio.build&&S.studio.build.lighting)||0);
+  return Math.round(r*caPI(S)/R.round)*R.round;}
+
+/* ---- skills: one curve for every source (SKILL_XP.diminish, as the session uses) ---- */
+SKILL_XP.consult={accepted:0.06,walked:0.03,declined:0.03,talkWon:0.03};
+SKILL_XP.convention=0.12;
+SKILL_XP.skip={linework:2,shading:1.5,colour:1,speed:1.5,consult:2,styles:{traditional:2,blackwork:1,lettering:1}};
+function skillGain(S,k,base){
+  if(!S.skills)S.skills={styles:{}};const sk=S.skills;if(!sk.styles)sk.styles={};
+  const st=/^style:(\w+)$/.exec(k),lvl=st?(+sk.styles[st[1]]||0):(+sk[k]||0);
+  const g=base*(1-SKILL_XP.diminish*clamp(lvl,0,10)/10),v=Math.round(Math.min(10,lvl+g)*1000)/1000;
+  if(st)sk.styles[st[1]]=v;else sk[k]=v;return g;}
+/* the next element a style level opens: {level, names[]} or null */
+function skillNextUnlock(style,level){
+  let best=null;for(const e of SIM.ELEMENTS||[]){const m=/^style:(\w+):(\d+)$/.exec(e.unlock||"");if(!m||m[1]!==style)continue;const n=+m[2];
+    if(n>Math.floor(level||0)&&(!best||n<best.level))best={level:n,names:[e.name]};else if(best&&n===best.level)best.names.push(e.name);}
+  return best;}
+
+/* ---- the signature ---- */
+function caPlaceBase(id){return String(id||"").replace(/_[lr]$/,"");}
+function caSigUpdate(S){
+  const C=S.career,sg=C.sig;
+  for(let i=sg.at;i<S.pieces.length;i++){const p=S.pieces[i];if(!p||p.by||!p.design)continue;
+    const d=p.design;sg.n++;if(d.style)sg.styles[d.style]=(sg.styles[d.style]||0)+1;
+    const el=caTopEl(d);if(el)sg.els[el]=(sg.els[el]||0)+1;
+    const pl=caPlaceBase(d.placement);if(pl)sg.places[pl]=(sg.places[pl]||0)+1;}
+  sg.at=S.pieces.length;}
+function caTopEl(d){let best=null,bs=-1;for(const e of d.elements||[]){const el=SIM.elementById?SIM.elementById(e.id):null;if(!el||el.family==="fill"||el.family==="texture")continue;if((e.scale||0)>bs){bs=e.scale||0;best=e.id;}}return best;}
+const caTop=o=>{let b=null,n=0,t=0;for(const k in o||{}){t+=o[k];if(o[k]>n){n=o[k];b=k;}}return{k:b,n,t};};
+/* signatureOf(S) -> {ready, style, el, place, share, strength 0..1, n} */
+function signatureOf(S){
+  const sg=S.career&&S.career.sig;if(!sg||!sg.n)return{ready:false,style:null,el:null,place:null,share:0,strength:0,n:0};
+  const st=caTop(sg.styles),el=caTop(sg.els),pl=caTop(sg.places),share=st.t?st.n/st.t:0;
+  const ready=sg.n>=SIGNATURE.pieces&&share>=SIGNATURE.share;
+  const strength=ready?caR3(clamp((share-SIGNATURE.share)/(1-SIGNATURE.share)*0.6+0.4,0,1)*Math.min(1,sg.n/SIGNATURE.full)):0;
+  return{ready,style:st.k,el:el.k,place:pl.k,share:caR3(share),strength,n:sg.n};}
+/* a walk-in who asks for "your thing" (called by market.js generateWalkins) */
+function sigApply(c,sig,r){
+  const A=c.ask;A.style=sig.style;A.sig=true;
+  const el=sig.el&&SIM.elementById?SIM.elementById(sig.el):null;
+  if(el&&el.tags&&el.tags[0]&&A.tags.indexOf(el.tags[0])<0)A.tags.unshift(el.tags[0]);
+  c.wants.styles[sig.style]=1;if(c.known&&c.known.styles.indexOf(sig.style)<0)c.known.styles.push(sig.style);
+  const nm=((SIM.STYLES||{})[sig.style]||{}).name||"";
+  c.brief=r.pick(SIGNATURE.lines).replace("{style}",nm.toLowerCase())+" "+c.brief;
+  return c;}
+
+/* ---- Act 1: the tutorial, the mentor, chores and friends ---- */
+function caFriendDone(S){const ids=S.career.friends||[];if(!ids.length)return 0;let n=0;for(const p of S.pieces)if(!p.by&&ids.indexOf(p.client)>=0)n++;return n;}
+function caPaidDone(S){let n=0;for(const p of S.pieces)if(!p.by&&p.price>0&&p.stage==="apprentice"&&(S.career.friends||[]).indexOf(p.client)<0&&/^c\d/.test(p.client))n++;return n;}
+/* apprenticeSteps(S) -> [{id, goal, tab, how, done}] (done steps are remembered in S.career.steps) */
+function apprenticeSteps(S){
+  const C=careerEnsure(S),st=caStage(S);
+  const check={chore:()=>C.chores>0,practice:()=>C.practice>0,flash:()=>(S.flash||[]).length>0,friend:()=>caFriendDone(S)>0,
+    walkin:()=>caPaidDone(S)>0,chair:()=>st!=="apprentice"};
+  return APPRENTICE_STEPS.map(s=>{
+    if(!C.steps[s.id]&&((C.skipped||C.old)&&s.id!=="chair"||check[s.id]()))C.steps[s.id]={w:S.week,y:S.year};
+    return Object.assign({},s,{done:!!C.steps[s.id]});});}
+function apprenticeGoal(S){const s=apprenticeSteps(S).find(x=>!x.done);return s||null;}
+/* walk-ins reach an apprentice only after the friend step (market.js asks) */
+function walkinsOpen(S){
+  const C=S.career;if(!C)return true;
+  if(C.books==="closed")return false;
+  if(caStage(S)!=="apprentice"||C.skipped||C.old)return true;
+  return !!C.steps.friend||caFriendDone(S)>0;}
+function mentorLine(S,topic,sub){
+  const L=MENTOR.lines;let list=L[topic];
+  if(list&&!Array.isArray(list))list=list[sub]||list.high||[];
+  if(!list||!list.length)return "";
+  return list[hash(topic+":"+(sub||"")+":"+S.year+":"+S.week+":"+(S.seed||0))%list.length];}
+function caGoodwill(S,d){const m=S.career.mentor;m.goodwill=caR3(clamp(m.goodwill+d,0,MENTOR.goodwill.max));return m.goodwill;}
+/* doChore(S, id) -> {chore, line, log}: the chore's XP and goodwill, then one week passes */
+function doChore(S,id){
+  const C=careerEnsure(S),ch=CHORES.find(c=>c.id===id)||CHORES[0];
+  for(const k in ch.xp)skillGain(S,k,ch.xp[k]);
+  C.chores++;if(caStage(S)==="apprentice")caGoodwill(S,MENTOR.goodwill.chore);
+  const log=advanceWeek(S);
+  return{chore:ch,line:mentorLine(S,"chore"),log};}
+/* friendBooking(S) -> the free sitting booked this week for a friend (Act 1), or null */
+function friendBooking(S){
+  const C=careerEnsure(S);if(caStage(S)!=="apprentice"||C.friends.length>=FRIENDS.max)return null;
+  if(S.queue.some(q=>q.friend))return null;
+  const r=rng(S.seed).fork("friend:"+C.friends.length);
+  const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:"apprentice",sizes:FRIENDS.sizes,src:"friend",badIdea:false});
+  c.brief=r.pick(FRIENDS.lines);c.loyalty=Math.max(c.loyalty,FRIENDS.loyalty);
+  clientLog(c,{w:S.week,y:S.year,kind:"note",text:"a friend: a free piece while you apprentice"});
+  S.clients.push(c);C.friends.push(c.id);
+  const est=clEstimate(c.ask,c,S.skills||{});
+  const item={id:queueId(S),kind:"session",client:c.id,w:S.week,y:S.year,hours:Math.max(0.5,Math.round(est.hours*4)/4),sessionNo:1,sessions:1,
+    price:0,deposit:0,paid:0,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0,friend:true};
+  S.queue.push(item);return item;}
+/* the practice counter (the app calls this when a fake-skin sitting ends) */
+function notePractice(S){const C=careerEnsure(S);C.practice++;if(caStage(S)==="apprentice")caGoodwill(S,MENTOR.goodwill.practice);}
+
+/* ---- the acts ---- */
+function caReach(S,st){const C=S.career;if(!C.reached[st])C.reached[st]={w:S.week,y:S.year};}
+/* rentChair(S) -> {ok, early, goodwill, split}. Before week 1 of 2003 it is leaving early and costs Arkady's goodwill */
+function rentChair(S){
+  const C=careerEnsure(S);if(caStage(S)!=="apprentice")return{ok:false};
+  const left=weekIndex(1,2000+ACTS.apprentice.years[1])-weekIndex(S.week,S.year),early=left>0,G=MENTOR.goodwill;
+  caGoodwill(S,early?G.early+G.earlyPerYear*left/WEEKS_PER_YEAR:G.onTime);
+  C.mentor.left={w:S.week,y:S.year,early};
+  S.studio.stage="chair";caReach(S,"chair");C.steps.chair={w:S.week,y:S.year};
+  C.split=C.mentor.goodwill>=MENTOR.splitAt?"mentor":"standard";
+  S.rate=rateFor(S);
+  return{ok:true,early,goodwill:C.mentor.goodwill,split:C.split,line:mentorLine(S,early?"early":"onTime")};}
+function leaseNeed(S){
+  const st=caStage(S),repSum=["walkins","collectors","peers"].reduce((a,k)=>a+((S.rep&&+S.rep[k])||0),0),cost=caRub(S,LEASE.deposit);
+  return{stage:st==="chair",cash:(S.cash||0)>=cost,cost,when:S.year>=LEASE.need.year||repSum>=LEASE.need.repSum,repSum:Math.round(repSum),year:LEASE.need.year,needRep:LEASE.need.repSum};}
+function leaseStudio(S){
+  careerEnsure(S);const n=leaseNeed(S);if(!(n.stage&&n.cash&&n.when))return{ok:false,need:n};
+  cashOut(S,n.cost,"lease");S.studio.stage="studio";S.studio.lease={w:S.week,y:S.year};caReach(S,"studio");
+  S.career.insp=weekIndex(S.week,S.year)+rng(S.seed).fork("insp:first").int(INSPECTION.first[0],INSPECTION.first[1]);
+  S.rate=rateFor(S);return{ok:true,cost:n.cost};}
+function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=60};}
+function goLegacy(S){careerEnsure(S);const n=legacyNeed(S);if(!(n.stage&&n.when))return{ok:false,need:n};
+  S.studio.stage="legacy";caReach(S,"legacy");S.rate=rateFor(S);return{ok:true};}
+/* skipBroom(S): a new career that starts at Act 2 (plan Q3): week 1 of 2003, a rented chair, basic skills */
+function skipBroom(S){
+  const C=careerEnsure(S),K=SKILL_XP.skip;
+  S.year=2000+ACTS.apprentice.years[1];S.week=1;S.studio.stage="chair";C.skipped=true;
+  for(const s of APPRENTICE_STEPS)C.steps[s.id]={w:1,y:S.year};
+  C.mentor.left={w:1,y:S.year,early:false};C.split="standard";caReach(S,"chair");
+  S.skills=Object.assign({},S.skills,{linework:K.linework,shading:K.shading,colour:K.colour,speed:K.speed,consult:K.consult,styles:Object.assign({},K.styles)});
+  S.rep={walkins:10,collectors:5,peers:8};S.cash=caRub(S,6000);S.rate=rateFor(S);
+  return S;}
+/* softFail(S): the studio closes (plan Q12). Staff go, apprentices go, the lease and the build-out go; you rent a chair
+   again with your clients, pieces and reputation. Sets S.career.scene for the app's full-screen scene */
+function softFail(S,ctx){
+  const C=careerEnsure(S),from=caStage(S),staff=S.studio.staff.map(s=>s.name),debt=Math.min(0,S.cash||0);
+  for(const s of S.studio.staff)C.alumni.push({id:s.id,name:s.name,style:s.style,y:S.year,why:"let go when the shop closed",pieces:s.pieces||0});
+  for(const a of C.apprentices)if(a.status==="training"){a.status="gone";a.end={w:S.week,y:S.year};a.where="found another shop when yours closed";}
+  S.studio.staff=[];S.studio.build=studioFresh().build;S.studio.lease=null;S.studio.marketing=0;S.studio.rep=Math.round((S.studio.rep||0)*0.5*100)/100;
+  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;
+  S.cash=caRub(S,BROKE.restart);
+  const gw=C.mentor.goodwill>=MENTOR.loanAt?"high":"low";
+  C.scene={kind:"broke",w:S.week,y:S.year,from,staff,debt,line:mentorLine(S,"broke",gw)};
+  S.rate=rateFor(S);
+  caLog(ctx,"event","The shop closes. You're back in a rented chair; your clients and your work come with you.");
+  return C.scene;}
+
+/* ---- the studio: build-out, vibe, marketing ---- */
+function buildCost(S,key){const B=STUDIO_STAGES[key];if(!B)return null;const lv=(S.studio.build&&S.studio.build[key])||0;return lv>=B.cost.length?null:caRub(S,B.cost[lv]);}
+function buildUp(S,key){
+  careerEnsure(S);const st=caStage(S);if(st!=="studio"&&st!=="legacy")return{ok:false,why:"no studio"};
+  const cost=buildCost(S,key);if(cost==null)return{ok:false,why:"maxed"};if((S.cash||0)<cost)return{ok:false,why:"cash",cost};
+  cashOut(S,cost,"build");S.studio.build[key]=(S.studio.build[key]||0)+1;return{ok:true,cost,level:S.studio.build[key]};}
+function setVibe(S,v){careerEnsure(S);if(VIBES[v])S.studio.vibe=v;return S.studio.vibe;}
+function setMarketing(S,n){careerEnsure(S);S.studio.marketing=clamp(Math.round(+n||0),0,MARKETING.length-1);return S.studio.marketing;}
+/* the walk-in multiplier and the extra segments the shop adds (market.js) */
+function shopWalkins(S){
+  const st=caStage(S),b=(S.studio&&S.studio.build)||{},out={mult:1,seg:{}};if(!S.studio)return out;
+  if(st==="studio"||st==="legacy"){
+    for(const k of ["waiting","flash","storefront"])out.mult+=(STUDIO_STAGES[k].walkins||0)*(b[k]||0);
+    const v=VIBES[S.studio.vibe];if(v){out.mult+=v.walkins*Math.min(1,b.storefront||0);for(const s in v.seg)out.seg[s]=v.seg[s]*(0.5+0.5*(b.storefront||0));}
+    out.mult+=STAFF.shopWalkins*((S.studio.rep||0)/100);}
+  if(st!=="apprentice")out.mult+=(MARKETING[S.studio.marketing||0]||MARKETING[0]).walkins;
+  const g=S.career&&S.career.guest;
+  if(g&&weekIndex(S.week,S.year)<=g.until){const G=GUEST_SPOTS.find(x=>x.id===g.id);if(G){out.mult*=G.walkins;out.styles=G.styles;out.guest=G.id;}}
+  return out;}
+
+/* ---- staff ---- */
+function fairCut(skill){return caR3(lerp(STAFF.cutFair[0],STAFF.cutFair[1],clamp(skill/10,0,1)));}
+function caName(r){const c=makeClient(r,{id:"x0",year:2010,badIdea:false});return{name:c.name,first:c.first,pronouns:c.pronouns};}
+/* staffCandidates(S) -> 3 artists looking for a chair this quarter (the same three until the quarter turns) */
+function staffCandidates(S){
+  const C=careerEnsure(S),q=Math.floor(weekIndex(S.week,S.year)/STAFF.refreshWeeks);
+  if(C.cand&&C.cand.q===q)return C.cand.list;
+  const r=rng(S.seed).fork("cand:"+q),styles=Object.keys(SIM.STYLES||{traditional:1}),list=[];
+  for(let i=0;i<STAFF.candidates;i++){const nm=caName(r.fork("n"+i)),skill=caR3(r.range(STAFF.skill[0],STAFF.skill[1])),ego=caR3(r.range(STAFF.ego[0],STAFF.ego[1]));
+    const style=r.weighted(styles,s=>styleDemand(s,S.year));
+    list.push({cid:"k"+q+"_"+i,name:nm.name,first:nm.first,pronouns:nm.pronouns,style,skill,ego,cut:caR3(clamp(fairCut(skill)-ego*0.06+r.normal(0,0.02),0.2,0.6)),poach:caR3(r.range(STAFF.poach[0],STAFF.poach[1]))});}
+  C.cand={q,list};return list;}
+function staffRoom(S){const st=caStage(S);if(st!=="studio"&&st!=="legacy")return 0;return((S.studio.build&&S.studio.build.stations)||0)-S.studio.staff.length;}
+function hireStaff(S,cid){
+  careerEnsure(S);const cand=staffCandidates(S).find(c=>c.cid===cid);if(!cand)return{ok:false,why:"gone"};
+  if(staffRoom(S)<=0)return{ok:false,why:"stations"};const fee=caRub(S,STAFF.hireFee);if((S.cash||0)<fee)return{ok:false,why:"cash",fee};
+  cashOut(S,fee,"staff");const id="s"+(S.studio.nextStaff++);
+  const s={id,name:cand.name,first:cand.first,pronouns:cand.pronouns,style:cand.style,skill:cand.skill,ego:cand.ego,cut:cand.cut,poach:cand.poach,
+    loyalty:STAFF.loyalty.start,hired:{w:S.week,y:S.year},pieces:0,earned:0};
+  S.studio.staff.push(s);S.career.cand.list=S.career.cand.list.filter(c=>c.cid!==cid);return{ok:true,staff:s,fee};}
+function letGo(S,id,why){careerEnsure(S);const i=S.studio.staff.findIndex(s=>s.id===id);if(i<0)return false;const s=S.studio.staff[i];
+  S.studio.staff.splice(i,1);S.career.alumni.push({id:s.id,name:s.name,style:s.style,y:S.year,why:why||"let go",pieces:s.pieces||0});return true;}
+/* staffName(S, id): who did a shop piece (on staff now, or gone) */
+function staffName(S,id){const s=((S.studio&&S.studio.staff)||[]).find(x=>x.id===id)||((S.career&&S.career.alumni)||[]).find(x=>x.id===id);return s?s.name:"one of your artists";}
+function setStaffCut(S,id,cut){const s=(S.studio.staff||[]).find(x=>x.id===id);if(!s)return null;s.cut=caR3(clamp(cut,0.15,0.6));return s.cut;}
+/* simStaffSession(staff, design, {kit, shop, r}) -> outputs like the session's {lineQuality, depthQuality, saturation, trauma,
+   sessionsUsed, blowouts, joins}: from the artist's skill, the shop's kit (SIM.kitBands) and its lighting and steril room.
+   No minigame; the same heal and aging rules apply to what it makes */
+function simStaffSession(staff,design,opts){
+  opts=opts||{};const T=STAFF.out,sk=clamp(+staff.skill||0,0,10),shop=opts.shop||{},b=shop.build||{};
+  const r=opts.r||rng(hash((staff.id||"s")+":"+JSON.stringify(design||{}).length+":"+((design&&design.sizeMm)||0)));
+  const kb=kitBands(opts.kit||null,{linework:sk,shading:sk,colour:sk,speed:sk},{});
+  const steady=clamp(kb.paceBand/0.25,0.7,1.4),light=STUDIO_STAGES.lighting.staffLine*(b.lighting||0);
+  const lineQ=clamp(T.line+T.lineSkill*sk+0.08*(steady-1)+light+r.normal(0,T.sd),0.15,0.98);
+  const depthQ=clamp(T.depth+T.depthSkill*sk+0.05*(steady-1)+r.normal(0,T.sd),0.15,0.98);
+  const sat=clamp((T.sat+T.satSkill*sk)*clamp(kb.sat||1,0.8,1.2)+r.normal(0,T.sd),0.15,0.98);
+  const trauma=clamp((T.trauma+T.traumaSkill*sk)*kb.trauma-STUDIO_STAGES.steril.trauma*(b.steril||0)+r.normal(0,T.sd),0.03,0.97);
+  const lam=Math.max(0,(1-sk/10)*T.blowSkill*((design&&design.sizeMm)||60)/80);
+  let blow=0;{const L=Math.exp(-lam);let p=1;do{blow++;p*=r();}while(p>L&&blow<20);blow--;}
+  const joins=r.int(0,Math.max(0,Math.round(3-sk/3)));
+  return{lineQuality:caR3(lineQ),depthQuality:caR3(depthQ),saturation:caR3(sat),trauma:caR3(trauma),sessionsUsed:1,blowouts:blow,joins};}
+/* one staff piece: a client off the shop's walk-in flow, a design in the artist's style, the outputs; the shop takes its cut */
+function caStaffPiece(S,s,r,ctx,client){
+  const st=caStage(S),sizes=WALKINS.sizes[st]||WALKINS.sizes.studio;
+  const c=client||makeClient(r.fork("c"),{id:"x0",year:S.year,week:S.week,stage:st,sizes,style:s.style,badIdea:false,styleMult:{[s.style]:3}});
+  const ask=Object.assign({},c.ask,{style:s.style});
+  const design=clProxyDesign(ask);if(!design.elements.length)return null;
+  const out=simStaffSession(s,design,{kit:S.kit,shop:S.studio,r:r.fork("out")});
+  const est=clEstimate(ask,c,{}),rate=(STAFF.rate.base+STAFF.rate.perSkill*s.skill)*caPI(S);
+  const price=Math.round(Math.max(1,est.hours)*rate/100)*100;
+  const real=!!client;
+  const who=real?client:{id:"x"+(S.pieces.length+1),first:c.first,history:[],pieces:[]};
+  const p=addPiece(S,{client:who,design,out,heal:null,price});
+  p.by=s.id;if(!real)p.guest={n:c.first,t:c.skinTone,a:c.traits.aftercare,s:c.traits.sun};
+  p.ink=(S.kit&&S.kit.ink)||"budget";p.machine=(S.kit&&S.kit.machine)||"coil_used";
+  s.pieces=(s.pieces||0)+1;const cut=Math.round(price*s.cut);s.earned=(s.earned||0)+cut;cashIn(S,cut,"staff");
+  return p;}
+function caStaffWeek(S,ctx){
+  const r=ctx.r.fork("staff"),staff=S.studio.staff;if(!staff.length)return;
+  let made=0,cuts=0;const leaving=[];
+  const flow=STAFF.perWeek*(0.7+0.5*((S.studio.rep||0)/100)+0.3*(((S.rep&&S.rep.walkins)||0)/100))*mkSeason(S.week);
+  for(const s of staff){
+    const rs=r.fork(s.id);
+    const n=Math.floor(flow)+(rs.chance(flow-Math.floor(flow))?1:0);
+    for(let i=0;i<n;i++){const p=caStaffPiece(S,s,rs.fork("p"+i),ctx);if(p){made++;cuts+=Math.round(p.price*s.cut);}}
+    s.skill=caR3(Math.min(10,s.skill+STAFF.grow*(1-s.skill/10)));
+    const fair=s.cut<=fairCut(s.skill)+STAFF.loyalty.slack;
+    s.loyalty=caR3(clamp(s.loyalty+(fair?STAFF.loyalty.fair:STAFF.loyalty.unfair*(1+s.ego)),0,1));
+    const pq=STAFF.poachBase*s.poach*(1.4-s.loyalty)*(1+s.ego);
+    if(rs.chance(pq))leaving.push(s);
+  }
+  for(const s of leaving){letGo(S,s.id,"poached by another shop");caLog(ctx,"event",s.name+" leaves for another shop. Their regulars may follow.",{staff:s.id});}
+  if(made)caLog(ctx,"cost","Your artists finished "+made+(made===1?" piece":" pieces")+"; the shop's cut: "+caFmt(cuts)+".");}
+const caFmt=n=>Math.round(n).toLocaleString("en-CA")+" ₽";
+
+/* ---- apprentices (Act 4): they inherit a blend of your signature and their own leaning ---- */
+function takeApprentice(S){
+  const C=careerEnsure(S),st=caStage(S);if(st!=="studio"&&st!=="legacy")return{ok:false,why:"stage"};
+  if(C.apprentices.some(a=>a.status==="training"))return{ok:false,why:"one"};
+  const r=rng(S.seed).fork("app:"+C.apprentices.length),nm=caName(r.fork("n")),styles=Object.keys(SIM.STYLES||{traditional:1});
+  const lean=r.pick(styles),sig=signatureOf(S),mine=sig.ready&&r.chance(0.35+0.5*sig.strength);
+  const a={id:"a"+(C.apprentices.length+1),name:nm.name,first:nm.first,pronouns:nm.pronouns,lean,style:mine?sig.style:lean,el:mine?sig.el:null,
+    skill:caR3(r.range(APPRENTICES.skill[0],APPRENTICES.skill[1])),bond:APPRENTICES.bond.start,start:{w:S.week,y:S.year},status:"training"};
+  C.apprentices.push(a);return{ok:true,apprentice:a};}
+function caApprenticeWeek(S,ctx){
+  const C=S.career;for(const a of C.apprentices){if(a.status!=="training")continue;
+    cashOut(S,caRub(S,APPRENTICES.stipend),"apprentice");
+    a.skill=caR3(Math.min(10,a.skill+APPRENTICES.grow*(1-a.skill/10)));
+    a.bond=caR3(clamp(a.bond+APPRENTICES.bond.week,0,1));
+    if(weekIndex(S.week,S.year)-weekIndex(a.start.w,a.start.y)<APPRENTICES.weeks)continue;
+    const r=ctx.r.fork("grad:"+a.id),stay=a.bond+r.normal(0,APPRENTICES.bond.sd)>=APPRENTICES.bond.staffAt&&staffRoom(S)>0;
+    a.end={w:S.week,y:S.year};
+    /* their first solo piece lands on a client you share: your most loyal regular on the books */
+    let share=null;for(const c of S.clients)if(!c.compact&&(c.pieces||[]).length&&(!share||c.loyalty>share.loyalty))share=c;
+    const s={id:"s"+(S.studio.nextStaff++),name:a.name,first:a.first,pronouns:a.pronouns,style:a.style,skill:Math.max(a.skill,3),ego:0.3,cut:fairCut(Math.max(a.skill,3)),poach:0.8,
+      loyalty:0.7,hired:{w:S.week,y:S.year},pieces:0,earned:0,from:a.id};
+    if(share){const p=caStaffPiece(S,s,r.fork("first"),ctx,share);if(p){a.piece=p.id;a.shared=share.id;}}
+    if(stay){a.status="staff";a.where="took a station in your shop";S.studio.staff.push(s);
+      caLog(ctx,"event",a.name+" finishes the apprenticeship and takes a station in your shop.",{apprentice:a.id});}
+    else{a.status="rival";a.where=r.pick(APPRENTICES.rivalLines);C.rivals.push({name:a.name,style:a.style,el:a.el,from:"apprentice",y:S.year});
+      caLog(ctx,"event",a.name+" finishes the apprenticeship and "+a.where+". Your style goes with them.",{apprentice:a.id});}
+  }}
+
+/* ---- invites: conventions, guest spots, the mentor's nudge, the TV offer ---- */
+function caInvite(S,ctx,inv,text){const C=S.career;if(C.invites.some(i=>i.id===inv.id))return;inv.until=inv.until!=null?inv.until:weekIndex(S.week,S.year)+1;C.invites.push(inv);caLog(ctx,"event",text,{invite:inv.id});}
+function caInvitesWeek(S,ctx){
+  const C=S.career,now=weekIndex(S.week,S.year),st=caStage(S);
+  C.invites=C.invites.filter(i=>i.until==null||i.until>=now);
+  if(C.guest&&now>C.guest.until)C.guest=null;
+  if(st==="apprentice"&&S.year>=2000+ACTS.apprentice.years[1]&&!C.invites.some(i=>i.kind==="chair"))
+    caInvite(S,ctx,{id:"chair",kind:"chair",until:now+520},MENTOR.first+": \""+mentorLine(S,"ready")+"\"");
+  if(st==="apprentice")return;
+  const peers=(S.rep&&S.rep.peers)||0;
+  for(const cv of CONVENTIONS){
+    if(S.week!==cv.week||peers<cv.peers||C.conv.some(x=>x.id===cv.id&&x.y===S.year))continue;
+    caInvite(S,ctx,{id:"conv:"+cv.id+":"+S.year,kind:"conv",conv:cv.id,fee:caRub(S,cv.fee+cv.travel)},cv.name.charAt(0).toUpperCase()+cv.name.slice(1)+" is on "+cv.where+" this week. Enter?");}
+  if(!C.guest&&peers>=GUEST.peers&&!C.invites.some(i=>i.kind==="guest")&&ctx.r.fork("guest").chance(GUEST.chance)){
+    const g=ctx.r.fork("guestPick").pick(GUEST_SPOTS);
+    caInvite(S,ctx,{id:"guest:"+g.id+":"+now,kind:"guest",spot:g.id,fee:caRub(S,g.travel),until:now+3},"A shop in "+g.name+" offers you a guest spot for "+g.weeks+" weeks.");}
+  if(st==="legacy"&&!C.offers.tv&&!C.invites.some(i=>i.kind==="tv")&&(((S.rep&&S.rep.collectors)||0)>=LEGACY_OFFERS.tv.collectors||S.year>=LEGACY_OFFERS.tv.year))
+    caInvite(S,ctx,{id:"tv",kind:"tv",pay:caRub(S,LEGACY_OFFERS.tv.pay),until:now+8},"A TV channel calls: they want you for a tattoo makeover show.");
+}
+/* enterInvite(S, id, yes) -> {ok, kind, ...result} */
+function enterInvite(S,id,yes){
+  const C=careerEnsure(S),i=C.invites.findIndex(x=>x.id===id);if(i<0)return{ok:false};
+  const inv=C.invites[i];
+  if(inv.kind==="chair"){if(!yes)return{ok:true,kind:"chair",later:true};C.invites.splice(i,1);return Object.assign({kind:"chair"},rentChair(S));}
+  C.invites.splice(i,1);
+  if(inv.kind==="tv"){C.offers.tv=yes?"yes":"no";const T=LEGACY_OFFERS.tv;
+    if(yes){cashIn(S,inv.pay,"tv");for(const k in T.rep)repAdd(S,k,T.rep[k]);}else for(const k in T.decline)repAdd(S,k,T.decline[k]);
+    return{ok:true,kind:"tv",yes,pay:yes?inv.pay:0};}
+  if(!yes)return{ok:true,kind:inv.kind,yes:false};
+  if(inv.kind==="guest"){const G=GUEST_SPOTS.find(g=>g.id===inv.spot);cashOut(S,inv.fee,"travel");
+    C.guest={id:G.id,until:weekIndex(S.week,S.year)+G.weeks};for(const k in GUEST.rep)repAdd(S,k,GUEST.rep[k]);
+    return{ok:true,kind:"guest",spot:G,fee:inv.fee};}
+  if(inv.kind==="conv")return Object.assign({ok:true,kind:"conv"},caConvention(S,inv));
+  return{ok:false};}
+/* a convention: judged on your best portfolio piece today, your skill, your peers and how true you are to your signature */
+function caConvention(S,inv){
+  const C=S.career,cv=CONVENTIONS.find(c=>c.id===inv.conv),r=rng(S.seed).fork("conv:"+inv.id),W=CONV_SCORE;
+  cashOut(S,inv.fee,"convention");
+  let best=null,br=0;for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(p.by||!p.portfolio)continue;const rd=caReads(S,p);if(rd>br){br=rd;best=p;}}
+  if(!best)for(let i=S.pieces.length-1;i>=0&&i>=S.pieces.length-60;i--){const p=S.pieces[i];if(p.by||!p.heal)continue;const rd=caReads(S,p);if(rd>br){br=rd;best=p;}}
+  const sk=S.skills||{},avg=(["linework","shading","colour","speed"].reduce((a,k)=>a+(+sk[k]||0),0)/4)/10;
+  const sig=signatureOf(S),onSig=best&&sig.ready&&best.design.style===sig.style?1:sig.ready?0.4:0.2;
+  const score=W.portfolio*br+W.skill*avg+W.peers*(((S.rep&&S.rep.peers)||0)/100)+W.sig*onSig*Math.max(0.3,sig.strength)+r.normal(0,W.sd);
+  const place=score>=W.places[0]?1:score>=W.places[1]?2:score>=W.places[2]?3:0;
+  const prize=place?caRub(S,cv.prize[place-1]):0;if(prize)cashIn(S,prize,"convention");
+  repAdd(S,"peers",W.rep.peers[place?place-1:3]);repAdd(S,"collectors",W.rep.collectors[place?place-1:3]);
+  if(best&&best.design.style)skillGain(S,"style:"+best.design.style,SKILL_XP.convention);
+  const rec={id:cv.id,name:cv.name,y:S.year,place,piece:best?best.id:null,score:caR3(score)};C.conv.push(rec);
+  return rec;}
+function caReads(S,p){const c=findClient(S,p.client),g=p.guest;
+  const yrs=Math.max(0,(S.year-p.y)+(S.week-p.w)/WEEKS_PER_YEAR);
+  try{return SIM.age({design:p.design,out:p.out,heal:p.heal,skinTone:c?c.skinTone:g?g.t:0.3,sun:c&&c.traits?c.traits.sun:g?g.s:0.4},yrs).readability||0;}catch(e){return 0;}}
+/* Act 4 projects: book, line, conv -> {ok, why} */
+function legacyAct(S,id){
+  const C=careerEnsure(S),O=LEGACY_OFFERS[id];if(!O||id==="tv")return{ok:false};
+  if(caStage(S)!=="legacy")return{ok:false,why:"stage"};if(C.offers[id])return{ok:false,why:"done"};
+  if(id==="book"&&(S.flash||[]).length<O.needFlash)return{ok:false,why:"flash",need:O.needFlash};
+  const cost=caRub(S,O.cost);if((S.cash||0)<cost)return{ok:false,why:"cash",cost};
+  cashOut(S,cost,id);C.offers[id]={w:S.week,y:S.year};for(const k in O.rep||{})repAdd(S,k,O.rep[k]);
+  if(id==="conv"){cashIn(S,caRub(S,O.income),"convention");C.conv.push({id:"own",name:"your own convention",y:S.year,place:0,own:true});}
+  return{ok:true,cost};}
+
+/* ---- the week (WEEK_HOOKS.costs) ---- */
+function careerWeek(S,ctx){
+  const C=careerEnsure(S),st=caStage(S),now=ctx.now,m=C.money;
+  m.prev=m.cur;m.cur={in:{},out:{}};
+  caSigUpdate(S);
+  if(typeof SIM.rivalsCopy==="function"){const sg=signatureOf(S);if(sg.ready)SIM.rivalsCopy(S,sg,ctx);}   // PR 8: rivals copy your flash
+  S.rate=rateFor(S);
+  const out0=caSum(m.cur.out);
+  /* the shop's cut of last week's takings */
+  const took=((m.prev.in.sitting||0)+(m.prev.in.deposit||0));
+  if(took>0&&(st==="apprentice"||st==="chair")){
+    const k=st==="apprentice"?"apprentice":(C.split||"standard"),cut=Math.round(took*CHAIR_SPLIT[k]);
+    cashOut(S,cut,st==="apprentice"?"mentor":"chair");}
+  /* supplies for this week's booked hours (an apprentice uses the mentor's) */
+  if(st!=="apprentice"){let h=0;for(const q of S.queue)if(q.kind==="session"&&weekIndex(q.w,q.y)===now)h+=q.hours||0;
+    if(h)cashOut(S,caRub(S,SUPPLIES.perHour*h),"supplies");}
+  if(st==="studio"||st==="legacy"){
+    if(S.studio.lease)cashOut(S,caRub(S,LEASE.rentWeek+LEASE.utilities+STUDIO_STAGES.stations.upkeep*(S.studio.build.stations||0)),"rent");
+    const mk=MARKETING[S.studio.marketing||0];if(mk&&mk.cost)cashOut(S,caRub(S,mk.cost),"marketing");
+    caStaffWeek(S,ctx);
+    if(S.studio.staff.length)cashOut(S,caRub(S,SUPPLIES.shopPerHour*6*S.studio.staff.length),"supplies");
+    caApprenticeWeek(S,ctx);
+    S.studio.rep=Math.round((S.studio.rep||0)*(1-STAFF.shopRepDecay)*1000)/1000;
+    caInspect(S,ctx);
+  }
+  if(st!=="apprentice"){
+    const fl=(S.studio.build&&S.studio.build.flash)||0,mine=Math.min(40,(S.flash||[]).length);
+    if(fl&&mine)cashIn(S,caRub(S,STUDIO_STAGES.flash.sales*fl*Math.min(1,mine/12)*(0.6+0.4*(((S.rep&&S.rep.walkins)||0)/100))),"flash");
+    if(C.offers.book)cashIn(S,caRub(S,LEGACY_OFFERS.book.weekly),"book");
+    if(C.offers.line)cashIn(S,caRub(S,LEGACY_OFFERS.line.weekly),"merch");
+    caNoShows(S,ctx);}
+  caInvitesWeek(S,ctx);
+  /* the soft fail: cash under the floor for BROKE.weeks in a row closes the studio (once, Arkady may cover you) */
+  if(st==="studio"||st==="legacy"){
+    if((S.cash||0)<caRub(S,BROKE.floor)){C.broke++;
+      if(C.broke>=BROKE.weeks){
+        if(!C.mentor.loan&&C.mentor.goodwill>=MENTOR.loanAt){C.mentor.loan=true;C.broke=0;cashIn(S,caRub(S,BROKE.loan),"loan");
+          caLog(ctx,"event",mentorLine(S,"loan"));}
+        else softFail(S,ctx);}
+      else caLog(ctx,"cost","Cash is under the floor: week "+C.broke+" of "+BROKE.weeks+" before the shop has to close.");}
+    else C.broke=0;}
+  else C.broke=0;
+  const spent=caSum(m.cur.out)-out0,got=caSum(m.cur.in);
+  if(spent||got)caLog(ctx,"cost","This week: "+(got?"in "+caFmt(got)+", ":"")+"out "+caFmt(spent)+".",{n:spent});
+  if(typeof SIM.compactClients==="function"&&now%CAREER_COMPACT_EVERY===0)SIM.compactClients(S);
+  if(careerOver(S)&&!C.legacySeen&&!C.scene)C.scene={kind:"legacy",w:S.week,y:S.year};
+}
+function caNoShows(S,ctx){
+  const now=weekIndex(S.week,S.year),r=ctx.r.fork("noshow"),gone=[];
+  for(const q of S.queue){if(q.kind!=="session"||weekIndex(q.w,q.y)!==now||(q.sessionNo||1)!==1||!(q.deposit>0)||q.fix||q.friend)continue;
+    const c=findClient(S,q.client),p=NOSHOW.base+NOSHOW.loyal*((c&&c.loyalty)||0);
+    if(r.fork(q.id).chance(p))gone.push(q);}
+  for(const q of gone){S.queue=S.queue.filter(x=>x!==q);const c=findClient(S,q.client);
+    if(c){loyaltyBump(c,"noShow");clientLog(c,{w:S.week,y:S.year,kind:"note",text:"didn't show for a booked sitting; the deposit stayed with you"});}
+    caLog(ctx,"cost",(c?c.name:"A client")+" didn't show. The "+caFmt(q.deposit)+" deposit stays with you.",{client:q.client});}}
+function caInspect(S,ctx){
+  const C=S.career,now=weekIndex(S.week,S.year),I=INSPECTION;
+  if(C.insp==null){C.insp=now+ctx.r.fork("insp0").int(I.first[0],I.first[1]);return;}
+  if(now<C.insp)return;
+  const r=ctx.r.fork("insp");C.insp=now+r.int(I.gap[0],I.gap[1]);
+  let inf=0;for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(now-weekIndex(p.w,p.y)>26)break;if(p.heal==="infected")inf++;}
+  const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*(S.studio.build.steril||0)+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf,I.min,I.max);
+  if(r.chance(pass)){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.");}
+  else{const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
+    caLog(ctx,"event","A health inspector writes the shop up: a "+caFmt(f)+" fine."+(S.studio.build.steril?"":" A sterilisation room would help."));}}
+
+/* the shop's reputation from a staff heal (sim/heal.js calls it) */
+function shopRepHeal(S,piece){
+  if(!S.studio)return 0;const d=STAFF.shopRep[piece.heal]||0,cur=S.studio.rep||0;
+  S.studio.rep=Math.round(clamp(cur+(d>0?d*(1-0.8*cur/100):d),0,100)*100)/100;return d;}
+
+/* ---- the Legacy screen ---- */
+function legacySummary(S){
+  careerEnsure(S);
+  const C=S.career,mine=S.pieces.filter(p=>!p.by),shop=S.pieces.length-mine.length;
+  let oldest=null;for(const p of mine){if(!p.heal)continue;const rd=caReads(S,p);if(rd>=LEGACY.reads){oldest={piece:p.id,name:p.name,y:p.y,reads:caR3(rd)};break;}}
+  const per={};for(const c of S.clients){const n=(c.pieces||[]).length;if(n)per[c.id]=n;}
+  let most=null;for(const id in per)if(!most||per[id]>most.n)most={id,n:per[id]};
+  if(most){const c=findClient(S,most.id);most.name=c?c.name:"a client";}
+  const dec={};for(const p of mine){const d=Math.floor(p.y/10)*10;dec[d]=(dec[d]||0)+1;}
+  let best=null,bs=-1;for(const p of mine){if(p.heal!=="crisp"||!p.out)continue;const o=p.out,s=0.28*o.lineQuality+0.32*o.depthQuality+0.18*o.saturation+0.22*(1-o.trauma);if(s>bs){bs=s;best=p;}}
+  const won=C.conv.filter(c=>c.place===1).length;
+  return{from:{w:1,y:2000},to:{w:S.week,y:S.year},years:S.year-2000+(S.week-1)/WEEKS_PER_YEAR,clients:S.clients.length,pieces:mine.length,shopPieces:shop,
+    oldest,most,decades:dec,best:best?{piece:best.id,name:best.name,y:best.y,score:caR3(bs)}:null,
+    conv:{entered:C.conv.filter(c=>!c.own).length,won,list:C.conv.slice(-8)},
+    apprentices:C.apprentices.map(a=>({name:a.name,status:a.status,where:a.where||"still training",style:a.style})),
+    staff:S.studio.staff.map(s=>({name:s.name,pieces:s.pieces||0})),alumni:C.alumni.length,
+    earned:C.money.total.in,spent:C.money.total.out,cash:S.cash,fails:C.fails,mentor:C.mentor,signature:signatureOf(S),
+    rep:Object.assign({},S.rep),shopRep:S.studio.rep||0,tv:C.offers.tv||null};}
+const SHARE_CARD=null;   // PR 9: the Legacy screen's share card
+
+WEEK_HOOKS.costs=careerWeek;
+SIM.ACTS=ACTS;SIM.MENTOR=MENTOR;SIM.APPRENTICE_STEPS=APPRENTICE_STEPS;SIM.CHORES=CHORES;SIM.FRIENDS=FRIENDS;SIM.CHAIR_SPLIT=CHAIR_SPLIT;
+SIM.RATE_BY_REP=RATE_BY_REP;SIM.SUPPLIES=SUPPLIES;SIM.LEASE=LEASE;SIM.MARKETING=MARKETING;SIM.STUDIO_STAGES=STUDIO_STAGES;SIM.VIBES=VIBES;
+SIM.STAFF=STAFF;SIM.NOSHOW=NOSHOW;SIM.INSPECTION=INSPECTION;SIM.BROKE=BROKE;SIM.SIGNATURE=SIGNATURE;SIM.SKILLS=SKILLS;
+SIM.CONVENTIONS=CONVENTIONS;SIM.CONV_SCORE=CONV_SCORE;SIM.GUEST_SPOTS=GUEST_SPOTS;SIM.GUEST=GUEST;SIM.LEGACY_OFFERS=LEGACY_OFFERS;
+SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;SIM.SHARE_CARD=SHARE_CARD;
+SIM.careerFresh=careerFresh;SIM.studioFresh=studioFresh;SIM.careerEnsure=careerEnsure;SIM.cashIn=cashIn;SIM.cashOut=cashOut;SIM.rateFor=rateFor;
+SIM.skillGain=skillGain;SIM.skillNextUnlock=skillNextUnlock;SIM.signatureOf=signatureOf;SIM.sigApply=sigApply;
+SIM.apprenticeSteps=apprenticeSteps;SIM.apprenticeGoal=apprenticeGoal;SIM.walkinsOpen=walkinsOpen;SIM.mentorLine=mentorLine;
+SIM.doChore=doChore;SIM.friendBooking=friendBooking;SIM.notePractice=notePractice;SIM.rentChair=rentChair;SIM.leaseNeed=leaseNeed;
+SIM.leaseStudio=leaseStudio;SIM.legacyNeed=legacyNeed;SIM.goLegacy=goLegacy;SIM.skipBroom=skipBroom;SIM.softFail=softFail;
+SIM.buildCost=buildCost;SIM.buildUp=buildUp;SIM.setVibe=setVibe;SIM.setMarketing=setMarketing;SIM.shopWalkins=shopWalkins;
+SIM.fairCut=fairCut;SIM.staffCandidates=staffCandidates;SIM.staffRoom=staffRoom;SIM.hireStaff=hireStaff;SIM.letGo=letGo;SIM.setStaffCut=setStaffCut;
+SIM.simStaffSession=simStaffSession;SIM.takeApprentice=takeApprentice;SIM.enterInvite=enterInvite;SIM.legacyAct=legacyAct;
+SIM.shopRepHeal=shopRepHeal;SIM.staffName=staffName;SIM.legacySummary=legacySummary;SIM.careerWeek=careerWeek;SIM.pieceReads=caReads;
+/* ===== sim/archive.js: keeping a 30-year save small (PR 7) =====
+   A 30-year career meets 5,000+ people and makes 5,000+ pieces. Pieces are never dropped; clients never disappear.
+   Two things keep the save small enough for localStorage:
+     compactClients(S)  every CAREER_COMPACT_EVERY weeks (sim/career.js): S.clients keeps full records for the CLIENT_CAP
+                        most recent or loyal clients (plus anyone on the books, on the board, in the chair or healing) and
+                        compacts the rest IN PLACE (the same object, so references stay good) to
+                        {id, name, first, pronouns, born, age, bodyShape, skinTone, traits, loyalty, since, lastSeen, visits,
+                        pieces, referredBy, src, compact:true}. Walk-ins who walked out (no pieces) compact after
+                        ARCHIVE.walkoutWeeks whatever the cap. Full records keep their last HISTORY_CAP history lines.
+     expandClient(S, c) a compacted client who comes back (scheduleReturns) gets a fresh brief, wants and known from an rng
+                        forked from their id and the week; everything the shop remembers (name, body, traits, loyalty, pieces)
+                        stays. Their old history lines are gone; one note says so.
+     packSave(S)        the form that is saved (ink-save, slots, backup codes): compacted clients and every piece but the
+                        newest ARCHIVE.pieceFull become short arrays (numbers to 3 decimals, names and labels dropped when the
+                        sim can rebuild them). Anything a tuple can't carry stays a plain object, so packing never loses a
+                        field: every packed piece is unpacked and compared once (and cached per piece).
+     unpackSave(o)      the reverse, in place (app/state.js hydrate). Plain objects pass through, so older saves load.
+   Private helpers start with ar. ===== */
+const CLIENT_CAP=200;
+const HISTORY_CAP=30;
+const ARCHIVE={loyalWeeks:180,pieceWeeks:12,walkoutWeeks:26,healingWeeks:8,pieceFull:50};
+const AR_KEEP=["id","name","first","pronouns","born","age","bodyShape","skinTone","traits","loyalty","since","lastSeen","visits","pieces","referredBy","src","compact"];
+const AR_STAGE={apprentice:"a",chair:"c",studio:"s",legacy:"l"},AR_STAGE_R={a:"apprentice",c:"chair",s:"studio",l:"legacy"};
+const AR_SRC=["walkin","referral","return","friend"],AR_PRON=["she/her","he/him","they/them"],AR_BODY=["neutral","femme","masc"];
+const AR_TRAITS=["pain","sun","aftercare","budget","loyalty","talkative","trusting"];
+
+/* ---- compaction ---- */
+function arProtected(S){
+  const keep=new Set(),now=weekIndex(S.week,S.year);
+  for(const q of S.queue||[])if(q.client)keep.add(q.client);
+  if(S.board&&S.board.client)keep.add(S.board.client);
+  const L=S.session&&S.session.live;if(L&&L.clientId)keep.add(L.clientId);
+  for(let i=(S.pieces||[]).length-1;i>=0;i--){const p=S.pieces[i];if(now-weekIndex(p.w,p.y)>ARCHIVE.healingWeeks)break;keep.add(p.client);}
+  const C=S.career;if(C){for(const id of C.friends||[])keep.add(id);for(const a of C.apprentices||[])if(a.shared)keep.add(a.shared);}
+  return keep;}
+function arScore(c){const ls=c.lastSeen||c.since||{w:1,y:2000};return weekIndex(ls.w||1,ls.y||2000)+(c.loyalty||0)*ARCHIVE.loyalWeeks+Math.min(10,(c.pieces||[]).length)*ARCHIVE.pieceWeeks;}
+function clientCompact(c){
+  for(const k of Object.keys(c))if(AR_KEEP.indexOf(k)<0)delete c[k];
+  c.compact=true;if(!Array.isArray(c.pieces))c.pieces=[];
+  return c;}
+/* compactClients(S) -> how many were compacted this pass */
+function compactClients(S){
+  const keep=arProtected(S),now=weekIndex(S.week,S.year),full=[];let n=0;
+  for(const c of S.clients){
+    if(c.compact)continue;
+    if(Array.isArray(c.history)&&c.history.length>HISTORY_CAP)c.history.splice(0,c.history.length-HISTORY_CAP);
+    if(keep.has(c.id))continue;
+    const ls=c.lastSeen||c.since||{w:1,y:2000};
+    if(!(c.pieces||[]).length&&now-weekIndex(ls.w||1,ls.y||2000)>ARCHIVE.walkoutWeeks){clientCompact(c);n++;continue;}
+    full.push(c);}
+  let room=CLIENT_CAP-S.clients.filter(c=>!c.compact&&keep.has(c.id)).length;
+  if(full.length>room){
+    full.sort((a,b)=>arScore(b)-arScore(a));
+    for(let i=Math.max(0,room);i<full.length;i++){clientCompact(full[i]);n++;}}
+  return n;}
+/* expandClient(S, c): a compacted client back as a full record (in place). A full client is returned as it is */
+function expandClient(S,c){
+  if(!c||!c.compact)return c;
+  const n=makeClient(rng(S.seed).fork("expand:"+c.id+":"+weekIndex(S.week,S.year)),{id:c.id,year:S.year,week:S.week,stage:(S.studio&&S.studio.stage)||"chair",badIdea:false,src:"return"});
+  const first=c.first||String(c.name||"").split(" ")[0];
+  Object.assign(c,{first,surname:String(c.name||"").slice(first.length+1),patronymic:null,addr:first,job:n.job,cover:n.cover,wants:n.wants,mustHaves:n.mustHaves,
+    dealbreakers:n.dealbreakers,known:n.known,brief:n.brief,ask:n.ask,theme:n.theme,briefId:n.briefId,firstTattoo:false,
+    history:[{w:S.week,y:S.year,kind:"note",text:"back after a long while; older notes are archived"}]});
+  if(c.born!=null)c.age=S.year-c.born;
+  if(!c.traits)c.traits=n.traits;
+  delete c.compact;
+  return c;}
+
+/* ---- packing ---- */
+const arI=v=>Math.round(v*1000),arF=v=>v/1000,arH=v=>Math.round(v*100),arHf=v=>v/100;
+function arNum(id,pre){const m=new RegExp("^"+pre+"(\\d+)$").exec(id||"");return m?+m[1]:id;}
+function arId(v,pre){return typeof v==="number"?pre+v:v;}
+const AR_EL=["id","x","y","scale","rot","lineWeight","fill","colour"];
+function arElsPack(els){
+  const out=[];for(const e of els){for(const k in e)if(AR_EL.indexOf(k)<0)return null;
+    if(typeof e.id!=="string"||e.id.indexOf(":")>=0||e.id.indexOf(";")>=0)return null;
+    out.push([e.id,arI(e.x!=null?e.x:0.5),arI(e.y!=null?e.y:0.5),arI(e.scale!=null?e.scale:0.5),arH(e.rot||0),e.lineWeight!=null?e.lineWeight:"",arI(e.fill||0),e.colour||""].join(":"));}
+  return out.join(";");}
+function arElsUnpack(s){if(!s)return[];return s.split(";").map(t=>{const a=t.split(":");
+  return{id:a[0],x:arF(+a[1]),y:arF(+a[2]),scale:arF(+a[3]),rot:arHf(+a[4]),lineWeight:a[5]===""?undefined:+a[5],fill:arF(+a[6]),colour:a[7]||null};});}
+const AR_D=["placement","sizeMm","style","pos","flash","elements"];
+function arDesignPack(d){
+  if(!d||typeof d!=="object"||!Array.isArray(d.elements))return null;
+  const els=arElsPack(d.elements);if(els==null)return null;
+  const x={};for(const k in d)if(AR_D.indexOf(k)<0)x[k]=d[k];
+  const pos=d.pos&&typeof d.pos==="object"?[arI(d.pos.x),arI(d.pos.y)]:0;
+  return[d.placement,arH(d.sizeMm||0),d.style,pos,d.flash||0,els,Object.keys(x).length?x:0];}
+function arDesignUnpack(t){
+  const d={placement:t[0],sizeMm:arHf(t[1]),style:t[2]};
+  if(t[3])d.pos={x:arF(t[3][0]),y:arF(t[3][1])};
+  d.flash=t[4]||null;d.elements=arElsUnpack(t[5]);if(t[6])Object.assign(d,t[6]);
+  if(d.flash===null&&t[7]===1)delete d.flash;
+  return d;}
+const AR_OUT=["lineQuality","depthQuality","saturation","trauma"],AR_OUTN=["sessionsUsed","blowouts","joins"];
+/* the kit a piece was done with, as one number: INKS index x 10 + MACHINES index (unknown ids stay as they are) */
+function arKit(p){const I=Object.keys(SIM.INKS||{}),M=Object.keys(SIM.MACHINES||{}),i=I.indexOf(p.ink),m=M.indexOf(p.machine);return i>=0&&m>=0&&m<10?i*10+m:null;}
+const AR_P=["id","client","design","out","heal","w","y","name","label","stage","price","healW","healY","healDue"];
+/* who the piece's client is, for its name: a real client's first name, a staff piece's guest, else null */
+function arFirst(p,byId){const c=byId.get(p.client);if(c)return c.first||String(c.name||"").split(" ")[0];if(p.guest&&p.guest.n)return p.guest.n;return null;}
+function arPiecePack(p,byId){
+  const d=arDesignPack(p.design);if(!d)return null;
+  if(p.design.flash===undefined)d[7]=1;
+  const x={};for(const k in p)if(AR_P.indexOf(k)<0)x[k]=p[k];
+  let o=0;if(p.out&&typeof p.out==="object"){o=AR_OUT.map(k=>p.out[k]!=null?arI(p.out[k]):"");
+    if(AR_OUTN.some(k=>p.out[k]!=null))for(const k of AR_OUTN)o.push(p.out[k]!=null?p.out[k]:"");
+    const ox={};for(const k in p.out)if(AR_OUT.indexOf(k)<0&&AR_OUTN.indexOf(k)<0)ox[k]=p.out[k];if(Object.keys(ox).length)x["~o"]=ox;}
+  else if(p.out!==null&&p.out!==undefined)return null;
+  /* the session's copies of sittings, blowouts and joins, the kit, a staff piece's client */
+  if(AR_OUTN.some(k=>x[k]!=null)){x["~s"]=AR_OUTN.map(k=>x[k]!=null?x[k]:"");for(const k of AR_OUTN)delete x[k];}
+  if(x.ink!=null||x.machine!=null){const kc=arKit(p);if(kc!=null){x["~k"]=kc;delete x.ink;delete x.machine;}}
+  if(x.guest&&typeof x.guest==="object"&&Object.keys(x.guest).join()==="n,t,a,s"&&String(x.guest.n).indexOf("|")<0){const g=x.guest;x["~g"]=[g.n,arH(g.t),arH(g.a),arH(g.s)].join("|");delete x.guest;}
+  if(p.out===undefined)x["~u"]=1;
+  const label=pieceLabel(p.design);if(p.label!==label)x.label=p.label;
+  const first=arFirst(p,byId);if(first==null||p.name!==pieceName(p.label,{first},p.design.placement))x.name=p.name;
+  const wi=weekIndex(p.w,p.y);
+  if(p.healDue){const hd=weekFrom(wi+2);if(p.healDue.w!==hd.w||p.healDue.y!==hd.y)x.healDue=p.healDue;else x["~d"]=1;}
+  const hw=p.healW!=null?weekIndex(p.healW,p.healY):-1;
+  const cl=p.client==="x"+arNum(p.id,"p")?-1:arNum(p.client,"c");
+  return[arNum(p.id,"p"),cl,wi,d,o,p.heal||0,hw,AR_STAGE[p.stage]||p.stage||0,p.price||0,Object.keys(x).length?x:0];}
+function arPieceUnpack(t,byId){
+  const wk=weekFrom(t[2]),x=t[9]||{};
+  const p={id:arId(t[0],"p"),client:t[1]===-1?"x"+t[0]:arId(t[1],"c"),design:arDesignUnpack(t[3]),out:null,heal:t[5]||null,w:wk.w,y:wk.y};
+  if(t[4]){p.out={};AR_OUT.forEach((k,i)=>{if(t[4][i]!=="")p.out[k]=arF(t[4][i]);});
+    AR_OUTN.forEach((k,i)=>{const v=t[4][4+i];if(v!==undefined&&v!=="")p.out[k]=v;});if(x["~o"])Object.assign(p.out,x["~o"]);}
+  if(x["~u"])delete p.out;
+  p.label=x.label!=null?x.label:pieceLabel(p.design);
+  for(const k in x)if(k.charAt(0)!=="~"&&k!=="label")p[k]=x[k];
+  if(x["~s"])AR_OUTN.forEach((k,i)=>{if(x["~s"][i]!=="")p[k]=x["~s"][i];});
+  if(x["~k"]!=null){p.ink=Object.keys(SIM.INKS||{})[Math.floor(x["~k"]/10)];p.machine=Object.keys(SIM.MACHINES||{})[x["~k"]%10];}
+  if(x["~g"]){const g=x["~g"].split("|");p.guest={n:g[0],t:arHf(+g[1]),a:arHf(+g[2]),s:arHf(+g[3])};}
+  if(p.name==null){const first=arFirst(p,byId);p.name=pieceName(p.label,{first},p.design.placement);}
+  p.stage=AR_STAGE_R[t[7]]||t[7]||undefined;if(p.stage===undefined)delete p.stage;
+  p.price=t[8]||0;
+  if(t[6]>=0){const h=weekFrom(t[6]);p.healW=h.w;p.healY=h.y;}
+  if(x["~d"])p.healDue=weekFrom(t[2]+2);
+  return p;}
+/* deep compare with a tolerance for numbers packed to 3 decimals (rotations and sizes to 2) */
+function arSame(a,b){
+  if(typeof a==="number"&&typeof b==="number")return Math.abs(a-b)<=0.0006+0.0006*Math.abs(b);
+  if(a===b)return true;if(a==null||b==null)return false;
+  if(typeof a!=="object"||typeof b!=="object"||Array.isArray(a)!==Array.isArray(b))return false;
+  const ka=Object.keys(a).filter(k=>a[k]!==undefined),kb=Object.keys(b).filter(k=>b[k]!==undefined);
+  if(ka.length!==kb.length)return false;for(const k of kb)if(!arSame(a[k],b[k]))return false;return true;}
+const arCache=new WeakMap();
+function arPieceSig(p){return(p.heal||"")+"|"+(p.healW||"")+"|"+(p.portfolio?1:0)+"|"+(p.review?1:0)+"|"+(p.price||0)+"|"+p.client+"|"+(p.name||"");}
+function arPieceSaved(p,byId){
+  const sig=arPieceSig(p),hit=arCache.get(p);if(hit&&hit.sig===sig)return hit.t;
+  let t=arPiecePack(p,byId);
+  if(t){let ok=false;try{ok=arSame(arPieceUnpack(JSON.parse(JSON.stringify(t)),byId),p);}catch(e){ok=false;}if(!ok)t=p;}else t=p;
+  arCache.set(p,{sig,t});return t;}
+function arClientPack(c){
+  const x={};for(const k in c)if(AR_KEEP.indexOf(k)<0||k==="age")x[k]=c[k];delete x.age;
+  const first=String(c.name||"").split(" ")[0],tr=c.traits||{};
+  const pi=AR_PRON.indexOf(c.pronouns),bi=AR_BODY.indexOf(c.bodyShape),si=AR_SRC.indexOf(c.src);
+  const since=c.since?weekIndex(c.since.w,c.since.y):-1,last=c.lastSeen?weekIndex(c.lastSeen.w,c.lastSeen.y):-1;
+  return[arNum(c.id,"c"),c.name,c.first===first?0:c.first,pi>=0?pi:c.pronouns,c.born!=null?c.born:-1,bi>=0?bi:c.bodyShape,arH(c.skinTone||0),
+    AR_TRAITS.map(k=>tr[k]!=null?arH(tr[k]):""),arH(c.loyalty||0),since,last,c.visits||0,c.referredBy?arNum(c.referredBy,"c"):0,si>=0?si:(c.src||""),Object.keys(x).length?x:0];}
+function arClientUnpack(t,year){
+  const c={id:arId(t[0],"c"),name:t[1],first:t[2]||String(t[1]||"").split(" ")[0],pronouns:typeof t[3]==="number"?AR_PRON[t[3]]:t[3]};
+  if(t[4]>=0){c.born=t[4];c.age=(year||2000)-t[4];}
+  c.bodyShape=typeof t[5]==="number"?AR_BODY[t[5]]:t[5];c.skinTone=arHf(t[6]);
+  c.traits={};AR_TRAITS.forEach((k,i)=>{if(t[7][i]!=="")c.traits[k]=arHf(t[7][i]);});
+  c.loyalty=arHf(t[8]);if(t[9]>=0)c.since=weekFrom(t[9]);if(t[10]>=0)c.lastSeen=weekFrom(t[10]);
+  c.visits=t[11];c.pieces=[];c.referredBy=t[12]?arId(t[12],"c"):null;c.src=typeof t[13]==="number"?AR_SRC[t[13]]:t[13];
+  if(t[14])Object.assign(c,t[14]);c.compact=true;
+  return c;}
+/* packSave(S) -> the object that is saved. Shares S's objects for whatever isn't packed; JSON.stringify it right away */
+function packSave(S){
+  const cl=S.clients||[],ps=S.pieces||[],byId=new Map();for(const c of cl)byId.set(c.id,c);
+  const clients=cl.map(c=>c.compact?arClientPack(c):c);
+  const cut=ps.length-ARCHIVE.pieceFull,pieces=ps.map((p,i)=>i<cut&&p&&typeof p==="object"?arPieceSaved(p,byId):p);
+  return Object.assign({},S,{clients,pieces});}
+/* unpackSave(o): arrays back into records, in place; compacted clients get their pieces lists back. -> o */
+function unpackSave(o){
+  if(!o||typeof o!=="object")return o;
+  let any=false;
+  if(Array.isArray(o.clients))o.clients=o.clients.map(c=>{if(Array.isArray(c)){any=true;return arClientUnpack(c,o.year);}return c;});
+  if(Array.isArray(o.pieces)&&o.pieces.some(Array.isArray)){
+    any=true;const byId=new Map();for(const c of o.clients||[])if(c&&c.id)byId.set(c.id,c);
+    o.pieces=o.pieces.map(p=>Array.isArray(p)?arPieceUnpack(p,byId):p);}
+  if(any){const byId=new Map();for(const c of o.clients||[])if(c&&c.compact){c.pieces=[];byId.set(c.id,c);}
+    for(const p of o.pieces||[]){const c=p&&byId.get(p.client);if(c)c.pieces.push(p.id);}}
+  return o;}
+
+SIM.CLIENT_CAP=CLIENT_CAP;SIM.HISTORY_CAP=HISTORY_CAP;SIM.ARCHIVE=ARCHIVE;SIM.compactClients=compactClients;SIM.clientCompact=clientCompact;
+SIM.expandClient=expandClient;SIM.packSave=packSave;SIM.unpackSave=unpackSave;
 /* ===== sim/market.js: walk-in generation and PRICE_INDEX by year (PR 3). Last sim file: it closes the INK_SIM IIFE. ===== */
 /* PRICE_INDEX: what a ruble buys, by year (2000 = 1.0). A ruble-like curve: 10-14%/yr inflation in the early 2000s, a
    2008-09 and a 2015 jump, easing to about 4-7%/yr later (about x4 by the mid-2010s, x8.7 by 2030). Rates, rent and
@@ -4253,14 +5155,21 @@ function mkSegBoost(S){
 function mkPoisson(r,lambda){const L=Math.exp(-lambda);let k=0,p=1;do{k++;p*=r();}while(p>L&&k<50);return k-1;}
 function generateWalkins(S,r){
   const stage=(S.studio&&S.studio.stage)||"apprentice";
+  if(typeof walkinsOpen==="function"&&!walkinsOpen(S))return[];   // PR 7: an apprentice before the friend step; books closed in Act 4
   const slots=((typeof WEEK!=="undefined"&&WEEK.stages[stage])||{walkinSlots:3}).walkinSlots;
-  let lambda=(WALKINS.base[stage]||WALKINS.base.chair)*mkSeason(S.week);
+  const shop=typeof shopWalkins==="function"?shopWalkins(S):{mult:1,seg:{}};   // PR 7: build-out, vibe, marketing, guest spot
+  let lambda=(WALKINS.base[stage]||WALKINS.base.chair)*mkSeason(S.week)*Math.max(0.2,shop.mult);
   for(const k in WALKINS.rep)lambda*=1+WALKINS.rep[k]*mkRep(S,k);
-  const n=Math.min(slots,mkPoisson(r,lambda));
+  const n=Math.min(slots+(shop.guest?2:0),mkPoisson(r,lambda));
   const out=[],taken=[],segBoost=mkSegBoost(S),sizes=WALKINS.sizes[stage]||null;
+  for(const s in shop.seg||{})segBoost[s]=(segBoost[s]||0)+shop.seg[s];
+  const sig=S.career&&typeof signatureOf==="function"?signatureOf(S):null,rs=r.fork("sig");
   for(let i=0;i<n;i++){
     const id=clNextId(S,taken);taken.push(id);
-    out.push(makeClient(r,{id,year:S.year,week:S.week,stage,segBoost,sizes,src:"walkin"}));
+    const c=makeClient(r,{id,year:S.year,week:S.week,stage,segBoost,sizes,src:"walkin",styleMult:shop.styles||null});
+    /* PR 7: past the SIGNATURE threshold some ask for "your thing"; collectors more often */
+    if(sig&&sig.ready&&rs.chance(SIGNATURE.askChance*sig.strength*(c.theme==="collector"?SIGNATURE.collector:1)))sigApply(c,sig,rs);
+    out.push(c);
   }
   return out;
 }
@@ -5077,7 +5986,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.6.0";
+const VERSION="0.1.7.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -5106,7 +6015,15 @@ function freshState(){return{
                      // healW/healY, portfolio (true or absent) and, for a sample walk-in, review {stars, text}
   reveals:[],        // ids of healed pieces whose reveal you haven't seen yet, oldest first (PR 5, sim/heal.js REVEAL_CAP)
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
-  studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
+  studio:SIMOK("studioFresh")?INK_SIM.studioFresh():{stage:"apprentice",staff:[]},
+                     // the shop (PR 7, sim/career.js studioFresh): stage apprentice | chair | studio | legacy, staff [{id, name,
+                     // style, skill, ego, cut, loyalty, pieces, earned, ...}], build {stations, waiting, flash, steril, lighting,
+                     // storefront} levels, vibe, marketing (MARKETING index), rep (the shop's own 0..100), lease {w,y}, nextStaff
+  career:SIMOK("careerFresh")?INK_SIM.careerFresh():null,
+                     // the career (PR 7, sim/career.js careerFresh): mentor {goodwill, left, loan}, Act 1 steps/chores/practice/
+                     // friends, sig (signature counts), money {cur, prev, total} ledger, broke weeks, fails, scene (a full-screen
+                     // scene waiting: broke | legacy), invites, conv (conventions entered), guest (a guest spot running), offers
+                     // (Act 4), apprentices, alumni, rivals (PR 8 hook), reached {chair, studio, legacy: {w,y}}, books, skipped, insp
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
   board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
@@ -5117,9 +6034,27 @@ function freshState(){return{
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();
+function SIMOK(f){return typeof INK_SIM!=="undefined"&&typeof INK_SIM[f]==="function";}
 
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot()));if(typeof buPersist==="function")buPersist();}catch(e){}}
-function snapshot(){return JSON.parse(JSON.stringify(S));}
+/* save(): the game into ink-save, packed (INK_SIM.packSave: older pieces and archived clients as short arrays; hydrate
+   unpacks them). If the browser refuses (storage full), say so once in a while and offer a backup code */
+const SAVE_WARN={at:0,gap:120000};
+function save(){if(saveSoonT){clearTimeout(saveSoonT);saveSoonT=0;}try{localStorage.setItem(SAVE_KEY,saveJson());if(typeof buPersist==="function")buPersist();}catch(e){saveFull(e);}}
+/* saveSoon: for saves that happen many times a minute (every finger lift in a session, every stencil drag), write once
+   the player pauses for SAVE_SOON ms. A late career's save is over a megabyte, so writing it on every stroke could
+   stutter a slow phone. A pending save is flushed when the page is hidden or closed, and any save() cancels it. */
+const SAVE_SOON=1500;let saveSoonT=0;
+function saveSoon(){clearTimeout(saveSoonT);saveSoonT=setTimeout(()=>{saveSoonT=0;save();},SAVE_SOON);}
+function saveFlush(){if(saveSoonT){clearTimeout(saveSoonT);saveSoonT=0;save();}}
+if(typeof addEventListener==="function"){addEventListener("pagehide",saveFlush);addEventListener("visibilitychange",()=>{if(typeof document!=="undefined"&&document.hidden)saveFlush();});}
+function saveJson(){return JSON.stringify(SIMOK("packSave")?INK_SIM.packSave(S):S);}
+function snapshot(){return JSON.parse(saveJson());}
+function saveFull(e){const now=Date.now();if(now-SAVE_WARN.at<SAVE_WARN.gap||typeof document==="undefined")return;SAVE_WARN.at=now;
+  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save");
+  if(typeof openSheet!=="function"||typeof buBackupOpen!=="function"||(typeof sheetOn==="function"&&sheetOn()))return;
+  openSheet("Storage full",`<p style="margin-top:0">This browser wouldn't let Ink save (its storage is full or blocked). Your career is still open here, but it may be lost when you close the page.</p>
+<p class="hint">Make a backup code now and keep it in your notes. Clearing a save slot you don't need (Settings › Save) frees room too.</p>
+<div class="row"><button class="btn pri" id="sfBack" style="flex:1">Back up now</button></div>`);$("sfBack").addEventListener("click",buBackupOpen);}
 /* load a saved object into S on top of a fresh state, so a field added since that save gets its default. false if it
    isn't an Ink save. */
 function hydrate(o){
@@ -5136,6 +6071,12 @@ function hydrate(o){
   for(const k of ["walkins","collectors","peers"])S.rep[k]=Math.max(0,Math.min(100,+S.rep[k]||0));
   if(S.session!=null&&(typeof S.session!=="object"||Array.isArray(S.session)))S.session=null;
   if(typeof INK_SIM!=="undefined"&&INK_SIM.kitClean)S.kit=INK_SIM.kitClean(S.kit);   // unknown ids dropped, sliders clamped
+  /* PR 7: a save from before the career has no career (careerEnsure then treats the tutorial as done); packed pieces and
+     archived clients come back as records; studio and career get any field added since */
+  if(!o.career||typeof o.career!=="object"||Array.isArray(o.career))S.career=null;
+  if(!o.studio||typeof o.studio!=="object"||Array.isArray(o.studio))S.studio=freshState().studio;
+  if(SIMOK("unpackSave"))INK_SIM.unpackSave(S);
+  if(SIMOK("careerEnsure"))INK_SIM.careerEnsure(S);
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
@@ -5185,7 +6126,10 @@ setInterval(perfPoll,500);
    Lifted from Prairie Engine Works' savecode.js. One code holds everything Ink keeps in the browser, so a player can move
    to another phone or keep a copy somewhere safe. All of it lives in localStorage on this device; nothing is sent anywhere.
      save    the current game ("ink-save"), taken live with snapshot(). Settings ride in it.
-     slots   the 3 manual slots ("ink-slot1" .. "ink-slot3"), null for an empty one
+     slots   the 3 manual slots ("ink-slot1" .. "ink-slot3"), null for an empty one. PR 7 (app/slots.js): a slot is
+             {z: the save squeezed with buZip, savedAt, week, year, stage, pieces}; a plain save object still counts
+     PR 7: the save inside is packed (INK_SIM.packSave: older pieces and archived clients as short arrays); hydrate
+           unpacks it, so a code holds every piece ever done
    Code = "INK1:" + body + a 6-character checksum. body = that object as JSON -> UTF-8 bytes -> LZW (9..16-bit codes) ->
    base64url (A-Z a-z 0-9 - _ only), so it survives notes apps, email and chat.
    Tattoos are saved as design parameters + session outputs + dates, never as pictures; everything visual is re-rendered.
@@ -5263,6 +6207,10 @@ function buSaveOk(o){
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
+  if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
+  if("career" in o&&o.career!=null){const c=o.career;if(!buObj(c))return false;   // PR 7: the career (sim/career.js careerFresh)
+    for(const f of ["invites","apprentices","alumni","friends","conv"])if(f in c&&!Array.isArray(c[f]))return false;
+    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
@@ -5284,7 +6232,10 @@ function buTry(o){const keepS=S;let ok=false;
   finally{S=keepS;}
   return ok;}
 function buFullOk(d){return buObj(d)&&d.v===BU_V&&buSaveOk(d.save)&&Array.isArray(d.slots)&&d.slots.length<=SLOTS
-  &&d.slots.every(o=>o===null||buSaveOk(o));}
+  &&d.slots.every(o=>o===null||buSlotOk(o));}
+/* a slot: the save itself, or (PR 7) {z: the save as JSON, UTF-8, buZip} plus a label. Throws on a damaged z */
+function buSlotData(o){if(buObj(o)&&typeof o.z==="string")return JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(new Uint8Array(buUnzip(o.z))));return o;}
+function buSlotOk(o){if(!buObj(o))return false;let d;try{d=buSlotData(o);}catch(e){return false;}return buSaveOk(d);}
 
 /* ---- reading a code: {kind:"full",data}. Spaces, line breaks and text around the code are fine.
    Throws buFail(...) with a message for the player. ---- */
@@ -5420,7 +6371,8 @@ function openSettings(){
 <p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
 <section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
 <section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
-<div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div></section>
+<div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div>
+${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtml()}`:""}</section>
 <section id="set-app" hidden><h3>App</h3><div class="row"><button class="btn pri" id="pwaInstall" hidden>Install app</button></div>
 <p class="hint" id="pwaIos" hidden>On iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</p></section>
 <section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p>
@@ -5436,6 +6388,7 @@ function openSettings(){
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
+  if(typeof slWire==="function")slWire();
   pwaSync();}
 
 /* ---- PWA: install offer and the update bar ---- */
@@ -5470,7 +6423,7 @@ function pwaInit(){
 
 /* ---- start: load the save, wire the page, draw the studio ---- */
 function start(){
-  loadSaved();applySettings();
+  const had=loadSaved();applySettings();
   document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{INK_SOUND.tick();const again=b.dataset.tab===curTab;showTab(b.dataset.tab);if(again)$("panel").scrollTo({top:0});}));
   $("setOpen").addEventListener("click",openSettings);
   $("sheetClose").addEventListener("click",closeSheet);$("scrim").addEventListener("click",closeSheet);
@@ -5481,7 +6434,9 @@ function start(){
   pwaInit();
   renderHeader();showTab("studio");
   save();
-  window.__ldDone&&__ldDone();}
+  window.__ldDone&&__ldDone();
+  if(!had&&typeof slNewOpen==="function")slNewOpen(true);   // PR 7: the start screen on a first visit
+  else if(typeof lgSceneOpen==="function")lgSceneOpen();}
 /* ===================== app/studio.js: the Studio tab =====================
    The shop at its current stage: the 3D view on top (INK_VIS, PR 6), then who is in the chair, then the shop's cards.
    Who sits in the 3D chair (stWho): the client of the sitting in progress, else the next booked client from S.queue,
@@ -5494,7 +6449,7 @@ function start(){
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
    (INK_SIM.kitDeltas, the PEW parts-shop pattern), with arrows and words as well as colour. Buying spends S.cash at
-   INK_SIM.kitPrice (2000 rubles x the price index). PR 7 adds the studio build-out, staff and money here. */
+   INK_SIM.kitPrice (2000 rubles x the price index). PR 7: the shop's own cards (stage, build-out, staff) come from app/shop.js. */
 const ST={view:null,key:""};
 const ST_CAP={apprentice:"The back room at your mentor's shop",chair:"Your rented chair",studio:"Your studio",legacy:"Your studio, years on"};
 function stGl(){return typeof INK_VIS!=="undefined"&&INK_VIS.ready();}
@@ -5542,10 +6497,11 @@ function renderStudio(){
 <span class="clMeta">${who.sample?"Sample walk-in · ":""}${n?`${n} piece${n>1?"s":""} on them`:"No ink from you yet"}${who.live?" · stencil on":""}</span></div>
 ${gl?segHtml("stView",[["consult","Face-on"],["session","The work"],["reveal","Reveal"]],ST.view):""}
 ${gl?`<p class="hint" style="margin:8px 0 0">Drag the view to look around.</p>`:""}</div>`:"";
-  $("studioBody").innerHTML=`${chair}<div class="card"><h2>The shop</h2>
+  $("studioBody").innerHTML=`${chair}${typeof shopHtml==="function"?shopHtml(stage):`<div class="card"><h2>The shop</h2>
 <p class="hint" style="margin-top:0">You start as an apprentice in your mentor's shop on the canal in Mostograd: sweeping floors, cleaning tubes, drawing flash after closing.</p>
-<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>
+<dl class="kv"><dt>Stage</dt><dd>${esc(typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[stage]||stage)}</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`}
 <div class="card kp" id="kp"></div>`;
+  if(typeof shopWire==="function")shopWire();
   const sv=$("stView");
   if(sv){if(!work)sv.querySelectorAll('button[data-v="session"],button[data-v="reveal"]').forEach(b=>{b.disabled=true;});
     sv.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.disabled)return;ST.view=b.dataset.v;INK_SOUND.tick();
@@ -6205,7 +7161,7 @@ function seEls(design,box){const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5
 function seRender(design,skin,out,bodyShape){
   const box=INK_SIM.placementBox(design.placement,bodyShape)||{wrapMm:100,lengthMm:200},els=seEls(design,box);
   if(!els.length)return"";
-  const sz=design.sizeMm||50,cx=design.pos.x*box.wrapMm,cy=design.pos.y*box.lengthMm,pad=sz*0.12;
+  const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5},cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm,pad=sz*0.12;
   const blur=out?Math.max(0,(0.9-out.lineQuality)*1.6):0,op=out?0.55+0.45*out.saturation:1;
   return`<svg class="seRen" viewBox="${dzR2(cx-sz/2-pad)} ${dzR2(cy-sz/2-pad)} ${dzR2(sz+2*pad)} ${dzR2(sz+2*pad)}" style="background:${seRgb(skin)}" aria-hidden="true"><g style="opacity:${dzR2(op)};${blur>0.05?`filter:blur(${dzR2(blur*sz/100)}px)`:""}">${els.map(e=>dzElSvg(e,design.style)).join("")}</g></svg>`;}
 
@@ -6331,7 +7287,7 @@ ${can3d?`<button class="btn sm" id="seFlat" aria-pressed="${!in3d}">${in3d?"Flat
   svg.addEventListener("pointerdown",ev=>{drag={p:pt(ev),pos:Object.assign({},d.pos||{x:.5,y:.5}),dx:0,dy:0};svg.setPointerCapture(ev.pointerId);ev.preventDefault();});
   svg.addEventListener("pointermove",ev=>{if(!drag)return;const p=pt(ev);drag.dx=p.x-drag.p.x;drag.dy=p.y-drag.p.y;g.setAttribute("transform",`translate(${dzR2(drag.dx)} ${dzR2(drag.dy)})`);});
   const end=()=>{if(!drag)return;const dr=drag;drag=null;if(Math.abs(dr.dx)+Math.abs(dr.dy)<0.5){g.removeAttribute("transform");return;}
-    SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});save();seRenderPlace();};
+    SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});saveSoon();seRenderPlace();};
   svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);}
 function seChkHtml(chk){
   return`<span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}`;}
@@ -6341,7 +7297,7 @@ function seChkUpdate(){const e=$("seChk");if(e&&SE.place)e.innerHTML=seChkHtml(S
    re-checks flow and creases. A drag off the stencil orbits the camera */
 function se3dStencil(sess){
   const h=(pos,ph)=>{if(ph==="move"){INK_VIS.setStencil(Object.assign({},sess.design,{pos}),{drag:h});return;}
-    SE.place=INK_SIM.sessionPlace(sess,pos);save();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
+    SE.place=INK_SIM.sessionPlace(sess,pos);saveSoon();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
   INK_VIS.setStencil(sess.design,{drag:h});}
 function se3dPlace(sess){
   const el=$("sePlace3d");if(!el||!INK_VIS.mount(el))return;
@@ -6553,7 +7509,7 @@ function seWireCanvas(){
     seFlushInk();SE.down=null;
     const live=INK_SIM.penUp(sess,ev.timeStamp||performance.now());
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
-    save();
+    saveSoon();
     if(live.lineDone){const ls=sess.lastStroke;SE.status="";seAfterItem();
       if(ls&&!sess.stop)seStatus(`Line done: ${Math.round(ls.q*100)}% clean${ls.blowouts?`, ${ls.blowouts} blowout${ls.blowouts>1?"s":""}`:""}${ls.joins?`, ${ls.joins} join${ls.joins>1?"s":""}`:""}.`);}
     else{seDot();if(sess.stop)seEnd();else if(INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line")seStatus("Lifted. Carry on from the dot.");}};
@@ -6858,7 +7814,7 @@ function clOpenClient(id){
 <dt>First seen</dt><dd>Week ${since.w||"?"}, ${since.y||"?"}${ref?` · sent by ${esc(ref.name)}`:""}</dd><dt>Loyalty</dt><dd>${clLoyal(c.loyalty)}</dd></dl>
 <div class="clChips" style="margin-top:10px">${clWhat(c)||`<span class="clMeta">You haven't found out much about them yet.</span>`}</div></section>
 <section><h3>Their pieces, as they look today</h3>${pieceHtml}</section>
-<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);
+<section><h3>History</h3>${c.compact?`<p class="hint">It's been a long while. Older notes on ${esc(c.first||c.name)} are archived; they fill in again if they come back.</p>`:""}${hist?`<ul class="clHist">${hist}</ul>`:c.compact?"":`<p class="hint">Nothing yet.</p>`}</section>`);
   const pc=$("sheetBody").querySelector(".clPcs");
   if(pc&&typeof gvOpen==="function"){const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();gvOpen(f.dataset.gp);}};pc.addEventListener("click",go);pc.addEventListener("keydown",go);}}
 /* ===================== app/career.js: the Career tab =====================
@@ -6867,36 +7823,54 @@ function clOpenClient(id){
    this week (walk-ins at the door, booked consults, sittings due), the first tap only warns and the second skips them:
    walk-ins leave, consults wait or give up, sittings move to next week. The last few lines are kept in memory (CR.lines),
    not in the save. PR 5: healed pieces wait in S.reveals and show at the top, one at a time (app/gallery.js rvHtml), and
-   the Career card shows the three reputation tracks (REP_TRACKS) with what each opens next. The acts, skills, goals and
-   the Legacy screen come in PR 7. */
+   the Career card shows the three reputation tracks (REP_TRACKS) with what each opens next.
+   PR 7 (sim/career.js): the act card under Next (Act 1's one-line goal and Arkady's word, chores, a friend's free piece,
+   renting a chair; Act 2's split and the lease; Act 3's shop summary; Act 4's waiting list, projects and apprentices),
+   invites (conventions, guest spots, the TV offer, Arkady's nudge), last week's money, skills and your signature, and
+   the Legacy button. A full-screen scene (the shop closing, the end of the thirty years) is app/legacy.js. Every stage
+   change goes through caStage(), which tells the 3D shop (INK_VIS.setStudio, PR 6). */
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
-const CR={last:null,lines:[],arm:0,armT:0,LINES:8};
+const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
 const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",end:"The end"};
+/* the ledger's words (sim/career.js cashIn / cashOut kinds) */
+const CR_MONEY={sitting:"Sittings",deposit:"Deposits",flash:"Flash sales",book:"Flash book",merch:"Product line",convention:"Conventions",tv:"TV",loan:"Arkady's loan",staff:"Your artists' cut",
+  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention"};
 function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
+/* a stage change: the header, and the 3D shop's stage (PR 6) */
+function caStage(){if(typeof INK_VIS!=="undefined"&&typeof INK_VIS.setStudio==="function")try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice");}catch(e){}
+  if(typeof ST!=="undefined")ST.key="";renderHeader();}
+function crMine(){let n=0;for(const p of S.pieces)if(!p.by)n++;return n;}
 function renderCareer(){
   const host=$("careerBody");
   if(typeof INK_SIM.nextStop!=="function"){host.innerHTML=`<div class="card"><p class="hint">The week clock isn't in this build.</p></div>`;return;}
-  const st=(S.studio&&S.studio.stage)||"apprentice",over=INK_SIM.careerOver(S),wt=crWaiting();
+  if(SIMOK("careerEnsure"))INK_SIM.careerEnsure(S);
+  const st=(S.studio&&S.studio.stage)||"apprentice",over=INK_SIM.careerOver(S),wt=crWaiting(),C=S.career;
   const parts=[wt.w&&`${wt.w} walk-in${wt.w>1?"s":""} at the door`,wt.c&&`${wt.c} consult${wt.c>1?"s":""} booked`,wt.s&&`${wt.s} sitting${wt.s>1?"s":""} due`].filter(Boolean);
   const last=CR.last,lg=last&&last.log?last.log.filter(l=>l.k!=="week"):[];
-  host.innerHTML=`${typeof rvHtml==="function"?rvHtml():""}<div class="card crNext">
+  host.innerHTML=`${typeof lgSceneCard==="function"?lgSceneCard():""}${typeof rvHtml==="function"?rvHtml():""}${C&&st==="apprentice"?caActHtml(st):""}<div class="card crNext">
 <div class="crWhen"><span class="clK">Act ${STAGE_ACT[st]||1} · ${esc(STAGE_NAMES[st]||st)}</span><b>Week ${S.week}, ${S.year}</b></div>
-${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">The Legacy screen arrives in a later update. Your clients, pieces and save are all still here.</p>`
+${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">Your clients, pieces and save are all still here.</p><div class="row"><button class="btn pri" id="crLegacy2">See your Legacy</button></div>`
 :`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
 <button class="btn pri crBtn${CR.arm?" arm":""}" id="crNextB">${CR.arm?`Skip them? Tap again`:`Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>`}</button>
 ${CR.arm?`<p class="crWarn">Walk-ins leave, sittings move to next week.</p>`:""}`}</div>
+${C&&st!=="apprentice"?caActHtml(st):""}${C?caInvitesHtml():""}
 ${last?`<div class="card crLast"><h2>${last.weeks?`${last.weeks} week${last.weeks>1?"s":""} later`:"This week"}</h2><p>${esc(last.line||"")}</p>
 ${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}">${CR_KIND[l.k]?`<span class="crK">${CR_KIND[l.k]}</span>`:""}${esc(l.text||"")}</li>`).join("")}${lg.length>14?`<li class="hint">…and ${lg.length-14} more.</li>`:""}</ul>`:""}
 ${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
 ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
+${C?caMoneyHtml():""}${C?caSkillsHtml():""}
 <div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
-<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>${crRep()}</div>`;
+<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Your pieces</dt><dd>${crMine()}</dd>${S.pieces.length>crMine()?`<dt>Shop pieces</dt><dd>${S.pieces.length-crMine()}</dd>`:""}<dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd>${S.rate?`<dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd>`:""}</dl>${crRep()}
+${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12px"><button class="btn" id="crLegacy">See your Legacy</button></div>`:""}</div>`;
   if(typeof rvWire==="function")rvWire(()=>{renderCareer();$("panel").scrollTop=0;});
+  if(typeof lgSceneWire==="function")lgSceneWire();
   const b=$("crNextB");if(b)b.addEventListener("click",crNext);
-  const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
+  const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});
+  for(const id of ["crLegacy","crLegacy2"]){const l=$(id);if(l)l.addEventListener("click",()=>{if(typeof lgOpen==="function")lgOpen();});}
+  if(C){caActWire(st);caInvitesWire();}}
 /* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
@@ -6910,12 +7884,331 @@ function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
   if(crWaiting().n&&!CR.arm){CR.arm=1;clearTimeout(CR.armT);CR.armT=setTimeout(()=>{CR.arm=0;if(curTab==="career")renderCareer();},4000);INK_SOUND.tick();renderCareer();return;}
-  CR.arm=0;clearTimeout(CR.armT);
+  CR.arm=0;clearTimeout(CR.armT);CR.say=null;
   if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}
+  const st0=S.studio&&S.studio.stage;
   const res=INK_SIM.nextStop(S);CR.last=res;
   if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
+  crAfter(st0);}
+/* after the clock moved (Next or a chore): tidy the board, save, redraw, and show any scene */
+function crAfter(st0){
   if(S.board.item&&!S.queue.some(q=>q.id===S.board.item))S.board.item=null;
-  save();renderHeader();renderCareer();INK_SOUND.tick();}
+  if(S.studio&&S.studio.stage!==st0)caStage();
+  save();renderHeader();renderCareer();INK_SOUND.tick();
+  if(typeof lgSceneOpen==="function")lgSceneOpen();}
+
+/* ===================== the act card ===================== */
+const CA_TOPIC={chore:"intro",practice:"practice",flash:"flash",friend:"friend",walkin:"walkin",chair:"idle"};
+function caBar(v,label){v=clamp(v||0,0,1);return`<span class="crRepB caBar" role="img" aria-label="${esc(label)} ${Math.round(v*100)} out of 100"><i style="width:${(v*100).toFixed(1)}%"></i></span>`;}
+function caSay(text,who){return text?`<blockquote class="caSay">“${esc(text)}”<cite>${esc(who||INK_SIM.MENTOR.addr)}</cite></blockquote>`:"";}
+function caActHtml(st){
+  const C=S.career,M=INK_SIM.MENTOR,gw=C.mentor.goodwill;
+  if(st==="apprentice"){
+    const steps=INK_SIM.apprenticeSteps(S),goal=steps.find(s=>!s.done),friendQ=S.queue.some(q=>q.friend);
+    const say=CR.say||INK_SIM.mentorLine(S,goal?CA_TOPIC[goal.id]:"idle");
+    const canFriend=C.friends.length<INK_SIM.FRIENDS.max&&!friendQ;
+    const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
+    return`<div class="card caAct"><span class="clK">Act 1 · ${esc(M.shop)}</span>${caSay(say)}
+${goal?`<div class="caGoal"><span class="clK">Your goal</span><b>${esc(goal.goal)}</b><span class="clMeta">${esc(goal.how)}</span></div>`:""}
+<ol class="caSteps" aria-label="Apprenticeship steps">${steps.map(s=>`<li class="${s.done?"done":s===goal?"now":""}"><span class="sr">${s.done?"Done: ":s===goal?"Now: ":"Later: "}</span>${esc(s.goal.split(":")[0])}</li>`).join("")}</ol>
+<div class="caRow"><span class="clMeta">Arkady's goodwill</span>${caBar(gw,"Arkady's goodwill")}</div>
+<h3 style="margin-top:12px">Chores <span class="clMeta">(each one is a week)</span></h3>
+<div class="caChores">${INK_SIM.CHORES.map(c=>`<button class="btn sm" data-chore="${c.id}">${esc(c.name)}</button>`).join("")}</div>
+<div class="row" style="margin-top:10px">${canFriend?`<button class="btn${goal&&goal.id==="friend"?" pri":""}" id="caFriend">Do a friend, free</button>`:friendQ?`<button class="btn" id="caFriendGo">Your friend is booked: design it</button>`:""}
+${goal&&goal.tab!=="career"?`<button class="btn${goal.id==="walkin"?"":" pri"}" id="caGoTab">Go to ${esc(goal.tab==="session"?"the Session tab":goal.tab==="design"?"the Design tab":"Clients")}</button>`:""}
+<button class="btn" id="caChair">${early?"Leave early: rent a chair":"Rent a chair"}</button></div>
+${early?`<p class="hint">Leaving before week 1 of ${2000+INK_SIM.ACTS.apprentice.years[1]} costs Arkady's goodwill. With it high he gives you his own chair at a fair split, and he'll cover you once if your studio ever goes under.</p>`:""}</div>`;}
+  if(st==="chair"){
+    const n=INK_SIM.leaseNeed(S),split=INK_SIM.CHAIR_SPLIT[C.split||"standard"],where=C.split==="mentor"?`Arkady's chair at ${M.shop}`:"a rented chair in a shop off the embankment";
+    const later=C.mentor.left?INK_SIM.mentorLine(S,"later",gw>=M.splitAt?"high":"low"):"";
+    return`<div class="card caAct"><span class="clK">Act 2 · Rented chair</span><p style="margin:4px 0 8px">You work from ${esc(where)}. The shop keeps <b>${Math.round(split*100)}%</b> of what you take; you buy your own supplies.</p>
+${later?`<p class="hint caLater">${esc(later)}</p>`:""}
+<dl class="kv"><dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd><dt>Clients</dt><dd>${S.clients.length}</dd></dl>
+<h3 style="margin-top:12px">Your own studio</h3>
+<ul class="caNeed"><li class="${n.when?"ok":""}">${n.when?"✓":"·"} From ${n.year}, or sooner with reputation ${n.needRep} (you have ${n.repSum})</li><li class="${n.cash?"ok":""}">${n.cash?"✓":"·"} ${fmtMoney(n.cost)} for the lease deposit</li></ul>
+<p class="hint">Rent and upkeep then run every week. Four weeks below ${fmtMoney(caFloor())} closes the shop and puts you back in a chair, with your clients and work.</p>
+<div class="row"><button class="btn${n.when&&n.cash?" pri":""}" id="caLease"${n.when&&n.cash?"":" disabled"}>Lease a studio</button></div></div>`;}
+  const ln=INK_SIM.legacyNeed(S),b=S.studio.build||{},tr=C.apprentices.find(a=>a.status==="training");
+  if(st==="studio")return`<div class="card caAct"><span class="clK">Act 3 · Your studio</span>
+<dl class="kv"><dt>Stations</dt><dd>${b.stations||0}, ${S.studio.staff.length} artist${S.studio.staff.length===1?"":"s"}</dd><dt>Shop's reputation</dt><dd>${Math.round(S.studio.rep||0)} / 100</dd><dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd>${C.broke?`<dt>Under the floor</dt><dd class="crit">${C.broke} of ${INK_SIM.BROKE.weeks} weeks</dd>`:""}</dl>
+${caAppHtml(tr)}
+<div class="row" style="margin-top:10px"><button class="btn" id="caShop">Run the shop (Studio tab)</button>${ln.when?`<button class="btn pri" id="caLegacy">Open a waiting list (Act 4)</button>`:""}</div>
+${ln.when?"":`<p class="hint">Act 4 opens from ${2000+INK_SIM.ACTS.legacy.years[0]-2}, or sooner with collectors at 60.</p>`}</div>`;
+  /* legacy */
+  const O=INK_SIM.LEGACY_OFFERS;
+  return`<div class="card caAct"><span class="clK">Act 4 · Legacy</span>
+<p style="margin:4px 0 8px">${C.books==="closed"?"Your books are closed: no walk-ins, only regulars, referrals and the waiting list.":"Your books are open: walk-ins still get a chair."}</p>
+<div class="row">${segHtml("caBooks",[["open","Books open"],["closed","Waiting list only"]],C.books||"open")}</div>
+<h3 style="margin-top:12px">Projects</h3><div class="caProj">${["book","line","conv"].map(id=>{const o=O[id],done=C.offers[id];
+  return`<div class="caPr"><b>${esc(o.name)}</b><span class="clMeta">${esc(o.says)}</span>${done?`<span class="clMeta ok">Done, ${done.y}</span>`:`<button class="btn sm" data-proj="${id}">${fmtMoney(caRub(o.cost))}</button>`}</div>`;}).join("")}</div>
+${caAppHtml(tr)}
+${C.offers.tv?`<p class="hint">The TV offer: ${C.offers.tv==="yes"?"you did the show.":"you turned it down."}</p>`:""}
+<div class="row" style="margin-top:10px"><button class="btn" id="caShop">Run the shop (Studio tab)</button></div></div>`;}
+function caAppHtml(tr){const C=S.career,past=C.apprentices.filter(a=>a.status!=="training");
+  return`<h3 style="margin-top:12px">Apprentices</h3>${tr?`<p class="hint" style="margin-top:0"><b>${esc(tr.name)}</b> is learning in your shop (${esc((INK_SIM.STYLES[tr.style]||{}).name||tr.style)}${tr.el?", your way":""}). Stipend ${fmtMoney(caRub(INK_SIM.APPRENTICES.stipend))} a week.</p>`
+  :`<div class="row"><button class="btn sm" id="caApp">Take an apprentice</button></div><p class="hint">Two years at ${fmtMoney(caRub(INK_SIM.APPRENTICES.stipend))} a week. They come out on your staff, or across the canal as a rival.</p>`}
+${past.length?`<ul class="caPast">${past.map(a=>`<li><b>${esc(a.name)}</b> <span class="clMeta">${esc(a.where||a.status)}</span></li>`).join("")}</ul>`:""}`;}
+function caRub(v){return Math.round(v*INK_SIM.priceIndex(S.year)/10)*10;}
+function caFloor(){return caRub(INK_SIM.BROKE.floor);}
+function caActWire(st){
+  const C=S.career,on=(id,f)=>{const e=$(id);if(e)e.addEventListener("click",f);};
+  const card=document.querySelector(".caAct");if(!card)return;
+  card.querySelectorAll("[data-chore]").forEach(b=>b.addEventListener("click",()=>caChore(b.dataset.chore)));
+  on("caFriend",()=>{const it=INK_SIM.friendBooking(S);if(!it){toast("Not now");return;}const c=INK_SIM.findClient(S,it.client);
+    CR.say=INK_SIM.mentorLine(S,"friend");save();toast(`${c?c.first:"Your friend"} is in this week. Design it, then tattoo it.`);if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
+  on("caFriendGo",()=>{if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
+  on("caGoTab",()=>{const g=INK_SIM.apprenticeGoal(S);if(!g)return;if(g.tab==="clients"&&typeof CL!=="undefined")CL.view="week";showTab(g.tab);});
+  on("caChair",()=>{const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
+    if(!confirm(early?"Leave Arkady's shop early and rent a chair?\n\nHe won't be pleased: it costs his goodwill.":"Leave Arkady's shop and rent your own chair?"))return;
+    const r=INK_SIM.rentChair(S);if(!r.ok)return;CR.say=null;caStage();save();
+    toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment");
+    CR.last={weeks:0,line:`${INK_SIM.MENTOR.first}: “${r.line}”`,log:[]};renderCareer();});
+  on("caLease",()=>{const n=INK_SIM.leaseNeed(S);if(!confirm(`Sign a lease? ${fmtMoney(n.cost)} deposit now, then rent and upkeep every week.`))return;
+    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
+  on("caShop",()=>showTab("studio"));
+  on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now");renderCareer();});
+  on("caApp",()=>{const r=INK_SIM.takeApprentice(S);if(!r.ok){toast(r.why==="stage"?"You need your own studio first":"One apprentice at a time");return;}
+    save();toast(`${r.apprentice.name} starts on the broom on Monday`);renderCareer();});
+  const bk=$("caBooks");if(bk)bk.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;C.books=b.dataset.v==="closed"?"closed":"open";save();INK_SOUND.tick();renderCareer();});
+  card.querySelectorAll("[data-proj]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.proj,o=INK_SIM.LEGACY_OFFERS[id];
+    if(!confirm(`${o.name}: ${fmtMoney(caRub(o.cost))}. Go ahead?`))return;
+    const r=INK_SIM.legacyAct(S,id);if(!r.ok){toast(r.why==="flash"?`You need ${r.need} sheets of your own flash`:r.why==="cash"?"Not enough cash":"Not now");return;}
+    save();renderHeader();toast(`${o.name}: done`);renderCareer();}));}
+/* a chore: a week passes (people waiting this week have to be seen or skipped with Next first) */
+function caChore(id){
+  if(crWaiting().n){toast("Someone's waiting this week. See them, or press Next to let them go.");return;}
+  if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");return;}}
+  const st0=S.studio.stage,r=INK_SIM.doChore(S,id);
+  CR.say=r.line;CR.last={weeks:1,line:r.chore.text,log:r.log,why:""};if(crWaiting().n)CR.last.why="client";
+  CR.lines.unshift(r.chore.text);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;
+  crAfter(st0);}
+
+/* ===================== invites ===================== */
+function caInvitesHtml(){
+  const C=S.career;if(!C.invites.length)return"";
+  const one=i=>{
+    if(i.kind==="chair")return[`${INK_SIM.MENTOR.first} says you're ready for your own chair.`,"Rent a chair","Not yet"];
+    if(i.kind==="conv"){const cv=INK_SIM.CONVENTIONS.find(c=>c.id===i.conv)||{};return[`${gvCapS(cv.name||"A convention")}, ${cv.where||""}. Entry and travel ${fmtMoney(i.fee)}. You're judged on your best healed piece, your skill, your peers and how true it is to your style.`,"Enter","Skip it"];}
+    if(i.kind==="guest"){const g=INK_SIM.GUEST_SPOTS.find(x=>x.id===i.spot)||{};return[`A guest spot in ${g.name||"another city"} for ${g.weeks||2} weeks: travel ${fmtMoney(i.fee)}, a new crowd of walk-ins and a little name among other artists.`,"Go","Turn it down"];}
+    if(i.kind==="tv")return[`${INK_SIM.LEGACY_OFFERS.tv.says.charAt(0).toUpperCase()+INK_SIM.LEGACY_OFFERS.tv.says.slice(1)}. ${fmtMoney(i.pay)}.`,"Take it","Turn it down"];
+    return[i.kind,"Yes","No"];};
+  return`<div class="card caInv"><h2>Invitations</h2>${C.invites.map(i=>{const[t,y,n]=one(i);
+    return`<div class="caInvR"><p>${esc(t)}</p><div class="row"><button class="btn sm pri" data-inv="${esc(i.id)}" data-yes="1">${esc(y)}</button><button class="btn sm" data-inv="${esc(i.id)}" data-yes="0">${esc(n)}</button></div></div>`;}).join("")}</div>`;}
+const gvCapS=s=>{s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);};
+function caInvitesWire(){
+  const card=document.querySelector(".caInv");if(!card)return;
+  card.addEventListener("click",e=>{const b=e.target.closest("[data-inv]");if(!b)return;
+    const st0=S.studio.stage,r=INK_SIM.enterInvite(S,b.dataset.inv,b.dataset.yes==="1");if(!r||!r.ok)return;
+    let msg="";
+    if(r.kind==="conv")msg=r.place?`${["","First","Second","Third"][r.place]} place at ${r.name}!`:`No placing at ${r.name} this year. Peers saw your work, though.`;
+    else if(r.kind==="guest"&&r.yes!==false)msg=`Off to ${r.spot.name} for ${r.spot.weeks} weeks`;
+    else if(r.kind==="tv")msg=r.yes?"You're on television. Collectors wince; walk-ins queue.":"You turn the TV down. Other artists respect it.";
+    else if(r.kind==="chair"&&r.later)msg="Arkady shrugs. 'When you're ready.'";
+    else if(r.kind==="chair")msg="You rent your own chair";
+    if(S.studio.stage!==st0)caStage();
+    save();renderHeader();if(msg)toast(msg);INK_SOUND.tick();renderCareer();});}
+
+/* ===================== money, skills, signature ===================== */
+function caMoneyHtml(){
+  const m=S.career.money,p=m.prev||m.cur,row=(o,sign)=>Object.keys(o).filter(k=>o[k]).sort((a,b)=>o[b]-o[a]).map(k=>`<dt>${esc(CR_MONEY[k]||k)}</dt><dd class="${sign}">${sign==="out"?"-":"+"}${fmtMoney(o[k])}</dd>`).join("");
+  const tin=Object.values(p.in).reduce((a,b)=>a+b,0),tout=Object.values(p.out).reduce((a,b)=>a+b,0);
+  if(!tin&&!tout&&!m.total.in&&!m.total.out)return"";
+  return`<div class="card caMoney"><h2>Money</h2><p class="hint" style="margin-top:0">Last week: in ${fmtMoney(tin)}, out ${fmtMoney(tout)}.</p>
+${tin||tout?`<dl class="kv">${row(p.in,"in")}${row(p.out,"out")}</dl>`:""}
+<p class="clMeta" style="margin:8px 0 0">Career so far: earned ${fmtMoney(m.total.in)}, spent ${fmtMoney(m.total.out)}.</p></div>`;}
+function caSkillsHtml(){
+  const sk=S.skills||{},K=INK_SIM.SKILLS,sig=INK_SIM.signatureOf(S),styles=Object.entries(sk.styles||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const lv=v=>(Math.floor((v||0)*10)/10).toFixed(1);
+  const stN=id=>(INK_SIM.STYLES[id]||{}).name||id;
+  return`<div class="card caSk"><h2>Skills</h2><div class="caSkL">${["linework","shading","colour","speed","consult"].map(k=>`<div class="caSkR"><span><b>${esc(K[k].name)}</b><span class="clMeta">${esc(K[k].says)}</span></span>${caBar((sk[k]||0)/10,K[k].name)}<b class="crRepV">${lv(sk[k])}</b></div>`).join("")}</div>
+${styles.length?`<h3 style="margin-top:12px">Styles</h3><div class="caSkL">${styles.map(([id,v])=>{const nx=INK_SIM.skillNextUnlock(id,v);
+  return`<div class="caSkR"><span><b>${esc(stN(id))}</b><span class="clMeta">${nx?`At ${nx.level}: ${esc(nx.names.slice(0,3).join(", "))}${nx.names.length>3?"…":""}`:"Every element open"}</span></span>${caBar(v/10,stN(id))}<b class="crRepV">${lv(v)}</b></div>`;}).join("")}</div>`:""}
+<p class="hint">Skills grow from sittings, practice on fake skin, consults and chores, quickly at first and slower near the top.</p>
+<h3 style="margin-top:12px">Your signature</h3>${sig.ready?`<p style="margin:2px 0">People know you for <b>${esc(stN(sig.style))}</b>${sig.el&&INK_SIM.elementById&&INK_SIM.elementById(sig.el)?`, and your ${esc(INK_SIM.elementById(sig.el).name.toLowerCase())}`:""}.</p>${caBar(sig.strength,"Signature strength")}
+<p class="hint">Some walk-ins ask for "your thing", collectors pay more for it, and convention judges look for it.</p>`
+:`<p class="hint" style="margin-top:2px">Not yet. After ${INK_SIM.SIGNATURE.pieces} pieces of your own with one style in about a third of them, people start to know your hand.${sig.n?` (${sig.n} pieces so far${sig.style?`, mostly ${esc(stN(sig.style))}`:""}.)`:""}</p>`}</div>`;}
+
+/* practice on fake skin counts for Act 1 (the session asks the sim for practice XP when a pad sitting ends) */
+if(typeof INK_SIM!=="undefined"&&typeof INK_SIM.sessionXp==="function"&&!INK_SIM.sessionXp.pr7){
+  const f=INK_SIM.sessionXp;INK_SIM.sessionXp=function(res,sess,skills){if(sess&&sess.kind==="practice"&&SIMOK("notePractice"))INK_SIM.notePractice(S);return f.apply(this,arguments);};
+  INK_SIM.sessionXp.pr7=true;}
+/* ===================== app/shop.js: the shop cards on the Studio tab (PR 7) =====================
+   Under the 3D view and the chair (app/studio.js), the shop at its stage (sim/career.js):
+     apprentice  Arkady's shop and his goodwill
+     chair       your rented chair: the split, your rate, what supplies cost
+     studio      (Act 3 and 4) the shop's reputation, rent, marketing and the storefront vibe; the build-out
+                 (STUDIO_STAGES: stations, waiting area, flash wall, sterilisation, lighting, storefront), each level with
+                 its cost; your artists (STAFF): hire from this quarter's candidates, set the shop's cut, let them go. Their
+                 pieces go to the Shop gallery (Clients › Work › Shop), never your own body of work.
+   shopHtml(stage) returns the cards, shopWire() wires them; renderStudio calls both. */
+const SH={hire:false};
+function shRub(v){return Math.round(v*INK_SIM.priceIndex(S.year)/10)*10;}
+function shStyle(id){return(INK_SIM.STYLES[id]||{}).name||id;}
+function shopHtml(stage){
+  if(!SIMOK("careerEnsure"))return"";
+  const C=INK_SIM.careerEnsure(S),M=INK_SIM.MENTOR;
+  if(stage==="apprentice")return`<div class="card"><h2>${esc(M.shop)}</h2>
+<p class="hint" style="margin-top:0">${esc(M.name)}'s shop on the canal: three chairs, a wall of old-school flash and a back room that smells of green soap. You sweep, clean tubes and draw after closing. Arkady takes ${Math.round(INK_SIM.CHAIR_SPLIT.apprentice*100)}% of what you earn here and supplies the needles and ink.</p>
+<div class="caRow"><span class="clMeta">Arkady's goodwill</span>${caBar(C.mentor.goodwill,"Arkady's goodwill")}</div>
+<dl class="kv" style="margin-top:8px"><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;
+  if(stage==="chair"){const split=INK_SIM.CHAIR_SPLIT[C.split||"standard"];
+    return`<div class="card"><h2>Your chair</h2><p class="hint" style="margin-top:0">${C.split==="mentor"?`Arkady's own chair at ${esc(M.shop)}, at a friend's split.`:"A rented chair in a busy shop off the embankment."} The shop keeps ${Math.round(split*100)}% of your sittings and deposits; gloves, film, needles and ink are yours to buy, about ${fmtMoney(shRub(INK_SIM.SUPPLIES.perHour))} a booked hour.</p>
+<dl class="kv"><dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>
+<div class="row" style="margin-top:10px"><button class="btn" id="shCareer">Your own studio: see the Career tab</button></div></div>`;}
+  const st=S.studio,b=st.build||{},B=INK_SIM.STUDIO_STAGES,room=INK_SIM.staffRoom(S),mine=S.pieces.filter(p=>p.by).length;
+  const rent=shRub(INK_SIM.LEASE.rentWeek+INK_SIM.LEASE.utilities+B.stations.upkeep*(b.stations||0));
+  const mk=INK_SIM.MARKETING,V=INK_SIM.VIBES;
+  const build=Object.keys(B).map(k=>{const T=B[k],lv=b[k]||0,max=T.cost.length,cost=INK_SIM.buildCost(S,k);
+    return`<div class="shB"><span class="shBN"><b>${esc(T.name)}</b><span class="clMeta">${lv?esc(T.levels[lv-1]):"Not yet"} · ${esc(T.says)}</span>
+<span class="shLv" aria-label="Level ${lv} of ${max}">${Array.from({length:max},(_,i)=>`<i class="${i<lv?"on":""}"></i>`).join("")}</span></span>
+${cost!=null?`<button class="btn sm" data-build="${k}"${S.cash<cost?" disabled":""}>${lv?"Upgrade":"Build"} · ${fmtMoney(cost)}</button>`:`<span class="clMeta ok">Done</span>`}</div>`;}).join("");
+  const staff=st.staff.map(s=>{const fair=INK_SIM.fairCut(s.skill),hi=s.cut>fair+0.02;
+    return`<div class="shS"><div class="shSH"><b>${esc(s.name)}</b><span class="clMeta">${esc(shStyle(s.style))} · skill ${s.skill.toFixed(1)} · ${s.pieces||0} pieces</span></div>
+<div class="caRow"><span class="clMeta">Loyalty</span>${caBar(s.loyalty,s.name+" loyalty")}</div>
+<div class="row shCut"><span class="clMeta">Shop's cut</span><button class="btn sm" data-cut="${esc(s.id)}" data-d="-0.05" aria-label="Lower the shop's cut">−</button><b>${Math.round(s.cut*100)}%</b><button class="btn sm" data-cut="${esc(s.id)}" data-d="0.05" aria-label="Raise the shop's cut">+</button>
+<span class="clMeta ${hi?"warn":""}">${hi?`Fair is about ${Math.round(fair*100)}%: they'll drift`:`Fair (about ${Math.round(fair*100)}%)`}</span></div>
+<div class="row"><button class="btn sm" data-letgo="${esc(s.id)}">Let go</button></div></div>`;}).join("");
+  const cands=SH.hire&&room>0?INK_SIM.staffCandidates(S):[],fee=shRub(INK_SIM.STAFF.hireFee);
+  return`<div class="card"><h2>${stage==="legacy"?"Your studio, years on":"Your studio"}</h2>
+<dl class="kv"><dt>Shop's reputation</dt><dd>${Math.round(st.rep||0)} / 100</dd><dt>Rent and upkeep</dt><dd>${fmtMoney(rent)} a week</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>
+<h3 style="margin-top:12px">Storefront vibe</h3>${segHtml("shVibe",Object.keys(V).map(k=>[k,V[k].name]),st.vibe)}
+<p class="hint">${esc(V[st.vibe].says)}.${(b.storefront||0)?"":" It counts once you build a storefront."}</p>
+<h3 style="margin-top:12px">Marketing</h3><label class="shSel"><span class="sr">Marketing</span><select id="shMk">${mk.map((m,i)=>`<option value="${i}"${i===(st.marketing||0)?" selected":""}>${esc(m.name)}${m.cost?` · ${fmtMoney(shRub(m.cost))} a week`:""}</option>`).join("")}</select></label></div>
+<div class="card"><h2>Build-out</h2><div class="shBs">${build}</div></div>
+<div class="card"><h2>Artists</h2>${staff||`<p class="hint" style="margin-top:0">Nobody yet. Each station holds one artist. They take walk-ins in their own style; the shop keeps its cut.</p>`}
+${room>0?(SH.hire?`<h3 style="margin-top:10px">Looking for a chair this season</h3>${cands.length?cands.map(c=>`<div class="shS cand"><div class="shSH"><b>${esc(c.name)}</b><span class="clMeta">${esc(shStyle(c.style))} · skill ${c.skill.toFixed(1)} · wants the shop's cut at ${Math.round(c.cut*100)}%</span></div>
+<div class="row"><button class="btn sm pri" data-hire="${esc(c.cid)}"${S.cash<fee?" disabled":""}>Hire · ${fmtMoney(fee)}</button></div></div>`).join(""):`<p class="hint">Nobody else this season. New artists come round every quarter.</p>`}`
+:`<div class="row" style="margin-top:8px"><button class="btn" id="shHire">Hire an artist (${room} free station${room>1?"s":""})</button></div>`)
+:`<p class="hint">${(b.stations||0)?"Every station is taken. Build another to hire.":"Build a station to hire an artist."}</p>`}
+<div class="row" style="margin-top:10px"><button class="btn" id="shGal"${mine?"":" disabled"}>Shop gallery · ${mine}</button></div>
+<p class="hint">A shop piece builds the shop's name, not yours. An infection on one of them is still on the shop.</p></div>`;}
+function shopWire(){
+  const on=(id,f)=>{const e=$(id);if(e)e.addEventListener("click",f);},body=$("studioBody"),re=()=>{save();renderHeader();renderStudio();};
+  on("shCareer",()=>showTab("career"));
+  on("shHire",()=>{SH.hire=true;INK_SOUND.tick();renderStudio();});
+  on("shGal",()=>{if(typeof GV!=="undefined"){GV.shop=true;GV.show=40;}if(typeof CL!=="undefined")CL.view="work";showTab("clients");});
+  const vb=$("shVibe");if(vb)vb.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;INK_SIM.setVibe(S,b.dataset.v);INK_SOUND.tick();re();});
+  const mk=$("shMk");if(mk)mk.addEventListener("change",e=>{INK_SIM.setMarketing(S,+e.target.value);re();});
+  if(!body)return;
+  body.querySelectorAll("[data-build]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.build,r=INK_SIM.buildUp(S,k);
+    if(!r||r.ok===false){toast("Not enough cash");return;}toast(`${INK_SIM.STUDIO_STAGES[k].name}: ${INK_SIM.STUDIO_STAGES[k].levels[(S.studio.build[k]||1)-1]}`);re();}));
+  body.querySelectorAll("[data-hire]").forEach(b=>b.addEventListener("click",()=>{const r=INK_SIM.hireStaff(S,b.dataset.hire);
+    if(!r.ok){toast(r.why==="cash"?"Not enough cash for the hiring fee":r.why==="stations"?"No free station":"They've taken another job");return;}
+    SH.hire=false;toast(`${r.staff.name} starts at your shop`);re();}));
+  body.querySelectorAll("[data-cut]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.cut);if(!s)return;
+    INK_SIM.setStaffCut(S,s.id,Math.round((s.cut+(+b.dataset.d))*100)/100);INK_SOUND.tick();re();}));
+  body.querySelectorAll("[data-letgo]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.letgo);if(!s)return;
+    if(!confirm(`Let ${s.name} go?`))return;INK_SIM.letGo(S,s.id,"let go");toast(`${s.first||s.name} clears out their station`);re();}));}
+/* ===================== app/legacy.js: scenes and the Legacy screen (PR 7) =====================
+   S.career.scene is set by the sim when something needs the whole screen:
+     broke    the studio closed (sim/career.js softFail): what went, what stayed (clients, pieces, reputation), Arkady's
+              word, and one button back to work in a rented chair. Nothing is taken away from the body of work.
+     legacy   week 52 of 2030: straight to the Legacy screen.
+   lgSceneOpen() shows a waiting scene as a sheet (once per page load); lgSceneCard() keeps it at the top of the Career
+   tab until you tap through, so a closed sheet never loses it.
+   lgOpen(): the Legacy screen (INK_SIM.legacySummary): the oldest piece that still reads, the client with the most
+   pieces, pieces per decade, the best heal, conventions, apprentices and the shop. It opens from the Career tab once you
+   have a studio, and by itself at the end. The save stays playable afterwards. The share card is PR 9
+   (INK_SIM.SHARE_CARD stays null until then). */
+const LG={shown:""};
+function lgScene(){return S.career&&S.career.scene||null;}
+function lgSceneKey(sc){return sc?sc.kind+":"+sc.w+":"+sc.y:"";}
+function lgBrokeHtml(sc,inSheet){
+  const staff=(sc.staff||[]).length;
+  return`<div class="lgScene${inSheet?"":" card"}">${inSheet?"":`<span class="clK">Week ${sc.w}, ${sc.y}</span><h2>The shop closes</h2>`}
+<p>Four weeks under water was all the bank would wait. The lease goes back, the stations get sold off${staff?`, and ${esc(sc.staff.join(", "))} ${staff===1?"has":"have"} to find other chairs`:""}.</p>
+${sc.line?`<p class="caLater lgLine">${esc(sc.line)}</p>`:""}
+<ul class="lgKeep"><li><b>Your clients</b> stay with you: ${S.clients.length} of them.</li><li><b>Your work</b> stays: every piece you've done, ${S.pieces.filter(p=>!p.by).length} in all, still healing and aging on real people.</li><li><b>Your reputation</b> stays. People remember the work, not the lease.</li></ul>
+<p class="hint">You're back in a rented chair with ${fmtMoney(S.cash)} to start again. You can lease another studio when the money's there.</p>
+<div class="row"><button class="btn pri" id="${inSheet?"lgBack":"lgBackC"}" style="flex:1">Back to work</button></div></div>`;}
+function lgSceneCard(){const sc=lgScene();if(!sc||sc.kind!=="broke")return"";return lgBrokeHtml(sc,false);}
+function lgDone(){if(S.career)S.career.scene=null;save();if(sheetOn())closeSheet();renderAll();}
+function lgSceneWire(){for(const id of ["lgBack","lgBackC"]){const b=$(id);if(b&&!b.dataset.w){b.dataset.w="1";b.addEventListener("click",lgDone);}}}
+function lgSceneOpen(){
+  const sc=lgScene();if(!sc)return;
+  if(sc.kind==="legacy"){S.career.legacySeen=true;S.career.scene=null;save();lgOpen(true);return;}
+  const k=lgSceneKey(sc);if(LG.shown===k)return;LG.shown=k;
+  openSheet("The shop closes",lgBrokeHtml(sc,true));lgSceneWire();}
+
+/* ---- the Legacy screen ---- */
+function lgPiece(id){return S.pieces.find(p=>p.id===id)||null;}
+function lgFig(id,cap){const p=lgPiece(id);if(!p||typeof gvSvg!=="function")return"";const t=gvSvg(p,{cls:"gvSm"});
+  return`<figure class="lgFig" data-gp="${esc(p.id)}" role="button" tabindex="0">${t.svg}<figcaption>${esc(cap)}</figcaption></figure>`;}
+function lgOpen(end){
+  if(!SIMOK("legacySummary"))return;
+  const L=INK_SIM.legacySummary(S),stN=id=>(INK_SIM.STYLES[id]||{}).name||id;
+  const decs=Object.keys(L.decades).sort(),dmax=Math.max(1,...decs.map(d=>L.decades[d]));
+  const yrs=Math.floor(L.years);
+  openSheet(end?"Thirty years":"Your Legacy",`<div id="lgBody"><section class="lgHead"><p class="lgBig">${yrs} year${yrs===1?"":"s"} at the needle</p>
+<p class="hint" style="margin-top:0">${L.pieces.toLocaleString("en-CA")} pieces of your own on ${L.clients.toLocaleString("en-CA")} people${L.shopPieces?`, and ${L.shopPieces.toLocaleString("en-CA")} more from your shop's artists`:""}. Earned ${fmtMoney(L.earned)}, spent ${fmtMoney(L.spent)}.</p></section>
+<section><h3>Still reading</h3>${L.oldest?`<div class="lgPair">${lgFig(L.oldest.piece,`${L.oldest.y}, reads ${Math.round(L.oldest.reads*100)}`)}<p>The oldest piece that still reads: <b>${esc(L.oldest.name)}</b>, from ${L.oldest.y}.</p></div>`:`<p class="hint">Nothing old enough to tell yet.</p>`}</section>
+<section><h3>The best heal</h3>${L.best?`<div class="lgPair">${lgFig(L.best.piece,String(L.best.y))}<p><b>${esc(L.best.name)}</b>, ${L.best.y}. Every line held.</p></div>`:`<p class="hint">No crisp heal yet.</p>`}</section>
+<section><h3>Who kept coming back</h3>${L.most&&L.most.n>1?`<p><b>${esc(L.most.name)}</b> wears ${L.most.n} of your pieces.</p>`:`<p class="hint">Nobody has more than one yet.</p>`}</section>
+<section><h3>Pieces by decade</h3>${decs.length?`<div class="lgDec">${decs.map(d=>`<div class="lgDecR"><span>${d}s</span><span class="crRepB"><i style="width:${(L.decades[d]/dmax*100).toFixed(1)}%"></i></span><b>${L.decades[d]}</b></div>`).join("")}</div>`:`<p class="hint">None yet.</p>`}</section>
+<section><h3>Your signature</h3><p>${L.signature.ready?`People know your hand: <b>${esc(stN(L.signature.style))}</b>.`:"You never settled on one thing. Some artists don't."}</p></section>
+<section><h3>Conventions</h3><p>${L.conv.entered?`Entered ${L.conv.entered}, won ${L.conv.won}.`:"You never entered one."}${S.career.offers.conv?" You ran your own, too.":""}</p>
+${L.conv.list.length?`<ul class="caPast">${L.conv.list.map(c=>`<li>${c.y} · ${esc(gvCapS(c.name))}${c.own?"":c.place?` · ${["","first","second","third"][c.place]}`:" · no placing"}</li>`).join("")}</ul>`:""}</section>
+<section><h3>Apprentices and the shop</h3>${L.apprentices.length?`<ul class="caPast">${L.apprentices.map(a=>`<li><b>${esc(a.name)}</b> <span class="clMeta">${esc(a.where)}</span></li>`).join("")}</ul>`:`<p class="hint">You never took one on.</p>`}
+${L.staff.length?`<p class="hint">On your staff now: ${L.staff.map(s=>`${esc(s.name)} (${s.pieces} pieces)`).join(", ")}.</p>`:""}
+${L.fails?`<p class="hint">You lost a shop ${L.fails===1?"once":L.fails+" times"} and kept going.</p>`:""}${L.tv?`<p class="hint">The TV show: ${L.tv==="yes"?"you did it.":"you said no."}</p>`:""}</section>
+<section><p class="hint">${end?"The thirty years are done, but the shop isn't. Your save stays open: keep working, look back through your clients, or start a new career from Settings › Save.":"Everything here is worked out from your save as it stands today."}</p>
+<div class="row"><button class="btn pri" id="lgClose" style="flex:1">Back to the shop</button></div></section></div>`);
+  $("lgClose").addEventListener("click",closeSheet);
+  const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();if(typeof gvOpen==="function")gvOpen(f.dataset.gp);}};
+  $("lgBody").addEventListener("click",go);$("lgBody").addEventListener("keydown",go);}
+/* ===================== app/slots.js: save slots and New career (PR 7) =====================
+   Three manual slots (localStorage ink-slot1 .. ink-slot3, already in every backup code) in Settings › Save: save the
+   running career into one, load one back, clear one. A slot holds the packed save (as ink-save) squeezed with the
+   backup code's own LZW (buZip): {z, savedAt, week, year, stage, pieces}. A plain save object in a slot (as older tests
+   and hand-made backups have) still loads; buSlotData (app/savecode.js) reads either.
+   New career: the start screen on a first visit, and Settings › Save › New career after that. Two ways in: as Arkady's
+   apprentice in week 1 of 2000 (Act 1, the tutorial), or "Skip the broom" (plan Q3): week 1 of 2003 in a rented chair
+   with basic skills (INK_SIM.skipBroom). Settings and the last-backup time carry over; nothing else does. */
+function slMeta(i){const o=buStored(slotKey(i));if(!o)return null;
+  return{i,savedAt:o.savedAt||0,week:o.week||1,year:o.year||2000,stage:o.stage||(o.studio&&o.studio.stage)||"apprentice",pieces:typeof o.pieces==="number"?o.pieces:Array.isArray(o.pieces)?o.pieces.length:null};}
+function slHtml(){
+  const rows=[];for(let i=1;i<=SLOTS;i++){const m=slMeta(i);
+    rows.push(`<div class="slR"><span class="slN"><b>Slot ${i}</b><span class="clMeta">${m?`Week ${m.week}, ${m.year} · ${esc(STAGE_NAMES[m.stage]||m.stage)}${m.savedAt?` · saved ${new Date(m.savedAt).toLocaleDateString("en-CA",{month:"short",day:"numeric"})}`:""}`:"Empty"}</span></span>
+<span class="row"><button class="btn sm" data-slsave="${i}">Save here</button>${m?`<button class="btn sm" data-slload="${i}">Load</button><button class="btn sm" data-slclear="${i}" aria-label="Clear slot ${i}">Clear</button>`:""}</span></div>`);}
+  return`<div id="slBox"><div class="slList" id="slList">${rows.join("")}</div><div class="row" style="margin-top:8px"><button class="btn" id="slNew">New career</button></div></div>`;}
+function slWire(){
+  const L=$("slList");if(!L)return;
+  L.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+    if(b.dataset.slsave)slSave(+b.dataset.slsave);else if(b.dataset.slload)slLoad(+b.dataset.slload);else if(b.dataset.slclear)slClear(+b.dataset.slclear);});
+  const n=$("slNew");if(n)n.addEventListener("click",()=>slNewOpen(false));}
+function slRefresh(){const B=$("slBox");if(!B)return;B.outerHTML=slHtml();slWire();}
+function slSave(i){
+  if(slMeta(i)&&!confirm(`Save over slot ${i}?`))return;
+  let ok=false;
+  try{const o={z:buZip(new TextEncoder().encode(saveJson())),savedAt:Date.now(),week:S.week,year:S.year,stage:(S.studio&&S.studio.stage)||"apprentice",pieces:S.pieces.filter(p=>!p.by).length};
+    localStorage.setItem(slotKey(i),JSON.stringify(o));ok=true;}catch(e){ok=false;}
+  toast(ok?`Saved to slot ${i}`:"No room on this phone for another slot. Make a backup code instead.");if(ok)slRefresh();}
+function slLoad(i){
+  const o=buStored(slotKey(i));if(!o)return;let d=null;try{d=buSlotData(o);}catch(e){d=null;}
+  if(!d||!buSaveOk(d)){toast("That slot's save is damaged");return;}
+  if(!confirm(`Load slot ${i} (week ${d.week||1}, ${d.year||2000})? Your current career is replaced unless you've saved it to a slot.`))return;
+  closeSheet();slReset();applyLoaded(d,`Slot ${i} loaded`);if(typeof caStage==="function")caStage();}
+function slClear(i){if(!confirm(`Clear slot ${i}?`))return;try{localStorage.removeItem(slotKey(i));}catch(e){}toast(`Slot ${i} cleared`);slRefresh();}
+/* the running screens' memory of the old career */
+function slReset(){if(typeof CR!=="undefined"){CR.last=null;CR.lines=[];CR.say=null;}if(typeof GV!=="undefined"){GV.shop=false;GV.cache.clear&&GV.cache.clear();}if(typeof SH!=="undefined")SH.hire=false;}
+function slNewOpen(first){
+  const used=[1,2,3].filter(i=>slMeta(i)).length;
+  openSheet(first?"Ink":"New career",`<section class="slStart"><p class="lgBig">${first?"A tattoo career in Mostograd":"Start again"}</p>
+<p class="hint" style="margin-top:0">${first?"Thirty years, 2000 to 2030: an apprentice sweeping floors on the canal, then a rented chair, your own studio, and a waiting list of people who keep walking back through your door. Every client is an adult; every piece ages on them.":`This replaces the career you're playing now. Save it to a slot first if you want to come back to it (${used} of ${SLOTS} slots used).`}</p>
+<button class="slOpt pri" id="slApp"><b>Start as an apprentice</b><span>Week 1, 2000. Arkady Sedov hands you a broom. The tutorial walks you through it, one goal at a time.</span></button>
+<button class="slOpt" id="slSkip"><b>Skip the broom</b><span>Week 1, 2003. Your own rented chair, basic skills and a little cash. For players who know the ropes.</span></button>
+${first?`<p class="hint">Played before on another phone? <button class="btn sm" id="slRestore">Restore a backup</button></p>`:`<div class="row"><button class="btn" id="slSlot">Save the current career to a slot first</button></div>`}</section>`);
+  $("slApp").addEventListener("click",()=>slStart(false,first));$("slSkip").addEventListener("click",()=>slStart(true,first));
+  const r=$("slRestore");if(r)r.addEventListener("click",buRestoreOpen);
+  const sl=$("slSlot");if(sl)sl.addEventListener("click",openSettings);}
+function slStart(skip,first){
+  if(!first&&!confirm(skip?"Start a new career in a rented chair (2003)? The current one is replaced.":"Start a new career as an apprentice (2000)? The current one is replaced."))return;
+  const keep={settings:S.settings,bkAt:S.bkAt};
+  S=freshState();S.settings=keep.settings;S.bkAt=keep.bkAt||0;
+  if(skip&&SIMOK("skipBroom"))INK_SIM.skipBroom(S);
+  slReset();save();closeSheet();if(typeof caStage==="function")caStage();
+  if(typeof showTab==="function")showTab("career");
+  toast(skip?"Week 1, 2003: your own chair":"Week 1, 2000: grab the broom");}
 /* ===================== app/gallery.js: the heal reveal and the body of work (PR 5) =====================
    Pictures of healed and aged pieces, all re-rendered from the sim (INK_SIM.age); nothing here is ever saved.
      gvSvg(piece, {years, fresh, ghost, big})  one piece on the client's skin: the design with the aging model's spread,
@@ -6930,8 +8223,10 @@ function crNext(){
      the work     gvRenderWork(host): the Clients tab's third view. Every piece as it looks today, newest first, filtered by
                   year, style, client name and portfolio, 40 at a time ("Show more"). Tap one for its history (gvOpen): the
                   session outputs, the heal, how it looks at 0, 5 and 10 years and today, and the client's ledger.
+   PR 7: pieces by your staff (p.by, sim/career.js) are the Shop gallery (GV.shop, the Work view's Yours / Shop switch),
+   never your own work; their client is often only p.guest {n first name, t skin tone, a aftercare, s sun}.
    Sample walk-ins aren't in S.clients: INK_SIM.guestClient (set below) hands the sim their traits so their aftercare counts. */
-const GV={cache:new Map(),CAP:1500,n:0,show:40,year:"",style:"",q:"",port:false,seq:0};
+const GV={cache:new Map(),CAP:1500,n:0,show:40,year:"",style:"",q:"",port:false,seq:0,shop:false};
 const GV_BLOW="#263a63";      // a blowout: ink pushed too deep reads as a blue-black haze round the line
 const GV_STENCIL="#7b52ea";   // the stencil ghost: transfer purple, dashed, over the healed ink
 const GV_WORDS={crisp:"Crisp",soft:"Slightly soft",patchy:"Patchy",blownout:"Blown out",infected:"Infected"};
@@ -6955,6 +8250,7 @@ function gvGrade(g){return g?`<span class="gvGrade g-${g}">${gvShape(g)}${esc(GV
 function gvSample(id){return typeof DZ_SAMPLE_CLIENTS!=="undefined"?DZ_SAMPLE_CLIENTS.find(x=>x.id===id):null;}
 function gvClient(p){
   const c=INK_SIM.findClient(S,p.client);if(c)return c;
+  if(p.guest)return{id:p.client,first:p.guest.n,name:p.guest.n,skinTone:p.guest.t,traits:{aftercare:p.guest.a,sun:p.guest.s},guest:true,shop:true};
   const s=gvSample(p.client);
   return s?{id:s.id,first:s.name,name:s.name+" (sample walk-in)",skinTone:s.skinTone,traits:s.traits,guest:true}:{id:p.client,first:"a client",name:"A client",skinTone:0.3,traits:{},guest:true};}
 INK_SIM.guestClient=id=>{const s=gvSample(id);return s?{traits:s.traits,loyalty:0.3,skinTone:s.skinTone}:null;};
@@ -7044,9 +8340,11 @@ function rvWire(after){
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
 /* ===================== the body of work (Clients tab, Work view) ===================== */
+function gvBy(p){return p.by&&SIMOK("staffName")?INK_SIM.staffName(S,p.by):"";}
+function gvAll(){return S.pieces.filter(p=>!!p.by===!!GV.shop);}
 function gvList(){
   const qs=GV.q.trim().toLowerCase(),out=[];
-  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(!!p.by!==!!GV.shop)continue;
     if(GV.year&&String(p.y)!==GV.year)continue;
     if(GV.style&&(p.design||{}).style!==GV.style)continue;
     if(GV.port&&!p.portfolio)continue;
@@ -7056,19 +8354,22 @@ function gvList(){
 function gvTile(p){
   const t=gvToday(p),c=gvClient(p),st=INK_SIM.STYLES[(p.design||{}).style];
   return`<button class="gvT${p.portfolio?" port":""}" data-p="${esc(p.id)}"><span class="gvA">${t.svg}${p.portfolio?`<span class="gvPort" title="In your portfolio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span class="sr">In your portfolio</span></span>`:""}</span>
-<span class="gvL"><b>${esc(gvCap(p.label||"tattoo"))}</b><span class="clMeta">${p.y} · ${esc(c.first||"")}${st?` · ${esc(st.name)}`:""}</span><span class="gvM">${p.heal?gvShape(p.heal):""}<span class="clMeta">${t.yr<1?"fresh":t.yr+" yr"} · reads ${gvReads(t.a.readability)}</span></span></span></button>`;}
+<span class="gvL"><b>${esc(gvCap(p.label||"tattoo"))}</b><span class="clMeta">${p.y} · ${esc(c.first||"")}${p.by?` · by ${esc(gvBy(p))}`:st?` · ${esc(st.name)}`:""}</span><span class="gvM">${p.heal?gvShape(p.heal):""}<span class="clMeta">${t.yr<1?"fresh":t.yr+" yr"} · reads ${gvReads(t.a.readability)}</span></span></span></button>`;}
 function gvRenderWork(host){
-  const all=S.pieces,years=[...new Set(all.map(p=>p.y))].sort((a,b)=>b-a),styles=Object.keys(INK_SIM.STYLES).filter(k=>all.some(p=>(p.design||{}).style===k));
+  const all=gvAll(),years=[...new Set(all.map(p=>p.y))].sort((a,b)=>b-a),styles=Object.keys(INK_SIM.STYLES).filter(k=>all.some(p=>(p.design||{}).style===k));
   const list=gvList(),nPort=all.filter(p=>p.portfolio).length;
+  const nBy=S.pieces.filter(p=>p.by).length,sw=nBy||GV.shop?`<div class="row" style="margin-bottom:10px">${segHtml("gvWho",[["mine","Your work"],["shop",`Shop · ${nBy}`]],GV.shop?"shop":"mine")}</div>`:"";
+  const wire=()=>{const w=$("gvWho");if(w)w.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;GV.shop=b.dataset.v==="shop";GV.show=40;INK_SOUND.tick();gvRenderWork(host);});};
+  if(!all.length&&GV.shop){host.innerHTML=`${sw}<div class="card empty"><p><b>No shop pieces yet.</b></p><p>Pieces your artists finish land here, apart from your own work.</p></div>`;wire();return;}
   if(!all.length){host.innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg><p><b>No finished pieces yet.</b></p><p>Every tattoo you finish lands here and ages with the person wearing it.</p></div>`;return;}
-  host.innerHTML=`<div class="card gvFil">
+  host.innerHTML=`${sw}<div class="card gvFil">
 <div class="gvSel"><label>Year<select id="gvY"><option value="">All years</option>${years.map(y=>`<option${String(y)===GV.year?" selected":""}>${y}</option>`).join("")}</select></label>
 <label>Style<select id="gvS"><option value="">All styles</option>${styles.map(k=>`<option value="${k}"${k===GV.style?" selected":""}>${esc(INK_SIM.STYLES[k].name)}</option>`).join("")}</select></label></div>
 <div class="row"><label class="clSearch gvQ"><span class="sr">Search by client</span><input id="gvQ" type="search" placeholder="Search by client" value="${esc(GV.q)}" autocomplete="off"></label>
 <button class="btn sm gvPortB${GV.port?" on":""}" id="gvP" aria-pressed="${GV.port}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Portfolio · ${nPort}</button></div>
-<p class="clMeta gvCount">${list.length===all.length?`${all.length} piece${all.length===1?"":"s"}`:`${list.length} of ${all.length} pieces`}, as they look in ${S.year}.</p></div>
+<p class="clMeta gvCount">${list.length===all.length?`${all.length} piece${all.length===1?"":"s"}`:`${list.length} of ${all.length} pieces`}${GV.shop?" by your artists":""}, as they look in ${S.year}.</p></div>
 ${list.length?`<div class="gvGrid" id="gvGrid">${list.slice(0,GV.show).map(gvTile).join("")}</div>${list.length>GV.show?`<div class="row" style="justify-content:center"><button class="btn" id="gvMore">Show more (${list.length-GV.show})</button></div>`:""}`:`<div class="card empty"><p>Nothing matches.</p></div>`}`;
-  const re=()=>{GV.show=40;gvRenderWork(host);};
+  const re=()=>{GV.show=40;gvRenderWork(host);};wire();
   $("gvY").addEventListener("change",e=>{GV.year=e.target.value;re();});
   $("gvS").addEventListener("change",e=>{GV.style=e.target.value;re();});
   $("gvP").addEventListener("click",()=>{GV.port=!GV.port;INK_SOUND.tick();re();});
@@ -7088,7 +8389,7 @@ function gvOpen(id){
   const spent=mine.reduce((s,x)=>s+(x.price||0),0);
   openSheet(gvCap(p.label||"Piece"),`<section class="gvHist"><div class="gvHead"><div class="gvBigA">${now.svg}</div><div>
 <p class="gvName">${esc(gvCap(p.name))}</p><p>${gvGrade(p.heal)}${p.portfolio?` <span class="gvGrade g-port">★ Portfolio</span>`:""}</p>
-<p class="clMeta">${yrs<1?"Fresh":Math.floor(yrs)+(Math.floor(yrs)===1?" year":" years")+" on the skin"} · reads ${gvReads(now.a.readability)}</p></div></div></section>
+<p class="clMeta">${yrs<1?"Fresh":Math.floor(yrs)+(Math.floor(yrs)===1?" year":" years")+" on the skin"} · reads ${gvReads(now.a.readability)}</p>${p.by?`<p class="clMeta">By ${esc(gvBy(p))}, one of your shop's artists</p>`:""}</div></div></section>
 <section><h3>The work</h3><dl class="kv"><dt>Done</dt><dd>Week ${p.w}, ${p.y}${p.stage?` · ${esc((typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[p.stage])||p.stage)}`:""}</dd>
 <dt>Style</dt><dd>${esc((INK_SIM.STYLES[(p.design||{}).style]||{}).name||"")} · ${Math.round((p.design||{}).sizeMm||0)} mm${(p.design||{}).flash?" · flash":""}</dd>
 ${p.price?`<dt>Price</dt><dd>${fmtMoney(p.price)}</dd>`:""}${p.sessionsUsed?`<dt>Sittings</dt><dd>${p.sessionsUsed}</dd>`:""}
@@ -7098,10 +8399,10 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
+${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
-${c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
+${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
   const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));}
 /* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================

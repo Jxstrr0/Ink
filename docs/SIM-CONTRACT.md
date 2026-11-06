@@ -381,3 +381,91 @@ Referrals still skip patchy, blown-out and infected heals (`calendar.js`).
 
 - In the 30-year auto-play (default outputs 0.8 / trauma 0.4, aftercare as drawn) about 58% of pieces heal crisp, 41% soft and 1% patchy. The run's referrals rise from about 1,000 to 1,200 because every piece now heals and crisp heals raise loyalty.
 - The gallery's renders are never saved: `app/gallery.js` caches them in memory per piece id + whole years of age + heal + skin tone.
+
+# PR 7: the career, the studio, money, staff, the client archive
+
+Files: `sim/career.js` (after `kit.js`; sets `WEEK_HOOKS.costs`) and `sim/archive.js` (after `career.js`). The app side is `app/career.js` (the act card), `app/shop.js` (Studio tab), `app/legacy.js` (scenes, the Legacy screen), `app/slots.js` (slots, New career).
+
+## The acts
+
+`S.studio.stage` is the act: `apprentice` (Act 1), `chair` (2), `studio` (3), `legacy` (4). Only these move it, and each records `S.career.reached[stage] = {w, y}`:
+
+- `rentChair(S)` -> `{ok, early, goodwill, split, line}`. Before week 1 of 2003 it is leaving early: `MENTOR.goodwill.early` plus `earlyPerYear` x years left. Goodwill at or over `MENTOR.splitAt` gets Arkady's own chair at `CHAIR_SPLIT.mentor`, else `standard`.
+- `leaseStudio(S)` -> `{ok, cost}` or `{ok:false, need: leaseNeed(S)}`: a chair, from `LEASE.need.year` (or rep sum `LEASE.need.repSum`), and the deposit in cash.
+- `goLegacy(S)`: a studio, from 2018 or collectors at 60.
+- `skipBroom(S)`: a new career straight into week 1 of 2003 in a chair, the tutorial marked done, `SKILL_XP.skip` skills, rep 10/5/8.
+- `softFail(S, ctx)`: the studio closes (below).
+
+`careerEnsure(S)` fills `S.career` and `S.studio` with any missing field. A save without a career (from before PR 7, or a bare test state) gets `career.old = true`: Act 1's steps count as done and walk-ins stay open.
+
+## Act 1, the tutorial
+
+`apprenticeSteps(S)` -> `[{id, goal, tab, how, done}]` in `APPRENTICE_STEPS` order: chore, practice, flash, friend, walkin, chair; a done step is remembered in `career.steps`. `apprenticeGoal(S)` is the first one not done. `walkinsOpen(S)` is false for an apprentice before the friend step (and when `career.books` is `"closed"`); `generateWalkins` asks it.
+
+- `doChore(S, id)` -> `{chore, line, log}`: the chore's XP (`skillGain`), goodwill, then `advanceWeek`.
+- `friendBooking(S)` -> a free session item this week (`friend: true`, price 0) for a new client with `src: "friend"`, at most `FRIENDS.max`.
+- `notePractice(S)`: the app calls it when a fake-skin sitting ends.
+- `mentorLine(S, topic, sub)`: one of `MENTOR.lines[topic]`, stable for the week.
+
+## Money
+
+`cashIn(S, amt, kind)` / `cashOut(S, amt, kind)` move `S.cash` and book it in `career.money.cur.in|out[kind]` and `money.total`. `careerWeek` (the `costs` hook) rolls `cur` into `prev` first, so the app shows last week. Kinds in: `sitting`, `deposit`, `flash`, `book`, `merch`, `convention`, `tv`, `loan`, `staff` (the shop's cut of staff work); out: `mentor`, `chair`, `supplies`, `rent`, `marketing`, `staff` (hiring fees), `apprentice`, `travel`, `convention`, `fine`, `lease`, `build`, `book`/`line`/`conv` (Act 4 projects). `finishSession` and `consultCommit` pay through `cashIn`.
+
+Each week, in order: the signature counts; `S.rate = rateFor(S)` (`RATE_BY_REP` x `PRICE_INDEX`, x signature strength and lighting); the shop's cut of last week's sittings and deposits (`CHAIR_SPLIT`: Arkady's 65% while you apprentice, the chair's split after); supplies for this week's booked hours (`SUPPLIES.perHour`, not while an apprentice); in a studio: rent, utilities and station upkeep, marketing, the staff week, staff supplies, apprentices, the shop's rep decay and inspections; out of Act 1: flash, book and product-line income and no-shows (`NOSHOW`: a first sitting with a deposit, the deposit stays); invites; the broke check; one `k:"cost"` log line; `compactClients` every `CAREER_COMPACT_EVERY` weeks.
+
+**The soft fail:** in a studio, each week with cash under `BROKE.floor` (x `PRICE_INDEX`) counts `career.broke`; at `BROKE.weeks` (4), once per career, a mentor with goodwill at or over `MENTOR.loanAt` lends `BROKE.loan` instead; otherwise `softFail`: staff go to `alumni`, training apprentices leave, the lease, build-out and marketing go, the shop's rep halves, stage back to `chair` at the standard split, cash to `BROKE.restart`, `career.fails++`, and `career.scene = {kind:"broke", w, y, from, staff:[names], debt, line}`. Clients, pieces and `S.rep` are not touched.
+
+## The studio
+
+`buildCost(S, key)` / `buildUp(S, key)` over `STUDIO_STAGES` (levels; `cost[i]` buys level i+1). `setVibe(S, v)` (`VIBES`), `setMarketing(S, n)` (`MARKETING` index). `shopWalkins(S)` -> `{mult, seg, styles?, guest?}`: what the waiting area, flash wall, storefront, vibe (times the storefront level), the shop's rep, marketing and a running guest spot do to `generateWalkins`.
+
+## Staff
+
+- `staffCandidates(S)`: `STAFF.candidates` per quarter, cached in `career.cand`. `hireStaff(S, cid)` -> `{ok, staff, fee}` (needs a free station: `staffRoom(S)`). `letGo(S, id, why)`, `setStaffCut(S, id, cut)`, `fairCut(skill)`.
+- `simStaffSession(staff, design, {kit, shop, r})` -> outputs `{lineQuality, depthQuality, saturation, trauma, sessionsUsed, blowouts, joins}` from their skill, the kit's bands, the shop's lighting and sterilisation room (`STAFF.out`).
+- Each week each artist finishes about `STAFF.perWeek` pieces (more with the shop's rep and walk-ins): a client off the shop's flow in their style (`makeClient` with `styleMult`), `proxyDesign`, `simStaffSession`, `addPiece`. A staff piece has `by` (the artist's id) and, for a client not on your books, `client: "x<n>"` and `guest: {n, t, a, s}`. The shop's cut goes in as `staff`. Artists grow, drift in loyalty with a cut over `fairCut + slack`, and may be poached.
+- Heals (`sim/heal.js`): a staff piece heals with its guest's aftercare and moves `S.studio.rep` (`STAFF.shopRep`), never your tracks; no reveal, review or free fix; an infection logs `k:"event"` "It's on the shop". `staffName(S, id)` names the artist, on staff or gone.
+- Your signature, the convention judge and `legacySummary`'s piece counts skip staff pieces.
+
+## Act 4, invites, conventions
+
+- Apprentices: `takeApprentice(S)` (one at a time, stipend each week). After `APPRENTICES.weeks` they graduate: their first solo piece goes on your most loyal client on the books (a staff piece on a real client); then they take a station (bond plus noise over `bond.staffAt` and a free station) or leave as a rival (`career.rivals`, the PR 8 hook) carrying your signature style.
+- `career.invites`: `chair` (Arkady's nudge after week 1 of 2003), `conv` (each `CONVENTIONS` show in its week, with enough peers), `guest` (`GUEST_SPOTS`, from `GUEST.peers`), `tv` (Act 4). `enterInvite(S, id, yes)` -> `{ok, kind, ...}`. A convention charges its fee and travel and is judged (`CONV_SCORE`) on your best portfolio piece today, skill, peers and how true you are to your signature; places pay a prize and rep and are kept in `career.conv`.
+- `legacyAct(S, "book"|"line"|"conv")` (`LEGACY_OFFERS`); the TV offer pays and costs peers and collectors (plan Q7, done in PR 7 as an Act 4 invite).
+- `SIM.rivalsCopy(S, signature, ctx)`: called each week when the signature is ready if PR 8 defines it.
+
+## The signature
+
+`signatureOf(S)` -> `{ready, style, el, place, share, strength 0..1, n}` from `career.sig` (counts of your own pieces' styles, biggest element and placement). Ready past `SIGNATURE.pieces` pieces with the top style at `SIGNATURE.share` or more. Then `generateWalkins` makes some walk-ins ask for "your thing" (`sigApply`: `ask.sig`, the style, a brief line), `clQuote` takes `SIGNATURE.wtp` on those, and the rate rises with strength.
+
+## Skills
+
+`skillGain(S, key, base)` with key a skill or `"style:<id>"`, on the session's curve (`SKILL_XP.diminish`). Sources: sittings and practice (`sessionXp`, PR 4), consults (`SKILL_XP.consult`), chores, conventions (`SKILL_XP.convention`). `skillNextUnlock(style, level)` -> `{level, names}`: the next elements a style level opens.
+
+## The Legacy screen
+
+`legacySummary(S)` -> `{years, clients, pieces (yours), shopPieces, oldest {piece, name, y, reads} (the oldest healed piece that still reads at LEGACY.reads), most {id, name, n}, decades {2000: n, ...}, best {piece, name, y, score} (the best crisp heal), conv {entered, won, list}, apprentices, staff, alumni, earned, spent, cash, fails, mentor, signature, rep, shopRep, tv}`. `careerWeek` sets `career.scene = {kind:"legacy"}` at the end. `SHARE_CARD` is null until PR 9.
+
+## The client archive and the packed save (`sim/archive.js`)
+
+- `compactClients(S)` keeps `CLIENT_CAP` (200) full client records, scored by recency, loyalty and pieces, and never compacts a client who is booked, on the board, in the chair, a friend, an apprentice's shared client or has a piece healing. A walk-out with no pieces compacts after `ARCHIVE.walkoutWeeks`. A compacted client keeps `AR_KEEP` (id, name, pronouns, born, body shape, skin tone, traits, loyalty, since, last seen, visits, referred by, src, pieces) and `compact: true`. History is trimmed to `HISTORY_CAP` (30) entries.
+- `expandClient(S, c)`: a returning compacted client (`scheduleReturns`) gets a fresh brief, wants and job from a fork of their id and the week, a note that older notes are archived, and stays the same person.
+- `packSave(S)` -> a shallow copy for JSON: every piece but the newest `ARCHIVE.pieceFull` (50) becomes a short array (ids as numbers, dates as week indexes, outputs x1000, element strings, the name and label left out when they can be rebuilt, the kit as one number, a staff piece's guest as one string); every compacted client too. A piece is packed only if unpacking it gives the same piece back (`arSame`, 3 decimals); others stay objects. `unpackSave(o)` turns them back, in place, and rebuilds compacted clients' piece lists. Packing twice gives the same JSON.
+- **Pieces are never dropped.** Sizes from `tools/sim-test.js` (the auto career with two artists from year 8):
+
+| year | pieces (by staff) | clients | ink-save JSON | INK1 backup code |
+|---|---|---|---|---|
+| 5 | 375 (0) | 348 | 411 KB | 138 KB |
+| 10 | 1,410 (119) | 1,298 | 716 KB | 321 KB |
+| 20 | 3,396 (1,007) | 4,016 | 1,251 KB | 698 KB |
+| 30 | 4,475 (2,008) | 5,073 | 1,518 KB | 905 KB |
+
+The plan's ~8 KB target can't hold 4,000+ pieces (each is at least a design, its outputs and a date: about 110 bytes packed). The year-30 save is about a third of its unpacked size (4.6 MB) and well inside a browser's ~5 MB.
+
+## Tables added in PR 7
+
+`career.js`: `ACTS`, `MENTOR`, `APPRENTICE_STEPS`, `CHORES`, `FRIENDS`, `CHAIR_SPLIT`, `RATE_BY_REP`, `SUPPLIES`, `LEASE`, `MARKETING`, `STUDIO_STAGES`, `VIBES`, `STAFF`, `NOSHOW`, `INSPECTION`, `BROKE`, `SIGNATURE`, `SKILLS`, `CONVENTIONS`, `CONV_SCORE`, `GUEST_SPOTS`, `GUEST`, `LEGACY_OFFERS`, `APPRENTICES`, `LEGACY`, `CAREER_COMPACT_EVERY`; `SKILL_XP.consult`, `.convention`, `.skip`. `archive.js`: `CLIENT_CAP`, `HISTORY_CAP`, `ARCHIVE`. All on `SIM`.
+
+## Tests
+
+`tools/sim-test.js`, block "PR 7": costs (the chair's split, supplies, studio rent, the ledger matches the cash); the soft fail (four weeks, staff and build-out go, clients, pieces and rep stay, the scene, the mentor's one loan); the acts and Act 1 (walk-ins closed until the friend, a chore passes a week, the free friend piece, renting early, lease and Legacy gates, Skip the broom); staff (hire to the stations, pieces from `simStaffSession`, not in your work or Legacy counts, guest clients and names, shop rep, seeded outputs); a convention; the archive (at most `CLIENT_CAP` full, every piece kept, compacted clients come back, `expandClient`); the packed save round trip and its idempotence; save size at year 30 (JSON under 2 MB, code under 1.2 MB, packing under 150 ms); the signature; the Legacy summary. The 30-year run now plays the acts (a chair in year 3, a studio in year 8 with two stations and artists, Legacy in year 20) and still times `advanceWeek` at year 30 (about 10 ms; budget 50).

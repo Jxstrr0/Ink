@@ -77,7 +77,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.6.0, November 2026)
+## Current status (0.1.7.0, November 2026)
+
+- PR 7 built: the career (`sim/career.js`): four acts with Arkady Sedov as mentor and Act 1 as the tutorial (one goal at a time, chores, a friend's free piece, walk-ins after it), the chair split, the lease and studio build-out, vibe and marketing, staff from `simStaffSession` (Shop gallery and shop rep, never your work), apprentices (staff or rivals), conventions, guest spots, Act 4 projects and the TV offer, the signature, the money ledger (`WEEK_HOOKS.costs`) and the soft fail back to a chair; the Legacy screen (`app/legacy.js`); the client archive (`sim/archive.js`: `CLIENT_CAP` 200, compacted clients come back) and the packed save (about 1.5 MB JSON / 0.9 MB code at year 30, pieces never dropped); three save slots and New career with Skip the broom (`app/slots.js`). New S fields: `career`, the extended `studio`.
 
 - PR 6 built: the 3D mannequin (`vis/body.js`: seated, three shapes on one topology with identical UVs, one UV island per zone in true mm, bandeau and shorts, about 6.6k triangles), decals (`vis/decals.js`: element paths drawn per island with aging blur/fade/spread from `INK_SIM.age` and the piece's heal, one texture per client, 1024 Lite / 2048 Full and Ultra), the shop (`vis/studio.js`: stages apprentice/chair/studio/legacy, night canal window, about 2.7k triangles, no shadows on Lite), render on change with camera presets. The Studio tab shows who's in the chair with their pieces; the Session tab places the stencil on the body in 3D (drag, turn with `INK_SIM.sessionRotate`, Flat view fallback in `S.settings.flatStencil`).
 

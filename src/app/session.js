@@ -74,7 +74,7 @@ function seEls(design,box){const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5
 function seRender(design,skin,out,bodyShape){
   const box=INK_SIM.placementBox(design.placement,bodyShape)||{wrapMm:100,lengthMm:200},els=seEls(design,box);
   if(!els.length)return"";
-  const sz=design.sizeMm||50,cx=design.pos.x*box.wrapMm,cy=design.pos.y*box.lengthMm,pad=sz*0.12;
+  const sz=design.sizeMm||50,pos=design.pos||{x:.5,y:.5},cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm,pad=sz*0.12;
   const blur=out?Math.max(0,(0.9-out.lineQuality)*1.6):0,op=out?0.55+0.45*out.saturation:1;
   return`<svg class="seRen" viewBox="${dzR2(cx-sz/2-pad)} ${dzR2(cy-sz/2-pad)} ${dzR2(sz+2*pad)} ${dzR2(sz+2*pad)}" style="background:${seRgb(skin)}" aria-hidden="true"><g style="opacity:${dzR2(op)};${blur>0.05?`filter:blur(${dzR2(blur*sz/100)}px)`:""}">${els.map(e=>dzElSvg(e,design.style)).join("")}</g></svg>`;}
 
@@ -200,7 +200,7 @@ ${can3d?`<button class="btn sm" id="seFlat" aria-pressed="${!in3d}">${in3d?"Flat
   svg.addEventListener("pointerdown",ev=>{drag={p:pt(ev),pos:Object.assign({},d.pos||{x:.5,y:.5}),dx:0,dy:0};svg.setPointerCapture(ev.pointerId);ev.preventDefault();});
   svg.addEventListener("pointermove",ev=>{if(!drag)return;const p=pt(ev);drag.dx=p.x-drag.p.x;drag.dy=p.y-drag.p.y;g.setAttribute("transform",`translate(${dzR2(drag.dx)} ${dzR2(drag.dy)})`);});
   const end=()=>{if(!drag)return;const dr=drag;drag=null;if(Math.abs(dr.dx)+Math.abs(dr.dy)<0.5){g.removeAttribute("transform");return;}
-    SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});save();seRenderPlace();};
+    SE.place=INK_SIM.sessionPlace(sess,{x:dr.pos.x+dr.dx/W,y:dr.pos.y+dr.dy/L});saveSoon();seRenderPlace();};
   svg.addEventListener("pointerup",end);svg.addEventListener("pointercancel",end);}
 function seChkHtml(chk){
   return`<span class="seChkFlow">Flow ${Math.round((chk.flow||0)*100)}</span>${chk.issues.length?chk.issues.map(i=>`<p class="seIss ${i.sev>=3?"crit":"warn"}"><span aria-hidden="true">${i.sev>=3?"▲":"●"}</span> ${esc(dzCap1(i.text))}</p>`).join(""):`<p class="seIss ok"><span aria-hidden="true">✓</span> No creases or flow problems here.</p>`}`;}
@@ -210,7 +210,7 @@ function seChkUpdate(){const e=$("seChk");if(e&&SE.place)e.innerHTML=seChkHtml(S
    re-checks flow and creases. A drag off the stencil orbits the camera */
 function se3dStencil(sess){
   const h=(pos,ph)=>{if(ph==="move"){INK_VIS.setStencil(Object.assign({},sess.design,{pos}),{drag:h});return;}
-    SE.place=INK_SIM.sessionPlace(sess,pos);save();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
+    SE.place=INK_SIM.sessionPlace(sess,pos);saveSoon();seChkUpdate();INK_VIS.setStencil(sess.design,{drag:h});};
   INK_VIS.setStencil(sess.design,{drag:h});}
 function se3dPlace(sess){
   const el=$("sePlace3d");if(!el||!INK_VIS.mount(el))return;
@@ -422,7 +422,7 @@ function seWireCanvas(){
     seFlushInk();SE.down=null;
     const live=INK_SIM.penUp(sess,ev.timeStamp||performance.now());
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
-    save();
+    saveSoon();
     if(live.lineDone){const ls=sess.lastStroke;SE.status="";seAfterItem();
       if(ls&&!sess.stop)seStatus(`Line done: ${Math.round(ls.q*100)}% clean${ls.blowouts?`, ${ls.blowouts} blowout${ls.blowouts>1?"s":""}`:""}${ls.joins?`, ${ls.joins} join${ls.joins>1?"s":""}`:""}.`);}
     else{seDot();if(sess.stop)seEnd();else if(INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line")seStatus("Lifted. Carry on from the dot.");}};

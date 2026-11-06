@@ -2,7 +2,10 @@
    Lifted from Prairie Engine Works' savecode.js. One code holds everything Ink keeps in the browser, so a player can move
    to another phone or keep a copy somewhere safe. All of it lives in localStorage on this device; nothing is sent anywhere.
      save    the current game ("ink-save"), taken live with snapshot(). Settings ride in it.
-     slots   the 3 manual slots ("ink-slot1" .. "ink-slot3"), null for an empty one
+     slots   the 3 manual slots ("ink-slot1" .. "ink-slot3"), null for an empty one. PR 7 (app/slots.js): a slot is
+             {z: the save squeezed with buZip, savedAt, week, year, stage, pieces}; a plain save object still counts
+     PR 7: the save inside is packed (INK_SIM.packSave: older pieces and archived clients as short arrays); hydrate
+           unpacks it, so a code holds every piece ever done
    Code = "INK1:" + body + a 6-character checksum. body = that object as JSON -> UTF-8 bytes -> LZW (9..16-bit codes) ->
    base64url (A-Z a-z 0-9 - _ only), so it survives notes apps, email and chat.
    Tattoos are saved as design parameters + session outputs + dates, never as pictures; everything visual is re-rendered.
@@ -80,6 +83,10 @@ function buSaveOk(o){
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
+  if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
+  if("career" in o&&o.career!=null){const c=o.career;if(!buObj(c))return false;   // PR 7: the career (sim/career.js careerFresh)
+    for(const f of ["invites","apprentices","alumni","friends","conv"])if(f in c&&!Array.isArray(c[f]))return false;
+    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
@@ -101,7 +108,10 @@ function buTry(o){const keepS=S;let ok=false;
   finally{S=keepS;}
   return ok;}
 function buFullOk(d){return buObj(d)&&d.v===BU_V&&buSaveOk(d.save)&&Array.isArray(d.slots)&&d.slots.length<=SLOTS
-  &&d.slots.every(o=>o===null||buSaveOk(o));}
+  &&d.slots.every(o=>o===null||buSlotOk(o));}
+/* a slot: the save itself, or (PR 7) {z: the save as JSON, UTF-8, buZip} plus a label. Throws on a damaged z */
+function buSlotData(o){if(buObj(o)&&typeof o.z==="string")return JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(new Uint8Array(buUnzip(o.z))));return o;}
+function buSlotOk(o){if(!buObj(o))return false;let d;try{d=buSlotData(o);}catch(e){return false;}return buSaveOk(d);}
 
 /* ---- reading a code: {kind:"full",data}. Spaces, line breaks and text around the code are fine.
    Throws buFail(...) with a message for the player. ---- */
