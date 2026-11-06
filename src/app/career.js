@@ -13,10 +13,10 @@
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
 const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
-const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",end:"The end"};
+const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",goal:"Goal",note:"",end:"The end"};
 /* the ledger's words (sim/career.js cashIn / cashOut kinds) */
 const CR_MONEY={sitting:"Sittings",deposit:"Deposits",flash:"Flash sales",book:"Flash book",merch:"Product line",convention:"Conventions",tv:"TV",loan:"Arkady's loan",staff:"Your artists' cut",
-  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention"};
+  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop"};
 function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
@@ -37,12 +37,12 @@ ${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">
 :`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
 <button class="btn pri crBtn${CR.arm?" arm":""}" id="crNextB">${CR.arm?`Skip them? Tap again`:`Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>`}</button>
 ${CR.arm?`<p class="crWarn">Walk-ins leave, sittings move to next week.</p>`:""}`}</div>
-${C&&st!=="apprentice"?caActHtml(st):""}${C?caInvitesHtml():""}
+${typeof evTopHtml==="function"?evTopHtml():""}${C&&st!=="apprentice"?caActHtml(st):""}${C?caInvitesHtml():""}
 ${last?`<div class="card crLast"><h2>${last.weeks?`${last.weeks} week${last.weeks>1?"s":""} later`:"This week"}</h2><p>${esc(last.line||"")}</p>
 ${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}">${CR_KIND[l.k]?`<span class="crK">${CR_KIND[l.k]}</span>`:""}${esc(l.text||"")}</li>`).join("")}${lg.length>14?`<li class="hint">…and ${lg.length-14} more.</li>`:""}</ul>`:""}
 ${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
 ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
-${C?caMoneyHtml():""}${C?caSkillsHtml():""}
+${typeof evLowerHtml==="function"&&st!=="apprentice"?evLowerHtml():""}${C?caMoneyHtml():""}${C?caSkillsHtml():""}${typeof evGoalsHtml==="function"&&st==="apprentice"&&evOn()?evGoalsHtml():""}
 <div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
 <dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Your pieces</dt><dd>${crMine()}</dd>${S.pieces.length>crMine()?`<dt>Shop pieces</dt><dd>${S.pieces.length-crMine()}</dd>`:""}<dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd>${S.rate?`<dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd>`:""}</dl>${crRep()}
 ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12px"><button class="btn" id="crLegacy">See your Legacy</button></div>`:""}</div>`;
@@ -51,7 +51,8 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
   const b=$("crNextB");if(b)b.addEventListener("click",crNext);
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});
   for(const id of ["crLegacy","crLegacy2"]){const l=$(id);if(l)l.addEventListener("click",()=>{if(typeof lgOpen==="function")lgOpen();});}
-  if(C){caActWire(st);caInvitesWire();}}
+  if(C){caActWire(st);caInvitesWire();}
+  if(typeof evWire==="function")evWire();}
 /* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
@@ -69,6 +70,7 @@ function crNext(){
   if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}
   const st0=S.studio&&S.studio.stage;
   const res=INK_SIM.nextStop(S);CR.last=res;
+  if(typeof evAfterLog==="function")evAfterLog(res.log);
   if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
   crAfter(st0);}
 /* after the clock moved (Next or a chore): tidy the board, save, redraw, and show any scene */
@@ -169,7 +171,7 @@ function caInvitesHtml(){
   const C=S.career;if(!C.invites.length)return"";
   const one=i=>{
     if(i.kind==="chair")return[`${INK_SIM.MENTOR.first} says you're ready for your own chair.`,"Rent a chair","Not yet"];
-    if(i.kind==="conv"){const cv=INK_SIM.CONVENTIONS.find(c=>c.id===i.conv)||{};return[`${gvCapS(cv.name||"A convention")}, ${cv.where||""}. Entry and travel ${fmtMoney(i.fee)}. You're judged on your best healed piece, your skill, your peers and how true it is to your style.`,"Enter","Skip it"];}
+    if(i.kind==="conv"){const cv=INK_SIM.CONVENTIONS.find(c=>c.id===i.conv)||{};return[`${gvCapS(cv.name||"A convention")}, ${cv.where||""}. Entry and travel ${fmtMoney(i.fee)}. You enter a fresh piece and a healed piece; your flash sells at the booth.`,"Choose pieces","Skip it"];}
     if(i.kind==="guest"){const g=INK_SIM.GUEST_SPOTS.find(x=>x.id===i.spot)||{};return[`A guest spot in ${g.name||"another city"} for ${g.weeks||2} weeks: travel ${fmtMoney(i.fee)}, a new crowd of walk-ins and a little name among other artists.`,"Go","Turn it down"];}
     if(i.kind==="tv")return[`${INK_SIM.LEGACY_OFFERS.tv.says.charAt(0).toUpperCase()+INK_SIM.LEGACY_OFFERS.tv.says.slice(1)}. ${fmtMoney(i.pay)}.`,"Take it","Turn it down"];
     return[i.kind,"Yes","No"];};
@@ -179,6 +181,8 @@ const gvCapS=s=>{s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);};
 function caInvitesWire(){
   const card=document.querySelector(".caInv");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("[data-inv]");if(!b)return;
+    const inv=S.career.invites.find(i=>i.id===b.dataset.inv);
+    if(inv&&inv.kind==="conv"&&b.dataset.yes==="1"&&typeof evConvOpen==="function"){evConvOpen(inv.id);return;}
     const st0=S.studio.stage,r=INK_SIM.enterInvite(S,b.dataset.inv,b.dataset.yes==="1");if(!r||!r.ok)return;
     let msg="";
     if(r.kind==="conv")msg=r.place?`${["","First","Second","Third"][r.place]} place at ${r.name}!`:`No placing at ${r.name} this year. Peers saw your work, though.`;

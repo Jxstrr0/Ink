@@ -91,7 +91,15 @@ function dzStore(){S.board.design=dzToDesign();save();}
 
 /* ---- scoring ---- */
 function dzScore(m){const d=dzToDesign(m);
-  try{return Object.assign(INK_SIM.scoreDesign(d,dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined}),{_d:d});}catch(e){return null;}}
+  try{const r=Object.assign(INK_SIM.scoreDesign(d,dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined}),{_d:d});
+    const old=!m||m===DZ.m?dzOld():null;if(old)r.cover=INK_SIM.coverScore(d,old.design,dzBox(d.placement));   // PR 8: a cover-up
+    return r;}catch(e){return null;}}
+/* PR 8: the old piece a cover-up booking goes over (sim/events.js coverOld), when the board is on its spot; it draws as a
+   locked dark layer under your elements and the stress report scores how much of it you hide */
+function dzOld(){
+  const id=S.board.item;if(!id||!DZ.m||typeof INK_SIM.coverOld!=="function")return null;
+  const q=S.queue.find(x=>x.id===id);if(!q)return null;
+  const o=INK_SIM.coverOld(S,q);return o&&o.design&&o.design.placement===DZ.m.placement?o:null;}
 /* rescore at most once per frame; the capsule shows it against DZ.base (the score before the change being made) */
 function dzQueue(full){if(full)DZ.qFull=true;if(DZ.raf)return;
   DZ.raf=requestAnimationFrame(()=>{DZ.raf=0;DZ.cur=dzScore();dzRenderCap();if(DZ.qFull){DZ.qFull=false;dzRenderAging();dzRenderStress();}});}
@@ -256,10 +264,25 @@ function dzRenderBoard(){
   /* flow lines and creases */
   h+=`<g class="dzFlow">${p.flow.map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>`;
   for(const c of p.creases||[]){const y=c.at*L;h+=`<line class="dzCrease" x1="${dzR2(-px(4))}" x2="${dzR2(W+px(4))}" y1="${dzR2(y)}" y2="${dzR2(y)}"/><text class="dzCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at<0.5?y-px(5):y+px(13))}" font-size="${px(10.5)}" text-anchor="middle">${esc(c.name)} crease</text>`;}
+  /* PR 8: someone's old piece under a cover-up, locked: no hit areas, not selectable */
+  const old=dzOld();
+  let oldLbl="";
+  if(old){const om=dzFromDesign(old.design,m.placement);let a={blur:0.6,spread:0.8};
+    /* drawn as it is on the skin today: the aging model's blur and spread, a blown-out halo, the ink gone blue-black */
+    try{a=INK_SIM.age({design:old.design,out:old.out,heal:old.heal||"blownout",ink:old.ink,skinTone:S.board.skinTone},old.years)||a;}catch(e){}
+    const sp=Math.max(0.6,a.spread||0),bl=Math.max(0.5,a.blur||0),blown=old.foreign||old.heal==="blownout"||old.heal==="infected";
+    h+=`<defs><filter id="dzOldF" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${dzR4(0.35+bl*0.6)}"/></filter><filter id="dzOldH" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="${dzR4(0.9+sp*0.8)}"/></filter></defs>
+<g class="dzOld" pointer-events="none" aria-hidden="true">${blown?`<g class="dzOldH" filter="url(#dzOldH)">${om.els.map(e=>dzElSvg(Object.assign({},e,{colour:null,fill:0}),"traditional","",0,1.5+sp*2.4)).join("")}</g>`:""}<g filter="url(#dzOldF)">${om.els.map(e=>dzElSvg(Object.assign({},e,{colour:null,fill:Math.max(e.fill,0.6)}),"traditional","",0,sp)).join("")}</g></g>`;
+    /* its label: under the old piece (above it if there's no room), kept inside the limb so it never runs into the ruler */
+    if(!m.els.length&&om.els.length){let y0=1e9,y1=-1e9,xc=0;for(const e of om.els){y0=Math.min(y0,e.my-e.mm/2);y1=Math.max(y1,e.my+e.mm/2);xc+=e.mx;}xc/=om.els.length;
+      const fs=11,lines=["Cover the old",String(old.label||"piece")],need=Math.max(...lines.map(t=>t.length))*fs*0.56/sc,half=Math.min(W/2,need/2);
+      const x=clamp(xc,half,W-half),lh=+px(fs+3),below=y1+(+px(16))+lh<=L-(+px(18)),y=below?y1+(+px(16)):Math.max(+px(fs),y0-(+px(8))-lh);
+      oldLbl=`<text class="dzEmpty sub dzOldT" x="${dzR2(x)}" y="${dzR2(y)}" font-size="${px(fs)}" text-anchor="middle">${lines.map((t,i)=>`<tspan x="${dzR2(x)}" dy="${i?dzR2(lh):0}"${t.length*fs*0.56/sc>W?` textLength="${dzR2(W-(+px(4)))}" lengthAdjust="spacingAndGlyphs"`:""}>${esc(t)}</tspan>`).join("")}</text>`;}}
   /* the piece's footprint */
   const d=dzToDesign();
   if(m.els.length){const sz=d.sizeMm,fp=INK_SIM.footprintOf(d),fw=fp.w*sz,fh=fp.h*sz,fx=d.pos.x*W-fw/2,fy=d.pos.y*L-fh/2;
     h+=`<rect class="dzFoot" x="${dzR2(fx)}" y="${dzR2(fy)}" width="${dzR2(fw)}" height="${dzR2(fh)}"/><text class="dzFootT" x="${dzR2(fx+fw)}" y="${dzR2(fy-px(4))}" font-size="${px(10.5)}" text-anchor="end">${Math.round(fw)} × ${Math.round(fh)} mm</text>`;}
+  else if(old)h+=oldLbl;
   else h+=`<text class="dzEmpty" x="${dzR2(W/2)}" y="${dzR2(L/2)}" font-size="${px(14)}" text-anchor="middle">Add an element</text><text class="dzEmpty sub" x="${dzR2(W/2)}" y="${dzR2(L/2+px(20))}" font-size="${px(11.5)}" text-anchor="middle">or start from the flash wall</text>`;
   h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,44/sc)).join("")}</g>`;
   h+=`<g id="dzSelG"></g></svg>`;
@@ -397,8 +420,10 @@ const DZ_SEV={3:{l:"Serious",i:`<svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-
 function dzRenderStress(){
   const host=$("dzStress");if(!host||!DZ.cur)return;const c=DZ.cur;
   const sub=`<p class="dzSub">Balance <b>${Math.round(c.balance*100)}</b> · Coherence <b>${Math.round(c.coherence*100)}</b> · Overall <b>${Math.round(c.total*100)}</b></p>`;
-  if(!DZ.m.els.length){host.innerHTML=`<h2>Stress report</h2><p class="hint">Put something on the board and this lists what will go wrong with it on skin.</p>`;return;}
-  host.innerHTML=`<h2>Stress report</h2>${sub}${c.stress.length?`<ul class="dzSt">${c.stress.map(s=>`<li class="sev${s.sev}"><span class="ic" role="img" aria-label="${DZ_SEV[s.sev].l}">${DZ_SEV[s.sev].i}</span><span>${esc(dzCap1(s.text))}</span></li>`).join("")}</ul>`
+  const old=dzOld(),cv=c.cover,cvPct=cv?Math.round(cv.coverage*100):0;
+  const cov=old?`<div class="dzCover ${!cv||cv.coverage<0.6?"bad":cv.coverage<0.85?"meh":"ok"}"><b>Cover-up: ${DZ.m.els.length?cvPct+"% hidden":"nothing over it yet"}</b><span>The old ${esc(old.label)}${old.foreign?", someone else's work":` from ${S.year-Math.floor(old.years)}`}. ${DZ.m.els.length&&cv?esc(cv.text):"Dark fills and textures over it hide it; thin lines won't."}</span></div>`:"";
+  if(!DZ.m.els.length){host.innerHTML=`<h2>Stress report</h2>${cov}<p class="hint">Put something on the board and this lists what will go wrong with it on skin.</p>`;return;}
+  host.innerHTML=`<h2>Stress report</h2>${sub}${cov}${c.stress.length?`<ul class="dzSt">${c.stress.map(s=>`<li class="sev${s.sev}"><span class="ic" role="img" aria-label="${DZ_SEV[s.sev].l}">${DZ_SEV[s.sev].i}</span><span>${esc(dzCap1(s.text))}</span></li>`).join("")}</ul>`
     :`<p class="dzOk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Nothing to worry about. This will hold up.</p>`}`;}
 
 /* ---- the element drawer (in the sheet) ---- */

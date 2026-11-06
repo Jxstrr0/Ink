@@ -282,6 +282,27 @@ check("PR 7: with the sim, a packed career round trips through a code and hydrat
   assert.strictEqual(after.studio.stage, "chair"); assert(after.career && !after.career.old);
   assert(b.hydrate({ week: 5, year: 2004 })); assert.strictEqual(plain(b.__get()).career.old, true, "a save from before PR 7 counts the tutorial as done");
 });
+check("PR 8: the world, goals, rivals and a closed shop are checked", () => {
+  const a = load();
+  for (const sv of [game({ world: "events" }), game({ world: { pending: {} } }), game({ world: { pending: [{ kind: "undercut" }] } }), game({ world: { social: { followers: "lots" } } }),
+    game({ world: { social: { posts: [["p1", 2, 3]] } } }), game({ world: { fired: [] } }), game({ goals: [] }), game({ career: { rivals: "none" } }), game({ career: { closed: { until: "soon" } } })]) {
+    const body = a.buZip(new TextEncoder().encode(JSON.stringify({ v: 1, at: 0, ver: "t", save: sv, slots: [] })));
+    assert.strictEqual(msg(a, "INK1:" + body + a.buSum(body)), "bad", JSON.stringify({ world: sv.world, goals: sv.goals, career: sv.career }));
+  }
+  const ok = game({ goals: { first_heal: { w: 9, y: 2000 } }, world: { fired: { pawn: { w: 3, y: 2012, machine: "coil_used" } }, plan: {}, pending: [{ id: "e1", kind: "copy", until: 600 }], nextEv: 2, mods: {},
+    social: { on: { w: 1, y: 2016 }, followers: 812, posts: [[12, 830, 1400]], viral: null, booked: 3, bad: 0, gained: 42 } },
+    career: { mentor: { goodwill: 0.5 }, rivals: [{ id: "heron", status: "open", str: 0.4 }], closed: { until: 640, w: 10, y: 2012 } } });
+  live(a, ok); assert.deepStrictEqual(plain(a.buRead(a.buCode()).data.save), ok);
+});
+check("PR 8: with the sim, a new career has a world; an old save gets one on hydrate", () => {
+  const a = load(true); a.__set(a.freshState());
+  const S = plain(a.__get()); assert(S.world && Array.isArray(S.world.pending) && S.world.social && S.world.social.followers === 0, "a new career starts with an empty world");
+  assert.strictEqual(S.v != null, true);
+  const b = load(true); assert(b.hydrate({ week: 5, year: 2004 }));
+  const T = plain(b.__get()); assert(T.world && T.world.social && T.goals && typeof T.goals === "object", "a save from before PR 8 gets a world and goals");
+  const r = load(true).buRead(a.buCode()); const c = load(true); assert(c.hydrate(r.data.save));
+  assert.deepStrictEqual(plain(c.__get()).world, S.world, "the world round trips through a code");
+});
 
 let bad = 0;
 for (const [name, fn] of checks) {

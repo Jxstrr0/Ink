@@ -746,6 +746,58 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 .caBar,.lgDecR .crRepB,.caSkR .crRepV,.lgDecR b{grid-area:auto}
 .caRow .caBar{width:100%}
 .lgLine{padding-left:12px;border-left:3px solid var(--gold)}
+/* ===================== ui-events.css: events, trends, social media, rivals, goals, conventions, cover-ups (PR 8) =====================
+   The event cards and the shop-closed banner on the Career tab, what's in demand, the social card, rival shops, the goals
+   list, the piece pickers in the post and convention sheets, convention results, and the cover-up layer and score on the
+   design board (which stays cream with black ink in both themes). Theme tokens only, so the light theme follows; no motion. */
+.evClosed{border:1px solid var(--crit);background:var(--panel2)}
+.evClosed p{margin:4px 0 0}
+.evCard{border-left:3px solid var(--gold)}
+.evCard p{margin:6px 0}
+.evCh{flex-wrap:wrap}
+.evCh .btn{flex:1 1 auto;min-height:44px}
+.evTop{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}
+.evTop li{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(70px,40%);gap:8px;align-items:center;font-size:14.5px}
+.evDir{text-align:center;font-size:12px;color:var(--mute)}
+.evDir.up{color:var(--ok)}
+.evDir.down{color:var(--crit)}
+.evBar{display:block;height:8px;min-width:0;border-radius:4px;background:var(--panel2);overflow:hidden}
+.evBar i{display:block;height:100%;background:var(--teal);border-radius:4px}
+.evRivL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.evRivL li{display:flex;flex-direction:column;gap:3px;padding-top:8px;border-top:1px solid var(--line)}
+.evRivL li:first-child{border-top:0;padding-top:0}
+.evGoals h2 .clMeta{font-weight:400;margin-left:6px}
+.evGoalL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.evGoalL li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.evGoalL li>span:nth-child(2){display:flex;flex-direction:column}
+.evTick{flex:0 0 auto;width:16px;height:16px;margin-top:2px;border:1.5px solid var(--faint);border-radius:50%}
+.evGoalL li.done .evTick{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--panel)}
+.evGoalL li:not(.done) b{color:var(--mute);font-weight:600}
+.evPick{display:flex;flex-direction:column;gap:6px;margin:6px 0 12px}
+.evPk{display:flex;gap:10px;align-items:center;width:100%;min-height:52px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.evPk>span{display:flex;flex-direction:column;min-width:0}
+.evPk.on{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.evPk.none{min-height:44px;justify-content:center}
+.evThumb{flex:0 0 auto;width:48px;height:48px;border-radius:8px}
+.evRes{display:flex;flex-direction:column;gap:2px;padding:10px 12px;margin:0 0 8px;border-radius:10px;background:var(--panel2);border-left:3px solid var(--faint)}
+.evRes b{font-size:17px}
+.evRes.p1{border-left-color:var(--gold)}
+.evRes.p2,.evRes.p3{border-left-color:var(--teal)}
+.evChoices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.evChoices .btn{min-height:48px}
+.rvPost{margin-top:8px}
+/* the design board: someone's old piece under a cover-up, blurred and blown out, the old ink gone blue-black on the cream
+   board (the same in both themes); your own elements draw over it in black */
+.dzOld{opacity:.8}
+.dzOld path[stroke]{stroke:#26332f}
+.dzOld path[fill-opacity]{fill:#26332f}
+.dzOldH{opacity:.45}
+.dzOldT{fill:#6f5a3c;font-weight:600}
+.dzCover{display:flex;flex-direction:column;gap:2px;margin:6px 0 8px;padding:8px 10px;border-radius:10px;background:var(--panel2);font-size:14px;box-shadow:inset 3px 0 0 var(--faint)}
+.dzCover.ok{box-shadow:inset 3px 0 0 var(--ok)}
+.dzCover.meh{box-shadow:inset 3px 0 0 var(--warn)}
+.dzCover.bad{box-shadow:inset 3px 0 0 var(--crit)}
+@media (prefers-reduced-transparency:reduce){.dzOld{opacity:.85}.dzOldH{opacity:.5}}
 </style>
 
 <div id="app">
@@ -1485,7 +1537,9 @@ const READ={
   letterWeight:2,            // lettering counts double: if the words go, the piece goes
   minBlend:0.3,              // overall = mean*(1-minBlend) + worst element*minBlend
   crowdOk:0.6,crowdBad:1.2,crowdHit:0.4,   // room the motifs need / room they have (2+ motifs): fine .. mud, and the most it costs
-  closed:0.3                 // stroke gaps under this have "closed up" (for the stress report's years)
+  closed:0.3,                // stroke gaps under this have "closed up" (for the stress report's years)
+  shapeHold:0.5,shapeExp:2   // once the gaps close, a simple shape still reads as its outline: the gap factor never drops
+                             // below shapeHold*(1-detail)^shapeExp (motifs and ornament; lettering gets nothing: closed letters are gone)
 };
 /* flow knobs */
 const FLOW={
@@ -1674,7 +1728,7 @@ function dzElemRead(e,tone,wear,tol){
   const sp=wear?wear.spread:0,bl=wear?wear.blur:0,fd=wear?wear.fade:0;
   const ratio=e.mm/(e.minMm*(1-(tol||0)));
   const sizeF=ratio>=1?1:Math.pow(Math.max(0,ratio),READ.sizeExp);
-  const gapF=dzGap(e,sp,bl);
+  const gapF=Math.max(dzGap(e,sp,bl),e.fam==="lettering"?0:READ.shapeHold*Math.pow(1-clamp(e.detail,0,1),READ.shapeExp));
   const con0=e.colShare>=1?dzContrast(e.light,tone):lerp(dzContrast(dzColour("black").light||0.06,tone),dzContrast(e.light,tone),e.colShare);
   const con=con0*(1-READ.fadeHit*fd);
   let lineV=1;
@@ -3144,12 +3198,12 @@ SIM.referral=referral;SIM.scheduleReturns=scheduleReturns;SIM.proxyDesign=clProx
      bookings  walk-ins from market.js, returns (RETURN_RULES), referrals (REFERRAL), then the week's chair hours are
                filled from the queue; sessions that don't fit move to next week
      costs     the shop's cut, supplies, rent, staff, sales (PR 7: sim/career.js careerWeek replaces the stub)
-     events    queued events, reckonings, inspections (PR 8: a no-op here)
-     trend     the trend wave (PR 8: a no-op here)
+     events    queued events, reckonings, inspections (set by sim/events.js, PR 8)
+     trend     the trend wave (set by sim/events.js, PR 8)
    Later PRs replace a stub by assigning SIM.WEEK_HOOKS.<name> = function(S, ctx){...}. ctx = {r (an rng forked for that hook and
    week), log, yearRolled, now (SIM.weekIndex of the new week)}; a hook pushes {k, text, ...} lines onto ctx.log.
    advanceWeek returns that log: [{k, text, client?, piece?, item?}], k one of week left gaveup heal year walkin return referral
-   booked carried cost event trend end. At 2030 week 52 it stops: the log ends with {k:"end"} and log.end = true.
+   booked carried cost event trend goal note end. At 2030 week 52 it stops: the log ends with {k:"end"} and log.end = true.
    SIM.nextStop(S): the Career tab's Next button. Advances until a client is due (a booked session, a return, a referral or a
    walk-in), a heal or an event, never more than WEEK.maxSkip weeks; returns {weeks, why, line, log}.
    SIM.finishSession(S, itemId, {design, out, heal}): a sitting is done (PR 4 calls it): pays the share of the balance,
@@ -3306,7 +3360,7 @@ function calSummary(from,S,all,why,weeks){
   const head=weeks===1?"Week "+S.week+", "+S.year:"Weeks "+from.w+(from.y!==S.year?" ("+from.y+")":"")+" to "+S.week+", "+S.year;
   const left=cnt("left");if(left)parts.push(left===1?"a walk-in left unseen":left+" walk-ins left unseen");
   const gave=all.filter(l=>l.k==="gaveup").length;if(gave)parts.push(gave===1?"one consult gave up waiting":gave+" consults gave up waiting");
-  for(const l of all)if(l.k==="return"||l.k==="referral"||l.k==="heal"||l.k==="year"||l.k==="event"||l.k==="carried")parts.push(l.text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
+  for(const l of all)if(l.k==="return"||l.k==="referral"||l.k==="heal"||l.k==="year"||l.k==="event"||l.k==="carried"||l.k==="trend"||l.k==="goal"||l.k==="note")parts.push(l.text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
   const w=all.filter(l=>l.k==="walkin");if(w.length)parts.push(w[w.length-1].text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
   const b=all.filter(l=>l.k==="booked");if(b.length)parts.push(b[b.length-1].text.replace(/\.$/,""));
   if(why==="end")parts.push("the thirty years are up");
@@ -4416,7 +4470,10 @@ const STAFF={
   shopRep:{crisp:0.4,soft:0.15,patchy:-0.4,blownout:-1,infected:-3},shopRepDecay:0.002,shopWalkins:0.4
 };
 const NOSHOW={base:0.05,loyal:-0.045};          // chance a first sitting with a deposit doesn't show; the deposit stays
-const INSPECTION={gap:[26,44],first:[8,20],base:0.72,shopRep:0.001,recentInfect:-0.15,fine:9000,passRep:1,failRep:-4,min:0.2,max:0.98};
+/* the health inspector (PR 8 adds the checks and the closure). Pass chance = base + steril room + shop rep + the checks;
+   a fail fines you and may close the shop for closeWeeks (always from 2 infections, likely from the second fail) */
+const INSPECTION={gap:[26,44],first:[8,20],base:0.72,shopRep:0.001,recentInfect:-0.15,fine:9000,passRep:1,failRep:-4,min:0.2,max:0.98,
+  checks:{supplies:-0.12,budgetInk:-0.06,debt:-0.08,stations:-0.03},closeWeeks:[1,3],closeChance:0.6,closeAlways:0.4};
 const BROKE={floor:-15000,weeks:4,restart:2000,loan:30000};   // floor and restart in 2000 rubles x PRICE_INDEX
 /* the signature: what you do most. Past `pieces` of your own with a top style share of `share`, it shows */
 const SIGNATURE={pieces:12,share:0.32,full:60,askChance:0.32,collector:1.6,wtp:1.18,conv:0.15,
@@ -4462,7 +4519,8 @@ function careerFresh(){return{
   sig:{n:0,at:0,styles:{},els:{},places:{}},
   money:{cur:{in:{},out:{}},prev:null,total:{in:0,out:0}},
   broke:0,fails:0,scene:null,invites:[],conv:[],guest:null,offers:{},apprentices:[],alumni:[],rivals:[],
-  reached:{},books:"open",legacySeen:false,skipped:false,insp:null,cand:null};}
+  reached:{},books:"open",legacySeen:false,skipped:false,insp:null,cand:null,
+  closed:null,inspLast:null,inspFails:0,lastFail:null};}
 function studioFresh(){return{stage:"apprentice",staff:[],build:{stations:0,waiting:0,flash:0,steril:0,lighting:0,storefront:0},
   vibe:"street",marketing:0,rep:0,lease:null,nextStaff:1};}
 function caFill(dst,src){for(const k in src){if(dst[k]==null)dst[k]=src[k];else if(src[k]&&typeof src[k]==="object"&&!Array.isArray(src[k])&&typeof dst[k]==="object"&&!Array.isArray(dst[k]))caFill(dst[k],src[k]);}return dst;}
@@ -4492,6 +4550,7 @@ function rateFor(S){
   let r=R.base[st];for(const k in R.perRep)r+=R.perRep[k]*((S.rep&&+S.rep[k])||0);
   const sig=signatureOf(S);r*=1+R.sig*(sig.ready?sig.strength:0);
   r*=1+R.lighting*((S.studio&&S.studio.build&&S.studio.build.lighting)||0);
+  if(typeof SIM.rateMod==="function")r*=SIM.rateMod(S);   // PR 8: matching a rival's prices
   return Math.round(r*caPI(S)/R.round)*R.round;}
 
 /* ---- skills: one curve for every source (SKILL_XP.diminish, as the session uses) ---- */
@@ -4552,7 +4611,7 @@ function apprenticeGoal(S){const s=apprenticeSteps(S).find(x=>!x.done);return s|
 /* walk-ins reach an apprentice only after the friend step (market.js asks) */
 function walkinsOpen(S){
   const C=S.career;if(!C)return true;
-  if(C.books==="closed")return false;
+  if(C.books==="closed"||C.closed)return false;
   if(caStage(S)!=="apprentice"||C.skipped||C.old)return true;
   return !!C.steps.friend||caFriendDone(S)>0;}
 function mentorLine(S,topic,sub){
@@ -4623,7 +4682,7 @@ function softFail(S,ctx){
   for(const s of S.studio.staff)C.alumni.push({id:s.id,name:s.name,style:s.style,y:S.year,why:"let go when the shop closed",pieces:s.pieces||0});
   for(const a of C.apprentices)if(a.status==="training"){a.status="gone";a.end={w:S.week,y:S.year};a.where="found another shop when yours closed";}
   S.studio.staff=[];S.studio.build=studioFresh().build;S.studio.lease=null;S.studio.marketing=0;S.studio.rep=Math.round((S.studio.rep||0)*0.5*100)/100;
-  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;
+  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;C.closed=null;C.lastFail={w:S.week,y:S.year};
   S.cash=caRub(S,BROKE.restart);
   const gw=C.mentor.goodwill>=MENTOR.loanAt?"high":"low";
   C.scene={kind:"broke",w:S.week,y:S.year,from,staff,debt,line:mentorLine(S,"broke",gw)};
@@ -4649,6 +4708,8 @@ function shopWalkins(S){
   if(st!=="apprentice")out.mult+=(MARKETING[S.studio.marketing||0]||MARKETING[0]).walkins;
   const g=S.career&&S.career.guest;
   if(g&&weekIndex(S.week,S.year)<=g.until){const G=GUEST_SPOTS.find(x=>x.id===g.id);if(G){out.mult*=G.walkins;out.styles=G.styles;out.guest=G.id;}}
+  if(typeof SIM.rivalWalkins==="function")SIM.rivalWalkins(S,out);   // PR 8: rival shops pull walk-ins away
+  out.mult=Math.max(0.3,out.mult);
   return out;}
 
 /* ---- staff ---- */
@@ -4774,7 +4835,7 @@ function caInvitesWeek(S,ctx){
     caInvite(S,ctx,{id:"tv",kind:"tv",pay:caRub(S,LEGACY_OFFERS.tv.pay),until:now+8},"A TV channel calls: they want you for a tattoo makeover show.");
 }
 /* enterInvite(S, id, yes) -> {ok, kind, ...result} */
-function enterInvite(S,id,yes){
+function enterInvite(S,id,yes,picks){
   const C=careerEnsure(S),i=C.invites.findIndex(x=>x.id===id);if(i<0)return{ok:false};
   const inv=C.invites[i];
   if(inv.kind==="chair"){if(!yes)return{ok:true,kind:"chair",later:true};C.invites.splice(i,1);return Object.assign({kind:"chair"},rentChair(S));}
@@ -4786,7 +4847,7 @@ function enterInvite(S,id,yes){
   if(inv.kind==="guest"){const G=GUEST_SPOTS.find(g=>g.id===inv.spot);cashOut(S,inv.fee,"travel");
     C.guest={id:G.id,until:weekIndex(S.week,S.year)+G.weeks};for(const k in GUEST.rep)repAdd(S,k,GUEST.rep[k]);
     return{ok:true,kind:"guest",spot:G,fee:inv.fee};}
-  if(inv.kind==="conv")return Object.assign({ok:true,kind:"conv"},caConvention(S,inv));
+  if(inv.kind==="conv")return Object.assign({ok:true,kind:"conv"},typeof SIM.convJudge==="function"?SIM.convJudge(S,inv,picks):caConvention(S,inv));
   return{ok:false};}
 /* a convention: judged on your best portfolio piece today, your skill, your peers and how true you are to your signature */
 function caConvention(S,inv){
@@ -4835,8 +4896,8 @@ function careerWeek(S,ctx){
   if(st==="studio"||st==="legacy"){
     if(S.studio.lease)cashOut(S,caRub(S,LEASE.rentWeek+LEASE.utilities+STUDIO_STAGES.stations.upkeep*(S.studio.build.stations||0)),"rent");
     const mk=MARKETING[S.studio.marketing||0];if(mk&&mk.cost)cashOut(S,caRub(S,mk.cost),"marketing");
-    caStaffWeek(S,ctx);
-    if(S.studio.staff.length)cashOut(S,caRub(S,SUPPLIES.shopPerHour*6*S.studio.staff.length),"supplies");
+    if(!C.closed)caStaffWeek(S,ctx);
+    if(S.studio.staff.length&&!C.closed)cashOut(S,caRub(S,SUPPLIES.shopPerHour*6*S.studio.staff.length),"supplies");
     caApprenticeWeek(S,ctx);
     S.studio.rep=Math.round((S.studio.rep||0)*(1-STAFF.shopRepDecay)*1000)/1000;
     caInspect(S,ctx);
@@ -4877,10 +4938,20 @@ function caInspect(S,ctx){
   if(now<C.insp)return;
   const r=ctx.r.fork("insp");C.insp=now+r.int(I.gap[0],I.gap[1]);
   let inf=0;for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(now-weekIndex(p.w,p.y)>26)break;if(p.heal==="infected")inf++;}
-  const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*(S.studio.build.steril||0)+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf,I.min,I.max);
-  if(r.chance(pass)){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.");}
-  else{const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
-    caLog(ctx,"event","A health inspector writes the shop up: a "+caFmt(f)+" fine."+(S.studio.build.steril?"":" A sterilisation room would help."));}}
+  /* the checks: sterilisation (the room, recent infections) and supplies (paid for, decent ink, the bills) */
+  const K=I.checks,b=S.studio.build,prevSup=C.money&&C.money.prev&&C.money.prev.out?C.money.prev.out.supplies||0:0;
+  const ck={steril:b.steril||0,infected:inf,supplies:prevSup>0||!S.queue.some(q=>q.kind==="session"),ink:(S.kit&&S.kit.ink)||"budget",debt:(S.cash||0)<0,stations:(b.stations||0)>0};
+  const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*ck.steril+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf
+    +(ck.supplies?0:K.supplies)+(ck.ink==="budget"?K.budgetInk:0)+(ck.debt?K.debt:0)+(ck.stations?0:K.stations),I.min,I.max);
+  const ok=r.chance(pass);C.inspLast=Object.assign({w:S.week,y:S.year,pass:ok,chance:caR3(pass)},ck);
+  if(ok){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.",{insp:"pass"});return;}
+  const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
+  const why=inf?"infections on the record":!ck.steril?"no proper sterilisation room":!ck.supplies?"running short of clean supplies":ck.ink==="budget"?"cheap unlabelled ink":"the paperwork";
+  C.inspFails=(C.inspFails||0)+1;C.inspLast.why=why;
+  if((C.inspFails>=2&&r.chance(I.closeChance))||inf>=2||r.chance(I.closeAlways*(1-pass))){
+    const wk=r.int(I.closeWeeks[0],I.closeWeeks[1]),until=now+wk,u=weekFrom(until);C.closed={until,w:S.week,y:S.year,why};C.inspLast.closed=wk;
+    caLog(ctx,"event","A health inspector writes the shop up for "+why+": a "+caFmt(f)+" fine, and the shop is closed for "+wk+(wk===1?" week":" weeks")+", until week "+u.w+".",{insp:"closed"});}
+  else caLog(ctx,"event","A health inspector writes the shop up for "+why+": a "+caFmt(f)+" fine."+(b.steril?"":" A sterilisation room would help."),{insp:"fail"});}
 
 /* the shop's reputation from a staff heal (sim/heal.js calls it) */
 function shopRepHeal(S,piece){
@@ -5108,6 +5179,596 @@ function unpackSave(o){
 
 SIM.CLIENT_CAP=CLIENT_CAP;SIM.HISTORY_CAP=HISTORY_CAP;SIM.ARCHIVE=ARCHIVE;SIM.compactClients=compactClients;SIM.clientCompact=clientCompact;
 SIM.expandClient=expandClient;SIM.packSave=packSave;SIM.unpackSave=unpackSave;
+/* ===== sim/events.js: events, trends, rivals, social media, reckonings, cover-ups, conventions and goals (PR 8) =====
+   Tables (every tuning number lives here; rubles are 2000 rubles x SIM.priceIndex(year)):
+     TREND_WAVES   named fashion waves: a bump on one style's demand between rise and fall (peak in the middle).
+                   SIM.trendMult(style, year) multiplies STYLES[*].demandCurve in clients.js styleDemand, so walk-ins follow it
+     SOCIAL        social media from 2016 (plan Q2): posting a healed piece, reach, followers, far-away bookings, the one
+                   viral piece a career can have, clients posting bad heals, and how followers stay in step with reputation
+     RIVALS, RIVAL named shops in Mostograd (all invented) that open nearby, undercut, poach staff and copy your flash
+     RECKONINGS    scripted beats that fire once per career (plan Q13): your first-year piece walks back in aged, the client
+                   who bad-mouthed a patchy heal, Arkady's referral in Act 3, the pawn shop on the canal (a Lombard nod, Q16)
+     COVER_PUZZLE  cover-up jobs that arrive as events with someone else's dark old piece to design around
+     COVER_SCORE   how coverScore reads a design laid over an old piece
+     CONV_JUDGE    conventions: fresh-work and healed-work categories, booth sales, collectors, rivals' booths
+     GOALS         the career's goals (S.goals: id -> {w, y}); checkGoals marks them
+     EVENTS        the event sheets: how long a choice waits, and every line they say
+   S.world (worldFresh): {fired {reckoning id: {w, y, ...}}, plan {first_year: week index}, pending [events waiting for a
+   choice], nextEv, mods {rate: {mult, until}, fresh: until}, social {on {w,y} | null, followers, posts [[piece no, week
+   index, reach]], viral {piece, w, y} | null, booked, bad, gained}}. Rivals live in S.career.rivals; a closed shop in
+   S.career.closed {until, w, y} (sim/career.js, the inspection).
+   Functions: SIM.worldFresh, SIM.worldEnsure(S), SIM.trendMult(style, year), SIM.trendNow(S), SIM.postPiece(S, pieceId),
+   SIM.canPost(S, piece), SIM.followersTarget(S), SIM.eventChoose(S, id, choice), SIM.reckoningChoose(S, itemId, choice),
+   SIM.onReturn(item, S), SIM.rivalsCopy(S, sig, ctx), SIM.rivalWalkins(S, out), SIM.coverOld(S, item),
+   SIM.coverScore(design, old, box), SIM.convCandidates(S), SIM.checkGoals(S, slow), SIM.goalList(S).
+   WEEK_HOOKS.events = evWeek (closure, expired choices, social, rivals, reckonings, cover-ups, goals) and
+   WEEK_HOOKS.trend = evTrend (a k:"trend" line when a wave starts, peaks or fades). Every draw is forked from the
+   week's rng (ctx.r) or rng(S.seed), so the same save always plays out the same way. Private helpers start with ev. ===== */
+
+/* fashion waves: amp is the extra demand at the peak (negative = a backlash). Lines go in the Next log */
+const TREND_WAVES=[
+  {id:"script_ribs",style:"lettering",name:"script on the ribs",rise:2006,peak:2009,fall:2013,amp:0.3,
+    lines:{rise:"Script is catching on: people want a line of lettering down the ribs.",peak:"Every second walk-in wants script this year.",fall:"The script craze is cooling off."}},
+  {id:"old_school",style:"traditional",name:"the old-school revival",rise:2008,peak:2011,fall:2015,amp:0.15,
+    lines:{rise:"Bold lines and five colours are back. Old-school flash sells again.",peak:"Traditional is having its moment. Arkady's wall would empty today.",fall:"The old-school crowd settles back to the regulars."}},
+  {id:"portraits",style:"realism",name:"portraits",rise:2010,peak:2013,fall:2017,amp:0.2,
+    lines:{rise:"People bring photographs now: pets, grandparents, faces.",peak:"Portrait work is everywhere this year.",fall:"Fewer people are asking for portraits."}},
+  {id:"watercolour",style:"watercolour",name:"the watercolour craze",rise:2011,peak:2014,fall:2017,amp:0.4,
+    lines:{rise:"Soft colour with no outlines: watercolour is starting to show up on the embankment.",peak:"Watercolour is everywhere. Everyone wants a splash with no lines.",fall:"The first watercolour pieces are blurring, and people have noticed."}},
+  {id:"watercolour_backlash",style:"watercolour",name:"the watercolour backlash",rise:2017,peak:2020,fall:2025,amp:-0.3,
+    lines:{rise:"Clients ask if watercolour lasts. Some come in to have theirs outlined.",peak:"Hardly anyone asks for watercolour now.",fall:"Watercolour is quietly coming back, with outlines this time."}},
+  {id:"dotwork",style:"geometric",name:"dotwork and sacred geometry",rise:2012,peak:2016,fall:2020,amp:0.3,
+    lines:{rise:"Dotwork mandalas and clean geometry are turning up in people's phones.",peak:"Geometric work is booked out across the city.",fall:"The geometry wave is settling down."}},
+  {id:"fineline",style:"fineline",name:"the fine-line boom",rise:2013,peak:2017,fall:2023,amp:0.4,
+    lines:{rise:"Tiny, delicate pieces: fine line is catching on with first-timers.",peak:"The fine-line boom: single-needle work is all anyone shows you on their phone.",fall:"Fine line is cooling. People are asking how it will age."}},
+  {id:"neotrad",style:"neotrad",name:"neo-traditional",rise:2014,peak:2018,fall:2022,amp:0.2,
+    lines:{rise:"Neo-trad is picking up: old-school lines with more colour and detail.",peak:"Neo-traditional is big this year.",fall:"Neo-trad settles into the regular mix."}},
+  {id:"blackout",style:"blackwork",name:"heavy blackwork",rise:2017,peak:2021,fall:2026,amp:0.25,
+    lines:{rise:"Big solid black is starting to show up: bands, blackout sleeves.",peak:"Heavy blackwork is the thing this year.",fall:"The heavy blackwork wave is easing off."}},
+  {id:"japanese",style:"japanese",name:"big Japanese work",rise:2022,peak:2026,fall:2030,amp:0.2,
+    lines:{rise:"Collectors are asking for big Japanese pieces again: backs, full sleeves.",peak:"Japanese backpieces are booked a year out in every good shop.",fall:"The Japanese wave is levelling off."}},
+  {id:"trad_again",style:"traditional",name:"traditional comes round again",rise:2021,peak:2025,fall:2030,amp:0.15,
+    lines:{rise:"Traditional is coming round again. It always does.",peak:"Bold old-school work is popular again.",fall:"Traditional settles back where it always sits."}}
+];
+/* social media (plan Q2: from 2016). Followers are the public face of reputation: they drift toward followersTarget(S)
+   (perRep x reputation sum squared / 10) each week, and followers gained from posts feed walk-ins and collectors back */
+const SOCIAL={
+  from:2016,
+  start:{perRep:3,min:40},                  // followersTarget = perRep x (walkins + collectors + peers)^2 / 10, at least min
+  drift:0.01,                               // the weekly pull toward the target
+  reach:{base:60,score:900,follow:0.08,sd:0.3,heal:{crisp:1,soft:0.75,patchy:0.25,blownout:0.1,infected:0.05}},
+  follow:0.03,                              // share of a post's reach that follows you
+  toRep:{per:1000,walkins:0.6,collectors:0.25},   // reputation per 1,000 followers gained from posts
+  bookings:{per:40000,max:0.35},             // weekly chance of a far-away booking: followers / per, at most max
+  viral:{minQ:0.62,minFollowers:250,chance:0.12,mult:25,rep:{walkins:8,collectors:4,peers:1}},
+  bad:{chance:{patchy:0.2,blownout:0.4,infected:0.6},lose:0.04,rep:{walkins:-1.5,peers:-0.5}},
+  postsCap:2000,
+  far:["the capital","the Baltic coast","a port town up north","abroad, a night flight away","a city down the river"],
+  lines:{
+    start:"Everyone has a camera in their pocket now. You start posting healed work for the shop.",
+    far:["I've followed your account for a year. I'm coming in from {far} for this.","I saw a piece of yours online and booked the train from {far} the same night.","Your healed work is all over my feed. I'll travel from {far}, just tell me when."],
+    bad:["{first} posts a photo of the {grade} heal on {pos} {label}. The comments aren't kind.","A photo of {first}'s {label} goes round online: {grade}, with your shop tagged."],
+    viral:"Your post of {name} goes everywhere. Strangers share it, other artists argue about it, and your phone doesn't stop."}
+};
+/* rival shops: invented names on Lombard's streets; they open in their window whatever you do */
+const RIVALS=[
+  {id:"seventh",name:"Seventh Bridge Tattoo",where:"by the Old Bridge",style:"traditional",tactic:"poach",open:[2007,2010],pull:0.1,
+    says:"a big street shop with six chairs and a neon sign"},
+  {id:"heron",name:"the Grey Heron",where:"on Lodochnaya Embankment",style:"fineline",tactic:"undercut",open:[2011,2014],pull:0.08,
+    says:"a bright little fine-line studio with plants in the window"},
+  {id:"nochnoy",name:"Atelier Nochnoy",where:"on Kanatnaya Street",style:"realism",tactic:"copy",open:[2014,2018],pull:0.06,
+    says:"an appointment-only studio that keeps its blinds down"},
+  {id:"konveyer",name:"Konveyer",where:"on the outer ring",style:"lettering",tactic:"undercut",open:[2016,2020],pull:0.12,
+    says:"a cheap walk-in place that does twenty small pieces a day"}
+];
+const RIVAL={
+  openChance:0.04,stylePull:0.3,
+  str:{start:0.5,grow:0.002,press:0.006,min:0.05,closeAt:0.12,closeAfter:104},   // strength drifts down once your rep sum passes close.repSum
+  close:{repSum:160},
+  act:{undercut:0.012,poach:0.008,copy:0.03},cool:26,   // weekly chances x strength x 2 x (1 + grudge); a rival waits cool weeks between moves
+  undercut:{match:0.9,weeks:12,hold:{walkins:-1.5},truce:52},
+  poach:{cut:0.05,loyalty:0.25},
+  copy:{call:{peers:1,low:-0.5},let:{walkins:-0.8},fresh:{collectors:1,xp:0.05}},
+  respect:{at:0.3,chance:0.01},
+  apprentice:{str:0.4,mem:0.2}
+};
+/* reckonings: once per career each (S.world.fired) */
+const RECKONINGS={
+  first_year:{years:[12,18],plan:[12,15],wait:4,
+    brief:["Do you remember me? You did the {label} on my {place} in {year}, {when}. {yrs} years. Look at it now.",
+      "It's {first}. The {label} on my {place}, {year}: one of your first. It's been on me {yrs} years. What do we do with it?"],
+    choices:{rework:{label:"Rework it, free",says:"You go over every line you laid down {yrs} years ago. It's still your hand, just a better one now."},
+      cover:{label:"Cover it",says:"You talk it through: something bigger and darker over the top. A paid job, booked properly."},
+      leave:{label:"Leave it as it is",says:"You both look at it for a while. {first} decides it stays: it's part of the story."}},
+    rep:{rework:{peers:1.5},leave:{collectors:0.5}},loyalty:{rework:0.2,cover:0.05,leave:0.05}},
+  bad_mouth:{repSum:150,collectors:50,stars:2,wait:4,
+    brief:["I'm the one who told everyone at work my {label} healed patchy. I said worse than that. Now everyone says you're the best in Mostograd. Can you fix it?",
+      "You probably remember my review. The {label} from {year}. I was angry. People keep telling me to come back to you, so here I am."],
+    choices:{fix:{label:"Fix it, free",says:"You fix it properly and don't mention the review. {first} does, twice."},
+      charge:{label:"Book it at your rate",says:"Fair is fair: a proper touch-up at your normal rate."},
+      refuse:{label:"Turn them away",says:"You tell {first} to find another shop. It feels good for about an hour."}},
+    rep:{fix:{walkins:1,peers:0.5},refuse:{walkins:-0.5}},loyalty:{fix:0.3,charge:0.05}},
+  mentor_ref:{weeks:8,high:0.45,wait:3,
+    high:"Arkady Lvovich sent me. He said you're the only one in the city he'd let near my back.",
+    low:"Arkady did my panther thirty years ago. He's put his machines away; he says it's your hands now.",
+    line:{high:"Arkady calls: \"I'm sending you someone. Don't make me look bad.\"",low:"Arkady sends an old client of his your way, without a word to you."}},
+  pawn:{from:2010,pay:{coil_used:1200,coil:3000,rotary:5500,pen:11000},
+    text:"The pawn shop on the canal will take your old {machine}. The man behind the counter says he'll give a fair price for it.",
+    choices:{sell:{label:"Sell it at the pawn shop",says:"The pawnbroker turns it over twice, names a price and doesn't haggle. {pay} in your pocket."},
+      keep:{label:"Keep it on the shelf",says:"It goes on the shelf above your station. Some things you keep."}}}
+};
+/* cover-up jobs: someone else's old piece, pre-placed on the board as a locked dark layer */
+const COVER_PUZZLE={peers:18,chance:0.018,size:[30,90],wait:3,
+  lines:["I've got a {foreign} on my {place}, from {year}, {where}. Everyone says you're the one for cover-ups.","There's a {foreign} on my {place}. {Where}, {year}. I've hidden it for years. I'm done hiding it."]};
+/* how a design covers an old piece: points on the old ink count as covered by dark, filled work over them */
+const COVER_SCORE={grid:14,oldK:0.85,newK:0.72,   // ellipse sizes: an element fills about this share of its box
+  family:{fill:0.95,texture:0.85},lineOnly:0.35,fillW:0.6,need:0.75,good:0.85,ok:0.6,
+  rep:{good:0.5,bad:-0.5},loyalty:0.3};
+/* conventions (PR 7 CONVENTIONS + this): a fresh piece and a healed piece, judged separately */
+const CONV_JUDGE={
+  freshWeeks:16,healedYears:1,list:12,
+  fresh:{design:0.5,outputs:0.3,skill:0.1,sig:0.1},
+  healed:{reads:0.45,heal:0.25,years:0.15,sig:0.15},
+  heal:{crisp:1,soft:0.7,patchy:0.3,blownout:0.1,infected:0},
+  sd:0.06,places:[0.72,0.62,0.52],prizeShare:0.6,
+  booth:{perSheet:120,min:3,attendance:{mostograd_fair:1,capital_expo:1.8,baltic_show:1.3}},
+  collector:{chance:0.35,perPlace:0.15}
+};
+/* the career's goals; checks marked slow run on a year boundary or every 13 weeks */
+const GOALS=[
+  {id:"first_heal",name:"First clean heal",says:"a piece of yours heals crisp"},
+  {id:"first_custom",name:"First custom piece",says:"a paid piece you designed yourself, not flash"},
+  {id:"first_return",name:"First return client",says:"someone comes back for more work"},
+  {id:"first_award",name:"First convention award",says:"place at a convention"},
+  {id:"studio",name:"Open the studio",says:"lease your own shop"},
+  {id:"hire",name:"Hire an artist",says:"put someone on a station in your shop"},
+  {id:"five_pieces",name:"A client with five of your pieces",says:"one person wears five pieces of yours"},
+  {id:"survive_rival",name:"Survive a rival",says:"outlast a rival shop: it closes, or three years pass without losing yours"},
+  {id:"twenty_reads",name:"Twenty years and it still reads",says:"a piece of yours twenty years old that still reads",slow:true},
+  {id:"apprentice_shop",name:"An apprentice opens a shop",says:"someone you trained goes out on their own"}
+];
+const EVENTS={wait:3,
+  undercut:{text:"{rival} {where} has dropped its prices well under yours. Walk-ins are noticing.",
+    choices:[["match","Match their prices for a while"],["hold","Hold your price"],["talk","Go round and talk to them"]],dflt:"hold",
+    says:{match:"You drop your rate for a few months. The walk-ins stay; the margins don't.",hold:"Some walk-ins go to {rival} for the price. Your regulars don't.",
+      truce:"Over tea in their back room you agree not to cut each other's throats. For a year, anyway.",snub:"They laugh you out of the shop. They'll remember you tried."}},
+  poach:{text:"{rival} has offered {staff} a station and a better cut.",
+    choices:[["let","Wish them well"],["match","Take a smaller cut to keep them"],["talk","Talk to them"]],dflt:"let",
+    says:{let:"{staff} packs up their station. Some of their regulars follow them to {rival}.",match:"You take a smaller cut. {staff} stays, and knows what it cost you.",
+      stay:"You talk late into the evening. {staff} stays.",go:"{staff} hears you out, then goes anyway.",gone:"{staff} had already gone."}},
+  copy:{text:"Your {style} flash is on {rival}'s wall, nearly line for line.",
+    choices:[["call","Call them out"],["let","Let it go"],["fresh","Draw new flash and move on"]],dflt:"let",
+    says:{call:"Word gets round. Other artists know whose work it really is.",callLow:"You call them out, but your own style isn't known enough yet. It looks like sour grapes.",
+      let:"You let it go. A few walk-ins get your designs cheaper across town.",fresh:"You draw a new sheet over a week of evenings. It's better than the old one."}},
+  rivalOpen:"A new shop opens {where}: {rival}, {says}.",
+  rivalGone:"{rival} {where} closes its doors. Some of their regulars find their way to you.",
+  rivalRespect:"{rival} sends someone over: \"They want a cover-up. We don't do those. You do.\"",
+  closed:"The shop is closed until week {w}, {y}. Bookings move, walk-ins go elsewhere.",
+  reopen:"The shop reopens after the inspection. The autoclave log is spotless now.",
+  moved:"The shop is closed: {n} booked {sittings} moved to week {w}.",
+  reckoning:{first_year:"{first} is booked in: one of your first clients, with the {label} from {year}.",
+    bad_mouth:"{first} is booked in about the {label} from {year}. The one with the bad review.",
+    mentor_ref:"{line}"},
+  puzzle:"A cover-up job is booked in: {first} wants the {foreign} on {pos} {place} gone.",
+  goal:"Goal reached: {name}."
+};
+
+/* ---- the state's world field (also used by app/state.js freshState through SIM.worldFresh) ---- */
+function worldFresh(){return{fired:{},plan:{},pending:[],nextEv:1,mods:{},
+  social:{on:null,followers:0,posts:[],viral:null,booked:0,bad:0,gained:0}};}
+function worldEnsure(S){
+  if(!S.world||typeof S.world!=="object"||Array.isArray(S.world))S.world=worldFresh();else caFill(S.world,worldFresh());
+  if(!Array.isArray(S.world.pending))S.world.pending=[];
+  if(!Array.isArray(S.world.social.posts))S.world.social.posts=[];
+  if(!S.goals||typeof S.goals!=="object"||Array.isArray(S.goals))S.goals={};
+  careerEnsure(S);evRivalsFix(S);
+  return S.world;}
+const evNow=S=>weekIndex(S.week,S.year);
+const evRub=(S,v)=>Math.round(v*SIM.priceIndex(S.year)/10)*10;
+const evFmt=n=>Math.round(n).toLocaleString("en-CA")+" ₽";
+const evCap=s=>{s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);};
+function evFill(t,o){return evCap(clSlotFill(String(t||""),o||{}));}
+const evRepSum=S=>["walkins","collectors","peers"].reduce((a,k)=>a+((S.rep&&+S.rep[k])||0),0);
+const evStart=S=>S.career&&S.career.skipped?2000+ACTS.apprentice.years[1]:2000;
+function evLog(ctx,k,text,extra){if(ctx&&ctx.log)ctx.log.push(Object.assign({k,text},extra||{}));}
+function evPending(S,cid){for(const q of S.queue)if((q.kind==="consult"||q.kind==="session")&&q.client===cid)return true;return false;}
+const evPos=c=>(PRONOUN_WORDS[(c&&c.pronouns)||"she/her"]||{pos:"their"}).pos;
+
+/* ===================== trends ===================== */
+const EV_WAVES={};for(const w of TREND_WAVES)(EV_WAVES[w.style]=EV_WAVES[w.style]||[]).push(w);
+function evWave(w,year){if(year<=w.rise||year>=w.fall)return 0;return year<=w.peak?(year-w.rise)/((w.peak-w.rise)||1):(w.fall-year)/((w.fall-w.peak)||1);}
+/* trendMult(style, year): 1 + the waves on that style (never below 0.2) */
+function trendMult(style,year){const L=EV_WAVES[style];if(!L)return 1;let m=1;for(const w of L)m+=w.amp*evWave(w,year);return Math.max(0.2,Math.round(m*1000)/1000);}
+/* trendNow(S) -> {top: [{style, name, demand, dir: "up"|"down"|"flat"}] (the 4 most wanted), waves: [{name, style, phase}]} */
+function trendNow(S){
+  const y=S.year+(S.week-1)/WEEKS_PER_YEAR,st=SIM.STYLES||{};
+  const top=Object.keys(st).map(k=>{const d=styleDemand(k,y),d0=styleDemand(k,y-1);return{style:k,name:st[k].name,demand:Math.round(d*100)/100,dir:d>d0*1.04?"up":d<d0*0.96?"down":"flat"};})
+    .sort((a,b)=>b.demand-a.demand).slice(0,4);
+  const waves=TREND_WAVES.filter(w=>evWave(w,y)>0.15).map(w=>({id:w.id,name:w.name,style:w.style,phase:y<w.peak-0.5?"rising":y<=w.peak+0.5?"peak":"fading",amp:w.amp}));
+  return{top,waves};}
+/* WEEK_HOOKS.trend: on a year boundary, a line for every wave that starts, peaks or turns */
+function evTrend(S,ctx){
+  if(!ctx.yearRolled)return;
+  for(const w of TREND_WAVES){const k=S.year===w.rise?"rise":S.year===w.peak?"peak":S.year===w.fall?"fall":null;
+    if(k)evLog(ctx,"trend",w.lines[k],{wave:w.id,style:w.style,phase:k});}}
+
+/* ===================== social media ===================== */
+function followersTarget(S){return Math.max(SOCIAL.start.min,Math.round(SOCIAL.start.perRep*Math.pow(evRepSum(S),2)/10));}
+function evPostIndex(W){const m={};for(const p of W.social.posts)m[p[0]]=p;return m;}
+const evPid=id=>+String(id).slice(1);
+/* canPost(S, piece) -> null if it can be posted, else why */
+function canPost(S,p){
+  const W=worldEnsure(S);if(S.year<SOCIAL.from||!W.social.on)return "year";
+  if(!p||p.by)return "shop";if(!p.heal)return "healing";
+  if(W.social.posts.some(x=>x[0]===evPid(p.id)))return "posted";
+  return null;}
+/* the quality a post is judged on: half the design's total score for its client, half how it reads today */
+function evPieceQ(S,p){
+  const c=findClient(S,p.client);let tot=0.6;
+  try{if(c&&c.wants)tot=scoreDesign(p.design,c,S.skills||{},{year:p.y}).total;}catch(e){}
+  return clamp(0.5*tot+0.5*caReads(S,p),0,1);}
+/* postPiece(S, pieceId) -> {ok, why?, reach, gained, followers, viral, q} */
+function postPiece(S,id){
+  const W=worldEnsure(S),p=S.pieces.find(x=>x.id===id),why=canPost(S,p);if(why)return{ok:false,why};
+  const R=SOCIAL.reach,so=W.social,r=rng(S.seed).fork("post:"+id),q=evPieceQ(S,p);
+  let reach=(R.base+R.score*q*q)*(R.heal[p.heal]!=null?R.heal[p.heal]:0.5)*(1+R.follow*Math.sqrt(so.followers))*Math.exp(r.normal(0,R.sd));
+  let viral=false;const V=SOCIAL.viral;
+  if(!so.viral&&q>=V.minQ&&p.heal==="crisp"&&so.followers>=V.minFollowers&&r.chance(V.chance)){viral=true;reach*=V.mult;so.viral={piece:p.id,w:S.week,y:S.year};
+    for(const k in V.rep)repAdd(S,k,V.rep[k]);}
+  reach=Math.round(reach);const gained=Math.round(reach*SOCIAL.follow);
+  so.followers+=gained;so.gained+=gained;
+  so.posts.push([evPid(p.id),evNow(S),reach]);if(so.posts.length>SOCIAL.postsCap)so.posts.splice(0,so.posts.length-SOCIAL.postsCap);
+  const T=SOCIAL.toRep;repAdd(S,"walkins",gained/T.per*T.walkins);repAdd(S,"collectors",gained/T.per*T.collectors*q);
+  return{ok:true,reach,gained,followers:so.followers,viral,q:Math.round(q*1000)/1000,text:viral?evFill(SOCIAL.lines.viral,{name:p.name}):null};}
+function evSocialWeek(S,ctx){
+  const W=S.world,so=W.social,now=ctx.now;
+  if(S.year<SOCIAL.from)return;
+  if(!so.on){so.on={w:S.week,y:S.year};so.followers=Math.max(so.followers,followersTarget(S));evLog(ctx,"event",SOCIAL.lines.start,{social:"start"});return;}
+  so.followers=Math.max(0,Math.round(so.followers+(followersTarget(S)-so.followers)*SOCIAL.drift));
+  /* clients post their bad heals (the heals hook ran earlier this week) */
+  const B=SOCIAL.bad,rb=ctx.r.fork("badpost");
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(now-weekIndex(p.w,p.y)>WEEK.healWeeks+1)break;
+    if(p.by||!p.heal||p.healW!==S.week||p.healY!==S.year||!B.chance[p.heal])continue;
+    if(!rb.fork(p.id).chance(B.chance[p.heal]))continue;
+    const c=findClient(S,p.client);so.followers=Math.round(so.followers*(1-B.lose));so.bad++;for(const k in B.rep)repAdd(S,k,B.rep[k]);
+    evLog(ctx,"event",evFill(rb.pick(SOCIAL.lines.bad),{first:c?c.first:"A client",label:p.label,pos:evPos(c),grade:(HEAL_GRADES[p.heal]||{}).name||p.heal}),{piece:p.id,client:p.client,social:"bad"});}
+  /* followers far away book in */
+  if(walkinsOpen(S)&&ctx.r.fork("far").chance(Math.min(SOCIAL.bookings.max,so.followers/SOCIAL.bookings.per))){
+    const r=ctx.r.fork("farClient"),st=caStage(S),c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:st,sizes:WALKINS.sizes[st]||null,src:"social",badIdea:false,segBoost:{collector:0.8,large_scale:0.4}});
+    c.brief=evFill(r.pick(SOCIAL.lines.far),{far:r.pick(SOCIAL.far)})+" "+c.brief;
+    const due=weekFrom(now+r.int(1,3));
+    S.queue.push({id:queueId(S),kind:"consult",src:"social",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:c.brief,ask:c.ask});
+    so.booked++;evLog(ctx,"referral",c.name+" found you online and is booked for a consult.",{client:c.id,social:"far"});}}
+
+/* ===================== rivals ===================== */
+function evRivals(S){const C=S.career;if(!C)return[];if(!Array.isArray(C.rivals))C.rivals=[];return C.rivals;}
+/* PR 7's apprentice rivals ({name, style, el, from:"apprentice", y}) become shops with the same fields as RIVALS */
+function evRivalsFix(S){
+  const L=evRivals(S);L.forEach((rv,i)=>{if(rv.id)return;
+    Object.assign(rv,{id:"app"+(i+1),shop:rv.name+"'s shop",where:rv.where||"across the canal",tactic:"copy",str:RIVAL.apprentice.str,mem:RIVAL.apprentice.mem,
+      opened:{w:1,y:rv.y||S.year},status:"open",acts:{},says:"run by someone you trained"});});}
+function evRivalDef(rv){return RIVALS.find(x=>x.id===rv.id)||{pull:0.07,style:rv.style,where:rv.where,tactic:rv.tactic,name:rv.shop||rv.name};}
+const evRivalName=rv=>rv.shop||rv.name;
+/* rivalWalkins(S, out): open rivals pull walk-ins (and their style) away; shopWalkins in sim/career.js calls it */
+function rivalWalkins(S,out){
+  if(caStage(S)==="apprentice")return out;
+  for(const rv of evRivals(S)){if(rv.status!=="open")continue;const d=evRivalDef(rv),s=clamp(rv.str||0.4,0,1);
+    out.mult-=d.pull*s;
+    if(rv.style){out.styles=Object.assign({},out.styles||{});out.styles[rv.style]=(out.styles[rv.style]||1)*(1-RIVAL.stylePull*s);}}
+  return out;}
+function evPush(S,ctx,ev,text){
+  const W=S.world;ev.id="e"+(W.nextEv++);ev.w=S.week;ev.y=S.year;ev.until=evNow(S)+(ev.wait||EVENTS.wait);ev.text=text;
+  if(ev.rival){const rv=evRivals(S).find(x=>x.id===ev.rival);if(rv)rv.last=evNow(S);}
+  W.pending.push(ev);evLog(ctx,"event",text,{ev:ev.id,rival:ev.rival||undefined});return ev;}
+function evRivalsWeek(S,ctx){
+  const L=evRivals(S),now=ctx.now,st=caStage(S),r=ctx.r.fork("rivals"),repSum=evRepSum(S),Rs=RIVAL.str;
+  /* openings */
+  for(const d of RIVALS){if(L.some(x=>x.id===d.id)||S.year<d.open[0]||S.year>d.open[1])continue;
+    if(!(r.fork("open:"+d.id).chance(RIVAL.openChance)||(S.year===d.open[1]&&S.week>=40)))continue;
+    const rv={id:d.id,name:d.name,shop:d.name,where:d.where,style:d.style,tactic:d.tactic,says:d.says,opened:{w:S.week,y:S.year},str:Rs.start,mem:0,acts:{},status:"open",from:"rival"};
+    L.push(rv);evLog(ctx,"event",evFill(EVENTS.rivalOpen,{rival:d.name,where:d.where,says:d.says}),{rival:d.id});}
+  for(const rv of L){if(rv.status!=="open")continue;
+    const rr=r.fork(rv.id);
+    rv.str=Math.round(clamp(rv.str+Rs.grow-Rs.press*Math.max(0,repSum-RIVAL.close.repSum)/100,Rs.min,1)*1000)/1000;
+    if(rv.str<=Rs.closeAt&&now-weekIndex(rv.opened.w,rv.opened.y)>=Rs.closeAfter){rv.status="gone";rv.gone={w:S.week,y:S.year};
+      evLog(ctx,"event",evFill(EVENTS.rivalGone,{rival:evRivalName(rv),where:rv.where}),{rival:rv.id});continue;}
+    if(st==="apprentice"||(rv.truce&&now<rv.truce)||(rv.last&&now-rv.last<RIVAL.cool)||S.world.pending.some(e=>e.rival===rv.id))continue;
+    const grudge=Math.max(0,-(rv.mem||0)),base=2*rv.str*(1+grudge);
+    if(rv.tactic==="undercut"&&rr.chance(RIVAL.act.undercut*base)){
+      evPush(S,ctx,{kind:"undercut",rival:rv.id,choices:EVENTS.undercut.choices,dflt:EVENTS.undercut.dflt},evFill(EVENTS.undercut.text,{rival:evRivalName(rv),where:rv.where}));}
+    else if(rv.tactic==="poach"&&S.studio.staff.length&&rr.chance(RIVAL.act.poach*base)){
+      const s=S.studio.staff.slice().sort((a,b)=>a.loyalty-b.loyalty)[0];
+      evPush(S,ctx,{kind:"poach",rival:rv.id,staff:s.id,choices:EVENTS.poach.choices,dflt:EVENTS.poach.dflt},evFill(EVENTS.poach.text,{rival:evRivalName(rv),staff:s.name}));}
+    else if((rv.mem||0)>=RIVAL.respect.at&&rr.chance(RIVAL.respect.chance))evCoverPuzzle(S,ctx,rr.fork("resp"),rv);}}
+/* rivalsCopy(S, sig, ctx): sim/career.js calls it each week once your signature is ready */
+function rivalsCopy(S,sig,ctx){
+  worldEnsure(S);if(caStage(S)==="apprentice")return;
+  const r=ctx.r.fork("copy");
+  for(const rv of evRivals(S)){if(rv.status!=="open"||rv.tactic!=="copy"||(rv.truce&&ctx.now<rv.truce)||(rv.last&&ctx.now-rv.last<RIVAL.cool)||S.world.pending.some(e=>e.rival===rv.id))continue;
+    if(!r.fork(rv.id).chance(RIVAL.act.copy*2*rv.str*(1+Math.max(0,-(rv.mem||0)))*sig.strength))continue;
+    const style=((SIM.STYLES||{})[sig.style]||{}).name||sig.style;
+    evPush(S,ctx,{kind:"copy",rival:rv.id,style:sig.style,choices:EVENTS.copy.choices,dflt:EVENTS.copy.dflt},evFill(EVENTS.copy.text,{rival:evRivalName(rv),style:String(style).toLowerCase()}));
+    break;}}
+/* the rate after a price war (sim/career.js rateFor multiplies it in) */
+function evRateMod(S){const m=S.world&&S.world.mods&&S.world.mods.rate;return m&&evNow(S)<m.until?m.mult:1;}
+
+/* ===================== choices ===================== */
+const EV_DO={
+  undercut(S,ev,ch,rv,r){const E=EVENTS.undercut,U=RIVAL.undercut,o={rival:evRivalName(rv)};
+    if(ch==="match"){S.world.mods.rate={mult:U.match,until:evNow(S)+U.weeks};rv.str=clamp(rv.str-0.05,RIVAL.str.min,1);S.rate=rateFor(S);return evFill(E.says.match,o);}
+    if(ch==="talk"){if((rv.mem||0)>=-0.2&&r.chance(0.5+(rv.mem||0)/2)){rv.truce=evNow(S)+U.truce;rv.mem=caR3(clamp((rv.mem||0)+0.2,-1,1));return evFill(E.says.truce,o);}
+      rv.mem=caR3(clamp((rv.mem||0)-0.15,-1,1));return evFill(E.says.snub,o);}
+    for(const k in U.hold)repAdd(S,k,U.hold[k]);rv.str=clamp(rv.str+0.04,0,1);return evFill(E.says.hold,o);},
+  poach(S,ev,ch,rv,r){const E=EVENTS.poach,s=S.studio.staff.find(x=>x.id===ev.staff),o={rival:evRivalName(rv),staff:s?s.name:"Your artist"};
+    if(!s)return evFill(E.says.gone,o);
+    if(ch==="match"){s.cut=caR3(Math.max(0.15,s.cut-RIVAL.poach.cut));s.loyalty=caR3(clamp(s.loyalty+RIVAL.poach.loyalty,0,1));return evFill(E.says.match,o);}
+    if(ch==="talk"&&r.chance(clamp(s.loyalty+(s.from?0.3:0),0.05,0.95))){s.loyalty=caR3(clamp(s.loyalty+0.1,0,1));return evFill(E.says.stay,o);}
+    letGo(S,s.id,"poached by "+evRivalName(rv));rv.str=clamp(rv.str+0.05,0,1);rv.acts.poach=(rv.acts.poach||0)+1;
+    return evFill(ch==="talk"?E.says.go:E.says.let,o);},
+  copy(S,ev,ch,rv,r){const E=EVENTS.copy,C=RIVAL.copy,o={rival:evRivalName(rv)};rv.acts.copy=(rv.acts.copy||0)+1;
+    if(ch==="call"){const sig=signatureOf(S);rv.mem=caR3(clamp((rv.mem||0)-0.3,-1,1));
+      if(sig.strength>=0.4){repAdd(S,"peers",C.call.peers);rv.str=clamp(rv.str-0.03,RIVAL.str.min,1);return evFill(E.says.call,o);}
+      repAdd(S,"peers",C.call.low);return evFill(E.says.callLow,o);}
+    if(ch==="fresh"){repAdd(S,"collectors",C.fresh.collectors);if(ev.style)skillGain(S,"style:"+ev.style,C.fresh.xp);S.world.mods.fresh=evNow(S)+26;return evFill(E.says.fresh,o);}
+    for(const k in C.let)repAdd(S,k,C.let[k]);rv.str=clamp(rv.str+0.03,0,1);return evFill(E.says.let,o);},
+  pawn(S,ev,ch){const P=RECKONINGS.pawn,c=P.choices[ch]||P.choices.keep;
+    if(ch==="sell"){const own=S.kit&&S.kit.owned&&S.kit.owned.machines;const m=ev.machine;
+      if(own&&own.indexOf(m)>=0&&S.kit.machine!==m){own.splice(own.indexOf(m),1);const pay=evRub(S,P.pay[m]||P.pay.coil_used);cashIn(S,pay,"pawn");return evFill(c.says,{pay:evFmt(pay)});}
+      return "You look for it, but it's not on the shelf any more.";}
+    return evFill(c.says,{});}
+};
+/* eventChoose(S, id, choice) -> {ok, kind, choice, text} */
+function eventChoose(S,id,choice){
+  const W=worldEnsure(S),i=W.pending.findIndex(e=>e.id===id);if(i<0)return{ok:false};
+  const ev=W.pending[i];W.pending.splice(i,1);
+  const ok=(ev.choices||[]).some(c=>c[0]===choice)?choice:ev.dflt;
+  const rv=ev.rival?evRivals(S).find(x=>x.id===ev.rival):null,r=rng(S.seed).fork("choose:"+ev.id+":"+ok);
+  const f=EV_DO[ev.kind];const text=f?(rv||!ev.rival?f(S,ev,ok,rv||{acts:{}},r):"They've closed since."):"";
+  if(rv&&rv.acts)rv.acts[ev.kind]=(rv.acts[ev.kind]||0)+(ev.kind==="poach"||ev.kind==="copy"?0:1);
+  return{ok:true,kind:ev.kind,choice:ok,text};}
+
+/* ===================== reckonings ===================== */
+/* SIM.onReturn(item, S): scheduleReturns (sim/clients.js) calls it for every return; a cover_own of a first-year piece in
+   career years 12-18 becomes the first_year reckoning */
+function onReturn(item,S){
+  if(!item||!item.ret||item.ret.rule!=="cover_own")return;
+  const W=worldEnsure(S);if(W.fired.first_year)return;
+  const st=evStart(S),R=RECKONINGS.first_year;if(S.year<st+R.years[0]||S.year>st+R.years[1])return;
+  const p=S.pieces.find(x=>x.id===item.ret.piece),c=findClient(S,item.client);if(!p||!c||!evEarly(S,p))return;
+  evBeat(S,item,"first_year",p,c,rng(S.seed).fork("reck:first_year:brief"));}
+const evEarly=(S,p)=>!p.by&&(p.stage==="apprentice"||p.y<=evStart(S)+1);
+function evBeat(S,item,id,p,c,r){
+  const R=RECKONINGS[id];item.beat=id;
+  item.brief=evFill(r.pick(R.brief),{first:c.first,label:p.label,place:clPlaceName(p.design.placement),year:p.y,yrs:S.year-p.y,when:p.stage==="apprentice"?"when you were still sweeping Arkady's floor":"back when you'd only just got your own chair"});
+  item.expires=Math.max(item.expires||0,weekIndex(item.w,item.y)+R.wait);
+  c.brief=item.brief;S.world.fired[id]={w:S.week,y:S.year,client:c.id,piece:p.id};}
+function evReturnItem(S,c,p,ruleId,r){
+  const rule=RETURN_RULES.find(x=>x.id===ruleId),due=weekFrom(evNow(S)+r.int(0,1));
+  const ask=clReturnAsk(rule,p,c,r,null),ret={rule:ruleId,piece:p.id,label:p.label,year:p.y,w:p.w,place:p.design.placement};
+  const item={id:queueId(S),kind:"consult",src:"return",client:c.id,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:"",ask,ret};
+  c.ask=ask;return item;}
+function evReckonWeek(S,ctx){
+  const W=S.world,F=W.fired,now=ctx.now,st=caStage(S),start=evStart(S);
+  /* your first-year piece, aged in front of you (career years 12-18, at a week planned from the seed) */
+  const R1=RECKONINGS.first_year;
+  if(!F.first_year&&S.year>=start+R1.years[0]&&S.year<=start+R1.years[1]){
+    if(W.plan.first_year==null){const r=rng(S.seed).fork("reck:first_year");W.plan.first_year=weekIndex(r.int(1,52),start+r.int(R1.plan[0],R1.plan[1]));}
+    if(now>=W.plan.first_year)for(const p of S.pieces){if(p.y>start+1)break;if(!evEarly(S,p)||!p.heal)continue;
+      const c=findClient(S,p.client);if(!c||evPending(S,c.id))continue;
+      if(c.compact)expandClient(S,c);
+      const r=ctx.r.fork("reck1"),it=evReturnItem(S,c,p,"cover_own",r);evBeat(S,it,"first_year",p,c,r);S.queue.push(it);
+      evLog(ctx,"event",evFill(EVENTS.reckoning.first_year,{first:c.first,label:p.label,year:p.y}),{client:c.id,item:it.id,beat:"first_year"});break;}}
+  /* the client who bad-mouthed a patchy heal, once you're known */
+  const R2=RECKONINGS.bad_mouth;
+  if(!F.bad_mouth&&now%4===0&&(evRepSum(S)>=R2.repSum||((S.rep&&S.rep.collectors)||0)>=R2.collectors)){
+    for(const c of S.clients){if(c.compact||evPending(S,c.id))continue;
+      const h=(c.history||[]).find(e=>e.kind==="review"&&e.stars<=R2.stars);if(!h)continue;
+      const p=S.pieces.find(x=>x.id===h.piece);if(!p||p.by||["patchy","blownout","infected"].indexOf(p.heal)<0)continue;
+      const r=ctx.r.fork("reck2"),it=evReturnItem(S,c,p,"touchup",r);evBeat(S,it,"bad_mouth",p,c,r);S.queue.push(it);
+      evLog(ctx,"event",evFill(EVENTS.reckoning.bad_mouth,{first:c.first,label:p.label,year:p.y}),{client:c.id,item:it.id,beat:"bad_mouth"});break;}}
+  /* Arkady's referral in Act 3 */
+  const R3=RECKONINGS.mentor_ref,reached=S.career.reached.studio;
+  if(!F.mentor_ref&&st==="studio"&&reached&&now-weekIndex(reached.w,reached.y)>=R3.weeks&&walkinsOpen(S)){
+    const r=ctx.r.fork("reck3"),hi=S.career.mentor.goodwill>=R3.high;
+    const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:st,src:"referral",badIdea:false,theme:hi?"collector":null,style:hi?null:"traditional",sizes:hi?["large","huge"]:["medium","large"]});
+    c.brief=(hi?R3.high:R3.low)+" "+c.brief;c.mentor=true;
+    const due=weekFrom(now+1);
+    S.queue.push({id:queueId(S),kind:"consult",src:"referral",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+R3.wait,brief:c.brief,ask:c.ask,from:"mentor",beat:"mentor_ref"});
+    F.mentor_ref={w:S.week,y:S.year,client:c.id,high:hi};
+    evLog(ctx,"event",R3.line[hi?"high":"low"],{client:c.id,beat:"mentor_ref"});}
+  /* the pawn shop on the canal (Lombard): sell an old machine once you've moved on from it */
+  const R4=RECKONINGS.pawn,own=(S.kit&&S.kit.owned&&S.kit.owned.machines)||[];
+  if(!F.pawn&&S.year>=R4.from&&st!=="apprentice"&&own.length>1){
+    const m=own.find(x=>x!==S.kit.machine&&R4.pay[x]!=null);
+    if(m){const nm=((SIM.MACHINES||{})[m]||{}).name||"machine";F.pawn={w:S.week,y:S.year,machine:m};
+      evPush(S,ctx,{kind:"pawn",beat:"pawn",machine:m,choices:[["sell",R4.choices.sell.label],["keep",R4.choices.keep.label]],dflt:"keep",wait:8},evFill(R4.text,{machine:String(nm).toLowerCase()}));}}}
+/* reckoningChoose(S, itemId, choice) -> {ok, text, consult (true: go on to a normal consult), item (a free sitting)} */
+function reckoningChoose(S,itemId,choice){
+  worldEnsure(S);const q=S.queue.find(x=>x.id===itemId);if(!q||!q.beat||q.beatDone)return{ok:false};
+  const R=RECKONINGS[q.beat];if(!R||!R.choices||!R.choices[choice])return{ok:false};
+  const c=findClient(S,q.client),p=q.ret&&S.pieces.find(x=>x.id===q.ret.piece);if(!c||!p)return{ok:false};
+  const o={first:c.first,label:p.label,yrs:S.year-p.y,year:p.y},text=evFill(R.choices[choice].says,o);
+  for(const k in (R.rep&&R.rep[choice])||{})repAdd(S,k,R.rep[choice][k]);
+  if(R.loyalty&&R.loyalty[choice])loyaltyBump(c,R.loyalty[choice]);
+  clientLog(c,{w:S.week,y:S.year,kind:"note",text:R.choices[choice].label.toLowerCase()+": the "+p.label+" from "+p.y});
+  q.beatDone=choice;S.world.fired[q.beat].choice=choice;
+  if(choice==="cover"||choice==="charge")return{ok:true,text,consult:true};
+  S.queue=S.queue.filter(x=>x!==q);
+  if(choice==="rework"||choice==="fix"){
+    const est=clEstimate(Object.assign({},q.ask,{sizeMm:p.design.sizeMm||q.ask.sizeMm}),c,S.skills||{}),due=weekFrom(evNow(S)+1);
+    const item={id:queueId(S),kind:"session",client:c.id,w:due.w,y:due.y,hours:Math.max(0.5,Math.round(est.hours*0.6*4)/4),sessionNo:1,sessions:1,
+      price:0,deposit:0,paid:0,ask:Object.assign({},q.ask,{placement:p.design.placement,sizeMm:p.design.sizeMm,style:p.design.style,cover:false}),
+      design:JSON.parse(JSON.stringify(p.design)),booked:{w:S.week,y:S.year},moved:0,ret:{rule:"touchup",piece:p.id},rework:true,beat:q.beat};
+    S.queue.push(item);return{ok:true,text,item};}
+  return{ok:true,text};}
+
+/* ===================== cover-ups ===================== */
+/* a foreign piece's stand-in design: one dark element that matches its tags, at its size and place */
+function evForeignDesign(f){
+  const E=SIM.ELEMENTS||[],tags=f.tags||(FOREIGN_PIECES.find(x=>x.label===f.label)||{}).tags||[];
+  const words=String(f.label||"").split(/[^a-z]+/).filter(w=>w.length>3);
+  let el=E.find(e=>(e.family==="motif"||e.family==="lettering")&&words.some(w=>e.id.indexOf(w)>=0))||E.find(e=>(e.family==="motif"||e.family==="lettering")&&tags.some(t=>(e.tags||[]).indexOf(t)>=0)&&(e.styles||[]).indexOf("traditional")>=0)
+    ||E.find(e=>(e.family==="motif"||e.family==="lettering")&&tags.some(t=>(e.tags||[]).indexOf(t)>=0))||E.find(e=>e.family==="motif");
+  return{placement:f.placement,style:"traditional",flash:null,sizeMm:f.sizeMm||50,pos:{x:0.5,y:0.45},
+    elements:el?[{id:el.id,x:0.5,y:0.5,scale:1,rot:(hash(f.label+":"+f.y)%40)-20,lineWeight:11,fill:0.7,colour:null}]:[]};}
+/* coverOld(S, item) -> the old piece a cover-up goes over: {design, years, heal, label, foreign} or null */
+function coverOld(S,item){
+  const ret=item&&item.ret;if(!ret||(ret.rule!=="cover_own"&&ret.rule!=="cover_other")||item.rework)return null;
+  if(ret.foreign){const f=ret.foreign;return{design:evForeignDesign(f),years:Math.max(0,S.year-f.y),heal:"blownout",label:f.label,foreign:true,ink:"budget"};}
+  const p=S.pieces.find(x=>x.id===ret.piece);if(!p)return null;
+  return{design:p.design,years:Math.max(0,(S.year-p.y)+(S.week-p.w)/WEEKS_PER_YEAR),heal:p.heal,out:p.out,label:p.label,piece:p.id,foreign:false,ink:p.ink};}
+/* the elements of a design as ellipses in placement millimetres (the board's dzFromDesign, without the DOM) */
+function evEllipses(d,box,k){k=k||0.9;
+  const els=(d&&d.elements||[]).filter(e=>SIM.elementById(e.id));if(!els.length||!d.sizeMm)return[];
+  const fp=SIM.footprintOf(Object.assign({},d,{elements:els})),pos=d.pos||{x:0.5,y:0.5},sz=d.sizeMm,cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm;
+  return els.map(e=>{const b=SIM.elementBox(e.id),mx=Math.max(b.w,b.h,1e-6),mm=(e.scale!=null?e.scale:0.5)*sz,el=SIM.elementById(e.id),a=(e.rot||0)*Math.PI/180;
+    return{x:cx+((e.x!=null?e.x:0.5)-fp.cx)*sz,y:cy+((e.y!=null?e.y:0.5)-fp.cy)*sz,rx:Math.max(0.5,mm*b.w/mx/2*k),ry:Math.max(0.5,mm*b.h/mx/2*k),c:Math.cos(a),s:Math.sin(a),
+      fam:el.family,fill:+e.fill||0,colour:e.colour||null};});}
+const evIn=(E,x,y)=>{const dx=x-E.x,dy=y-E.y,u=dx*E.c+dy*E.s,v=-dx*E.s+dy*E.c;return(u*u)/(E.rx*E.rx)+(v*v)/(E.ry*E.ry)<=1;};
+/* coverScore(design, old, box) -> {coverage 0..1, dark 0..1, text}: how much of the old piece's ink sits under dark, filled
+   work. Lines alone don't hide a blowout; fills and textures in dark colours do */
+function coverScore(design,old,box){
+  const K=COVER_SCORE,O=evEllipses(old,box,K.oldK),N=evEllipses(design,box,K.newK);
+  if(!O.length)return{coverage:1,dark:1,text:"Nothing to cover."};
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const E of O){const r=Math.max(E.rx,E.ry);x0=Math.min(x0,E.x-r);y0=Math.min(y0,E.y-r);x1=Math.max(x1,E.x+r);y1=Math.max(y1,E.y+r);}
+  let pts=0,got=0,dk=0;
+  for(let i=0;i<K.grid;i++)for(let j=0;j<K.grid;j++){const x=x0+(i+0.5)*(x1-x0)/K.grid,y=y0+(j+0.5)*(y1-y0)/K.grid;
+    if(!O.some(E=>evIn(E,x,y)))continue;pts++;let best=0;
+    for(const E of N){if(!evIn(E,x,y))continue;const col=(SIM.COLOURS||{})[E.colour||"black"],dark=1-0.8*((col&&col.light)||0.05);
+      const dens=(K.family[E.fam]!=null?K.family[E.fam]:K.lineOnly+K.fillW*E.fill)*dark;if(dens>best)best=dens;}
+    got+=Math.min(1,best/K.need);dk+=best;}
+  const coverage=pts?got/pts:1,dark=pts?dk/pts:1;
+  const text=coverage>=K.good?"The old piece is buried. Nobody will know it was there.":coverage>=K.ok?"Mostly covered, but the old lines may ghost through at the edges.":"The old piece will show through. It needs something bigger and darker over it.";
+  return{coverage:Math.round(coverage*1000)/1000,dark:Math.round(Math.min(1,dark)*1000)/1000,text};}
+/* a cover-up job turns up: a new client with someone else's old piece (or one a respectful rival sends over) */
+function evCoverPuzzle(S,ctx,r,rv){
+  const st=caStage(S),c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:st,src:"cover",badIdea:false,segBoost:{cover_up:1}});
+  const born=c.born!=null?c.born:S.year-(c.age||30),fy=Math.max(born+18,S.year-r.int(2,15));if(fy>=S.year)return null;
+  const f=r.pick(FOREIGN_PIECES.filter(x=>!x.from||fy>=x.from)),pl=clPlace(r,r.pick(["forearm","upperarm","calf","shoulder"]));
+  const foreign={label:f.label,where:f.where,placement:pl,sizeMm:r.int(COVER_PUZZLE.size[0],COVER_PUZZLE.size[1]),y:fy,tags:f.tags};
+  const rule=RETURN_RULES.find(x=>x.id==="cover_other"),ask=clReturnAsk(rule,null,c,r,foreign);
+  c.ask=ask;c.brief=evFill(rv?EVENTS.rivalRespect:r.pick(COVER_PUZZLE.lines),{rival:rv?evRivalName(rv):"",foreign:f.label,place:clPlaceName(pl),year:fy,where:f.where});
+  const due=weekFrom(ctx.now+r.int(0,1)),ret={rule:"cover_other",piece:null,label:f.label,year:fy,w:1,place:pl,foreign};
+  S.queue.push({id:queueId(S),kind:"consult",src:"cover",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+COVER_PUZZLE.wait,brief:c.brief,ask,ret,puzzle:true});
+  evLog(ctx,"event",rv?evFill(EVENTS.rivalRespect,{rival:evRivalName(rv)}):evFill(EVENTS.puzzle,{first:c.first,foreign:f.label,pos:evPos(c),place:clPlaceName(pl)}),{client:c.id,puzzle:true});
+  return c;}
+/* finishing a cover-up: how well it covered goes into the client's loyalty, your peers and their history */
+function evFinish(S,itemId,res){
+  const q=S.queue.find(x=>x.id===itemId),old=q&&(q.sessionNo||1)>=(q.sessions||1)?coverOld(S,q):null;
+  const out=finishSession(S,itemId,res);
+  if(out&&out.piece&&old){
+    const c=findClient(S,q.client),box=placementBox(out.piece.design.placement,(c&&c.bodyShape)||"neutral")||{wrapMm:100,lengthMm:200};
+    const cs=coverScore(out.piece.design,old.design,box),K=COVER_SCORE;out.cover=cs;
+    if(c){loyaltyBump(c,(cs.coverage-K.ok)*K.loyalty);clientLog(c,{w:S.week,y:S.year,kind:"note",text:"cover-up of the "+old.label+": "+Math.round(cs.coverage*100)+"% covered"});}
+    if(cs.coverage>=K.good)repAdd(S,"peers",K.rep.good);else if(cs.coverage<K.ok)repAdd(S,"peers",K.rep.bad);}
+  return out;}
+
+/* ===================== conventions ===================== */
+/* convCandidates(S) -> {fresh: [pieces done in the last freshWeeks], healed: [healed pieces a year old or more, portfolio
+   first, best reading first]}, each at most CONV_JUDGE.list long, your own work only */
+function convCandidates(S){
+  const now=evNow(S),J=CONV_JUDGE,fresh=[],healed=[];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(p.by||!p.design||!(p.design.elements||[]).length)continue;
+    const age=now-weekIndex(p.w,p.y);
+    if(age<=J.freshWeeks){if(fresh.length<J.list*2)fresh.push(p);}
+    else if(p.heal&&age>=J.healedYears*WEEKS_PER_YEAR&&p.heal!=="infected")healed.push(p);
+    if(healed.length>J.list*12)break;}
+  const hs=healed.map(p=>({p,v:caReads(S,p)+(p.portfolio?0.5:0)})).sort((a,b)=>b.v-a.v).slice(0,J.list).map(x=>x.p);
+  const fs=fresh.map(p=>({p,v:evFreshQ(S,p)})).sort((a,b)=>b.v-a.v).slice(0,J.list).map(x=>x.p);
+  return{fresh:fs,healed:hs};}
+function evFreshQ(S,p){const c=findClient(S,p.client),o=p.out||{},J=CONV_JUDGE.fresh;let tot=0.55;
+  try{if(c&&c.wants)tot=scoreDesign(p.design,c,S.skills||{},{year:p.y}).total;}catch(e){}
+  const outs=o.lineQuality!=null?(o.lineQuality+o.depthQuality+(o.saturation||0.7)+(1-(o.trauma||0.4)))/4:0.6;
+  return J.design*tot+J.outputs*outs;}
+function evHealedQ(S,p){const J=CONV_JUDGE.healed,yrs=(S.year-p.y)+(S.week-p.w)/WEEKS_PER_YEAR;
+  return J.reads*caReads(S,p)+J.heal*(CONV_JUDGE.heal[p.heal]||0)+J.years*Math.min(1,yrs/10);}
+/* convJudge(S, inv, picks {fresh, healed: piece ids}) -> the convention record (sim/career.js enterInvite calls it) */
+function convJudge(S,inv,picks){
+  worldEnsure(S);const C=S.career,cv=CONVENTIONS.find(c=>c.id===inv.conv)||CONVENTIONS[0],r=rng(S.seed).fork("conv:"+inv.id),J=CONV_JUDGE,W=CONV_SCORE;
+  cashOut(S,inv.fee,"convention");
+  const cand=convCandidates(S),find=id=>id?S.pieces.find(p=>p.id===id&&!p.by):null;
+  picks=picks||{};const fp=picks.fresh===undefined?cand.fresh[0]:find(picks.fresh),hp=picks.healed===undefined?cand.healed[0]:find(picks.healed);
+  const sk=S.skills||{},avg=(["linework","shading","colour","speed"].reduce((a,k)=>a+(+sk[k]||0),0)/4)/10,sig=signatureOf(S);
+  const onSig=p=>p&&sig.ready&&p.design.style===sig.style?1:sig.ready?0.4:0.2;
+  const placeOf=v=>v>=J.places[0]?1:v>=J.places[1]?2:v>=J.places[2]?3:0;
+  const cat=(p,kind)=>{if(!p)return null;const base=kind==="fresh"?evFreshQ(S,p)+J.fresh.skill*avg:evHealedQ(S,p);
+    const sc=caR3(base+J[kind].sig*onSig(p)*Math.max(0.3,sig.strength)+r.fork(kind).normal(0,J.sd)),place=placeOf(sc);
+    const prize=place?evRub(S,cv.prize[place-1]*J.prizeShare):0;if(prize)cashIn(S,prize,"convention");
+    if(p.design.style)skillGain(S,"style:"+p.design.style,SKILL_XP.convention/2);
+    return{piece:p.id,name:p.name,score:sc,place,prize};};
+  const fr=cat(fp,"fresh"),he=cat(hp,"healed");
+  const best=[fr,he].filter(x=>x&&x.place).sort((a,b)=>a.place-b.place)[0]||null,place=best?best.place:0;
+  repAdd(S,"peers",W.rep.peers[place?place-1:3]);repAdd(S,"collectors",W.rep.collectors[place?place-1:3]);
+  /* the booth: your flash sells to the crowd */
+  const att=J.booth.attendance[cv.id]||1,sheets=Math.max(J.booth.min,Math.min(40,(S.flash||[]).length));
+  const booth=evRub(S,J.booth.perSheet*sheets*att*(0.6+0.4*(((S.rep&&S.rep.walkins)||0)/100))*(0.8+0.4*r.fork("booth")()));cashIn(S,booth,"convention");
+  /* collectors: one may book you */
+  let met=null;
+  if(r.fork("met").chance(J.collector.chance+J.collector.perPlace*(place?4-place:0))&&walkinsOpen(S)){
+    const rc=r.fork("metClient"),st=caStage(S),c=makeClient(rc,{id:clNextId(S),year:S.year,week:S.week,stage:st,src:"referral",theme:"collector",badIdea:false});
+    c.brief="We met at "+cv.name+". I stood at your booth for half an hour. "+c.brief;
+    const due=weekFrom(evNow(S)+rc.int(2,4));
+    S.queue.push({id:queueId(S),kind:"consult",src:"referral",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:c.brief,ask:c.ask,from:"convention"});
+    met={client:c.id,name:c.name,w:due.w,y:due.y};}
+  /* rivals' booths */
+  const rivals=[];for(const rv of evRivals(S)){if(rv.status!=="open")continue;const rs=caR3(0.45+0.3*rv.str+r.fork("rv:"+rv.id).normal(0,0.08)),rp=placeOf(rs);
+    const style=((SIM.STYLES||{})[rv.style]||{}).name||rv.style;
+    rivals.push({id:rv.id,name:evRivalName(rv),style,place:rp,line:evCap(evRivalName(rv))+"'s booth: "+String(style).toLowerCase()+" work, "+(rp?["","first","second","third"][rp]+" place":"no placing")+"."});
+    if(place&&(!rp||place<rp)){rv.str=clamp(rv.str-0.04,RIVAL.str.min,1);rv.mem=caR3(clamp((rv.mem||0)-0.05,-1,1));}}
+  const rec={id:cv.id,name:cv.name,y:S.year,place,piece:best?best.piece:(fr||he||{}).piece||null,score:best?best.score:Math.max((fr||{}).score||0,(he||{}).score||0),
+    fresh:fr,healed:he,booth,met:met?met.client:null};
+  C.conv.push(rec);
+  return Object.assign({},rec,{metClient:met,rivals});}
+
+/* ===================== goals ===================== */
+const EV_GOAL_CHECK={
+  first_heal:S=>S.pieces.some(p=>!p.by&&p.heal==="crisp"),
+  first_custom:S=>S.pieces.some(p=>!p.by&&p.price>0&&p.design&&!p.design.flash&&!(p.ret&&p.ret.rule==="touchup")),
+  first_return:S=>S.pieces.some(p=>!p.by&&p.ret),
+  first_award:S=>S.career.conv.some(c=>!c.own&&c.place>=1),
+  studio:S=>!!S.career.reached.studio,
+  hire:S=>(S.studio.nextStaff||1)>1||S.studio.staff.length>0,
+  five_pieces:S=>S.clients.some(c=>(c.pieces||[]).length>=5),
+  survive_rival:S=>{const now=evNow(S),lf=S.career.lastFail?weekIndex(S.career.lastFail.w,S.career.lastFail.y):-1;
+    return evRivals(S).some(rv=>rv.status==="gone"||(rv.opened&&now-weekIndex(rv.opened.w,rv.opened.y)>=156&&caStage(S)!=="apprentice"&&lf<weekIndex(rv.opened.w,rv.opened.y)));},
+  twenty_reads:S=>{for(const p of S.pieces){if(p.y>S.year-20)break;if(p.by||!p.heal)continue;if(S.year-p.y+(S.week-p.w)/WEEKS_PER_YEAR>=20&&caReads(S,p)>=LEGACY.reads)return true;}return false;},
+  apprentice_shop:S=>S.career.apprentices.some(a=>a.status==="rival")
+};
+/* checkGoals(S, slow) -> [goal ids reached now] (S.goals[id] = {w, y}); slow checks only when slow is true */
+function checkGoals(S,slow){
+  worldEnsure(S);const out=[];
+  for(const g of GOALS){if(S.goals[g.id]||(g.slow&&!slow))continue;let ok=false;try{ok=EV_GOAL_CHECK[g.id](S);}catch(e){ok=false;}
+    if(ok){S.goals[g.id]={w:S.week,y:S.year};out.push(g.id);}}
+  return out;}
+function goalList(S){worldEnsure(S);return GOALS.map(g=>Object.assign({},g,{done:S.goals[g.id]||null}));}
+
+/* ===================== the week (WEEK_HOOKS.events) ===================== */
+function evWeek(S,ctx){
+  const W=worldEnsure(S),C=S.career,now=ctx.now,st=caStage(S);
+  /* a shop closed by the inspector: reopen, or move this week's sittings past the closure */
+  if(C.closed){
+    if(now>=C.closed.until){C.closed=null;evLog(ctx,"event",EVENTS.reopen);}
+    else{const to=weekFrom(C.closed.until),mv=S.queue.filter(q=>q.kind==="session"&&weekIndex(q.w,q.y)<C.closed.until);
+      for(const q of mv){q.w=to.w;q.y=to.y;q.moved=(q.moved||0)+1;}
+      if(mv.length)evLog(ctx,"carried",evFill(EVENTS.moved,{n:mv.length,sittings:mv.length===1?"sitting":"sittings",w:to.w}),{n:mv.length});}}
+  /* choices nobody made: the default happens */
+  for(const ev of W.pending.slice())if(ev.until<now){const res=eventChoose(S,ev.id,ev.dflt);if(res.ok&&res.text)evLog(ctx,"note",res.text,{ev:ev.id});}
+  evSocialWeek(S,ctx);
+  evRivalsWeek(S,ctx);
+  evReckonWeek(S,ctx);
+  if(st!=="apprentice"&&walkinsOpen(S)&&((S.rep&&S.rep.peers)||0)>=COVER_PUZZLE.peers&&!S.queue.some(q=>q.puzzle)&&ctx.r.fork("puzzle").chance(COVER_PUZZLE.chance))
+    evCoverPuzzle(S,ctx,ctx.r.fork("puzzleClient"),null);
+  for(const id of checkGoals(S,ctx.yearRolled||now%13===0)){const g=GOALS.find(x=>x.id===id);evLog(ctx,"goal",evFill(EVENTS.goal,{name:g.name}),{goal:id});}
+}
+
+WEEK_HOOKS.events=evWeek;WEEK_HOOKS.trend=evTrend;
+SIM.TREND_WAVES=TREND_WAVES;SIM.SOCIAL=SOCIAL;SIM.RIVALS=RIVALS;SIM.RIVAL=RIVAL;SIM.RECKONINGS=RECKONINGS;SIM.COVER_PUZZLE=COVER_PUZZLE;
+SIM.COVER_SCORE=COVER_SCORE;SIM.CONV_JUDGE=CONV_JUDGE;SIM.GOALS=GOALS;SIM.EVENTS=EVENTS;
+SIM.worldFresh=worldFresh;SIM.worldEnsure=worldEnsure;SIM.trendMult=trendMult;SIM.trendNow=trendNow;
+SIM.followersTarget=followersTarget;SIM.canPost=canPost;SIM.postPiece=postPiece;SIM.eventChoose=eventChoose;
+SIM.onReturn=onReturn;SIM.reckoningChoose=reckoningChoose;SIM.rivalsCopy=rivalsCopy;SIM.rivalWalkins=rivalWalkins;
+SIM.coverOld=coverOld;SIM.coverScore=coverScore;SIM.foreignDesign=evForeignDesign;SIM.convCandidates=convCandidates;SIM.convJudge=convJudge;
+SIM.checkGoals=checkGoals;SIM.goalList=goalList;SIM.finishSession=evFinish;SIM.rateMod=evRateMod;
 /* ===== sim/market.js: walk-in generation and PRICE_INDEX by year (PR 3). Last sim file: it closes the INK_SIM IIFE. ===== */
 /* PRICE_INDEX: what a ruble buys, by year (2000 = 1.0). A ruble-like curve: 10-14%/yr inflation in the early 2000s, a
    2008-09 and a 2015 jump, easing to about 4-7%/yr later (about x4 by the mid-2010s, x8.7 by 2030). Rates, rent and
@@ -5986,7 +6647,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.7.0";
+const VERSION="0.1.8.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -6023,8 +6684,13 @@ function freshState(){return{
                      // the career (PR 7, sim/career.js careerFresh): mentor {goodwill, left, loan}, Act 1 steps/chores/practice/
                      // friends, sig (signature counts), money {cur, prev, total} ledger, broke weeks, fails, scene (a full-screen
                      // scene waiting: broke | legacy), invites, conv (conventions entered), guest (a guest spot running), offers
-                     // (Act 4), apprentices, alumni, rivals (PR 8 hook), reached {chair, studio, legacy: {w,y}}, books, skipped, insp
-  goals:{},          // GOALS done, id -> {w,y} (PR 8)
+                     // (Act 4), apprentices, alumni, rivals (PR 8: rival shops), reached {chair, studio, legacy: {w,y}}, books,
+                     // skipped, insp; PR 8: closed {until, w, y, why} (shut by the inspector), inspLast, inspFails, lastFail
+  goals:{},          // GOALS done, id -> {w,y} (PR 8, sim/events.js GOALS)
+  world:SIMOK("worldFresh")?INK_SIM.worldFresh():null,
+                     // events, social media and reckonings (PR 8, sim/events.js worldFresh): fired {reckoning id: {w,y,...}},
+                     // plan, pending [events waiting for a choice], nextEv, mods {rate, fresh}, social {on, followers, posts
+                     // [[piece no, week index, reach]], viral, booked, bad, gained}
   board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
@@ -6077,6 +6743,8 @@ function hydrate(o){
   if(!o.studio||typeof o.studio!=="object"||Array.isArray(o.studio))S.studio=freshState().studio;
   if(SIMOK("unpackSave"))INK_SIM.unpackSave(S);
   if(SIMOK("careerEnsure"))INK_SIM.careerEnsure(S);
+  if(!o.world||typeof o.world!=="object"||Array.isArray(o.world))S.world=null;   // PR 8: worldEnsure fills it
+  if(SIMOK("worldEnsure"))INK_SIM.worldEnsure(S);
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
@@ -6210,7 +6878,15 @@ function buSaveOk(o){
   if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
   if("career" in o&&o.career!=null){const c=o.career;if(!buObj(c))return false;   // PR 7: the career (sim/career.js careerFresh)
     for(const f of ["invites","apprentices","alumni","friends","conv"])if(f in c&&!Array.isArray(c[f]))return false;
-    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;}
+    for(const f of ["mentor","money","sig","steps"])if(f in c&&!buObj(c[f]))return false;
+    if("rivals" in c&&!(Array.isArray(c.rivals)&&c.rivals.every(buObj)))return false;   // PR 8: rival shops
+    if(c.closed!=null&&!(buObj(c.closed)&&buNum(c.closed.until)))return false;}
+  if("goals" in o&&!buObj(o.goals))return false;   // PR 8: id -> {w, y}
+  if("world" in o&&o.world!=null){const w=o.world;if(!buObj(w))return false;   // PR 8: sim/events.js worldFresh
+    for(const f of ["fired","plan","mods"])if(f in w&&!buObj(w[f]))return false;
+    if("pending" in w&&!(Array.isArray(w.pending)&&w.pending.every(e=>buObj(e)&&typeof e.id==="string")))return false;
+    if("social" in w){const so=w.social;if(!buObj(so))return false;if("followers" in so&&!buNum(so.followers))return false;
+      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
@@ -6682,7 +7358,15 @@ function dzStore(){S.board.design=dzToDesign();save();}
 
 /* ---- scoring ---- */
 function dzScore(m){const d=dzToDesign(m);
-  try{return Object.assign(INK_SIM.scoreDesign(d,dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined}),{_d:d});}catch(e){return null;}}
+  try{const r=Object.assign(INK_SIM.scoreDesign(d,dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined}),{_d:d});
+    const old=!m||m===DZ.m?dzOld():null;if(old)r.cover=INK_SIM.coverScore(d,old.design,dzBox(d.placement));   // PR 8: a cover-up
+    return r;}catch(e){return null;}}
+/* PR 8: the old piece a cover-up booking goes over (sim/events.js coverOld), when the board is on its spot; it draws as a
+   locked dark layer under your elements and the stress report scores how much of it you hide */
+function dzOld(){
+  const id=S.board.item;if(!id||!DZ.m||typeof INK_SIM.coverOld!=="function")return null;
+  const q=S.queue.find(x=>x.id===id);if(!q)return null;
+  const o=INK_SIM.coverOld(S,q);return o&&o.design&&o.design.placement===DZ.m.placement?o:null;}
 /* rescore at most once per frame; the capsule shows it against DZ.base (the score before the change being made) */
 function dzQueue(full){if(full)DZ.qFull=true;if(DZ.raf)return;
   DZ.raf=requestAnimationFrame(()=>{DZ.raf=0;DZ.cur=dzScore();dzRenderCap();if(DZ.qFull){DZ.qFull=false;dzRenderAging();dzRenderStress();}});}
@@ -6847,10 +7531,25 @@ function dzRenderBoard(){
   /* flow lines and creases */
   h+=`<g class="dzFlow">${p.flow.map(line=>`<polyline points="${line.map(q=>dzR2(q[0]*W)+","+dzR2(q[1]*L)).join(" ")}"/>`).join("")}</g>`;
   for(const c of p.creases||[]){const y=c.at*L;h+=`<line class="dzCrease" x1="${dzR2(-px(4))}" x2="${dzR2(W+px(4))}" y1="${dzR2(y)}" y2="${dzR2(y)}"/><text class="dzCreaseT" x="${dzR2(W/2)}" y="${dzR2(c.at<0.5?y-px(5):y+px(13))}" font-size="${px(10.5)}" text-anchor="middle">${esc(c.name)} crease</text>`;}
+  /* PR 8: someone's old piece under a cover-up, locked: no hit areas, not selectable */
+  const old=dzOld();
+  let oldLbl="";
+  if(old){const om=dzFromDesign(old.design,m.placement);let a={blur:0.6,spread:0.8};
+    /* drawn as it is on the skin today: the aging model's blur and spread, a blown-out halo, the ink gone blue-black */
+    try{a=INK_SIM.age({design:old.design,out:old.out,heal:old.heal||"blownout",ink:old.ink,skinTone:S.board.skinTone},old.years)||a;}catch(e){}
+    const sp=Math.max(0.6,a.spread||0),bl=Math.max(0.5,a.blur||0),blown=old.foreign||old.heal==="blownout"||old.heal==="infected";
+    h+=`<defs><filter id="dzOldF" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${dzR4(0.35+bl*0.6)}"/></filter><filter id="dzOldH" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="${dzR4(0.9+sp*0.8)}"/></filter></defs>
+<g class="dzOld" pointer-events="none" aria-hidden="true">${blown?`<g class="dzOldH" filter="url(#dzOldH)">${om.els.map(e=>dzElSvg(Object.assign({},e,{colour:null,fill:0}),"traditional","",0,1.5+sp*2.4)).join("")}</g>`:""}<g filter="url(#dzOldF)">${om.els.map(e=>dzElSvg(Object.assign({},e,{colour:null,fill:Math.max(e.fill,0.6)}),"traditional","",0,sp)).join("")}</g></g>`;
+    /* its label: under the old piece (above it if there's no room), kept inside the limb so it never runs into the ruler */
+    if(!m.els.length&&om.els.length){let y0=1e9,y1=-1e9,xc=0;for(const e of om.els){y0=Math.min(y0,e.my-e.mm/2);y1=Math.max(y1,e.my+e.mm/2);xc+=e.mx;}xc/=om.els.length;
+      const fs=11,lines=["Cover the old",String(old.label||"piece")],need=Math.max(...lines.map(t=>t.length))*fs*0.56/sc,half=Math.min(W/2,need/2);
+      const x=clamp(xc,half,W-half),lh=+px(fs+3),below=y1+(+px(16))+lh<=L-(+px(18)),y=below?y1+(+px(16)):Math.max(+px(fs),y0-(+px(8))-lh);
+      oldLbl=`<text class="dzEmpty sub dzOldT" x="${dzR2(x)}" y="${dzR2(y)}" font-size="${px(fs)}" text-anchor="middle">${lines.map((t,i)=>`<tspan x="${dzR2(x)}" dy="${i?dzR2(lh):0}"${t.length*fs*0.56/sc>W?` textLength="${dzR2(W-(+px(4)))}" lengthAdjust="spacingAndGlyphs"`:""}>${esc(t)}</tspan>`).join("")}</text>`;}}
   /* the piece's footprint */
   const d=dzToDesign();
   if(m.els.length){const sz=d.sizeMm,fp=INK_SIM.footprintOf(d),fw=fp.w*sz,fh=fp.h*sz,fx=d.pos.x*W-fw/2,fy=d.pos.y*L-fh/2;
     h+=`<rect class="dzFoot" x="${dzR2(fx)}" y="${dzR2(fy)}" width="${dzR2(fw)}" height="${dzR2(fh)}"/><text class="dzFootT" x="${dzR2(fx+fw)}" y="${dzR2(fy-px(4))}" font-size="${px(10.5)}" text-anchor="end">${Math.round(fw)} × ${Math.round(fh)} mm</text>`;}
+  else if(old)h+=oldLbl;
   else h+=`<text class="dzEmpty" x="${dzR2(W/2)}" y="${dzR2(L/2)}" font-size="${px(14)}" text-anchor="middle">Add an element</text><text class="dzEmpty sub" x="${dzR2(W/2)}" y="${dzR2(L/2+px(20))}" font-size="${px(11.5)}" text-anchor="middle">or start from the flash wall</text>`;
   h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,44/sc)).join("")}</g>`;
   h+=`<g id="dzSelG"></g></svg>`;
@@ -6988,8 +7687,10 @@ const DZ_SEV={3:{l:"Serious",i:`<svg viewBox="0 0 24 24"><path d="M8 2h8l6 6v8l-
 function dzRenderStress(){
   const host=$("dzStress");if(!host||!DZ.cur)return;const c=DZ.cur;
   const sub=`<p class="dzSub">Balance <b>${Math.round(c.balance*100)}</b> · Coherence <b>${Math.round(c.coherence*100)}</b> · Overall <b>${Math.round(c.total*100)}</b></p>`;
-  if(!DZ.m.els.length){host.innerHTML=`<h2>Stress report</h2><p class="hint">Put something on the board and this lists what will go wrong with it on skin.</p>`;return;}
-  host.innerHTML=`<h2>Stress report</h2>${sub}${c.stress.length?`<ul class="dzSt">${c.stress.map(s=>`<li class="sev${s.sev}"><span class="ic" role="img" aria-label="${DZ_SEV[s.sev].l}">${DZ_SEV[s.sev].i}</span><span>${esc(dzCap1(s.text))}</span></li>`).join("")}</ul>`
+  const old=dzOld(),cv=c.cover,cvPct=cv?Math.round(cv.coverage*100):0;
+  const cov=old?`<div class="dzCover ${!cv||cv.coverage<0.6?"bad":cv.coverage<0.85?"meh":"ok"}"><b>Cover-up: ${DZ.m.els.length?cvPct+"% hidden":"nothing over it yet"}</b><span>The old ${esc(old.label)}${old.foreign?", someone else's work":` from ${S.year-Math.floor(old.years)}`}. ${DZ.m.els.length&&cv?esc(cv.text):"Dark fills and textures over it hide it; thin lines won't."}</span></div>`:"";
+  if(!DZ.m.els.length){host.innerHTML=`<h2>Stress report</h2>${cov}<p class="hint">Put something on the board and this lists what will go wrong with it on skin.</p>`;return;}
+  host.innerHTML=`<h2>Stress report</h2>${sub}${cov}${c.stress.length?`<ul class="dzSt">${c.stress.map(s=>`<li class="sev${s.sev}"><span class="ic" role="img" aria-label="${DZ_SEV[s.sev].l}">${DZ_SEV[s.sev].i}</span><span>${esc(dzCap1(s.text))}</span></li>`).join("")}</ul>`
     :`<p class="dzOk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Nothing to worry about. This will hold up.</p>`}`;}
 
 /* ---- the element drawer (in the sheet) ---- */
@@ -7643,7 +8344,9 @@ function clWhat(c,known){known=known||c.known||{};const out=[];
   return out.join("");}
 /* loyalty as a bar with notches, so it reads without colour */
 function clLoyal(v){v=clamp(v||0,0,1);return`<span class="clLoy" role="img" aria-label="Loyalty ${Math.round(v*100)} out of 100"><i style="width:${Math.round(v*100)}%"></i></span>`;}
-function clSrc(q){if(q.kind==="walkin")return"Walk-in";if(q.src==="referral"){const f=clReal(q.from);return f?`Sent by ${f.first}`:"Referral";}
+function clSrc(q){if(q.kind==="walkin")return"Walk-in";
+  if(q.beat==="first_year")return"One of your first";if(q.beat==="bad_mouth")return"The bad review";if(q.from==="mentor")return"Sent by Arkady";   // PR 8
+  if(q.from==="convention")return"Met at a convention";if(q.src==="social")return"Found you online";if(q.puzzle)return"Cover-up job";if(q.src==="referral"){const f=clReal(q.from);return f?`Sent by ${f.first}`:"Referral";}
   if(q.ret)return"Coming back: "+(CL_RET[q.ret.rule]||"more work");return"Booked consult";}
 const CL_RET={touchup:"touch-up",addon:"add-on",sleeve:"sleeve",cover_own:"cover your old work",cover_other:"cover-up"};
 function clAskOf(q){return q.ask||(clWho(q)||{}).ask||{};}
@@ -7692,6 +8395,7 @@ function clRenderWeek(){
 /* ---- the consult ---- */
 function clStartConsult(id){
   const q=S.queue.find(x=>x.id===id);if(!q)return;const c=clWho(q);if(!c)return;
+  if(q.beat&&!q.beatDone&&typeof evReckonOpen==="function"&&INK_SIM.RECKONINGS&&INK_SIM.RECKONINGS[q.beat]&&INK_SIM.RECKONINGS[q.beat].choices&&evReckonOpen(q))return;   // PR 8
   CL.consult=INK_SIM.consultStart(c,S,{item:q});CL.done=null;INK_SOUND.tick();renderClients();$("panel").scrollTop=0;}
 function clRenderConsult(){
   const c=CL.consult,cl=c.client,opts=INK_SIM.consultOptions(c);
@@ -7832,10 +8536,10 @@ function clOpenClient(id){
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
 const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
-const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",end:"The end"};
+const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",goal:"Goal",note:"",end:"The end"};
 /* the ledger's words (sim/career.js cashIn / cashOut kinds) */
 const CR_MONEY={sitting:"Sittings",deposit:"Deposits",flash:"Flash sales",book:"Flash book",merch:"Product line",convention:"Conventions",tv:"TV",loan:"Arkady's loan",staff:"Your artists' cut",
-  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention"};
+  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop"};
 function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
@@ -7856,12 +8560,12 @@ ${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">
 :`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
 <button class="btn pri crBtn${CR.arm?" arm":""}" id="crNextB">${CR.arm?`Skip them? Tap again`:`Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>`}</button>
 ${CR.arm?`<p class="crWarn">Walk-ins leave, sittings move to next week.</p>`:""}`}</div>
-${C&&st!=="apprentice"?caActHtml(st):""}${C?caInvitesHtml():""}
+${typeof evTopHtml==="function"?evTopHtml():""}${C&&st!=="apprentice"?caActHtml(st):""}${C?caInvitesHtml():""}
 ${last?`<div class="card crLast"><h2>${last.weeks?`${last.weeks} week${last.weeks>1?"s":""} later`:"This week"}</h2><p>${esc(last.line||"")}</p>
 ${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}">${CR_KIND[l.k]?`<span class="crK">${CR_KIND[l.k]}</span>`:""}${esc(l.text||"")}</li>`).join("")}${lg.length>14?`<li class="hint">…and ${lg.length-14} more.</li>`:""}</ul>`:""}
 ${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
 ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
-${C?caMoneyHtml():""}${C?caSkillsHtml():""}
+${typeof evLowerHtml==="function"&&st!=="apprentice"?evLowerHtml():""}${C?caMoneyHtml():""}${C?caSkillsHtml():""}${typeof evGoalsHtml==="function"&&st==="apprentice"&&evOn()?evGoalsHtml():""}
 <div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
 <dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Your pieces</dt><dd>${crMine()}</dd>${S.pieces.length>crMine()?`<dt>Shop pieces</dt><dd>${S.pieces.length-crMine()}</dd>`:""}<dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd>${S.rate?`<dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd>`:""}</dl>${crRep()}
 ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12px"><button class="btn" id="crLegacy">See your Legacy</button></div>`:""}</div>`;
@@ -7870,7 +8574,8 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
   const b=$("crNextB");if(b)b.addEventListener("click",crNext);
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});
   for(const id of ["crLegacy","crLegacy2"]){const l=$(id);if(l)l.addEventListener("click",()=>{if(typeof lgOpen==="function")lgOpen();});}
-  if(C){caActWire(st);caInvitesWire();}}
+  if(C){caActWire(st);caInvitesWire();}
+  if(typeof evWire==="function")evWire();}
 /* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
@@ -7888,6 +8593,7 @@ function crNext(){
   if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}
   const st0=S.studio&&S.studio.stage;
   const res=INK_SIM.nextStop(S);CR.last=res;
+  if(typeof evAfterLog==="function")evAfterLog(res.log);
   if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
   crAfter(st0);}
 /* after the clock moved (Next or a chore): tidy the board, save, redraw, and show any scene */
@@ -7988,7 +8694,7 @@ function caInvitesHtml(){
   const C=S.career;if(!C.invites.length)return"";
   const one=i=>{
     if(i.kind==="chair")return[`${INK_SIM.MENTOR.first} says you're ready for your own chair.`,"Rent a chair","Not yet"];
-    if(i.kind==="conv"){const cv=INK_SIM.CONVENTIONS.find(c=>c.id===i.conv)||{};return[`${gvCapS(cv.name||"A convention")}, ${cv.where||""}. Entry and travel ${fmtMoney(i.fee)}. You're judged on your best healed piece, your skill, your peers and how true it is to your style.`,"Enter","Skip it"];}
+    if(i.kind==="conv"){const cv=INK_SIM.CONVENTIONS.find(c=>c.id===i.conv)||{};return[`${gvCapS(cv.name||"A convention")}, ${cv.where||""}. Entry and travel ${fmtMoney(i.fee)}. You enter a fresh piece and a healed piece; your flash sells at the booth.`,"Choose pieces","Skip it"];}
     if(i.kind==="guest"){const g=INK_SIM.GUEST_SPOTS.find(x=>x.id===i.spot)||{};return[`A guest spot in ${g.name||"another city"} for ${g.weeks||2} weeks: travel ${fmtMoney(i.fee)}, a new crowd of walk-ins and a little name among other artists.`,"Go","Turn it down"];}
     if(i.kind==="tv")return[`${INK_SIM.LEGACY_OFFERS.tv.says.charAt(0).toUpperCase()+INK_SIM.LEGACY_OFFERS.tv.says.slice(1)}. ${fmtMoney(i.pay)}.`,"Take it","Turn it down"];
     return[i.kind,"Yes","No"];};
@@ -7998,6 +8704,8 @@ const gvCapS=s=>{s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);};
 function caInvitesWire(){
   const card=document.querySelector(".caInv");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("[data-inv]");if(!b)return;
+    const inv=S.career.invites.find(i=>i.id===b.dataset.inv);
+    if(inv&&inv.kind==="conv"&&b.dataset.yes==="1"&&typeof evConvOpen==="function"){evConvOpen(inv.id);return;}
     const st0=S.studio.stage,r=INK_SIM.enterInvite(S,b.dataset.inv,b.dataset.yes==="1");if(!r||!r.ok)return;
     let msg="";
     if(r.kind==="conv")msg=r.place?`${["","First","Second","Third"][r.place]} place at ${r.name}!`:`No placing at ${r.name} this year. Peers saw your work, though.`;
@@ -8156,6 +8864,133 @@ ${L.fails?`<p class="hint">You lost a shop ${L.fails===1?"once":L.fails+" times"
   $("lgClose").addEventListener("click",closeSheet);
   const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();if(typeof gvOpen==="function")gvOpen(f.dataset.gp);}};
   $("lgBody").addEventListener("click",go);$("lgBody").addEventListener("keydown",go);}
+/* ===================== app/events.js: events, trends, social media, rivals, goals, conventions, reckonings (PR 8) =====================
+   Everything here draws what sim/events.js decides; nothing in it changes the numbers by itself.
+   On the Career tab:
+     evTopHtml()    the shop-closed banner (the inspector) and events waiting for a choice (rivals undercutting, poaching
+                    or copying; the pawn shop on the canal), each with its buttons and what happens if you leave it
+     evLowerHtml()  what's in demand (INK_SIM.trendNow), social media from 2016 (followers, far-away bookings, Post a
+                    healed piece), rival shops, and the career's goals
+     evWire()       their buttons. evAfterLog(log) toasts goals reached after Next.
+   Sheets: evPostSheet (pick a healed piece to post), evConvOpen (pick a fresh and a healed piece for a convention, then
+   the results), evReckonOpen (a reckoning: your old piece then and now, and three choices). evPostBtn(p) is the
+   "Post it" button the piece sheet and the reveal use. Cover-ups draw on the design board (app/design.js dzOld). */
+const EV={};
+const EV_TACTIC={undercut:"undercuts on price",poach:"poaches artists",copy:"copies flash"};
+function evOn(){return SIMOK("worldEnsure");}
+function evStyle(id){return(INK_SIM.STYLES[id]||{}).name||id;}
+function evWeekStr(wi){const w=INK_SIM.weekFrom(wi);return`week ${w.w}${w.y!==S.year?", "+w.y:""}`;}
+
+/* ---- the top of the Career tab: closed shop, pending choices ---- */
+function evTopHtml(){
+  if(!evOn())return"";INK_SIM.worldEnsure(S);
+  const C=S.career,W=S.world;let h="";
+  if(C&&C.closed){const u=INK_SIM.weekFrom(C.closed.until);
+    h+=`<div class="card evClosed" role="status"><span class="clK">Closed by the inspector</span><p><b>The shop is shut until week ${u.w}, ${u.y}.</b> ${esc(gvCapS(C.closed.why||""))}. Walk-ins go elsewhere and booked sittings move to the day you reopen.</p></div>`;}
+  for(const e of W.pending){const dl=(e.choices||[]).find(c=>c[0]===e.dflt);
+    h+=`<div class="card evCard" data-ev="${esc(e.id)}"><span class="clK">${e.kind==="pawn"?"The pawn shop":"A rival shop"} · week ${e.w}, ${e.y}</span><p>${esc(e.text)}</p>
+<div class="row evCh">${(e.choices||[]).map(c=>`<button class="btn sm${c[0]===e.dflt?"":" pri"}" data-evc="${esc(c[0])}">${esc(c[1])}</button>`).join("")}</div>
+<p class="clMeta">Leave it past ${esc(evWeekStr(e.until))} and it's “${esc(dl?dl[1].toLowerCase():"")}”.</p></div>`;}
+  return h;}
+
+/* ---- lower cards ---- */
+function evTrendHtml(){
+  const t=INK_SIM.trendNow(S),ar={up:"▲",down:"▼",flat:"–"},say={up:"rising",down:"falling",flat:"steady"};
+  return`<div class="card evTrend"><h2>What's in demand</h2><p class="hint" style="margin-top:0">What walk-ins ask for this year, most wanted first.</p>
+<ol class="evTop">${t.top.map(s=>`<li><b>${esc(s.name)}</b><span class="evDir ${s.dir}" aria-label="${say[s.dir]}">${ar[s.dir]}</span><span class="evBar" aria-hidden="true"><i style="width:${Math.min(100,s.demand/2*100).toFixed(0)}%"></i></span></li>`).join("")}</ol>
+${t.waves.length?`<p class="clMeta">${t.waves.map(w=>esc(gvCapS(w.name))+" "+(w.amp<0?"(against "+esc(evStyle(w.style).toLowerCase())+")":"")+" is "+{rising:"rising",peak:"at its peak",fading:"fading"}[w.phase]).join(" · ")}.</p>`:""}</div>`;}
+function evSocialHtml(){
+  const so=S.world.social,P=INK_SIM.SOCIAL;
+  if(S.year<P.from||!so.on)return S.year>=P.from-1?`<div class="card evSoc"><h2>Social media</h2><p class="hint" style="margin-top:0">Not yet. Around ${P.from} everyone starts carrying a camera, and healed work starts travelling.</p></div>`:"";
+  const n=evPostable().length,t=INK_SIM.followersTarget(S);
+  return`<div class="card evSoc"><h2>Social media</h2><dl class="kv"><dt>Followers</dt><dd>${so.followers.toLocaleString("en-CA")}</dd><dt>Posts</dt><dd>${so.posts.length}</dd>
+<dt>Booked from far away</dt><dd>${so.booked}</dd>${so.bad?`<dt>Bad heals posted by clients</dt><dd class="out">${so.bad}</dd>`:""}${so.viral?`<dt>Went viral</dt><dd>week ${so.viral.w}, ${so.viral.y}</dd>`:""}</dl>
+<p class="clMeta">Followers drift toward what your reputation earns (about ${t.toLocaleString("en-CA")} now). Good healed posts push past it; bad heals clients post pull it down.</p>
+<div class="row"><button class="btn${n?" pri":""}" id="evPost"${n?"":" disabled"}>Post a healed piece${n?` (${n})`:""}</button></div></div>`;}
+function evRivalsHtml(){
+  const L=(S.career&&S.career.rivals)||[];if(!L.length)return"";
+  const open=L.filter(r=>r.status==="open"),gone=L.filter(r=>r.status!=="open");
+  return`<div class="card evRiv"><h2>Rival shops</h2>${open.length?`<ul class="evRivL">${open.map(r=>`<li><b>${esc(gvCapS(r.shop||r.name))}</b> <span class="clMeta">${esc(r.where||"")} · ${esc(evStyle(r.style))} · ${esc(EV_TACTIC[r.tactic]||"")}</span>
+<span class="caRow"><span class="clMeta">Pull</span>${caBar(r.str,(r.shop||r.name)+" pull")}</span>${r.mem<-0.1?`<span class="clMeta">They hold a grudge.</span>`:r.mem>0.1?`<span class="clMeta">On good terms with you.</span>`:""}${r.truce&&INK_SIM.weekIndex(S.week,S.year)<r.truce?`<span class="clMeta">A truce on prices until ${esc(evWeekStr(r.truce))}.</span>`:""}</li>`).join("")}</ul>`:`<p class="hint" style="margin-top:0">No rival shop is open near you right now.</p>`}
+${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name))+(r.gone?" ("+r.gone.y+")":"")).join(", ")}.</p>`:""}</div>`;}
+function evGoalsHtml(){
+  const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
+  return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span></li>`).join("")}</ul></div>`;}
+function evLowerHtml(){
+  if(!evOn())return"";INK_SIM.worldEnsure(S);
+  return evTrendHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
+function evWire(){
+  document.querySelectorAll(".evCard").forEach(card=>card.addEventListener("click",e=>{const b=e.target.closest("[data-evc]");if(!b)return;
+    const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;
+    if(S.studio.stage!==st0&&typeof caStage==="function")caStage();
+    save();renderHeader();INK_SOUND.tick();if(r.text)openSheet("What happens",`<p>${esc(r.text)}</p><div class="row"><button class="btn pri" id="evOk">OK</button></div>`);
+    const ok=$("evOk");if(ok)ok.addEventListener("click",closeSheet);renderCareer();}));
+  const p=$("evPost");if(p)p.addEventListener("click",evPostSheet);}
+/* goals reached after Next: one toast */
+function evAfterLog(log){
+  const g=(log||[]).filter(l=>l.k==="goal");if(!g.length)return;
+  setTimeout(()=>toast(g[0].text+(g.length>1?` (and ${g.length-1} more)`:"")),300);}
+
+/* ---- social: posting ---- */
+function evPostable(){const out=[];if(!evOn())return out;
+  for(let i=S.pieces.length-1;i>=0&&out.length<12;i--){const p=S.pieces[i];if(!INK_SIM.canPost(S,p))out.push(p);if(S.pieces.length-i>300)break;}return out;}
+function evPostBtn(p){return evOn()&&!INK_SIM.canPost(S,p)?`<button class="btn" id="evPostOne" data-pid="${esc(p.id)}">Post it</button>`:"";}
+function evPostWire(after){const b=$("evPostOne");if(b)b.addEventListener("click",()=>{evPost(b.dataset.pid);if(after)after();});}
+function evPost(pid){
+  const r=INK_SIM.postPiece(S,pid);if(!r.ok){toast(r.why==="posted"?"Already posted":"Can't post that one");return r;}
+  save();INK_SOUND.tick();
+  if(r.viral)openSheet("It went everywhere",`<p>${esc(r.text)}</p><p class="hint">${r.reach.toLocaleString("en-CA")} people saw it. ${r.gained.toLocaleString("en-CA")} new followers.</p><div class="row"><button class="btn pri" id="evOk">OK</button></div>`),$("evOk").addEventListener("click",closeSheet);
+  else toast(`Posted: ${r.reach.toLocaleString("en-CA")} people saw it, ${r.gained.toLocaleString("en-CA")} new followers`);
+  return r;}
+function evPostSheet(){
+  const L=evPostable();
+  openSheet("Post a healed piece",`<p class="hint" style="margin-top:0">Healed work only, your own. Crisp heals and well-designed pieces travel furthest.</p>
+${L.length?`<div class="evPick">${L.map(p=>{const t=gvSvg(p,{cls:"evThumb"});return`<button class="evPk" data-pid="${esc(p.id)}">${t.svg}<span><b>${esc(gvCap(p.label||"piece"))}</b><span class="clMeta">${p.y} · ${esc((INK_SIM.HEAL_GRADES[p.heal]||{}).name||p.heal)} · reads ${Math.round(t.a.readability*100)}</span></span></button>`;}).join("")}</div>`:`<p>Nothing to post right now.</p>`}`);
+  $("sheetBody").querySelectorAll(".evPk").forEach(b=>b.addEventListener("click",()=>{const r=evPost(b.dataset.pid);if(r&&r.ok&&!r.viral){closeSheet();}if(curTab==="career")renderCareer();}));}
+
+/* ---- conventions: pick the pieces, then the results ---- */
+function evConvOpen(invId){
+  const inv=S.career.invites.find(i=>i.id===invId);if(!inv)return;
+  const cv=INK_SIM.CONVENTIONS.find(c=>c.id===inv.conv)||{},cand=INK_SIM.convCandidates(S);
+  EV.pick={fresh:cand.fresh[0]?cand.fresh[0].id:null,healed:cand.healed[0]?cand.healed[0].id:null};
+  const row=(kind,list,label,says)=>`<section><h3>${label}</h3><p class="hint" style="margin-top:0">${says}</p>${list.length?`<div class="evPick" data-kind="${kind}">${list.map(p=>{const t=gvSvg(p,{cls:"evThumb",fresh:kind==="fresh"});
+    return`<button class="evPk${EV.pick[kind]===p.id?" on":""}" data-pid="${esc(p.id)}" aria-pressed="${EV.pick[kind]===p.id}">${t.svg}<span><b>${esc(gvCap(p.label||"piece"))}</b><span class="clMeta">${p.y}${kind==="healed"?" · reads "+Math.round(t.a.readability*100):""}${p.portfolio?" · ★":""}</span></span></button>`;}).join("")}
+<button class="evPk none${EV.pick[kind]?"":" on"}" data-pid="" aria-pressed="${!EV.pick[kind]}"><span><b>Don't enter this one</b></span></button></div>`:`<p class="clMeta">Nothing that qualifies.</p>`}</section>`;
+  openSheet(gvCapS(cv.name||"Convention"),`<p class="hint" style="margin-top:0">Entry and travel ${fmtMoney(inv.fee)}. Your flash sells at the booth whatever the judges say.</p>
+${row("fresh",cand.fresh,"Fresh work","Done in the last few months. Judged on the design and how cleanly it went in.")}
+${row("healed",cand.healed,"Healed work","A year old or more. Judged on how it reads today and how it healed. This is where good work shows.")}
+<div class="row"><button class="btn pri" id="evConvGo">Enter</button><button class="btn" id="evConvNo">Skip it</button></div>`);
+  const body=$("sheetBody");
+  body.querySelectorAll(".evPick").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest(".evPk");if(!b)return;EV.pick[g.dataset.kind]=b.dataset.pid||null;
+    g.querySelectorAll(".evPk").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});INK_SOUND.tick();}));
+  $("evConvNo").addEventListener("click",()=>{INK_SIM.enterInvite(S,invId,false);save();closeSheet();renderCareer();});
+  $("evConvGo").addEventListener("click",()=>{const r=INK_SIM.enterInvite(S,invId,true,EV.pick);if(!r||!r.ok)return;save();renderHeader();evConvResult(r);renderCareer();});}
+function evConvResult(r){
+  const pl=n=>n?["","First place","Second place","Third place"][n]:"No placing";
+  const cat=(c,l)=>c?`<div class="evRes p${c.place}"><span class="clK">${l}</span><b>${pl(c.place)}</b><span class="clMeta">${esc(gvCap(c.name||""))} · scored ${Math.round(c.score*100)}${c.prize?" · "+fmtMoney(c.prize):""}</span></div>`:"";
+  openSheet(gvCapS(r.name),`${cat(r.fresh,"Fresh work")}${cat(r.healed,"Healed work")}${!r.fresh&&!r.healed?`<p>You only worked the booth this time.</p>`:""}
+<dl class="kv"><dt>Booth sales</dt><dd class="in">+${fmtMoney(r.booth)}</dd></dl>
+${r.metClient?`<p>${esc(r.metClient.name)} stood at your booth for half an hour and booked a consult for week ${r.metClient.w}.</p>`:`<p class="clMeta">Plenty of people stopped at the booth. Nobody booked on the spot.</p>`}
+${r.rivals&&r.rivals.length?`<section><h3>Other shops from Mostograd</h3><ul class="caPast">${r.rivals.map(x=>`<li>${esc(x.line)}</li>`).join("")}</ul></section>`:""}
+<div class="row"><button class="btn pri" id="evOk">Back to the shop</button></div>`);
+  $("evOk").addEventListener("click",closeSheet);}
+
+/* ---- reckonings: the old piece, then and now (no bandage peel: it healed years ago, so "now" shows at once) ---- */
+function evReckonOpen(q){
+  const R=INK_SIM.RECKONINGS[q.beat],c=clWho(q),p=q.ret&&S.pieces.find(x=>x.id===q.ret.piece);if(!R||!c||!p)return false;
+  const then=gvSvg(p,{fresh:true,cls:"rvImg"}),now=gvSvg(p,{cls:"rvImg"}),yrs=Math.floor(gvAgeYears(p));
+  const head=q.beat==="first_year"?"One of your first":"The bad review";
+  openSheet(head,`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c.first)}</span>${esc(q.brief||"")}</div></div>
+<div class="rvPair"><figure><div class="rvFrame">${then.svg}</div><figcaption>The day you did it, ${p.y}</figcaption></figure>
+<figure><div class="rvFrame">${now.svg}</div><figcaption>Today, ${yrs} year${yrs===1?"":"s"} on · reads ${Math.round(now.a.readability*100)}</figcaption></figure></div>
+<p class="clMeta">${esc(gvCap(p.name))}${p.stage==="apprentice"?" · done while you were an apprentice":""}.</p>
+<div class="evChoices">${Object.keys(R.choices).map(k=>`<button class="btn${k===Object.keys(R.choices)[0]?" pri":""}" data-rc="${esc(k)}">${esc(R.choices[k].label)}</button>`).join("")}</div>`);
+  $("sheetBody").querySelectorAll("[data-rc]").forEach(b=>b.addEventListener("click",()=>{
+    const r=INK_SIM.reckoningChoose(S,q.id,b.dataset.rc);if(!r.ok)return;save();INK_SOUND.tick();
+    if(r.consult){closeSheet();toast(r.text);clStartConsult(q.id);return;}
+    $("sheetBody").innerHTML=`<p>${esc(r.text)}</p>${r.item?`<p class="hint">A free sitting is booked for week ${r.item.w}, ${r.item.y}. The design is the old one; open it on the board to rework it.</p>`:""}<div class="row"><button class="btn pri" id="evOk">OK</button></div>`;
+    $("evOk").addEventListener("click",closeSheet);if(typeof renderClients==="function"&&curTab==="clients")renderClients();}));
+  return true;}
 /* ===================== app/slots.js: save slots and New career (PR 7) =====================
    Three manual slots (localStorage ink-slot1 .. ink-slot3, already in every backup code) in Settings › Save: save the
    running career into one, load one back, clear one. A slot holds the packed save (as ink-save) squeezed with the
@@ -8330,12 +9165,13 @@ ${react?`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c
 ${g==="infected"?`<p class="rvNote">${fix?`Free fix booked for week ${fix.w}, ${fix.y}. Reputation took a hit.`:"Reputation took a hit."}</p>`:""}
 ${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc(c.first)} left a review`}</span>${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}
 <div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
-:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>`}</div>
+:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>${typeof evPostBtn==="function"&&evPostBtn(p)?`<p class="clMeta rvPost">Or share it: <button class="btn sm" data-rv="post">Post it</button></p>`:""}`}</div>
 </article>`;}
 function rvWire(after){
   const card=$("rvCard");if(!card)return;
   card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
     const p=rvPending();if(!p)return;
+    if(b.dataset.rv==="post"){if(typeof evPost==="function")evPost(p.id);b.disabled=true;return;}   // PR 8: posting doesn't close the reveal
     if(b.dataset.rv==="yes"){INK_SIM.setPortfolio(S,p,true);toast("In your portfolio");}
     S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
 
@@ -8399,12 +9235,13 @@ ${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink
 <dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
 ${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
 <section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
-${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
+${p.heal&&!p.by?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button>${typeof evPostBtn==="function"?evPostBtn(p):""}</div></section>`:""}
 <section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
 <p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
 ${c.shop?`<p class="hint">A client of ${esc(gvBy(p))}'s: on the shop's books, not yours.</p>`:c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
   const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
-  const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));}
+  const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));
+  if(typeof evPostWire==="function")evPostWire(()=>{if(!$("evOk"))gvOpen(p.id);});}
 /* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================
    An original front/back drawing of the neutral, stylized mannequin (smooth capsule limbs, no face, no anatomical detail),
    dressed in a crop top and shorts so the ribs/side are bare. Drawn for Ink; no traced art.

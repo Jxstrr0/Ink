@@ -6,6 +6,7 @@ css/ui-clients.css
 css/ui-session.css
 css/ui-gallery.css
 css/ui-career.css
+css/ui-events.css
 html/body.html
 html/ld-libs.html
 sim/rng.js
@@ -21,6 +22,7 @@ sim/session.js
 sim/kit.js
 sim/career.js
 sim/archive.js
+sim/events.js
 sim/market.js
 html/ld-sim.html
 sound/synth.js
@@ -41,6 +43,7 @@ app/clients.js
 app/career.js
 app/shop.js
 app/legacy.js
+app/events.js
 app/slots.js
 app/gallery.js
 app/bodymap.js

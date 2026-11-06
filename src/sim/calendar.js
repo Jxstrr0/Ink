@@ -7,12 +7,12 @@
      bookings  walk-ins from market.js, returns (RETURN_RULES), referrals (REFERRAL), then the week's chair hours are
                filled from the queue; sessions that don't fit move to next week
      costs     the shop's cut, supplies, rent, staff, sales (PR 7: sim/career.js careerWeek replaces the stub)
-     events    queued events, reckonings, inspections (PR 8: a no-op here)
-     trend     the trend wave (PR 8: a no-op here)
+     events    queued events, reckonings, inspections (set by sim/events.js, PR 8)
+     trend     the trend wave (set by sim/events.js, PR 8)
    Later PRs replace a stub by assigning SIM.WEEK_HOOKS.<name> = function(S, ctx){...}. ctx = {r (an rng forked for that hook and
    week), log, yearRolled, now (SIM.weekIndex of the new week)}; a hook pushes {k, text, ...} lines onto ctx.log.
    advanceWeek returns that log: [{k, text, client?, piece?, item?}], k one of week left gaveup heal year walkin return referral
-   booked carried cost event trend end. At 2030 week 52 it stops: the log ends with {k:"end"} and log.end = true.
+   booked carried cost event trend goal note end. At 2030 week 52 it stops: the log ends with {k:"end"} and log.end = true.
    SIM.nextStop(S): the Career tab's Next button. Advances until a client is due (a booked session, a return, a referral or a
    walk-in), a heal or an event, never more than WEEK.maxSkip weeks; returns {weeks, why, line, log}.
    SIM.finishSession(S, itemId, {design, out, heal}): a sitting is done (PR 4 calls it): pays the share of the balance,
@@ -169,7 +169,7 @@ function calSummary(from,S,all,why,weeks){
   const head=weeks===1?"Week "+S.week+", "+S.year:"Weeks "+from.w+(from.y!==S.year?" ("+from.y+")":"")+" to "+S.week+", "+S.year;
   const left=cnt("left");if(left)parts.push(left===1?"a walk-in left unseen":left+" walk-ins left unseen");
   const gave=all.filter(l=>l.k==="gaveup").length;if(gave)parts.push(gave===1?"one consult gave up waiting":gave+" consults gave up waiting");
-  for(const l of all)if(l.k==="return"||l.k==="referral"||l.k==="heal"||l.k==="year"||l.k==="event"||l.k==="carried")parts.push(l.text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
+  for(const l of all)if(l.k==="return"||l.k==="referral"||l.k==="heal"||l.k==="year"||l.k==="event"||l.k==="carried"||l.k==="trend"||l.k==="goal"||l.k==="note")parts.push(l.text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
   const w=all.filter(l=>l.k==="walkin");if(w.length)parts.push(w[w.length-1].text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
   const b=all.filter(l=>l.k==="booked");if(b.length)parts.push(b[b.length-1].text.replace(/\.$/,""));
   if(why==="end")parts.push("the thirty years are up");
