@@ -78,7 +78,11 @@ function buSaveOk(o){
   if(!buObj(o))return false;
   if("settings" in o&&!buObj(o.settings))return false;
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
-  for(const k of ["clients","pieces","queue"])if(k in o&&!Array.isArray(o[k]))return false;
+  for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
+  if("board" in o){const b=o.board;if(!buObj(b))return false;
+    if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
+    if("skinTone" in b&&!buNum(b.skinTone))return false;}
+  if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
   return buTry(o);}
 /* load a copy the way the game would (hydrate), then put the running game back exactly as it was */
 function buTry(o){const keepS=S;let ok=false;

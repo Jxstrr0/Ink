@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.1.0";
+const VERSION="0.1.2.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -30,6 +30,10 @@ function freshState(){return{
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
+  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office"},   // the design board (PR 2): the working design
+                     // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
+                     // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
+  flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
   settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false},
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
@@ -44,7 +48,9 @@ function hydrate(o){
   if(!o||typeof o!=="object"||Array.isArray(o))return false;
   if(o.settings!=null&&(typeof o.settings!=="object"||Array.isArray(o.settings)))return false;
   const f=freshState();
-  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{})});
+  const ob=o.board&&typeof o.board==="object"&&!Array.isArray(o.board)?o.board:{};
+  S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob)});
+  if(!Array.isArray(S.flash))S.flash=[];
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}

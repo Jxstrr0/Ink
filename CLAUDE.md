@@ -76,7 +76,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.1.0, November 2026)
+## Current status (0.1.2.0, November 2026)
+
+- PR 2 built: the design board on the Design tab: body diagram (`app/bodymap.js`) with every placement, body shape and skin tone; the cream board with drag, pinch, toolbar, snap to flow, undo/redo; live ▲/▼ deltas and the aging strip on a docked capsule; the stress report; the flash wall (`sim/flash.js`) and your own flash. Saved in `S.board` and `S.flash`. Sample walk-ins until PR 3.
 
 - PR 1 built: seeded rng, 135 design elements (105 original, 30 game-icons CC BY 3.0, credited in `art/CREDITS.md` and Settings › About), 9 styles, 26 placements, design scoring with skin contrast and the stress report, the aging model, ruble `PRICE_INDEX`, `tools/sim-test.js`. Data shapes: `docs/SIM-CONTRACT.md`. The Design tab shows the raw score object until PR 2.
 - PR 0 (scaffold) built: five tabs (Studio, Design, Session, Clients, Career), a placeholder 3D back room on the Studio tab, Settings (theme, reduced effects, graphics tier and auto-adjust, sound), Back up / Restore codes and backup files, PWA with the update bar.
