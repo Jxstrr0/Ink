@@ -72,10 +72,10 @@ const REP_TRACKS={
     events:{flash_day:40,friday_13:60}},
   collectors:{name:"Collectors",says:"custom work and style: people who plan a body of work",
     unlocks:{creatives:10,memorial:15,collector:25,large_scale:45},
-    events:{waiting_list:60,magazine:75}},
+    events:{waiting_list:60,magazine:65}},
   peers:{name:"Peers",says:"clean heals: what other artists notice",
     unlocks:{old_school:20,cover_up:35},
-    events:{guest_spot:30,convention:55,award:85}}
+    events:{guest_spot:30,convention:55,award:75}}
 };
 /* how things move the tracks (points on 0..100) */
 const REP={

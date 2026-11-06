@@ -6,7 +6,7 @@
      evLowerHtml()  what's in demand (INK_SIM.trendNow), social media from 2016 (followers, far-away bookings, Post a
                     healed piece), rival shops, and the career's goals
      evWire()       their buttons. evAfterLog(log) toasts goals reached and reputation events after Next (both chime).
-   0.1.13.0: the reputation events (sim/events.js REP_EVENTS: a flash day, the Friday 13th special, a feature in Igla, the
+   0.1.13.0: the reputation events (sim/events.js REP_EVENTS: a flash day, the Friday 13th special, a feature in Kontur, the
    Drawbridge Prize) arrive as the same choice cards, headed from EV_HEAD, with the first choice (the one that does something) highlighted; evRepHtml is their history on the Career tab.
    Sheets: evPostSheet (pick a healed piece to post), evConvOpen (pick a fresh and a healed piece for a convention, then
    the results), evReckonOpen (a reckoning: your old piece then and now, and three choices). evPostBtn(p) is the
@@ -55,13 +55,13 @@ ${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name
 function evGoalsHtml(){
   const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
   return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span>${g.done&&typeof shGoalCard==="function"?`<button class="btn sm shBtn" data-gcard="${esc(g.id)}" aria-label="Share card: ${esc(g.name)}">${SH_ICON}Card</button>`:""}</li>`).join("")}</ul></div>`;}
-/* the reputation events so far: flash days and Friday 13ths run, Igla features, the Drawbridge Prize */
+/* the reputation events so far: flash days and Friday 13ths run, Kontur features, the Drawbridge Prize */
 function evRepHtml(){
   const R=S.world.repEv;if(!R)return"";const fd=R.flash_day||{},fr=R.friday_13||{},mg=(R.magazine||[]).filter(m=>m.yes),aw=R.award||[];
   if(!fd.n&&!fr.n&&!mg.length&&!aw.length)return"";
   const pl=n=>["no placing","first place","second place","third place"][n]||"";
   return`<div class="card evRepH"><h2>Days and honours</h2><dl class="kv">${fd.n?`<dt>Flash days</dt><dd>${fd.n} (${fd.sittings} pieces)</dd>`:""}${fr.n?`<dt>Friday 13th specials</dt><dd>${fr.n} (${fr.sittings} pieces)</dd>`:""}
-${mg.length?`<dt>Featured in Igla</dt><dd>${mg.map(m=>m.y).join(", ")}</dd>`:""}${aw.length?`<dt>The Drawbridge Prize</dt><dd>${aw.map(a=>`${a.y}: ${pl(a.place)}`).join(" · ")}</dd>`:""}</dl></div>`;}
+${mg.length?`<dt>Featured in Kontur</dt><dd>${mg.map(m=>m.y).join(", ")}</dd>`:""}${aw.length?`<dt>The Drawbridge Prize</dt><dd>${aw.map(a=>`${a.y}: ${pl(a.place)}`).join(" · ")}</dd>`:""}</dl></div>`;}
 function evLowerHtml(){
   if(!evOn())return"";INK_SIM.worldEnsure(S);
   return evTrendHtml()+evRepHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}

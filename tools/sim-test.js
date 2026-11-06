@@ -577,7 +577,7 @@ const PR8 = {};
   const res = SIM.enterInvite(V, "conv:t2", true, { fresh: null, healed: cand.healed[0] && cand.healed[0].id });
   check("conventions: you pick a fresh and a healed piece; each category is judged on its own", cand.healed.length > 0 && res.ok && !res.fresh && res.healed && res.healed.piece === cand.healed[0].id && res.booth > 0, JSON.stringify({ place: res.place, healed: res.healed }));
 }
-/* ---- 0.1.13.0: the reputation events REP_TRACKS names (flash days, Friday the 13th, Igla, the Drawbridge Prize) ---- */
+/* ---- 0.1.13.0: the reputation events REP_TRACKS names (flash days, Friday the 13th, Kontur, the Drawbridge Prize) ---- */
 const REV = {};
 { const RE = SIM.REP_EVENTS, T = SIM.REP_TRACKS;
   check("rep events: each opens at its REP_TRACKS number, and every REP_TRACKS event is in the game",
@@ -599,8 +599,10 @@ const REV = {};
     !LONG_EV.some(l => l.repEv === "flash_day" || l.repEv === "magazine"));
   const aw = LONG.world.repEv.award;
   REV.award = aw;
-  check("the Drawbridge Prize: once a year only while peers are at 85 (the run reaches it in 2029), judged on healed pieces",
-    aw.length === 1 && aw[0].y === 2029 && aw[0].pieces.length === RE.award.pieces && aw[0].place >= 0 && aw[0].place <= 3 &&
+  check("rep events (0.1.13.1): the Drawbridge Prize opens at peers 75 (was 85), the magazine at collectors 65 (was 75)", T.peers.events.award === 75 && T.collectors.events.magazine === 65 && SIM.repEventAt("award") === 75 && SIM.repEventAt("magazine") === 65);
+  check("the Drawbridge Prize: once a year only while peers are at 75 (the run reaches it in 2026), judged on healed pieces",
+    aw.length === 4 && aw[0].y === 2026 && aw.every((a, i) => i === 0 || a.y > aw[i - 1].y) && aw.every(a => a.pieces.length === RE.award.pieces && a.place >= 0 && a.place <= 3 &&
+    a.pieces.every(id => { const p = LONG.pieces.find(x => x.id === id); return p && !p.by && p.heal && p.heal !== "infected" && p.y <= a.y - 1; })) && aw[0].pieces.length === RE.award.pieces && aw[0].place >= 0 && aw[0].place <= 3 &&
     aw[0].pieces.every(id => { const p = LONG.pieces.find(x => x.id === id); return p && !p.by && p.heal && p.heal !== "infected" && p.y <= 2028; }), JSON.stringify(aw));
   /* a flash day, forced on a copy of year 30: walk-ins at 50 and five sheets of your own flash */
   const fresh = () => { const V = clone(LONG); SIM.unpackSave(V); SIM.worldEnsure(V); V.world.pending = []; V.rep.walkins = 50; V.rep.peers = 40; V.career.books = "open";
@@ -624,18 +626,34 @@ const REV = {};
   const L0 = fresh(); RE.flash_day.chance = 1; SIM.advanceWeek(L0); RE.flash_day.chance = ch0; const lc = L0.world.pending.find(e => e.kind === "flash_day"), lsit = L0.world.repEv.flash_day.n;
   for (let i = 0; i < 5; i++) SIM.advanceWeek(L0);
   check("flash day: a card left alone takes its default (no flash day)", lc && !L0.world.pending.some(e => e.id === lc.id) && L0.world.repEv.flash_day.n === lsit);
-  /* Igla: forced on a copy with collectors at 80 and a healed portfolio */
-  const M = fresh(); M.rep.collectors = 80; let pf = 0; for (let i = M.pieces.length - 1; i >= 0 && pf < 6; i--) { const p = M.pieces[i]; if (!p.by && p.heal === "crisp" && M.year - p.y >= 2 && SIM.pieceReads(M, p) > 0.6) { p.portfolio = true; pf++; } }
+  /* Kontur: forced on a copy with collectors at 68 (over the 0.1.13.1 gate of 65) and a healed portfolio */
+  const M = fresh(); M.rep.collectors = 68; let pf = 0; for (let i = M.pieces.length - 1; i >= 0 && pf < 6; i--) { const p = M.pieces[i]; if (!p.by && p.heal === "crisp" && M.year - p.y >= 2 && SIM.pieceReads(M, p) > 0.6) { p.portfolio = true; pf++; } }
   const mc0 = RE.magazine.chance; RE.magazine.chance = 1; let mcard = null; for (let i = 0; i < 2 && !mcard; i++) { SIM.advanceWeek(M); mcard = M.world.pending.find(e => e.kind === "magazine"); } RE.magazine.chance = mc0;
   const q0 = M.queue.length, mrep = M.rep.collectors, mres = mcard ? SIM.eventChoose(M, mcard.id, "yes") : {};
   REV.mag = { pf, collectors: +(M.rep.collectors - mrep).toFixed(2) };
-  check("Igla: features you with collectors at 75 and a healed portfolio; yes raises collectors and books a reader",
-    mcard && mres.ok && /Igla/.test(mcard.text) && M.rep.collectors > mrep && M.queue.some(q => q.from === "magazine") && M.world.repEv.magazine.length === 1, JSON.stringify(REV.mag));
+  check("Kontur: features you with collectors at 65 and a healed portfolio; yes raises collectors and books a reader",
+    mcard && mres.ok && /Kontur/.test(mcard.text) && M.rep.collectors > mrep && M.queue.some(q => q.from === "magazine") && M.world.repEv.magazine.length === 1, JSON.stringify(REV.mag));
   const M2 = fresh(); M2.rep.collectors = 80; RE.magazine.chance = 1; SIM.advanceWeek(M2); RE.magazine.chance = mc0;
-  check("Igla: no portfolio, no feature", !M2.world.pending.some(e => e.kind === "magazine"));
+  check("Kontur: no portfolio, no feature", !M2.world.pending.some(e => e.kind === "magazine"));
   /* the award's judging */
   const A = fresh(), ar = SIM.awardJudge(A, SIM.rng(SEED).fork("award-test")), cand = SIM.convCandidates(A).healed.slice(0, 3).map(p => p.id);
-  check("the Drawbridge Prize: judges your three best healed pieces and records the result", JSON.stringify(ar.pieces) === JSON.stringify(cand) && A.world.repEv.award.length === 2 && ar.score > 0.3, JSON.stringify(ar));
+  check("the Drawbridge Prize: judges your three best healed pieces and records the result", JSON.stringify(ar.pieces) === JSON.stringify(cand) && A.world.repEv.award.length === LONG.world.repEv.award.length + 1 && ar.score > 0.3, JSON.stringify(ar));
+  /* 0.1.13.1: the Drawbridge goal (first place only; first_award stays conventions) */
+  const firstWin = aw.find(a => a.place === 1);
+  check("Drawbridge goal: the 30-year run ticks it the year it first wins, not the convention goal by itself",
+    firstWin && LONG.goals.drawbridge && LONG.goals.drawbridge.y === firstWin.y && SIM.GOALS.some(g => g.id === "drawbridge" && g.name === "Win the Drawbridge Prize"), JSON.stringify(LONG.goals.drawbridge));
+  const G1 = fresh(); delete G1.goals.drawbridge; delete G1.goals.first_award; G1.career.conv = []; G1.world.repEv.award = [];
+  const ap0 = RE.award.places.slice(); RE.award.places = [0, 0, 0];   // any score wins first place
+  const ge = { id: "e9999", kind: "award", repEv: true, choices: RE.award.choices, dflt: RE.award.dflt, w: G1.week, y: G1.year, until: SIM.weekIndex(G1.week, G1.year) + 2, text: "t" };
+  const none0 = SIM.checkGoals(G1, true); G1.world.pending.push(ge);
+  const gr = SIM.eventChoose(G1, "e9999", "enter"), got = SIM.checkGoals(G1, false); RE.award.places = ap0;
+  check("Drawbridge goal: first place ticks it on the next check (what evGoalsNow runs straight after the card); first_award stays conventions only",
+    none0.indexOf("drawbridge") < 0 && gr.ok && G1.world.repEv.award[0].place === 1 && got.indexOf("drawbridge") >= 0 && got.indexOf("first_award") < 0 && !G1.goals.first_award, JSON.stringify({ none0, got }));
+  const G2 = fresh(); G2.world.repEv.award = [{ y: 2029, place: 2, score: 0.6, pieces: [] }]; delete G2.goals.drawbridge;
+  check("Drawbridge goal: second place doesn't tick it", SIM.checkGoals(G2, true).indexOf("drawbridge") < 0);
+  const G3 = clone(LONG); SIM.unpackSave(G3); delete G3.goals.drawbridge; const G3l = SIM.goalList(G3).find(g => g.id === "drawbridge");
+  check("Drawbridge goal: a save from before 0.1.13.1 lists it as not done, then ticks it if a win is already on record",
+    G3l && G3l.done === null && SIM.checkGoals(G3, false).indexOf("drawbridge") >= 0 && G3.goals.drawbridge.y === G3.year);
   /* older saves hydrate */
   const O = clone(LONG); SIM.unpackSave(O); delete O.world.repEv; SIM.worldEnsure(O);
   const O2 = clone(LONG); SIM.unpackSave(O2); O2.world.repEv = { magazine: "x", flash_day: 3 }; SIM.worldEnsure(O2);
@@ -695,7 +713,7 @@ if (process.env.DUMPEV) fs.writeFileSync(process.env.DUMPEV, JSON.stringify(LONG
 console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; "));
 console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post " + JSON.stringify({ reach: PR8.post.reach, gained: PR8.post.gained, q: PR8.post.q }) + "; cover " + JSON.stringify(PR8.cover) + "; reckoning reads " + JSON.stringify(PR8.reckonReads) +
   "; 30 years: " + LONG.world.social.followers + " followers, " + LONG.world.social.booked + " far bookings, rivals " + LONG.career.rivals.map(r => r.id + ":" + r.status).join(" ") + ", fired " + Object.keys(LONG.world.fired).join(" ") + ", goals " + Object.keys(LONG.goals).length + "/" + SIM.GOALS.length);
-console.log("0.1.13.0 rep events: " + REV.f13 + " Friday 13th cards in 30 years; flash day " + JSON.stringify(REV.flash) + "; Igla " + JSON.stringify(REV.mag) + "; Drawbridge Prize " + JSON.stringify(REV.award));
+console.log("0.1.13.0 rep events: " + REV.f13 + " Friday 13th cards in 30 years; flash day " + JSON.stringify(REV.flash) + "; Kontur " + JSON.stringify(REV.mag) + "; Drawbridge Prize " + JSON.stringify(REV.award));
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
 /* ---- timing ---- */
