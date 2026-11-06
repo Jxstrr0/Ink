@@ -2,6 +2,10 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.15.1: a closed studio can send you back to Sedov's
+
+- **The soft fail follows Arkady too.** When your studio closes (`softFail` in `sim/career.js`), you go back to Arkady's front room at his friend's split if his goodwill is still at `MENTOR.splitAt` (0.55) or above. Otherwise you go to the shop across town, as before. His line on the closing scene says his old chair is free, and the scene's last line names where you land. A goodwill high enough for his loan (`MENTOR.loanAt`) still saves the studio once first.
+
 ## 0.1.15.0: Arkady's front room, your flash on your walls, the wireless pen
 
 - **Where your chair is depends on Arkady.** If you leave Arkady on good terms (his goodwill high enough that he gives you his own chair at a friend's split), the rented-chair stage is the front room of Sedov's on Kanatnaya Street: olive walls over a dark wood dado, old floorboards, a green half curtain on a brass rod across the canal window, his framed board of old-school flash with more sheets pinned in a row above it, a wall clock, his oxblood chair where he works now, a third empty chair, a glass counter with the till by the door and a curtained doorway through to the back room. The caption says "Your chair in Arkady's front room", as the card does. Otherwise (his goodwill low, Skip the broom, or back in a chair after your studio closed) it is the busy tiled shop across town, captioned "Your rented chair, across town"; its card now says "across town" too.
