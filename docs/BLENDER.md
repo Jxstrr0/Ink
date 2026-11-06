@@ -2,7 +2,7 @@
 
 This is the job list for the Blender batch: the client mannequin and the shop props for Full and Ultra graphics. Everything the game needs from the code side is already in (0.1.10.0): the loader, the slots, the photo textures, the packing tool. Your files slot in by name; nothing else changes. Lite phones never load any of this and keep the coded shop and mannequin, so nothing you do can break Lite.
 
-**Status (0.1.11.0):** a first version of every file now ships, made by script: `tools/blender/` (`mannequin.py`, `props.py`, `check_mannequin.py`; how to run them in `tools/blender/README.md`). The scripted mannequin is built from the coded body's own reference export (`models/base-mesh/reference/`), not from the pistachio base mesh, so its UVs and shapes match the game exactly. Every entry in `ASSETS` is `on:true`. This brief still holds: any file you make by hand to it replaces the scripted one under the same name (pack it, run `check_mannequin.py` for the mannequin, credit it, and stop running the script for that file).
+**Status (0.1.12.0):** the three shapes now read apart at a glance (Broad wider and thicker, Slight narrower and slimmer: the table below), the shin runs into the foot with no gap, the sculpt is stronger (shoulders, waist, knees, calves), a rotary pen joins the coil machine on the tray (`rotary`) and the sign says ИГЛА. **Status (0.1.11.0):** a first version of every file now ships, made by script: `tools/blender/` (`mannequin.py`, `props.py`, `check_mannequin.py`; how to run them in `tools/blender/README.md`). The scripted mannequin is built from the coded body's own reference export (`models/base-mesh/reference/`), not from the pistachio base mesh, so its UVs and shapes match the game exactly. Every entry in `ASSETS` is `on:true`. This brief still holds: any file you make by hand to it replaces the scripted one under the same name (pack it, run `check_mannequin.py` for the mannequin, credit it, and stop running the script for that file).
 
 Every number below is taken from the code (`src/vis/body.js`, `src/vis/studio.js`, `src/vis/assets.js`, `src/sim/placements.js`). If a number here and the code ever disagree, the code wins: tell Claude and the doc gets fixed.
 
@@ -52,14 +52,14 @@ The figure sits on the tattoo chair, back upright, facing +Z (Blender -Y), both 
 | seat top | y 0.47, the chair centred at x 0, z 0.06 |
 | head | an egg centred at y 1.305, z 0.012; half sizes 0.084 wide, 0.112 tall, 0.098 deep (top of the head at about y 1.42) |
 | neck | from y 1.245 down to the torso top at y 1.14 |
-| shoulders | the arm starts at x ±0.178, y 1.083; shoulder half width 0.19 (Broad 0.207, Slight 0.173) |
+| shoulders | the arm starts at x ±0.178, y 1.083; shoulder half width 0.19 (Broad 0.226, Slight 0.162); the arms move out with the shoulders so the forearms stay over the armrests |
 | upper arm | hangs down and a little out: elbow at about x ±0.29, y 0.80, z 0.035 |
 | forearm | forward and level on the armrest: wrist at x ±0.295, y 0.745, z 0.27; the top of the forearm faces up |
 | hand | flat, palm down, past the wrist to about z 0.46 |
 | waist | the narrowest ring, y 0.77 |
 | hips | thighs start at x ±0.09, y 0.6, z -0.07 |
 | thighs | forward, nearly level, on the seat: knee at x ±0.11, y 0.53, z 0.43 |
-| shins | straight down: ankle at x ±0.115, y 0.115, z 0.45 |
+| shins | straight down: ankle at x ±0.115, y 0.115, z 0.45; the shin tube carries on into the top of the foot (to y 0.072, z 0.449), so there is no gap at the ankle |
 | feet | flat on the floor (y 0), toes forward to about z 0.65 |
 
 The armrests in the game are coded and move under the forearms for each body shape, so the forearms must stay where the reference has them. The chair is not part of the mannequin file.
@@ -122,8 +122,8 @@ The client picks one of three shapes (`BODY_SHAPES` in `src/sim/placements.js`);
 | shape key | game name | girth multipliers (arm, leg, back, chest, side, neck, hand, foot, shoulder) | shoulder half width |
 |---|---|---|---|
 | `Basis` | neutral, "Average" | all 1 | 0.190 m |
-| `masc` | "Broad" | 1.14, 1.08, 1.12, 1.12, 1.06, 1.12, 1.10, 1.08, 1.14 | 0.207 m; waist ×1.05, hips ×0.99, depth ×1.06 |
-| `femme` | "Slight" | 0.88, 1.03, 0.90, 0.92, 0.94, 0.90, 0.90, 0.92, 0.88 | 0.173 m; waist ×0.88, hips ×1.07, depth ×0.95 |
+| `masc` | "Broad" | 1.24, 1.14, 1.18, 1.18, 1.10, 1.16, 1.12, 1.08, 1.24 | 0.226 m; waist ×1.12, hips ×1.05, depth ×1.14 |
+| `femme` | "Slight" | 0.82, 0.90, 0.86, 0.88, 0.90, 0.88, 0.88, 0.92, 0.84 | 0.162 m; waist ×0.85, hips ×0.95, depth ×0.87 |
 
 How: sculpt or scale each key until it matches `ink-body-masc.obj` / `ink-body-femme.obj` (import them as wire guides). Keep the forearms on the same line (the armrests follow them, but only a few centimetres). The bandeau and shorts need the **same two keys** so they follow the body.
 
@@ -177,6 +177,7 @@ Positions are where the game puts the origin, in game metres (x right as you loo
 | `chair` | `ink-chair.glb` | apprentice on | seat 0.50 × 0.46, top at 0.47 m; a column; a 0.3 m disc base | 1,500 | 0, 0, 0.06 | 0 | the tattoo chair: padded seat, column, base. **No armrests** (the game's armrests move per body shape) and no backrest above 0.9 m (it would hide the back) |
 | `station` | `ink-station.glb` | apprentice on | a steel trolley 0.46 × 0.36, top shelf at 0.81 m | 1,200 | 0.86, 0, 0.32 | 0 | your trolley: two shelves, ink caps, a paper towel roll, a spray bottle, a box of gloves. **Not** the machine |
 | `machine` | `ink-machine-coil.glb` | apprentice on | about 0.13 m long | 600 | 0.78, 0.81, 0.37 (lying on the trolley top) | 0.4 | the coil machine lying on its side, with a short clip cord. Origin at its underside, so it rests on the tray |
+| `rotary` | `ink-machine-rotary.glb` | apprentice on | about 0.15 m long | 600 | 0.79, 0.81, 0.22 (on the tray beside the coil) | -0.3 | a rotary pen: turned body, stroke ring, knurled grip, clear cartridge, needle tip to -x, a short cord. No logo. Origin at its underside |
 | `lamp` | `ink-lamp.glb` | apprentice on | base disc 0.15 m, pole 1.62 m | 800 | 1.05, 0, -0.45 | 0 | the angle lamp: weighted base, pole, an arm reaching to the shade. The shade's opening must be at (-0.55, 1.50, +0.33) from the origin, pointing down at the forearm (the game's light sits there). Bulb material `ink_lamp_bulb` with Emission |
 | `stool` | `ink-stool.glb` | apprentice on | seat r 0.18 at 0.55 m | 500 | 0.95, 0, 0.86 | 0 | your rolling stool |
 | `shelves` | `ink-shelves.glb` | apprentice on | two shelves 0.24 deep × 1.1 long at 1.25 and 1.62 m | 900 | -2.66, 0, -0.6 (against the left wall) | π/2 | wall shelves with jars, ink bottles, sketchbooks. The back of the shelf is 0.12 m behind the origin (it touches the wall) |
@@ -189,11 +190,11 @@ Positions are where the game puts the origin, in game metres (x right as you loo
 
 The room shell (floor, walls, window onto the canal, ceiling, door) stays coded; on Full and Ultra it already wears the photo textures. The armrests, the flash sheets themselves, the rug, the broom and the supply boxes stay coded too.
 
-**More machines.** The trolley shows one machine for now. If you make `ink-machine-coil-used.glb`, `ink-machine-rotary.glb` and `ink-machine-pen.glb` as well (same origin rule, budget 600 each), they can follow the player's kit later: ask Claude.
+**More machines.** The tray shows the coil and, since 0.1.12.0, the rotary pen (`rotary`). If you make `ink-machine-coil-used.glb` and `ink-machine-pen.glb` as well (same origin rule, budget 600 each), they can follow the player's kit later: ask Claude.
 
 ### Signage
 
-Mostograd is a St Petersburg-like river city (shared with Lombard): Cyrillic-flavoured, invented, never a real shop. For the studio sign, one line of big letters, e.g. **ТАТУ · TATTOO** or an invented shop word like **ИГЛА** ("needle") with TATTOO under it, on a dark board with a thin brass edge (the coded one is `#1b120c` with `#c9a35e` and `#f0c674` letters). Lettering as geometry (Text object, Convert to Mesh, low resolution) or as a small texture. No real brand, no real shop's name, no phone numbers or web addresses.
+Mostograd is a St Petersburg-like river city (shared with Lombard): Cyrillic-flavoured, invented, never a real shop. For the studio sign, one line of big letters, e.g. **ТАТУ · TATTOO** or an invented shop word like **ИГЛА** ("needle") with TATTOO under it. Since 0.1.12.0 both signs (coded and `ink-sign.glb`) say **ИГЛА**, on a dark board with a thin brass edge (the coded one is `#1b120c` with `#c9a35e` and `#f0c674` letters). Lettering as geometry (Text object, Convert to Mesh, low resolution) or as a small texture. No real brand, no real shop's name, no phone numbers or web addresses.
 
 ---
 

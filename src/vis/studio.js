@@ -7,7 +7,7 @@
    vsRoom() returns {grp, stages, lights, armrests, props, mats}; vsStage(stage) shows the props for apprentice | chair |
    studio | legacy (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 3k
    triangles. Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build.
-   PR 10: every prop is a named group in `props` (chair, station, machine, lamp, stool, shelves, bench, flashframe, sign,
+   PR 10: every prop is a named group in `props` (chair, station, machine, rotary (0.1.12.0: the rotary pen beside the coil), lamp, stool, shelves, bench, flashframe, sign,
    plant, plant2 (PR 11: the legacy studio's second plant), photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
    photo textures on them and swap a Blender model in for a coded prop on Full and Ultra. Lite never sees either. ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
@@ -53,8 +53,17 @@ function vrPlanks(){const t=vrCanvas(256,256,(g,w,h)=>{const r=vrRng(77);
     g.fillStyle="rgba(0,0,0,.35)";g.fillRect(0,y,w,1.5);const cut=r.range(20,230);g.fillRect(cut,y,1.5,h/8);
     g.fillStyle="rgba(255,230,190,.05)";for(let k=0;k<5;k++)g.fillRect(0,y+r.range(3,h/8-3),w,1);}});
   t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(4,4);return t;}
-function vrSign(){return vrCanvas(512,128,(g,w,h)=>{g.fillStyle="#1b120c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a35e";g.lineWidth=4;g.strokeRect(8,8,w-16,h-16);
-  g.fillStyle="#f0c674";g.font="600 54px Oswald, 'Arial Narrow', sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText("TATTOO",w/2,h/2+2);});}
+/* the studio sign: ИГЛА ("needle", an invented Mostograd shop word), spaced letters in Oswald. The page's Google Fonts CSS
+   only fetches Oswald's Cyrillic subset when Cyrillic is used, so the sign asks for it and repaints once it is in; until
+   then (or offline) the letters fall back to a system sans, which has Cyrillic too */
+const VR_SIGN="ИГЛА",VR_SIGN_FONT="600 80px Oswald, 'Arial Narrow', sans-serif";
+function vrSignPaint(g,w,h){g.fillStyle="#1b120c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a35e";g.lineWidth=4;g.strokeRect(8,8,w-16,h-16);
+  g.fillStyle="#f0c674";g.font=VR_SIGN_FONT;g.textAlign="center";g.textBaseline="middle";
+  const n=VR_SIGN.length;for(let i=0;i<n;i++)g.fillText(VR_SIGN[i],w/2+(i-(n-1)/2)*88,h/2+4);}
+function vrSign(){const t=vrCanvas(512,128,vrSignPaint);
+  try{if(document.fonts&&document.fonts.load)document.fonts.load(VR_SIGN_FONT,VR_SIGN).then(f=>{if(!f||!f.length)return;
+    const c=t.image;vrSignPaint(c.getContext("2d"),c.width,c.height);t.needsUpdate=true;V.dirty=true;draw();}).catch(()=>{});}catch(e){}
+  return t;}
 
 function vsRoom(){
   const T=TIER[V.tier],grp=new THREE.Group(),st={};for(const s of VR_STAGES)st[s]=new THREE.Group();
@@ -95,11 +104,17 @@ function vsRoom(){
     const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.12,0.03,14),M.steel);g.add(foot);
     armrests[s]={g,tilt,post,foot};}
   /* your station: trolley, machine, ink caps, paper roll, angle lamp, stool */
-  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine");
+  const tx=0.86,tz=0.32,PS=pg("station"),PM=pg("machine"),PR=pg("rotary");
   for(const [dx,dz] of [[-0.2,-0.15],[0.2,-0.15],[-0.2,0.15],[0.2,0.15]])cyl(0.012,0.012,0.8,6,M.steel,[tx+dx,0.4,tz+dz],PS);
   box(0.46,0.02,0.36,M.steel,[tx,0.8,tz],PS);box(0.46,0.02,0.36,M.steel,[tx,0.28,tz],PS);
   const mach=cyl(0.014,0.012,0.13,10,M.dark,[tx-0.08,0.825,tz+0.05],PM);mach.rotation.z=Math.PI/2;mach.rotation.y=0.4;
   box(0.05,0.03,0.035,M.brass,[tx-0.02,0.83,tz+0.03],PM);
+  /* 0.1.12.0: a rotary pen beside it, lying along the tray's back-left corner: grip, body, a stroke ring, the needle cartridge */
+  {const rq=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-0.3),ax=new THREE.Vector3(-1,0,0).applyQuaternion(rq),c=new THREE.Vector3(tx-0.07,0.823,tz-0.1);
+    const seg=(r1,r2,a,b,mat)=>{const m=cyl(r1,r2,b-a,12,mat,c.clone().addScaledVector(ax,(a+b)/2).toArray(),PR);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ax);return m;};
+    const body=vsMat("#2e3b3f",{r:0.45,m:0.5});
+    seg(0.0115,0.012,-0.068,-0.03,body);seg(0.013,0.013,-0.03,0.0,body);seg(0.0145,0.0145,0.0,0.008,vsMat("#7a2a22",{r:0.5,m:0.3}));
+    seg(0.011,0.011,0.008,0.048,M.steel);seg(0.006,0.01,0.048,0.064,vsMat("#cfd6d8",{r:0.3}));seg(0.0012,0.005,0.064,0.078,M.steel);}
   ["#16120e","#9a1d1d","#1f4f8a","#2f7a3a","#d9a21a","#5e3a7a"].forEach((c,i)=>cyl(0.009,0.009,0.014,8,vsMat(c,{r:0.4}),[tx+0.05+(i%3)*0.03,0.817,tz-0.06+Math.floor(i/3)*0.03],PS));
   cyl(0.05,0.05,0.2,14,M.paper,[tx+0.14,0.91,tz+0.09],PS);cyl(0.012,0.012,0.22,6,M.steel,[tx+0.14,0.91,tz+0.09],PS);
   cyl(0.03,0.032,0.14,10,vsMat("#cfd8d4",{r:0.3}),[tx+0.15,0.88,tz-0.1],PS);

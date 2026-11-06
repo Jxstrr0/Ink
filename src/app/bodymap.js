@@ -8,7 +8,7 @@
    shows it on the viewer's left. Geometry is in a 200 x 420 box. */
 /* zones drawn on one view only (the rest are on both) */
 const BM_BACK_ONLY=/^(upperback|fullback|nape|calf_[lr])$/,BM_FRONT_ONLY=/^(shin_[lr]|foot_[lr]|neck_[lr]|ribs_[lr]|chest_[lr]|sternum)$/;
-const BM_SHAPES={masc:{sh:52,wa:33,hp:30,lm:1.12},femme:{sh:44,wa:28,hp:34,lm:0.9},neutral:{sh:48,wa:31,hp:32,lm:1}};
+const BM_SHAPES={masc:{sh:54,wa:35,hp:31,lm:1.2},femme:{sh:42,wa:26,hp:30,lm:0.84},neutral:{sh:48,wa:31,hp:32,lm:1}};   // 0.1.12.0: further apart, as the 3D shapes
 /* skin tint stops for tone 0..1 (fill, outline) */
 const BM_SKIN=[[0,"#f5dcc5","#b48a6c"],[0.33,"#dba57c","#9c6c4a"],[0.66,"#9b6442","#5f3a24"],[1,"#4d2f21","#24150d"]];
 const BM_CLOTH={top:"#5e6e6b",shorts:"#3d4350",seam:"rgba(0,0,0,.25)"};

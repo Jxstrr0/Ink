@@ -1,6 +1,6 @@
 """tools/blender/props.py: the shop props, models/ink-*.glb, made by script (the Blender batch, PR 11).
 
-  python tools/blender/props.py [chair station ...] [--out DIR] [--no-pack]      (no names: all twelve)
+  python tools/blender/props.py [chair station ...] [--out DIR] [--no-pack]      (no names: all thirteen)
 
 One function per slot in ASSETS.props (src/vis/assets.js) / docs/BLENDER.md section 2. Each prop is modelled in GAME axes
 (metres, +Y up, its front facing +Z, origin where the slot's `at` puts it: on the floor under the prop's centre, or on
@@ -12,7 +12,7 @@ tubes, a Text object for the sign. Edges sharper than 40 degrees get split norma
 Principled (Base Color, Roughness, Metallic, Emission for the bulb and the sign's letters) named ink_<prop>_<surface>;
 the wood uses the dado planks photo texture already in models/textures/ (Poly Haven, CC0) on box-projected UVs, tinted
 towards the coded wood colour. Nothing is random (the plant's leaves come from a fixed table), so every run gives the
-same files. Nothing carries a real brand or name; the sign says TATTOO, as the coded one does.
+same files. Nothing carries a real brand or name; the sign says ИГЛА ("needle", an invented shop word), as the coded one does.
 """
 import math
 import os
@@ -206,11 +206,12 @@ def quad(w, h, loc=(0, 0, 0), rot=None):
     return xform(bm, loc, rot)
 
 
-def text(s, size, depth, loc=(0, 0, 0), res=2):
+def text(s, size, depth, loc=(0, 0, 0), res=2, space=1.0):
     """a Text object turned into a mesh (Blender's built-in font), centred, its face towards +Z"""
     c = bpy.data.curves.new("txt", "FONT")
     c.body, c.size, c.extrude, c.resolution_u = s, size, depth, res
     c.align_x, c.align_y = "CENTER", "CENTER"
+    c.space_character = space
     c.fill_mode = "BOTH"
     ob = bpy.data.objects.new("txt", c)
     bpy.context.scene.collection.objects.link(ob)
@@ -321,6 +322,30 @@ def machine():
     return P
 
 
+def rotary():
+    """the rotary pen lying on the tray beside the coil (0.1.12.0): a turned body in one lathe profile (motor cap at the
+    back, the body with a stroke ring, a knurled grip, a clear needle cartridge and the needle tip), a short cord out of the
+    back. No logo, no maker's name. Origin at its underside, the centre of its length; the tip points to -x"""
+    P = Prop("rotary")
+    body = M("rotary", "body", "#2e3b3f", 0.45, 0.5)
+    ring = M("rotary", "ring", "#7a2a22", 0.5, 0.3)
+    st = M("rotary", "steel", C["steel"], 0.25, 0.85)
+    cart = M("rotary", "cartridge", "#cfd6d8", 0.3)
+    cord = M("rotary", "cord", "#1b1b1b", 0.6)
+    y = 0.013                                                        # the axis height above the tray (the body's radius)
+    # (radius, distance from the back end); spun round +Y, then laid along -x with the back end at x +0.068
+    seg = lambda prof, m, segs=14: P.add(lathe([(r, d) for r, d in prof], segs, (0.068, y, 0), rot=("z", math.pi / 2), cap_top=prof[-1][0] > 0, cap_bot=prof[0][0] > 0), m)
+    seg([(0.0, 0.0), (0.009, 0.0), (0.0115, 0.004), (0.012, 0.03), (0.013, 0.034), (0.013, 0.068)], body)          # motor cap and body
+    seg([(0.0145, 0.068), (0.0145, 0.076)], ring)                                                                   # stroke ring
+    seg([(0.011, 0.076), (0.0115, 0.082), (0.0105, 0.086), (0.0115, 0.090), (0.0105, 0.094), (0.0115, 0.098),
+         (0.0105, 0.102), (0.0115, 0.106), (0.0105, 0.110), (0.011, 0.116)], st, 12)                              # knurled grip
+    seg([(0.010, 0.116), (0.009, 0.124), (0.006, 0.132)], cart, 12)                                                 # cartridge
+    seg([(0.003, 0.132), (0.0012, 0.142), (0.0, 0.146)], st, 8)                                                     # needle tip
+    path = [(0.068, y, 0.0), (0.082, 0.010, 0.004), (0.096, 0.004, 0.014), (0.104, 0.003, 0.034), (0.104, 0.003, 0.06)]
+    P.add(tube(path, 0.003, 6), cord)
+    return P
+
+
 def lamp():
     """the angle lamp: weighted base, pole, a two-part arm with joints, the shade opening at (-0.55, 1.50, +0.33) pointing
     down at the forearm where the game's light sits, a bulb inside (ink_lamp_bulb, emissive)"""
@@ -425,7 +450,7 @@ def flashframe():
 
 
 def sign():
-    """your studio's sign: a dark board with a brass edge and TATTOO in lit letters (as the coded one), origin at the
+    """your studio's sign: a dark board with a brass edge and ИГЛА in lit letters (as the coded one), origin at the
     centre of its back"""
     P = Prop("sign")
     board = M("sign", "board", "#1b120c", 0.6)
@@ -434,8 +459,8 @@ def sign():
     P.add(box((0.98, 0.23, 0.022), (0, 0, 0.011), bevel=0.004), board)
     P.add(frame(1.0, 0.25, [(0.0, 0.0), (0.0, 0.026), (0.004, 0.03), (0.01, 0.03), (0.014, 0.026), (0.014, 0.022)], back=False), brass)
     P.add(frame(0.93, 0.18, [(0.0, 0.0225), (0.0, 0.0245), (0.004, 0.0245), (0.004, 0.0225)], back=False), brass)    # inner line
-    t = text("TATTOO", 0.16, 0.004, (0, -0.006, 0.0222), res=3)
-    xform(t, scale=(0.82, 1.0, 1.0))                                   # condensed, like the coded sign's Oswald
+    t = text("ИГЛА", 0.17, 0.004, (0, -0.006, 0.0222), res=3, space=1.5)   # Inter has Cyrillic
+    xform(t, scale=(0.86, 1.0, 1.0))                                   # condensed, like the coded sign's Oswald
     P.add(t, glow, sharp=30)
     return P
 
@@ -569,7 +594,8 @@ def trophies():
 # slot -> (function, file, triangle budget), as in ASSETS.props and docs/BLENDER.md section 2
 PROPS = {
     "chair": (chair, "ink-chair.glb", 1500), "station": (station, "ink-station.glb", 1200),
-    "machine": (machine, "ink-machine-coil.glb", 600), "lamp": (lamp, "ink-lamp.glb", 800),
+    "machine": (machine, "ink-machine-coil.glb", 600), "rotary": (rotary, "ink-machine-rotary.glb", 600),
+    "lamp": (lamp, "ink-lamp.glb", 800),
     "stool": (stool, "ink-stool.glb", 500), "shelves": (shelves, "ink-shelves.glb", 900),
     "bench": (bench, "ink-bench.glb", 800), "flashframe": (flashframe, "ink-flash-frame.glb", 400),
     "sign": (sign, "ink-sign.glb", 600), "plant": (plant, "ink-plant.glb", 800),
