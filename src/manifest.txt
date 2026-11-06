@@ -4,6 +4,7 @@ css/style.css
 css/ui-design.css
 css/ui-clients.css
 css/ui-session.css
+css/ui-gallery.css
 html/body.html
 html/ld-libs.html
 sim/rng.js
@@ -14,6 +15,7 @@ sim/flash.js
 sim/aging.js
 sim/clients.js
 sim/calendar.js
+sim/heal.js
 sim/session.js
 sim/kit.js
 sim/market.js
@@ -34,6 +36,7 @@ app/design.js
 app/session.js
 app/clients.js
 app/career.js
+app/gallery.js
 app/bodymap.js
 app/help.js
 html/tail.html
