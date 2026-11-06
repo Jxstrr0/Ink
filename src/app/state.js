@@ -58,7 +58,14 @@ function SIMOK(f){return typeof INK_SIM!=="undefined"&&typeof INK_SIM[f]==="func
 /* save(): the game into ink-save, packed (INK_SIM.packSave: older pieces and archived clients as short arrays; hydrate
    unpacks them). If the browser refuses (storage full), say so once in a while and offer a backup code */
 const SAVE_WARN={at:0,gap:120000};
-function save(){try{localStorage.setItem(SAVE_KEY,saveJson());if(typeof buPersist==="function")buPersist();}catch(e){saveFull(e);}}
+function save(){if(saveSoonT){clearTimeout(saveSoonT);saveSoonT=0;}try{localStorage.setItem(SAVE_KEY,saveJson());if(typeof buPersist==="function")buPersist();}catch(e){saveFull(e);}}
+/* saveSoon: for saves that happen many times a minute (every finger lift in a session, every stencil drag), write once
+   the player pauses for SAVE_SOON ms. A late career's save is over a megabyte, so writing it on every stroke could
+   stutter a slow phone. A pending save is flushed when the page is hidden or closed, and any save() cancels it. */
+const SAVE_SOON=1500;let saveSoonT=0;
+function saveSoon(){clearTimeout(saveSoonT);saveSoonT=setTimeout(()=>{saveSoonT=0;save();},SAVE_SOON);}
+function saveFlush(){if(saveSoonT){clearTimeout(saveSoonT);saveSoonT=0;save();}}
+if(typeof addEventListener==="function"){addEventListener("pagehide",saveFlush);addEventListener("visibilitychange",()=>{if(typeof document!=="undefined"&&document.hidden)saveFlush();});}
 function saveJson(){return JSON.stringify(SIMOK("packSave")?INK_SIM.packSave(S):S);}
 function snapshot(){return JSON.parse(saveJson());}
 function saveFull(e){const now=Date.now();if(now-SAVE_WARN.at<SAVE_WARN.gap||typeof document==="undefined")return;SAVE_WARN.at=now;
