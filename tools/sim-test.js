@@ -407,6 +407,9 @@ const PI = y => SIM.priceIndex(y), RUB = (y, v) => Math.round(v * PI(y) / 10) * 
   check("soft fail: staff go, the lease and the build-out go", F.studio.staff.length === 0 && !F.studio.lease && F.studio.build.stations === 0 && F.career.alumni.some(a => a.id === "s1"));
   check("soft fail: clients, your pieces and your reputation stay", F.clients.length === nC && F.pieces.filter(p => !p.by).length === myPieces && F.rep.collectors >= rep0.collectors - 1 && F.rep.peers >= rep0.peers - 1);
   check("soft fail: a scene for the app and a fresh start in cash", F.career.scene && F.career.scene.kind === "broke" && F.career.scene.staff[0] === "Lev Orlov" && F.cash === RUB(2012, SIM.BROKE.restart) && F.career.fails === 1);
+  check("soft fail: low goodwill lands you in the shop across town", F.career.split === "standard");
+  const M = mk(0.58); for (let i = 0; i < 4; i++) { M.cash = Math.min(M.cash, -1e6); SIM.advanceWeek(M); }
+  check("soft fail: goodwill at MENTOR.splitAt takes you back to Arkady's front room at his split", M.studio.stage === "chair" && M.career.split === "mentor" && /front room/.test(M.career.scene.line));
   const L = mk(0.9); for (let i = 0; i < 4; i++) { L.cash = Math.min(L.cash, -1e6); SIM.advanceWeek(L); }
   check("soft fail: once, a mentor with high goodwill lends you the money instead", L.studio.stage === "studio" && L.career.mentor.loan === true && L.career.money.cur.in.loan === RUB(2012, SIM.BROKE.loan));
 }

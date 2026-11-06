@@ -57,7 +57,8 @@ const MENTOR={
     later:{high:["Arkady drops by and looks at your wall for a long time. 'Good,' he says.","Arkady sends a client your way. 'Tell them I said hello.'"],
            low:["You pass Arkady on the embankment. He nods and keeps walking.","Word gets back that Arkady thinks you left too soon."]},
     loan:["Arkady turns up with an envelope. 'Pay me back when you can. Not before.'"],
-    broke:{high:["Arkady comes round with a thermos. 'Everyone loses a shop once. Rent a chair, keep your clients, start again.'"],
+    broke:{sedov:["Arkady comes round with a thermos. 'Everyone loses a shop once. Your old chair in my front room is free. Bring your clients.'"],
+           high:["Arkady comes round with a thermos. 'Everyone loses a shop once. Rent a chair, keep your clients, start again.'"],
            low:["You hear Arkady heard. He doesn't call."]}
   }
 };
@@ -323,15 +324,16 @@ function skipBroom(S){
   S.rep={walkins:10,collectors:5,peers:8};S.cash=caRub(S,6000);S.rate=rateFor(S);
   return S;}
 /* softFail(S): the studio closes (plan Q12). Staff go, apprentices go, the lease and the build-out go; you rent a chair
-   again with your clients, pieces and reputation. Sets S.career.scene for the app's full-screen scene */
+   again with your clients, pieces and reputation: Arkady's front room at the mentor split if his goodwill is at
+   MENTOR.splitAt or above, else the shop across town. Sets S.career.scene for the app's full-screen scene */
 function softFail(S,ctx){
   const C=careerEnsure(S),from=caStage(S),staff=S.studio.staff.map(s=>s.name),debt=Math.min(0,S.cash||0);
   for(const s of S.studio.staff)C.alumni.push({id:s.id,name:s.name,style:s.style,y:S.year,why:"let go when the shop closed",pieces:s.pieces||0});
   for(const a of C.apprentices)if(a.status==="training"){a.status="gone";a.end={w:S.week,y:S.year};a.where="found another shop when yours closed";}
   S.studio.staff=[];S.studio.build=studioFresh().build;S.studio.lease=null;S.studio.marketing=0;S.studio.rep=Math.round((S.studio.rep||0)*0.5*100)/100;
-  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;C.closed=null;C.lastFail={w:S.week,y:S.year};
+  S.studio.stage="chair";C.split=C.mentor.goodwill>=MENTOR.splitAt?"mentor":"standard";C.broke=0;C.fails++;C.closed=null;C.lastFail={w:S.week,y:S.year};
   S.cash=caRub(S,BROKE.restart);
-  const gw=C.mentor.goodwill>=MENTOR.loanAt?"high":"low";
+  const gw=C.split==="mentor"?"sedov":"low";   // on good terms Arkady takes you back into his front room (Kelbo, 0.1.15.1)
   C.scene={kind:"broke",w:S.week,y:S.year,from,staff,debt,line:mentorLine(S,"broke",gw)};
   S.rate=rateFor(S);
   caLog(ctx,"event","The shop closes. You're back in a rented chair; your clients and your work come with you.");
