@@ -36,10 +36,10 @@ Commit this file as `docs/INK-PLAN.md` in the `Ink` repo so every session can fi
 |---|---|
 | Title / repo | **Ink** / `Jxstrr0/Ink` (confirmed) |
 | Setting | **Mostograd** (confirmed), the fictional St Petersburg-like river city shared with Lombard. Client names, street names, signage and weather follow Mostograd. If the `Lombard` repo has a world or setting doc by PR 0, copy the city facts from it rather than inventing new ones; Ink must not contradict Lombard. Currency and any cross-game links are open (Q15, Q16) |
-| Era | **2000 to 2030**, weeks as the clock. Social media arrives as a system around 2012 and changes how reputation spreads **(default, see Q2)** |
+| Era | **2000 to 2030**, weeks as the clock. Social media arrives as a system in **2016** and changes how reputation spreads (confirmed, Q2) |
 | Career start | Apprentice, always. A "Skip the broom" option starts at Act 2 with a rented chair and basic skills **(default, see Q3)** |
 | Drawing | The player never draws freehand. Designs are composed from a curated element library on a design board. This keeps it playable on a phone and keeps content safe |
-| Session control | Trace-and-rhythm: follow the stencil path with a finger at a target pace; shading and colour are hold-and-swipe meters. See PR 4 **(default, see Q4)** |
+| Session control | Trace-and-rhythm: follow the stencil path with a finger at a target pace; shading and colour are hold-and-swipe meters. See PR 4 (confirmed, Q4) |
 | Kit | The machine, needles and inks are a small build system (`KIT` tables) that widens or narrows the session band and feeds aging. The PEW build-tab loop, in miniature **(default, see Q9)** |
 | Body model | One stylized adult mannequin mesh with male/female/neutral body shapes and a skin-tone slider, clothed (shorts and a crop top, so the ribs/side are bare). Tattoos are decals in body-part UV space, **one UV island per limb or zone** |
 | Aging | Modelled, not cosmetic: line weight, depth, colour, placement, skin tone and years decide how a piece looks today |
@@ -247,7 +247,7 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 
 - **Conventions (`CONVENTIONS`):** fresh-work and healed-work competitions judged on design score and heal quality; booth sales; meet collectors; see rivals' work.
 - **Trend waves (`TREND_WAVES`):** per-year demand multipliers per style (fine-line boom mid-2010s, watercolour spike then fade, traditional evergreen). Clients' wants follow the waves through `market.js`.
-- **Social media (from 2012, default Q2):** a post action per healed piece; reach scales with design score, heal quality and follower count; followers convert to bookings from far away; one viral piece a career is a scripted possibility. Bad heals posted by clients hurt.
+- **Social media (from 2016, confirmed Q2):** a post action per healed piece; reach scales with design score, heal quality and follower count; followers convert to bookings from far away; one viral piece a career is a scripted possibility. Bad heals posted by clients hurt.
 - **Rivals (`RIVALS`):** named shops that open nearby, poach staff, undercut prices, and copy your flash once you have a `SIGNATURE`; they remember.
 - **Reckonings (`RECKONINGS`):** a few scheduled returns that are beats, not just bookings. A client from your first year walks in at year 12–18 with your apprentice-era piece aged in front of you; you can rework it free, cover it, or leave it. A client who bad-mouthed a patchy heal comes back once you're known. A mentor's referral in Act 3. Each fires once per career.
 - **Health inspection:** checks sterilization and supplies; a fail closes the shop for weeks.
@@ -292,11 +292,11 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 ## 15. Ask Kelbo before the PR they affect
 
 1. ~~**(PR 0)** City and world~~ **Answered: Mostograd.**
-2. **(PR 0 / PR 8)** Era 2000–2030 with social media arriving as a system in 2012 (default), or timeless with no social layer?
+2. ~~**(PR 0 / PR 8)** Era~~ **Answered: 2000–2030, social media arrives as a system in 2016.**
 3. **(PR 7)** Always start as an apprentice with a "Skip the broom" option (default), or apprentice only?
-4. **(PR 4)** Session control: trace-and-rhythm with pace meter (default), or a lighter timing scheme (tap in rhythm along the line, no tracing)? Tracing feels more like the job; timing is easier on a small screen.
+4. ~~**(PR 4)** Session control~~ **Answered: trace-and-rhythm with pace meter.**
 5. **(PR 10)** Mannequin: Kelbo models it in Blender, or Claude Code sources a CC0 base mesh and Kelbo clothes it?
-6. **(PR 1)** Element art: Claude Code draws the first library as original SVG (default), Kelbo draws it, or a mix with CC0 motif packs?
+6. ~~**(PR 1)** Element art~~ **Answered: a mix. Claude Code draws original SVG and pulls credited CC0 motifs for the rest (`art/CREDITS.md`).**
 7. **(PR 8)** TV show offer in Act 4: include it, or keep the endgame to conventions and apprentices?
 8. ~~**(PR 0 / PR 1)** Ribs/side placement~~ **Answered: in.** Crop top on the mannequin, high-pain side zones in `PLACEMENTS`.
 9. **(PR 4)** Kit as a build system (machine, needles, inks, voltage with deltas; default), or keep it to a single machine unlock track and let skills alone set the bands?
@@ -318,7 +318,7 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 
 ## Checklist
 
-- [ ] PR 0: Scaffold, tabs, PWA, CLAUDE.md with content rules, save-code check
+- [x] PR 0: Scaffold, tabs, PWA, CLAUDE.md with content rules, save-code check
 - [ ] PR 1: Seeded rng, element library, placements, design scoring with skin contrast, aging model, state shape, node tests
 - [ ] PR 2: Body diagram SVG, design board with placement picker, deltas, flash wall
 - [ ] PR 3: Week clock with Next, market, clients, consult, memory, returns

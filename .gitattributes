@@ -1,0 +1,3 @@
+# index.html and sw.js are built from src/ by build.js (edit src/, never these). Diffs stay visible on purpose.
+index.html linguist-generated=true
+sw.js linguist-generated=true
