@@ -117,7 +117,10 @@ const STAFF={
   shopRep:{crisp:0.4,soft:0.15,patchy:-0.4,blownout:-1,infected:-3},shopRepDecay:0.002,shopWalkins:0.4
 };
 const NOSHOW={base:0.05,loyal:-0.045};          // chance a first sitting with a deposit doesn't show; the deposit stays
-const INSPECTION={gap:[26,44],first:[8,20],base:0.72,shopRep:0.001,recentInfect:-0.15,fine:9000,passRep:1,failRep:-4,min:0.2,max:0.98};
+/* the health inspector (PR 8 adds the checks and the closure). Pass chance = base + steril room + shop rep + the checks;
+   a fail fines you and may close the shop for closeWeeks (always from 2 infections, likely from the second fail) */
+const INSPECTION={gap:[26,44],first:[8,20],base:0.72,shopRep:0.001,recentInfect:-0.15,fine:9000,passRep:1,failRep:-4,min:0.2,max:0.98,
+  checks:{supplies:-0.12,budgetInk:-0.06,debt:-0.08,stations:-0.03},closeWeeks:[1,3],closeChance:0.6,closeAlways:0.4};
 const BROKE={floor:-15000,weeks:4,restart:2000,loan:30000};   // floor and restart in 2000 rubles x PRICE_INDEX
 /* the signature: what you do most. Past `pieces` of your own with a top style share of `share`, it shows */
 const SIGNATURE={pieces:12,share:0.32,full:60,askChance:0.32,collector:1.6,wtp:1.18,conv:0.15,
@@ -163,7 +166,8 @@ function careerFresh(){return{
   sig:{n:0,at:0,styles:{},els:{},places:{}},
   money:{cur:{in:{},out:{}},prev:null,total:{in:0,out:0}},
   broke:0,fails:0,scene:null,invites:[],conv:[],guest:null,offers:{},apprentices:[],alumni:[],rivals:[],
-  reached:{},books:"open",legacySeen:false,skipped:false,insp:null,cand:null};}
+  reached:{},books:"open",legacySeen:false,skipped:false,insp:null,cand:null,
+  closed:null,inspLast:null,inspFails:0,lastFail:null};}
 function studioFresh(){return{stage:"apprentice",staff:[],build:{stations:0,waiting:0,flash:0,steril:0,lighting:0,storefront:0},
   vibe:"street",marketing:0,rep:0,lease:null,nextStaff:1};}
 function caFill(dst,src){for(const k in src){if(dst[k]==null)dst[k]=src[k];else if(src[k]&&typeof src[k]==="object"&&!Array.isArray(src[k])&&typeof dst[k]==="object"&&!Array.isArray(dst[k]))caFill(dst[k],src[k]);}return dst;}
@@ -193,6 +197,7 @@ function rateFor(S){
   let r=R.base[st];for(const k in R.perRep)r+=R.perRep[k]*((S.rep&&+S.rep[k])||0);
   const sig=signatureOf(S);r*=1+R.sig*(sig.ready?sig.strength:0);
   r*=1+R.lighting*((S.studio&&S.studio.build&&S.studio.build.lighting)||0);
+  if(typeof SIM.rateMod==="function")r*=SIM.rateMod(S);   // PR 8: matching a rival's prices
   return Math.round(r*caPI(S)/R.round)*R.round;}
 
 /* ---- skills: one curve for every source (SKILL_XP.diminish, as the session uses) ---- */
@@ -253,7 +258,7 @@ function apprenticeGoal(S){const s=apprenticeSteps(S).find(x=>!x.done);return s|
 /* walk-ins reach an apprentice only after the friend step (market.js asks) */
 function walkinsOpen(S){
   const C=S.career;if(!C)return true;
-  if(C.books==="closed")return false;
+  if(C.books==="closed"||C.closed)return false;
   if(caStage(S)!=="apprentice"||C.skipped||C.old)return true;
   return !!C.steps.friend||caFriendDone(S)>0;}
 function mentorLine(S,topic,sub){
@@ -324,7 +329,7 @@ function softFail(S,ctx){
   for(const s of S.studio.staff)C.alumni.push({id:s.id,name:s.name,style:s.style,y:S.year,why:"let go when the shop closed",pieces:s.pieces||0});
   for(const a of C.apprentices)if(a.status==="training"){a.status="gone";a.end={w:S.week,y:S.year};a.where="found another shop when yours closed";}
   S.studio.staff=[];S.studio.build=studioFresh().build;S.studio.lease=null;S.studio.marketing=0;S.studio.rep=Math.round((S.studio.rep||0)*0.5*100)/100;
-  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;
+  S.studio.stage="chair";C.split="standard";C.broke=0;C.fails++;C.closed=null;C.lastFail={w:S.week,y:S.year};
   S.cash=caRub(S,BROKE.restart);
   const gw=C.mentor.goodwill>=MENTOR.loanAt?"high":"low";
   C.scene={kind:"broke",w:S.week,y:S.year,from,staff,debt,line:mentorLine(S,"broke",gw)};
@@ -350,6 +355,8 @@ function shopWalkins(S){
   if(st!=="apprentice")out.mult+=(MARKETING[S.studio.marketing||0]||MARKETING[0]).walkins;
   const g=S.career&&S.career.guest;
   if(g&&weekIndex(S.week,S.year)<=g.until){const G=GUEST_SPOTS.find(x=>x.id===g.id);if(G){out.mult*=G.walkins;out.styles=G.styles;out.guest=G.id;}}
+  if(typeof SIM.rivalWalkins==="function")SIM.rivalWalkins(S,out);   // PR 8: rival shops pull walk-ins away
+  out.mult=Math.max(0.3,out.mult);
   return out;}
 
 /* ---- staff ---- */
@@ -475,7 +482,7 @@ function caInvitesWeek(S,ctx){
     caInvite(S,ctx,{id:"tv",kind:"tv",pay:caRub(S,LEGACY_OFFERS.tv.pay),until:now+8},"A TV channel calls: they want you for a tattoo makeover show.");
 }
 /* enterInvite(S, id, yes) -> {ok, kind, ...result} */
-function enterInvite(S,id,yes){
+function enterInvite(S,id,yes,picks){
   const C=careerEnsure(S),i=C.invites.findIndex(x=>x.id===id);if(i<0)return{ok:false};
   const inv=C.invites[i];
   if(inv.kind==="chair"){if(!yes)return{ok:true,kind:"chair",later:true};C.invites.splice(i,1);return Object.assign({kind:"chair"},rentChair(S));}
@@ -487,7 +494,7 @@ function enterInvite(S,id,yes){
   if(inv.kind==="guest"){const G=GUEST_SPOTS.find(g=>g.id===inv.spot);cashOut(S,inv.fee,"travel");
     C.guest={id:G.id,until:weekIndex(S.week,S.year)+G.weeks};for(const k in GUEST.rep)repAdd(S,k,GUEST.rep[k]);
     return{ok:true,kind:"guest",spot:G,fee:inv.fee};}
-  if(inv.kind==="conv")return Object.assign({ok:true,kind:"conv"},caConvention(S,inv));
+  if(inv.kind==="conv")return Object.assign({ok:true,kind:"conv"},typeof SIM.convJudge==="function"?SIM.convJudge(S,inv,picks):caConvention(S,inv));
   return{ok:false};}
 /* a convention: judged on your best portfolio piece today, your skill, your peers and how true you are to your signature */
 function caConvention(S,inv){
@@ -536,8 +543,8 @@ function careerWeek(S,ctx){
   if(st==="studio"||st==="legacy"){
     if(S.studio.lease)cashOut(S,caRub(S,LEASE.rentWeek+LEASE.utilities+STUDIO_STAGES.stations.upkeep*(S.studio.build.stations||0)),"rent");
     const mk=MARKETING[S.studio.marketing||0];if(mk&&mk.cost)cashOut(S,caRub(S,mk.cost),"marketing");
-    caStaffWeek(S,ctx);
-    if(S.studio.staff.length)cashOut(S,caRub(S,SUPPLIES.shopPerHour*6*S.studio.staff.length),"supplies");
+    if(!C.closed)caStaffWeek(S,ctx);
+    if(S.studio.staff.length&&!C.closed)cashOut(S,caRub(S,SUPPLIES.shopPerHour*6*S.studio.staff.length),"supplies");
     caApprenticeWeek(S,ctx);
     S.studio.rep=Math.round((S.studio.rep||0)*(1-STAFF.shopRepDecay)*1000)/1000;
     caInspect(S,ctx);
@@ -578,10 +585,20 @@ function caInspect(S,ctx){
   if(now<C.insp)return;
   const r=ctx.r.fork("insp");C.insp=now+r.int(I.gap[0],I.gap[1]);
   let inf=0;for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(now-weekIndex(p.w,p.y)>26)break;if(p.heal==="infected")inf++;}
-  const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*(S.studio.build.steril||0)+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf,I.min,I.max);
-  if(r.chance(pass)){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.");}
-  else{const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
-    caLog(ctx,"event","A health inspector writes the shop up: a "+caFmt(f)+" fine."+(S.studio.build.steril?"":" A sterilisation room would help."));}}
+  /* the checks: sterilisation (the room, recent infections) and supplies (paid for, decent ink, the bills) */
+  const K=I.checks,b=S.studio.build,prevSup=C.money&&C.money.prev&&C.money.prev.out?C.money.prev.out.supplies||0:0;
+  const ck={steril:b.steril||0,infected:inf,supplies:prevSup>0||!S.queue.some(q=>q.kind==="session"),ink:(S.kit&&S.kit.ink)||"budget",debt:(S.cash||0)<0,stations:(b.stations||0)>0};
+  const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*ck.steril+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf
+    +(ck.supplies?0:K.supplies)+(ck.ink==="budget"?K.budgetInk:0)+(ck.debt?K.debt:0)+(ck.stations?0:K.stations),I.min,I.max);
+  const ok=r.chance(pass);C.inspLast=Object.assign({w:S.week,y:S.year,pass:ok,chance:caR3(pass)},ck);
+  if(ok){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.",{insp:"pass"});return;}
+  const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
+  const why=inf?"infections on the record":!ck.steril?"no proper sterilisation room":!ck.supplies?"running short of clean supplies":ck.ink==="budget"?"cheap unlabelled ink":"the paperwork";
+  C.inspFails=(C.inspFails||0)+1;C.inspLast.why=why;
+  if((C.inspFails>=2&&r.chance(I.closeChance))||inf>=2||r.chance(I.closeAlways*(1-pass))){
+    const wk=r.int(I.closeWeeks[0],I.closeWeeks[1]),until=now+wk,u=weekFrom(until);C.closed={until,w:S.week,y:S.year,why};C.inspLast.closed=wk;
+    caLog(ctx,"event","A health inspector writes the shop up for "+why+": a "+caFmt(f)+" fine, and the shop is closed for "+wk+(wk===1?" week":" weeks")+", until week "+u.w+".",{insp:"closed"});}
+  else caLog(ctx,"event","A health inspector writes the shop up for "+why+": a "+caFmt(f)+" fine."+(b.steril?"":" A sterilisation room would help."),{insp:"fail"});}
 
 /* the shop's reputation from a staff heal (sim/heal.js calls it) */
 function shopRepHeal(S,piece){

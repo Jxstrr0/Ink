@@ -37,7 +37,9 @@ function clWhat(c,known){known=known||c.known||{};const out=[];
   return out.join("");}
 /* loyalty as a bar with notches, so it reads without colour */
 function clLoyal(v){v=clamp(v||0,0,1);return`<span class="clLoy" role="img" aria-label="Loyalty ${Math.round(v*100)} out of 100"><i style="width:${Math.round(v*100)}%"></i></span>`;}
-function clSrc(q){if(q.kind==="walkin")return"Walk-in";if(q.src==="referral"){const f=clReal(q.from);return f?`Sent by ${f.first}`:"Referral";}
+function clSrc(q){if(q.kind==="walkin")return"Walk-in";
+  if(q.beat==="first_year")return"One of your first";if(q.beat==="bad_mouth")return"The bad review";if(q.from==="mentor")return"Sent by Arkady";   // PR 8
+  if(q.from==="convention")return"Met at a convention";if(q.src==="social")return"Found you online";if(q.puzzle)return"Cover-up job";if(q.src==="referral"){const f=clReal(q.from);return f?`Sent by ${f.first}`:"Referral";}
   if(q.ret)return"Coming back: "+(CL_RET[q.ret.rule]||"more work");return"Booked consult";}
 const CL_RET={touchup:"touch-up",addon:"add-on",sleeve:"sleeve",cover_own:"cover your old work",cover_other:"cover-up"};
 function clAskOf(q){return q.ask||(clWho(q)||{}).ask||{};}
@@ -86,6 +88,7 @@ function clRenderWeek(){
 /* ---- the consult ---- */
 function clStartConsult(id){
   const q=S.queue.find(x=>x.id===id);if(!q)return;const c=clWho(q);if(!c)return;
+  if(q.beat&&!q.beatDone&&typeof evReckonOpen==="function"&&INK_SIM.RECKONINGS&&INK_SIM.RECKONINGS[q.beat]&&INK_SIM.RECKONINGS[q.beat].choices&&evReckonOpen(q))return;   // PR 8
   CL.consult=INK_SIM.consultStart(c,S,{item:q});CL.done=null;INK_SOUND.tick();renderClients();$("panel").scrollTop=0;}
 function clRenderConsult(){
   const c=CL.consult,cl=c.client,opts=INK_SIM.consultOptions(c);

@@ -363,9 +363,11 @@ function saveSizes(S) {
 const LONG = S0({ seed: SEED });
 const perYear = {}, tRun = process.hrtime.bigint();
 let lastLog = null;
+const LONG_EV = [];   // PR 8: every event, trend and goal line of the run, with its week
 for (let i = 0; i < 1560; i++) {
   autoWeek(LONG);
   const t0 = process.hrtime.bigint(); lastLog = SIM.advanceWeek(LONG); const dt = Number(process.hrtime.bigint() - t0) / 1e6;
+  for (const l of lastLog) if (l.k === "event" || l.k === "trend" || l.k === "goal" || l.k === "note" || (l.k === "referral" && l.social)) LONG_EV.push(Object.assign({ w: LONG.week, y: LONG.year }, l));
   (perYear[LONG.year] = perYear[LONG.year] || []).push(dt);
   if (LONG.week === 1 && [2005, 2010, 2020, 2030].includes(LONG.year)) AUTO_SIZES[LONG.year - 2000] = saveSizes(LONG);
 }
@@ -447,8 +449,126 @@ const PI = y => SIM.priceIndex(y), RUB = (y, v) => Math.round(v * PI(y) / 10) * 
   const V = clone(LONG); SIM.unpackSave(V); const cv = SIM.CONVENTIONS[0], cash0 = V.cash, fee = RUB(V.year, cv.fee + cv.travel);
   V.career.invites.push({ id: "conv:" + cv.id + ":t", kind: "conv", conv: cv.id, fee });
   const res = SIM.enterInvite(V, "conv:" + cv.id + ":t", true);
-  check("convention: the fee is charged and the result recorded", res.ok && res.kind === "conv" && V.career.conv[V.career.conv.length - 1].id === cv.id && V.cash === cash0 - fee + (res.place ? RUB(V.year, cv.prize[res.place - 1]) : 0), JSON.stringify(res));
+  const prizes = ((res.fresh && res.fresh.prize) || 0) + ((res.healed && res.healed.prize) || 0);
+  check("convention: the fee is charged, prizes and booth paid, the result recorded (PR 8 judging)", res.ok && res.kind === "conv" && V.career.conv[V.career.conv.length - 1].id === cv.id && res.booth > 0 && V.cash === cash0 - fee + prizes + res.booth, JSON.stringify(res));
 }
+/* ---- PR 8: events, trends, rivals, social media, reckonings, the inspection, cover-ups, goals ---- */
+const PR8 = {};
+{ /* trend waves shape walk-in demand by year */
+  const tm = SIM.trendMult;
+  check("trends: fine line booms mid-2010s, watercolour spikes then fades, traditional stays evergreen",
+    tm("fineline", 2017) > 1.3 && tm("fineline", 2005) === 1 && tm("watercolour", 2014) > 1.3 && tm("watercolour", 2020) < 0.8 &&
+    [2000, 2005, 2010, 2015, 2020, 2025, 2030].every(y => tm("traditional", y) >= 1 && tm("traditional", y) <= 1.2),
+    JSON.stringify({ fl17: tm("fineline", 2017), wc14: tm("watercolour", 2014), wc20: tm("watercolour", 2020) }));
+  const share = (year, style) => { const r = SIM.rng(SEED).fork("trendshare:" + year); let n = 0;
+    for (let i = 0; i < 800; i++) { const c = SIM.makeClient(r.fork("c" + i), { id: "x" + i, year, week: 20, stage: "chair" }); if (c.ask && c.ask.style === style) n++; } return n / 800; };
+  PR8.share = { fl2005: share(2005, "fineline"), fl2017: share(2017, "fineline"), wc2014: share(2014, "watercolour"), wc2022: share(2022, "watercolour") };
+  check("trends: walk-ins follow the waves (more fine line in 2017 than 2005, more watercolour in 2014 than 2022)",
+    PR8.share.fl2017 > PR8.share.fl2005 * 1.5 && PR8.share.wc2014 > PR8.share.wc2022 * 1.5, JSON.stringify(PR8.share));
+  const tl = LONG_EV.filter(l => l.k === "trend");
+  check("trends: the Next log says when a wave starts, peaks and fades (every wave inside the 30 years)",
+    SIM.TREND_WAVES.filter(w => w.rise >= 2001 && w.rise <= 2030).every(w => tl.some(l => l.wave === w.id && l.phase === "rise" && l.y === w.rise)), tl.length + " lines");
+  const tn = SIM.trendNow({ year: 2017, week: 10 });
+  check("trends: trendNow lists what's in demand", tn.top.length === 4 && tn.top.some(t => t.style === "fineline") && tn.waves.some(w => w.id === "fineline"), JSON.stringify(tn.top));
+}
+{ /* social media: only from 2016; posts change followers, followers book from far away */
+  const far = LONG_EV.filter(l => l.social === "far");
+  check("social: switched on in 2016, far-away bookings only from then", LONG.world.social.on && LONG.world.social.on.y === 2016 && far.length > 20 && far.every(l => l.y >= 2016), far.length + " far bookings, first " + (far[0] && far[0].y));
+  const V = clone(LONG); SIM.unpackSave(V); SIM.worldEnsure(V);
+  const p = V.pieces.slice().reverse().find(x => !x.by && x.heal === "crisp");
+  const so = V.world.social, on = so.on; so.on = null; V.year = 2015;
+  const before = SIM.postPiece(V, p.id);
+  V.year = 2030; so.on = on; const f0 = so.followers, w0 = V.rep.walkins;
+  const res = SIM.postPiece(V, p.id), again = SIM.postPiece(V, p.id);
+  PR8.post = res;
+  check("social: a post before 2016 does nothing; after it adds followers and reputation, once per piece",
+    !before.ok && before.why === "year" && res.ok && res.gained > 0 && so.followers === f0 + res.gained && V.rep.walkins >= w0 && !again.ok && again.why === "posted", JSON.stringify({ before, res, again }));
+  const T = SIM.followersTarget({ rep: { walkins: 50, collectors: 30, peers: 20 } }), T2 = SIM.followersTarget({ rep: { walkins: 100, collectors: 100, peers: 100 } });
+  check("social: followers follow reputation (target grows with the rep sum)", T > 40 && T2 > T * 5, T + " / " + T2);
+}
+{ /* rivals appear, pull walk-ins, undercut */
+  const ids = SIM.RIVALS.map(r => r.id), rv = LONG.career.rivals.filter(r => ids.indexOf(r.id) >= 0);
+  check("rivals: named shops open in their windows", rv.length >= 3 && rv.every(r => { const d = SIM.RIVALS.find(x => x.id === r.id); return r.opened.y >= d.open[0] && r.opened.y <= d.open[1]; }),
+    JSON.stringify(rv.map(r => [r.id, r.opened.y, r.status])));
+  check("rivals: they act (poach, undercut or copy) and remember", LONG_EV.some(l => l.rival && /offered|prices|flash/.test(l.text)), LONG_EV.filter(l => l.rival).length + " rival lines");
+  const V = clone(LONG); SIM.unpackSave(V); SIM.worldEnsure(V);
+  const h = V.career.rivals.find(r => r.id === "heron"); h.status = "open"; h.str = 0.6; delete h.truce; delete h.last;
+  const m1 = SIM.shopWalkins(V).mult; h.status = "gone"; const m0 = SIM.shopWalkins(V).mult; h.status = "open";
+  const r0 = SIM.rateFor(V);
+  V.world.pending.push({ id: "e900", kind: "undercut", rival: "heron", choices: SIM.EVENTS.undercut.choices, dflt: "hold", until: SIM.weekIndex(V.week, V.year) + 3 });
+  const ch = SIM.eventChoose(V, "e900", "match"), r1 = SIM.rateFor(V);
+  check("rivals: an open rival pulls walk-ins; matching an undercut lowers your rate", m1 < m0 && ch.ok && r1 < r0, JSON.stringify({ m0, m1, r0, r1, text: ch.text }));
+}
+{ /* reckonings: each fires exactly once */
+  const beats = id => LONG_EV.filter(l => l.beat === id).length;
+  check("reckonings: the first-year piece and Arkady's referral each fire once in 30 years", beats("first_year") === 1 && beats("mentor_ref") === 1 && LONG.world.fired.first_year && LONG.world.fired.mentor_ref,
+    JSON.stringify(LONG.world.fired));
+  const fy = LONG.world.fired.first_year;
+  check("reckonings: the first-year client comes back in career years 12 to 18 with a year-one piece", fy && fy.y >= 2012 && fy.y <= 2018 && LONG.pieces.find(p => p.id === fy.piece).y <= 2001, JSON.stringify(fy));
+  /* the pawn shop: an old machine on the shelf */
+  const V = clone(LONG); SIM.unpackSave(V); SIM.worldEnsure(V); delete V.world.fired.pawn; V.world.pending = [];
+  V.kit = Object.assign({ owned: {} }, V.kit); V.kit.owned.machines = ["coil_used", "rotary"]; V.kit.machine = "rotary";
+  let n = 0; for (let i = 0; i < 3; i++) for (const l of SIM.advanceWeek(V)) if (l.text && /pawn shop/.test(l.text)) n++;
+  const ev = V.world.pending.find(e => e.kind === "pawn"), cash0 = V.cash, res = ev ? SIM.eventChoose(V, ev.id, "sell") : {}, cash1 = V.cash;
+  for (let i = 0; i < 6; i++) for (const l of SIM.advanceWeek(V)) if (l.text && /pawn shop/.test(l.text)) n++;
+  check("reckonings: the pawn shop on the canal offers once; selling pays and takes the old machine", n === 1 && res.ok && cash1 > cash0 && V.kit.owned.machines.indexOf("coil_used") < 0,
+    JSON.stringify({ n, res, owned: V.kit.owned.machines }));
+  /* the client who bad-mouthed a patchy heal comes back once you're known */
+  const B = clone(LONG); SIM.unpackSave(B); SIM.worldEnsure(B); delete B.world.fired.bad_mouth;
+  const c = B.clients.find(x => !x.compact && (x.pieces || []).length && !B.queue.some(q => q.client === x.id));
+  const pc = B.pieces.find(x => x.id === c.pieces[0]); pc.heal = "patchy";
+  SIM.clientLog(c, { w: 10, y: pc.y, kind: "review", piece: pc.id, stars: 1, text: "patchy, would not go back" });
+  let bm = 0, item = null;
+  for (let i = 0; i < 5 && !item; i++) { for (const l of SIM.advanceWeek(B)) if (l.beat === "bad_mouth") bm++; item = B.queue.find(q => q.beat === "bad_mouth"); }
+  const fix = item ? SIM.reckoningChoose(B, item.id, "fix") : {};
+  for (let i = 0; i < 8; i++) for (const l of SIM.advanceWeek(B)) if (l.beat === "bad_mouth") bm++;
+  check("reckonings: the bad-mouthing client returns once; fixing it books a free sitting", bm === 1 && item && item.ret.piece === pc.id && fix.ok && fix.item && fix.item.price === 0,
+    JSON.stringify({ bm, item: item && item.id, fix: fix.text }));
+}
+{ /* the inspection: a fail can close the shop; sittings move, walk-ins stop, it reopens */
+  let V = null, seed = 0, now = 0;
+  for (; seed < 40 && !V; seed++) {
+    const T = clone(LONG); SIM.unpackSave(T); SIM.worldEnsure(T); T.seed = SEED + seed * 7919;
+    T.studio.build.steril = 0; T.studio.rep = 0; T.kit.ink = "budget"; T.career.closed = null;
+    const mine = T.pieces.filter(p => !p.by).slice(-2); for (const p of mine) p.heal = "infected";
+    now = SIM.weekIndex(T.week, T.year); T.career.insp = now + 1;
+    const due = SIM.weekFrom(now + 2), c = T.clients.find(x => !x.compact);
+    T.queue.push({ id: "q9999", kind: "session", client: c.id, w: due.w, y: due.y, hours: 2, sessionNo: 1, sessions: 1, price: 1000, deposit: 0, ask: c.ask });
+    SIM.advanceWeek(T); if (T.career.closed) V = T;
+  }
+  const C = V && V.career.closed, q = V && V.queue.find(x => x.id === "q9999");
+  const open0 = V && SIM.walkinsOpen(V);
+  let reopened = false; if (V) for (let i = 0; i < 6 && !reopened; i++) for (const l of SIM.advanceWeek(V)) if (/reopens/.test(l.text)) reopened = true;
+  check("inspection: a fail with infections on record closes the shop, stops walk-ins, moves sittings, then reopens",
+    !!V && C.until > now && open0 === false && q && SIM.weekIndex(q.w, q.y) >= C.until && reopened && !V.career.closed && V.career.inspLast && V.career.inspLast.pass === false,
+    JSON.stringify({ found: !!V, closed: C, q: q && [q.w, q.y], reopened }));
+}
+{ /* goals */
+  const G = Object.keys(LONG.goals);
+  check("goals: the 30-year run reaches the shop goals", ["first_heal", "first_custom", "first_return", "studio", "hire", "five_pieces", "survive_rival", "twenty_reads"].every(g => G.indexOf(g) >= 0), G.join(" "));
+  const V = clone(LONG); SIM.unpackSave(V);
+  check("goals: each is marked once (a second check reaches nothing new)", SIM.checkGoals(V, true).length === 0 && LONG_EV.filter(l => l.k === "goal").length === G.length, LONG_EV.filter(l => l.k === "goal").length + " goal lines");
+  V.career.conv.push({ id: "mostograd_fair", name: "t", y: 2030, place: 2 });
+  check("goals: a convention place marks the award goal", SIM.checkGoals(V, false).indexOf("first_award") >= 0);
+}
+{ /* cover-ups: how much of the old piece a design hides */
+  const box = SIM.placementBox("forearm_l", "neutral"), f = { label: "blown-out swallow", tags: ["bird"], placement: "forearm_l", sizeMm: 50, y: 2005 };
+  const old = SIM.foreignDesign(f);
+  const big = { placement: "forearm_l", style: "blackwork", sizeMm: 110, pos: old.pos, elements: [{ id: "fill_solid", x: 0.5, y: 0.5, scale: 1, rot: 0, fill: 1, colour: "black" }] };
+  const thin = { placement: "forearm_l", style: "fineline", sizeMm: 20, pos: { x: 0.5, y: 0.9 }, elements: [{ id: "swallow", x: 0.5, y: 0.5, scale: 1, rot: 0, fill: 0, colour: "black" }] };
+  const a = SIM.coverScore(big, old, box), b = SIM.coverScore(thin, old, box), e = SIM.coverScore({ placement: "forearm_l", sizeMm: 50, elements: [] }, old, box);
+  PR8.cover = { big: a.coverage, thin: b.coverage, empty: e.coverage };
+  check("cover-ups: a big dark fill buries the old piece, a small fine-line piece beside it doesn't", a.coverage >= 0.85 && b.coverage < 0.3 && e.coverage === 0, JSON.stringify(PR8.cover));
+  const ev = LONG_EV.filter(l => l.puzzle);
+  check("cover-ups: cover-up jobs turn up as events with someone else's old piece", ev.length > 0, ev.length + " jobs");
+}
+{ /* conventions: pick the pieces */
+  const V = clone(LONG); SIM.unpackSave(V); const cv = SIM.CONVENTIONS[0], fee = RUB(V.year, cv.fee + cv.travel), cand = SIM.convCandidates(V);
+  V.career.invites.push({ id: "conv:t2", kind: "conv", conv: cv.id, fee });
+  const res = SIM.enterInvite(V, "conv:t2", true, { fresh: null, healed: cand.healed[0] && cand.healed[0].id });
+  check("conventions: you pick a fresh and a healed piece; each category is judged on its own", cand.healed.length > 0 && res.ok && !res.fresh && res.healed && res.healed.piece === cand.healed[0].id && res.booth > 0, JSON.stringify({ place: res.place, healed: res.healed }));
+}
+check("PR 8: advanceWeek at year 30 stays under 50 ms (max)", max30 < 50, max30.toFixed(1) + " ms");
 /* the client archive (CLIENT_CAP) and the packed save */
 const ids30 = LONG.pieces.map(p => p.id);
 check("archive: at most CLIENT_CAP full client records at year 30", LONG.clients.filter(c => !c.compact).length <= SIM.CLIENT_CAP + 20 && LONG.clients.some(c => c.compact), LONG.clients.filter(c => !c.compact).length + " full");
@@ -497,7 +617,10 @@ if (!QUIET) {
   console.log("30-year run heals: " + JSON.stringify(lg) + "; rep after 12 clean heals from 20/20/20: " + JSON.stringify(HR.rep));
 }
 if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(LONG));   // DUMP=file: the year-30 state, for poking at
+if (process.env.DUMPEV) fs.writeFileSync(process.env.DUMPEV, JSON.stringify(LONG_EV));
 console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; "));
+console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post " + JSON.stringify({ reach: PR8.post.reach, gained: PR8.post.gained, q: PR8.post.q }) + "; cover " + JSON.stringify(PR8.cover) +
+  "; 30 years: " + LONG.world.social.followers + " followers, " + LONG.world.social.booked + " far bookings, rivals " + LONG.career.rivals.map(r => r.id + ":" + r.status).join(" ") + ", fired " + Object.keys(LONG.world.fired).join(" ") + ", goals " + Object.keys(LONG.goals).length + "/" + SIM.GOALS.length);
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
 /* ---- timing ---- */
