@@ -38,12 +38,15 @@
 .evChoices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .evChoices .btn{min-height:48px}
 .rvPost{margin-top:8px}
-/* the design board: someone's old piece under a cover-up (old green-grey ink on the cream board) */
-.dzOld{opacity:.55}
-.dzOld path[stroke]{stroke:#3a5249}
-.dzOld path[fill-opacity]{fill:#3a5249}
+/* the design board: someone's old piece under a cover-up, blurred and blown out, the old ink gone blue-black on the cream
+   board (the same in both themes); your own elements draw over it in black */
+.dzOld{opacity:.8}
+.dzOld path[stroke]{stroke:#26332f}
+.dzOld path[fill-opacity]{fill:#26332f}
+.dzOldH{opacity:.45}
+.dzOldT{fill:#6f5a3c;font-weight:600}
 .dzCover{display:flex;flex-direction:column;gap:2px;margin:6px 0 8px;padding:8px 10px;border-radius:10px;background:var(--panel2);font-size:14px;box-shadow:inset 3px 0 0 var(--faint)}
 .dzCover.ok{box-shadow:inset 3px 0 0 var(--ok)}
 .dzCover.meh{box-shadow:inset 3px 0 0 var(--warn)}
 .dzCover.bad{box-shadow:inset 3px 0 0 var(--crit)}
-@media (prefers-reduced-transparency:reduce){.dzOld{opacity:.7}}
+@media (prefers-reduced-transparency:reduce){.dzOld{opacity:.85}.dzOldH{opacity:.5}}

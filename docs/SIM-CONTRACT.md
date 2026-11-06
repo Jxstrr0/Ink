@@ -469,3 +469,59 @@ The plan's ~8 KB target can't hold 4,000+ pieces (each is at least a design, its
 ## Tests
 
 `tools/sim-test.js`, block "PR 7": costs (the chair's split, supplies, studio rent, the ledger matches the cash); the soft fail (four weeks, staff and build-out go, clients, pieces and rep stay, the scene, the mentor's one loan); the acts and Act 1 (walk-ins closed until the friend, a chore passes a week, the free friend piece, renting early, lease and Legacy gates, Skip the broom); staff (hire to the stations, pieces from `simStaffSession`, not in your work or Legacy counts, guest clients and names, shop rep, seeded outputs); a convention; the archive (at most `CLIENT_CAP` full, every piece kept, compacted clients come back, `expandClient`); the packed save round trip and its idempotence; save size at year 30 (JSON under 2 MB, code under 1.2 MB, packing under 150 ms); the signature; the Legacy summary. The 30-year run now plays the acts (a chair in year 3, a studio in year 8 with two stations and artists, Legacy in year 20) and still times `advanceWeek` at year 30 (about 10 ms; budget 50).
+
+# PR 8: events, trends, rivals, social media, reckonings, cover-ups, goals
+
+File: `sim/events.js` (after `archive.js`, before `market.js`; sets `WEEK_HOOKS.events` and `WEEK_HOOKS.trend`). The app side is `app/events.js` (Career tab cards and sheets) and `app/design.js` (`dzOld`, the cover-up layer). Every draw is forked from the week's rng or `rng(S.seed)`.
+
+## `S.world` (`worldFresh`, `worldEnsure(S)` fills missing fields)
+
+`{fired: {reckoning id: {w, y, client?, piece?, choice?, ...}}, plan: {first_year: week index}, pending: [event], nextEv, mods: {rate: {mult, until} | null, fresh: week index | null}, social: {on: {w, y} | null, followers, posts: [[piece no, week index, reach]], viral: {piece, w, y} | null, booked, bad, gained}}`.
+
+An event waiting for a choice: `{id: "e<n>", kind: "undercut"|"poach"|"copy"|"pawn", rival?, staff?, machine?, choices: [[id, label]], dflt, w, y, until (week index), text}`. Past `until` the default is taken. `eventChoose(S, id, choice)` -> `{ok, kind, choice, text}`.
+
+## Trends
+
+- `trendMult(style, year)` -> the product of every `TREND_WAVES` bump on that style (at least 0.2); `styleDemand` in `clients.js` multiplies by it, so walk-in asks follow the waves.
+- `trendNow(S)` -> `{top: [{style, name, demand, dir: "up"|"down"|"flat"}] (4), waves: [{id, name, style, phase: "rising"|"peak"|"fading", amp}]}`.
+- The Next log gets `{k: "trend", wave, style, phase: "rise"|"peak"|"fall"}` lines on year boundaries.
+
+## Social media (from `SOCIAL.from`, 2016)
+
+- `canPost(S, piece)` -> null when it can be posted, else a reason (`"year"`, `"shop"`, `"healing"`, `"posted"`, ...). `postPiece(S, id)` -> `{ok, reach, gained, followers, viral, q, text}` or `{ok: false, why}`.
+- `followersTarget(S)` = `perRep x (walkins + collectors + peers)^2 / 10`; followers drift toward it weekly. Followers book from far away (`{social: "far"}` log lines), one viral piece per career, clients post bad heals.
+
+## Rivals (`S.career.rivals`)
+
+`{id, name, shop, where, style, tactic: "undercut"|"poach"|"copy", says, opened {w, y}, str (pull 0..1), mem (grudge -1..1), acts, status: "open"|"gone", gone?, truce?, last?, from: "rival"|"alumni"}`. `rivalWalkins(S, out)` lowers `shopWalkins(S).mult` (never below 0.3) and moves style asks; `rivalsCopy(S, sig, ctx)` copies flash once you have a signature; `rateMod(S)` is the matched-price multiplier `rateFor` applies.
+
+## Reckonings
+
+`onReturn(item, S)` (called by `scheduleReturns`) turns a `cover_own` return of a first-year piece in career years 12–18 into `item.beat = "first_year"` with a new brief. `bad_mouth` and `mentor_ref` are queued by the week hook; `pawn` is an event. A beat item: a queue consult with `beat`, `ret.piece`, and once answered `beatDone`. `reckoningChoose(S, itemId, choice)` -> `{ok, text, consult?: true (go on to a normal consult: cover, charge), item? (a free rework sitting: rework, fix)}`. Each id fires once (`S.world.fired`).
+
+## Cover-ups
+
+- A puzzle: a new client's consult with `puzzle: true` and `ret: {rule: "cover_other", piece: null, label, year, place, foreign: {label, where, placement, sizeMm, y, tags}}`.
+- `coverOld(S, item)` -> `{design, years, heal, label, foreign, ink, out?, piece?}` or null: the old piece under a cover-up (someone else's is a one-element stand-in, heal `"blownout"`). The board draws it aged by `age()`.
+- `coverScore(design, old, box)` -> `{coverage 0..1, dark 0..1, text}`: grid points on the old ink covered by dark fills and textures (`COVER_SCORE`). The finished cover-up's score moves loyalty and peers.
+
+## Conventions and goals
+
+- `convCandidates(S)` -> `{fresh: [pieces], healed: [pieces]}` (your own work; fresh = the last `CONV_JUDGE.freshWeeks`, healed = a year or more). `enterInvite(S, id, true, {fresh, healed})` -> `convJudge`: `{name, fresh: {piece, name, score, place, prize} | null, healed: ... | null, booth, metClient: {name, w} | null, rivals: [{id, name, style, place, line}], ...}`.
+- `S.goals`: `GOALS` id -> `{w, y}`. `checkGoals(S, slow)` marks new ones (`{k: "goal"}` log lines); `goalList(S)` -> `GOALS` with `done`.
+
+## The inspector (in `sim/career.js`)
+
+`INSPECTION.checks` (supplies, budget ink, debt, stations) lower the pass chance; `S.career.inspLast = {w, y, pass, chance, ...checks, why?, closed?}`, `inspFails`; a fail can set `S.career.closed = {until, w, y, why}` for `closeWeeks`, during which `walkinsOpen(S)` is false.
+
+## Readability floor
+
+`READ.shapeHold`, `READ.shapeExp` (`sim/design.js`): an element's gap factor never drops below `shapeHold x (1 - detail)^shapeExp` (none for lettering), so a simple old shape whose strokes have closed up still reads as its outline instead of 0.
+
+## Tables added in PR 8
+
+`events.js`: `TREND_WAVES`, `SOCIAL`, `RIVALS`, `RIVAL`, `RECKONINGS`, `COVER_PUZZLE`, `COVER_SCORE`, `CONV_JUDGE`, `GOALS`, `EVENTS` (cover-ups reuse `FOREIGN_PIECES` from `clients.js`). `career.js`: `INSPECTION.checks`, `.closeWeeks`, `.closeChance`, `.closeAlways`. `design.js`: `READ.shapeHold`, `READ.shapeExp`. All on `SIM`.
+
+## Tests
+
+`tools/sim-test.js`, block "PR 8": trend waves and walk-in shares; social media (nothing before 2016, posts once per piece, followers follow reputation, far-away bookings); rivals (open in their windows, act, pull walk-ins, matching an undercut lowers the rate); reckonings (each once in 30 years, the first-year piece in years 12–18 and it still reads, a tiny 8 mm sparkle 13 years on reads above 0, the pawn shop, the bad-mouthing client); the inspection and closure; cover-ups; conventions; goals; `advanceWeek` at year 30 still under 50 ms.

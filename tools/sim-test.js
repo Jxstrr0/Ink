@@ -505,6 +505,15 @@ const PR8 = {};
     JSON.stringify(LONG.world.fired));
   const fy = LONG.world.fired.first_year;
   check("reckonings: the first-year client comes back in career years 12 to 18 with a year-one piece", fy && fy.y >= 2012 && fy.y <= 2018 && LONG.pieces.find(p => p.id === fy.piece).y <= 2001, JSON.stringify(fy));
+  /* the reckoning sheet shows the old piece as it reads today: it must still read, faded. The run's own piece, and a worst
+     case: an 8 mm fine-line sparkle (under its minimum size) done by an apprentice, soft heal, 13 years on */
+  const fp = LONG.pieces.find(p => p.id === fy.piece), fc = SIM.findClient(LONG, fp.client) || {};
+  const ra = SIM.age({ design: fp.design, out: fp.out, heal: fp.heal, ink: fp.ink, skinTone: fc.skinTone, sun: (fc.traits || {}).sun }, (fy.y - fp.y) + (fy.w - fp.w) / 52);
+  const spk = SIM.age({ design: { placement: "forearm_r", sizeMm: 8, style: "fineline", elements: [{ id: "sparkle", x: 0.5, y: 0.5, scale: 1, rot: 0, lineWeight: 1, fill: 0.5, colour: null }] },
+    out: { lineQuality: 0.7, depthQuality: 0.7, saturation: 0.7, trauma: 0.4 }, heal: "soft", skinTone: 0.14, sun: 0.3 }, 13);
+  PR8.reckonReads = { piece: ra.readability, sparkle8mm13y: spk.readability };
+  check("reckonings: the old piece still reads at that age (the run's piece, and a tiny 8 mm sparkle 13 years on)", ra.readability > 0.3 && spk.readability > 0 && spk.fade < 1,
+    JSON.stringify({ piece: ra, sparkle: spk }));
   /* the pawn shop: an old machine on the shelf */
   const V = clone(LONG); SIM.unpackSave(V); SIM.worldEnsure(V); delete V.world.fired.pawn; V.world.pending = [];
   V.kit = Object.assign({ owned: {} }, V.kit); V.kit.owned.machines = ["coil_used", "rotary"]; V.kit.machine = "rotary";
@@ -619,7 +628,7 @@ if (!QUIET) {
 if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(LONG));   // DUMP=file: the year-30 state, for poking at
 if (process.env.DUMPEV) fs.writeFileSync(process.env.DUMPEV, JSON.stringify(LONG_EV));
 console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; "));
-console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post " + JSON.stringify({ reach: PR8.post.reach, gained: PR8.post.gained, q: PR8.post.q }) + "; cover " + JSON.stringify(PR8.cover) +
+console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post " + JSON.stringify({ reach: PR8.post.reach, gained: PR8.post.gained, q: PR8.post.q }) + "; cover " + JSON.stringify(PR8.cover) + "; reckoning reads " + JSON.stringify(PR8.reckonReads) +
   "; 30 years: " + LONG.world.social.followers + " followers, " + LONG.world.social.booked + " far bookings, rivals " + LONG.career.rivals.map(r => r.id + ":" + r.status).join(" ") + ", fired " + Object.keys(LONG.world.fired).join(" ") + ", goals " + Object.keys(LONG.goals).length + "/" + SIM.GOALS.length);
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
