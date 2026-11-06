@@ -21,10 +21,12 @@
 /* the UV islands the 3D body unwraps into (PR 6); every placement lives on exactly one */
 const ISLANDS=["arm_l","arm_r","leg_l","leg_r","back","chest","side_l","side_r","neck","hand_l","hand_r","foot_l","foot_r"];
 
-/* wrap width multipliers per region: a bigger arm has more room before the design turns the corner */
+/* wrap width multipliers per region: a bigger arm has more room before the design turns the corner. The 3D mannequin
+   (vis/body.js) takes its limb and torso girth from these same numbers. 0.1.12.0 pushed Broad and Slight further apart
+   (they were 1.14 / 0.88 on the arm) so the three builds read at a glance; the ids stay masc / femme for old saves */
 const BODY_SHAPES={
-  masc:{name:"Broad",wrap:{arm:1.14,leg:1.08,back:1.12,chest:1.12,side:1.06,neck:1.12,hand:1.10,foot:1.08,shoulder:1.14}},
-  femme:{name:"Slight",wrap:{arm:0.88,leg:1.03,back:0.90,chest:0.92,side:0.94,neck:0.90,hand:0.90,foot:0.92,shoulder:0.88}},
+  masc:{name:"Broad",wrap:{arm:1.24,leg:1.14,back:1.18,chest:1.18,side:1.10,neck:1.16,hand:1.12,foot:1.08,shoulder:1.24}},
+  femme:{name:"Slight",wrap:{arm:0.82,leg:0.90,back:0.86,chest:0.88,side:0.90,neck:0.88,hand:0.88,foot:0.92,shoulder:0.84}},
   neutral:{name:"Average",wrap:{arm:1,leg:1,back:1,chest:1,side:1,neck:1,hand:1,foot:1,shoulder:1}}
 };
 

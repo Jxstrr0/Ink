@@ -38,12 +38,13 @@ All original, © 2026 Kelbo / Longlight Interactive, made for Ink by the scripts
 | `ink-chair.glb` | Tattoo chair | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-station.glb` | Work station trolley | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-machine-coil.glb` | Coil machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
+| `ink-machine-rotary.glb` | Rotary machine | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` (0.1.12.0) |
 | `ink-lamp.glb` | Floor lamp | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-stool.glb` | Artist's stool | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-shelves.glb` | Ink shelves | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-bench.glb` | Waiting bench | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-flash-frame.glb` | Flash wall frames | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
-| `ink-sign.glb` | "TATTOO" sign | Kelbo / Longlight Interactive | Original | `tools/blender/props.py`; letters from Blender's built-in font (Bfont, which in Blender 5.2 is Inter by Rasmus Andersson, SIL Open Font License 1.1), turned into mesh, so no font file is distributed |
+| `ink-sign.glb` | "ИГЛА" sign | Kelbo / Longlight Interactive | Original | `tools/blender/props.py`; letters from Blender's built-in font (Bfont, which in Blender 5.2 is Inter by Rasmus Andersson, SIL Open Font License 1.1), turned into mesh, so no font file is distributed |
 | `ink-plant.glb` | Potted plant (also the legacy studio's second plant, smaller) | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-photos.glb` | Framed photos | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |
 | `ink-trophies.glb` | Trophy cabinet | Kelbo / Longlight Interactive | Original | `tools/blender/props.py` |

@@ -29,6 +29,7 @@ const ASSETS={
     chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:true},
     station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:true},
     machine:{file:"models/ink-machine-coil.glb",at:[0.78,0.81,0.37],rot:0.4,on:true},
+    rotary:{file:"models/ink-machine-rotary.glb",at:[0.79,0.81,0.22],rot:-0.3,on:true},   // 0.1.12.0: the rotary pen beside the coil
     lamp:{file:"models/ink-lamp.glb",at:[1.05,0,-0.45],rot:0,on:true},
     stool:{file:"models/ink-stool.glb",at:[0.95,0,0.86],rot:0,on:true},
     shelves:{file:"models/ink-shelves.glb",at:[-2.66,0,-0.6],rot:Math.PI/2,on:true},
