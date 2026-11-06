@@ -1,0 +1,85 @@
+/* ===================== css/ui-clients.css: the Clients and Career tabs (PR 3) =====================
+   This week's cards, the consult chat, the client list and card, the board's booking bar, the Next button. */
+.cl>.seg{margin:0 0 12px}
+.clH{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin:16px 2px 8px;display:flex;align-items:center;gap:8px}
+.clQs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.clQ{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:var(--r);padding:12px 14px}
+.clQ.consult{border-left-color:var(--gold)}
+.clQ.ses{border-left-color:var(--red);border-left-style:double;border-left-width:6px}
+.clQ header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.clQ h3{margin:0;font-size:16px}
+.clK{display:block;width:100%;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.clMeta{font-size:12.5px;color:var(--mute)}
+.clQ blockquote{margin:8px 0;padding:0 0 0 10px;border-left:2px solid var(--line);font-size:14px;line-height:1.45}
+.clQ p{margin:6px 0}
+.clAsk{font-size:13.5px;font-weight:600;margin:6px 0}
+.clDz{font-size:13.5px;font-weight:600}
+.clDz.todo{color:var(--warn)}.clDz.ok{color:var(--ok)}
+.clSum{padding:10px 14px}
+.clSum dl,.crLast dl{margin:0}
+.clLater{padding:6px 14px}
+.clRow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.clRow:last-child{border-bottom:0}
+.clRow .btn{margin-left:auto}
+.clChips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.clChip{font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line)}
+.clChip.must{border-color:var(--teal)}.clChip.must::before{content:"+ ";color:var(--teal)}
+.clChip.deal{border-color:var(--crit)}.clChip.deal::before{content:"× ";color:var(--crit)}
+.clLoy{display:inline-block;width:64px;height:8px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);position:relative;overflow:hidden;vertical-align:middle;
+  background-image:linear-gradient(90deg,transparent 24%,var(--line) 24% 26%,transparent 26% 49%,var(--line) 49% 51%,transparent 51% 74%,var(--line) 74% 76%,transparent 76%)}
+.clLoy i{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+/* the consult */
+.clConHd{margin-bottom:10px}
+.clConT{display:flex;gap:10px;align-items:flex-start}
+.clConT h2{margin:0}
+.clConT p{margin:2px 0 0}
+.clQuote{margin:8px 0 0;font-size:14px}
+.clChat{display:flex;flex-direction:column;gap:8px;padding:4px 2px 12px}
+.clB{max-width:85%;padding:9px 12px;border-radius:14px;font-size:14.5px;line-height:1.45;background:var(--panel);border:1px solid var(--line)}
+.clB.client{align-self:flex-start;border-bottom-left-radius:4px}
+.clB.artist{align-self:flex-end;border-bottom-right-radius:4px;background:var(--panel2);border-color:var(--faint)}
+.clBw{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:2px}
+.clNote{align-self:center;margin:2px 0;font-size:12px;color:var(--mute);text-align:center}
+.clOpts{display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.clOpt{justify-content:flex-start;text-align:left;padding:10px 14px;line-height:1.35;height:auto}
+.clOpt.k-talk{border-color:var(--gold)}
+.clOpt.k-quote{border-color:var(--teal)}
+.clOpt.k-talk::before{content:"!";font-weight:800;color:var(--gold);margin-right:4px}
+.clOpt.k-quote::before{content:"₽";font-weight:800;color:var(--teal);margin-right:4px}
+.clEnd.accepted{border-color:var(--ok)}.clEnd.walked{border-color:var(--crit)}
+/* the list and the client card */
+.clFil .row{margin-bottom:8px}
+.clSearch input{width:100%;box-sizing:border-box;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}
+.clLis{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.clLi{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;min-height:56px;padding:8px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;cursor:pointer}
+.clLi:hover{border-color:var(--faint)}.clLi:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.clLiN,.clLiR{display:flex;flex-direction:column;gap:3px}
+.clLiR{align-items:flex-end;text-align:right}
+.clPcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.clPc{margin:0;display:flex;flex-direction:column;gap:6px}
+.clPcA{height:110px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--board)}
+.clPcA svg{width:92px;height:92px}
+.clPc figcaption{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.clPc b.ok{color:var(--ok)}.clPc b.meh{color:var(--warn)}.clPc b.bad{color:var(--crit)}
+.clHist{list-style:none;margin:0;padding:0;font-size:13.5px}
+.clHist li{padding:6px 0;border-bottom:1px solid var(--line)}
+/* the board's booking bar */
+.clBk{border-left:4px solid var(--red);padding:10px 14px}
+.clBkT{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.clBk .clK{width:auto}
+.clBk .row{margin-top:6px}
+/* the Career tab */
+.crWhen{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.crWhen b{font-family:var(--disp);font-size:28px;font-weight:600;letter-spacing:.03em}
+.crBtn{width:100%;min-height:56px;font-size:18px;letter-spacing:.04em}
+.crBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.crBtn.arm{background:var(--gold);border-color:var(--gold);color:#1c1813}
+.crWarn{margin:8px 0 0;font-size:13px;color:var(--warn);text-align:center}
+.crLast p{margin:4px 0 8px}
+.crLog,.crLines{list-style:none;margin:0;padding:0;font-size:13.5px}
+.crLog li,.crLines li{padding:6px 0;border-bottom:1px solid var(--line)}
+.crLog li:last-child,.crLines li:last-child{border-bottom:0}
+.crK{display:inline-block;min-width:84px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.crLog .k-referral .crK,.crLog .k-return .crK{color:var(--teal)}
+.crLog .k-left .crK,.crLog .k-gaveup .crK{color:var(--warn)}
+@media (prefers-reduced-motion:reduce){.clB{transition:none}}

@@ -76,7 +76,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.2.0, November 2026)
+## Current status (0.1.3.0, November 2026)
+
+- PR 3 built: the week clock (`sim/calendar.js`: `advanceWeek`, `nextStop`) behind Career › Next; clients, briefs, the consult, memory, returns and referrals (`sim/clients.js`), walk-ins (`sim/market.js`); the Clients tab (`app/clients.js`): this week, the consult chat, designing for a booking, the client list and card. Sittings use a temporary Quick session until PR 4. S.board gained `item`. Save size grows with every client: PR 7's `CLIENT_CAP` compaction is required.
 
 - PR 2 built: the design board on the Design tab: body diagram (`app/bodymap.js`) with every placement, body shape and skin tone; the cream board with drag, pinch, toolbar, snap to flow, undo/redo; live ▲/▼ deltas and the aging strip on a docked capsule; the stress report; the flash wall (`sim/flash.js`) and your own flash. Saved in `S.board` and `S.flash`. Sample walk-ins until PR 3.
 

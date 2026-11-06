@@ -10,7 +10,8 @@
    colour}); dzToDesign() turns it into a design in the docs/SIM-CONTRACT.md shape (sizeMm = the piece's longest side, x/y/
    scale normalised to it, pos = where its centre sits) and that is what S.board.design saves: parameters, never pictures.
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
-   Until PR 3 the board scores against a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
+   The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
+   booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
    memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved. */
 const DZ_SAMPLE_CLIENTS=[
   {id:"wk_office",name:"Darya",blurb:"accountant, first tattoo",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
@@ -42,7 +43,11 @@ const dzEBc={};
 function dzEB(id){return dzEBc[id]||(dzEBc[id]=INK_SIM.elementBox(id));}
 function dzDef(id){return INK_SIM.elementById(id);}
 function dzColHex(c){const C=INK_SIM.COLOURS[c||"black"];return C?C.hex:DZ_INK;}
-function dzClient(){const b=S.board,c=DZ_SAMPLE_CLIENTS.find(x=>x.id===b.client)||DZ_SAMPLE_CLIENTS[0];
+function dzClient(){const b=S.board,real=typeof clReal==="function"?clReal(b.client):null;
+  /* the board only knows what the consult found out: hidden must-haves and dealbreakers stay hidden until the reveal */
+  if(real){const k=real.known||{};return Object.assign({},real,{name:real.first,bodyShape:b.bodyShape||real.bodyShape,skinTone:b.skinTone!=null?b.skinTone:real.skinTone,
+    mustHaves:k.mustAll?real.mustHaves:(k.mustHaves||[]),dealbreakers:k.dealAll?real.dealbreakers:(k.dealbreakers||[])});}
+  const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===b.client)||DZ_SAMPLE_CLIENTS[0];
   return Object.assign({},c,{bodyShape:b.bodyShape||c.bodyShape,skinTone:b.skinTone!=null?b.skinTone:c.skinTone});}
 function dzBox(pl){return INK_SIM.placementBox(pl||DZ.m.placement,S.board.bodyShape)||{wrapMm:100,lengthMm:200};}
 function dzCap1(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
@@ -136,8 +141,9 @@ function renderDesign(){
   const v=DZ.view;
   $("designBody").innerHTML=`<div class="dz dz-${v}">
 <div class="dzSeg seg" role="tablist" aria-label="Design views">${[["body","Body"],["board","Board"],["flash","Flash"]].map(([k,l])=>`<button type="button" role="tab" data-v="${k}" class="${k===v?"on":""}" aria-selected="${k===v}">${l}</button>`).join("")}</div>
-<div id="dzView"></div>
+${v==="flash"||typeof clBookingBar!=="function"?"":clBookingBar()}<div id="dzView"></div>
 ${v==="flash"?"":`<div class="dzCap${DZ.capOpen&&v==="board"?"":" shut"}${v==="body"?" mini":""}" id="dzCap" aria-live="off"></div>`}</div>`;
+  if(typeof clBookingWire==="function")clBookingWire();
   $("designBody").querySelector(".dzSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===DZ.view)return;DZ.view=b.dataset.v;INK_SOUND.tick();renderDesign();});
   DZ.cur=dzScore();
   if(v==="body")dzRenderBody();else if(v==="flash")dzRenderFlash();else dzRenderBoardView();
@@ -150,7 +156,7 @@ function dzRenderBody(){
   const bar=(v,l)=>`<span class="dzBar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}" aria-label="${l}"><i style="width:${Math.round(v*100)}%"></i></span>`;
   const word=(v,w)=>w[Math.min(w.length-1,Math.floor(v*w.length))];
   const clientCard=`<div class="card dzClient"><div class="dzClientHd"><h2>Walk-in</h2><span class="dzTag">sample</span></div>
-<label class="dzFull">Who's in the chair<select id="dzCl">${DZ_SAMPLE_CLIENTS.map(c=>`<option value="${c.id}"${c.id===b.client?" selected":""}>${esc(c.name)}, ${esc(c.blurb)}</option>`).join("")}</select></label>
+<label class="dzFull">Who's in the chair<select id="dzCl">${clReal&&clReal(b.client)?`<option value="" selected>${esc(clReal(b.client).name)} (booked)</option>`:""}${DZ_SAMPLE_CLIENTS.map(c=>`<option value="${c.id}"${c.id===b.client?" selected":""}>${esc(c.name)}, ${esc(c.blurb)}</option>`).join("")}</select></label>
 <p class="hint">${esc(cl.name)} (${esc(cl.pronouns)}, ${cl.age}) likes ${esc(Object.keys(cl.wants.styles).map(s=>INK_SIM.STYLES[s].name.toLowerCase()).join(", "))}, about ${cl.wants.sizeMm[0]} to ${cl.wants.sizeMm[1]} mm.
 Practice walk-ins for now: real clients with their own wants start booking in the next update.</p></div>`;
   $("dzView").innerHTML=`<div class="card dzBody">
@@ -172,7 +178,7 @@ ${p.creases.length?`<p class="hint">Joint${p.creases.length>1?"s":""} at the ${e
   tone.addEventListener("input",()=>{S.board.skinTone=+tone.value;$("dzTone").nextElementSibling.style.background=bmSkin(S.board.skinTone)[0];
     $("dzFig").innerHTML=bmSvg(DZ.side,DZ.m.placement,S.board.bodyShape,S.board.skinTone);if(!DZ.base)DZ.base=DZ.cur;dzQueue(true);});
   tone.addEventListener("change",()=>{DZ.prev=DZ.base||DZ.prev;DZ.base=null;save();DZ.cur=dzScore();dzRenderCap();dzRenderAging();});
-  $("dzCl").addEventListener("change",e=>{const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===e.target.value);if(!c)return;dzSetBody({client:c.id,bodyShape:c.bodyShape,skinTone:c.skinTone});});
+  $("dzCl").addEventListener("change",e=>{const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===e.target.value);if(!c)return;S.board.item=null;dzSetBody({client:c.id,bodyShape:c.bodyShape,skinTone:c.skinTone});});
   $("dzPl").addEventListener("change",e=>dzSetPlacement(e.target.value));
   const fig=$("dzFig");
   fig.addEventListener("click",e=>{const z=e.target.closest(".bmz");if(z){INK_SOUND.tick();dzSetPlacement(z.dataset.p);}});

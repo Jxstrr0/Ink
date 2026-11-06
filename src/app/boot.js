@@ -13,7 +13,8 @@ function showTab(t){if(!TABS.includes(t))t="studio";const pn=$("panel");tabScrol
   renderTab(t);pn.scrollTop=tabScroll[t]||0;
   if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();}
 function renderTab(t){({studio:renderStudio,design:renderDesign,session:renderSession,clients:renderClients,career:renderCareer})[t]();}
-function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);}
+function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);
+  const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;}
 function renderAll(){renderHeader();renderTab(curTab);}
 
 /* ---- the sheet ---- */

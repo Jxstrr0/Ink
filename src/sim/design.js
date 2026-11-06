@@ -385,7 +385,7 @@ function dzFit(E,design,cl,p,F){
   for(const m of cl.mustHaves||[])if(!dzHas(E,design,m))f*=FIT.mustMiss;
   for(const m of cl.dealbreakers||[])if(dzHas(E,design,m))f*=FIT.dealbreaker;
   if(p){
-    f*=1-FIT.cover*dzShows(p,F)*dzJobCover(cl.job);
+    f*=1-FIT.cover*dzShows(p,F)*(cl.cover!=null?cl.cover:dzJobCover(cl.job));
     const tol=cl.traits&&cl.traits.pain!=null?cl.traits.pain:0.5;
     f*=1-FIT.pain*Math.max(0,(p.pain||0)-tol-FIT.painSlack);
   }
@@ -521,7 +521,7 @@ function scoreDesign(design,client,skills,opts){
   const price=Math.round(Math.max(RATE_DEFAULT.minHours,hours)*rate*rep*SIM.priceIndex(year));
   /* stress */
   let wTot=0;for(const e of E.els)wTot+=e.w;
-  const ctx={design,client,p,box,E,F,tone,tol,sun,wTot,ageTattoo,painTol:client.traits&&client.traits.pain!=null?client.traits.pain:0.5,cover:dzJobCover(client.job)};
+  const ctx={design,client,p,box,E,F,tone,tol,sun,wTot,ageTattoo,painTol:client.traits&&client.traits.pain!=null?client.traits.pain:0.5,cover:client.cover!=null?client.cover:dzJobCover(client.job)};
   const stress=dzStress(ctx);
   return{readability:dzR(readability),flow:dzR(flow),balance:dzR(balance),coherence:dzR(coherence),fit:dzR(fit),total:dzR(total),
     agePrediction,hours,sessions,price,stress};
