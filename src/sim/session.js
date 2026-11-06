@@ -40,6 +40,7 @@
                                        hours, parts, dots}  (cached; never saved)
      SIM.sessionBands(sess)           the kit bands plus paceMmS, accMm, view (mm)
      SIM.sessionPlace(sess, pos)      move the stencil before the first line (pos 0..1 in the box); returns stencilCheck
+     SIM.sessionRotate(sess, deg)     turn the stencil before the first line (about its own centre); returns stencilCheck
      SIM.stencilCheck(design, client, skills) -> {flow, issues:[{id, sev, text}]}   flow and crease, re-checked
      SIM.sessionItem(sess) -> the current item (with .stroke or .zone) or null
      SIM.penDown / penMove / penUp(sess, t, x, y) -> live {ok, r (pace ratio), d (mm off), u, rushed, stopped, blow, sat,
@@ -286,6 +287,20 @@ function sessionPlace(sess,pos){
   sess.design.pos={x:dsR(clamp(pos.x,0,1)),y:dsR(clamp(pos.y,0,1))};
   ssStartSitting(sess);
   return stencilCheck(sess.design,sess.client,sess.skills);
+}
+/* turn the whole stencil by deg about its footprint's centre. The real size of every element stays the same; if the turned
+   design no longer fits its 0..1 box, the box is widened (sizeMm up, coordinates in) so the mm on skin don't change */
+function sessionRotate(sess,deg){
+  if(sess.next>0||sess.cur||sess.acc.sittings>0||!deg)return stencilCheck(sess.design,sess.client,sess.skills);
+  const d=sess.design,fp=SIM.footprintOf(d),th=deg*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
+  d.elements=(d.elements||[]).map(el=>{const x=(el.x!=null?el.x:0.5)-fp.cx,y=(el.y!=null?el.y:0.5)-fp.cy;
+    let r=((el.rot||0)+deg)%360;if(r>180)r-=360;if(r<=-180)r+=360;
+    return Object.assign({},el,{x:fp.cx+x*cs-y*sn,y:fp.cy+x*sn+y*cs,rot:r});});
+  const f2=SIM.footprintOf(d),k=Math.max(1,f2.w,f2.h);
+  d.elements=d.elements.map(el=>Object.assign({},el,{x:dsR(0.5+(el.x-f2.cx)/k),y:dsR(0.5+(el.y-f2.cy)/k),scale:dsR((el.scale!=null?el.scale:0.5)/k),rot:Math.round(el.rot*10)/10}));
+  if(k>1)d.sizeMm=Math.round((d.sizeMm||50)*k);
+  ssStartSitting(sess);
+  return stencilCheck(d,sess.client,sess.skills);
 }
 
 /* ---- the meters: advance the sitting clock by dH hours of work (and add any trauma) ---- */
@@ -545,7 +560,7 @@ function sessionStart(sess){if(sess.phase==="place")sess.phase="work";return ses
 
 SIM.STENCIL=STENCIL;SIM.PACE=PACE;SIM.ACC=ACC;SIM.DEPTH=DEPTH;SIM.BLOW=BLOW;SIM.JOIN=JOIN;SIM.LW_FIT=LW_FIT;SIM.ZONE=ZONE;
 SIM.COLOUR_PACK=COLOUR;SIM.TRAUMA=TRAUMA;SIM.PAIN=PAIN;SIM.FATIGUE=FATIGUE;SIM.BREAK=BREAK;SIM.NUMB=NUMB;SIM.CHAT=CHAT;SIM.SKILL_XP=SKILL_XP;
-SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.sessionBands=ssBands;SIM.sessionPlace=sessionPlace;
+SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.sessionBands=ssBands;SIM.sessionPlace=sessionPlace;SIM.sessionRotate=sessionRotate;
 SIM.stencilCheck=stencilCheck;SIM.sessionItem=sessionItem;SIM.sessionStart=sessionStart;SIM.sessionResume=sessionResume;
 SIM.penDown=penDown;SIM.penMove=penMove;SIM.penUp=penUp;SIM.sessionSetLiner=sessionSetLiner;SIM.sessionNextItem=sessionNextItem;
 SIM.sessionAction=sessionAction;SIM.sessionFinish=sessionFinish;SIM.sessionXp=sessionXp;SIM.sessionPainRate=sessionPainRate;

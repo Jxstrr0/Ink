@@ -324,7 +324,7 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 - [x] PR 3: Week clock with Next, market, clients, consult, memory, returns
 - [x] PR 4: Kit, session mechanic, handedness and assist, client meters, multi-session
 - [x] PR 5: Healing, reveal with stencil ghost, body of work, reputation
-- [ ] PR 6: 3D mannequin (one island per limb or zone), decals, studio view
+- [x] PR 6: 3D mannequin (one island per limb or zone), decals, studio view
 - [ ] PR 7: Career acts, staff auto-sim, signature, lineage, money with soft fail, Legacy screen, save cap, saves
 - [ ] PR 8: Conventions, trends, social, rivals, reckonings, inspections, goals
 - [ ] PR 9: Help overlays, piece and Legacy cards, settings, polish
