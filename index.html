@@ -348,6 +348,91 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
   .bm{max-height:80vh}
 }
 @media (prefers-reduced-motion:reduce){.bmz .f,.bmz .s,.dzCapT svg{transition:none}}
+/* ===================== css/ui-clients.css: the Clients and Career tabs (PR 3) =====================
+   This week's cards, the consult chat, the client list and card, the board's booking bar, the Next button. */
+.cl>.seg{margin:0 0 12px}
+.clH{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin:16px 2px 8px;display:flex;align-items:center;gap:8px}
+.clQs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.clQ{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:var(--r);padding:12px 14px}
+.clQ.consult{border-left-color:var(--gold)}
+.clQ.ses{border-left-color:var(--red);border-left-style:double;border-left-width:6px}
+.clQ header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.clQ h3{margin:0;font-size:16px}
+.clK{display:block;width:100%;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.clMeta{font-size:12.5px;color:var(--mute)}
+.clQ blockquote{margin:8px 0;padding:0 0 0 10px;border-left:2px solid var(--line);font-size:14px;line-height:1.45}
+.clQ p{margin:6px 0}
+.clAsk{font-size:13.5px;font-weight:600;margin:6px 0}
+.clDz{font-size:13.5px;font-weight:600}
+.clDz.todo{color:var(--warn)}.clDz.ok{color:var(--ok)}
+.clSum{padding:10px 14px}
+.clSum dl,.crLast dl{margin:0}
+.clLater{padding:6px 14px}
+.clRow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.clRow:last-child{border-bottom:0}
+.clRow .btn{margin-left:auto}
+.clChips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.clChip{font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line)}
+.clChip.must{border-color:var(--teal)}.clChip.must::before{content:"+ ";color:var(--teal)}
+.clChip.deal{border-color:var(--crit)}.clChip.deal::before{content:"× ";color:var(--crit)}
+.clLoy{display:inline-block;width:64px;height:8px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);position:relative;overflow:hidden;vertical-align:middle;
+  background-image:linear-gradient(90deg,transparent 24%,var(--line) 24% 26%,transparent 26% 49%,var(--line) 49% 51%,transparent 51% 74%,var(--line) 74% 76%,transparent 76%)}
+.clLoy i{position:absolute;inset:0 auto 0 0;background:var(--gold)}
+/* the consult */
+.clConHd{margin-bottom:10px}
+.clConT{display:flex;gap:10px;align-items:flex-start}
+.clConT h2{margin:0}
+.clConT p{margin:2px 0 0}
+.clQuote{margin:8px 0 0;font-size:14px}
+.clChat{display:flex;flex-direction:column;gap:8px;padding:4px 2px 12px}
+.clB{max-width:85%;padding:9px 12px;border-radius:14px;font-size:14.5px;line-height:1.45;background:var(--panel);border:1px solid var(--line)}
+.clB.client{align-self:flex-start;border-bottom-left-radius:4px}
+.clB.artist{align-self:flex-end;border-bottom-right-radius:4px;background:var(--panel2);border-color:var(--faint)}
+.clBw{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:2px}
+.clNote{align-self:center;margin:2px 0;font-size:12px;color:var(--mute);text-align:center}
+.clOpts{display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+.clOpt{justify-content:flex-start;text-align:left;padding:10px 14px;line-height:1.35;height:auto}
+.clOpt.k-talk{border-color:var(--gold)}
+.clOpt.k-quote{border-color:var(--teal)}
+.clOpt.k-talk::before{content:"!";font-weight:800;color:var(--gold);margin-right:4px}
+.clOpt.k-quote::before{content:"₽";font-weight:800;color:var(--teal);margin-right:4px}
+.clEnd.accepted{border-color:var(--ok)}.clEnd.walked{border-color:var(--crit)}
+/* the list and the client card */
+.clFil .row{margin-bottom:8px}
+.clSearch input{width:100%;box-sizing:border-box;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}
+.clLis{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.clLi{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;min-height:56px;padding:8px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;cursor:pointer}
+.clLi:hover{border-color:var(--faint)}.clLi:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.clLiN,.clLiR{display:flex;flex-direction:column;gap:3px}
+.clLiR{align-items:flex-end;text-align:right}
+.clPcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.clPc{margin:0;display:flex;flex-direction:column;gap:6px}
+.clPcA{height:110px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--board)}
+.clPcA svg{width:92px;height:92px}
+.clPc figcaption{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.clPc b.ok{color:var(--ok)}.clPc b.meh{color:var(--warn)}.clPc b.bad{color:var(--crit)}
+.clHist{list-style:none;margin:0;padding:0;font-size:13.5px}
+.clHist li{padding:6px 0;border-bottom:1px solid var(--line)}
+/* the board's booking bar */
+.clBk{border-left:4px solid var(--red);padding:10px 14px}
+.clBkT{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.clBk .clK{width:auto}
+.clBk .row{margin-top:6px}
+/* the Career tab */
+.crWhen{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.crWhen b{font-family:var(--disp);font-size:28px;font-weight:600;letter-spacing:.03em}
+.crBtn{width:100%;min-height:56px;font-size:18px;letter-spacing:.04em}
+.crBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.crBtn.arm{background:var(--gold);border-color:var(--gold);color:#1c1813}
+.crWarn{margin:8px 0 0;font-size:13px;color:var(--warn);text-align:center}
+.crLast p{margin:4px 0 8px}
+.crLog,.crLines{list-style:none;margin:0;padding:0;font-size:13.5px}
+.crLog li,.crLines li{padding:6px 0;border-bottom:1px solid var(--line)}
+.crLog li:last-child,.crLines li:last-child{border-bottom:0}
+.crK{display:inline-block;min-width:84px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.crLog .k-referral .crK,.crLog .k-return .crK{color:var(--teal)}
+.crLog .k-left .crK,.crLog .k-gaveup .crK{color:var(--warn)}
+@media (prefers-reduced-motion:reduce){.clB{transition:none}}
 </style>
 
 <div id="app">
@@ -1412,7 +1497,7 @@ function dzFit(E,design,cl,p,F){
   for(const m of cl.mustHaves||[])if(!dzHas(E,design,m))f*=FIT.mustMiss;
   for(const m of cl.dealbreakers||[])if(dzHas(E,design,m))f*=FIT.dealbreaker;
   if(p){
-    f*=1-FIT.cover*dzShows(p,F)*dzJobCover(cl.job);
+    f*=1-FIT.cover*dzShows(p,F)*(cl.cover!=null?cl.cover:dzJobCover(cl.job));
     const tol=cl.traits&&cl.traits.pain!=null?cl.traits.pain:0.5;
     f*=1-FIT.pain*Math.max(0,(p.pain||0)-tol-FIT.painSlack);
   }
@@ -1548,7 +1633,7 @@ function scoreDesign(design,client,skills,opts){
   const price=Math.round(Math.max(RATE_DEFAULT.minHours,hours)*rate*rep*SIM.priceIndex(year));
   /* stress */
   let wTot=0;for(const e of E.els)wTot+=e.w;
-  const ctx={design,client,p,box,E,F,tone,tol,sun,wTot,ageTattoo,painTol:client.traits&&client.traits.pain!=null?client.traits.pain:0.5,cover:dzJobCover(client.job)};
+  const ctx={design,client,p,box,E,F,tone,tol,sun,wTot,ageTattoo,painTol:client.traits&&client.traits.pain!=null?client.traits.pain:0.5,cover:client.cover!=null?client.cover:dzJobCover(client.job)};
   const stress=dzStress(ctx);
   return{readability:dzR(readability),flow:dzR(flow),balance:dzR(balance),coherence:dzR(coherence),fit:dzR(fit),total:dzR(total),
     agePrediction,hours,sessions,price,stress};
@@ -1705,8 +1790,1245 @@ function agAge(t,years,E,tol){
 }
 function age(tattoo,years){return agAge(tattoo||{},years,null,0);}
 SIM.age=age;SIM.COLOUR_FADE=COLOUR_FADE;SIM.PLACEMENT_WEAR=PLACEMENT_WEAR;SIM.HEAL_GRADES=HEAL_GRADES;SIM.INK_TIERS=INK_TIERS;SIM.AGING=AGING;
-/* ===== sim/clients.js: client generation, the consult, memory and returns (PR 3) ===== */
-/* ===== sim/calendar.js: the week clock: advanceWeek(S) is the only thing that moves time (PR 3) ===== */
+/* ===== sim/clients.js: client generation, the consult, memory and returns (PR 3) =====
+   Everyone who sits in the chair is a persistent record (docs/SIM-CONTRACT.md "A client (full record)"). All of them are
+   adults: makeClient draws an age from AGE_BANDS (18..75) and never anything younger. Mostograd is a port city, so most
+   names are Russian with a sprinkling from the Caucasus, Tatarstan, the Baltic, West Africa and further off (NAMES).
+     CLIENT_TRAITS      how each trait (0..1) is drawn; job and age nudge some of them
+     NAMES              given names by pronoun set and surnames, in name groups with a broad skin-tone range
+     JOBS               job titles (their words line up with design.js JOB_COVER), with an explicit cover need, sun
+                        exposure and pay; client.cover copies the job's cover so scoring can switch to it later
+     BRIEFS             ~50 opening briefs with {slots}, each with a theme, tags, styles, size and placements
+     HIDDEN_WANTS       must-haves and dealbreakers a client keeps to themselves until asked, with the line that reveals them
+     BAD_IDEAS          what an artist should talk a client out of (tiny script, a portrait on the hand, ...)
+     CONSULT_QUESTIONS  what the artist can ask; each reveals one hidden thing with a chance scaled by the consult skill
+     QUOTE              rate by stage, deposit, willingness to pay, the three quote options
+     LOYALTY            how loyalty moves (scaled by the client's loyalty trait)
+     REVIEWS            review text by heal grade x loyalty band
+     RETURN_RULES       add-on, sleeve, cover-up of someone else's work, cover-up of your own early work, touch-up
+     REFERRAL           word of mouth after a piece heals
+   Functions (all take an rng; never Math.random):
+     SIM.makeClient(r, opts) -> client          SIM.clientAge(client, year)
+     SIM.consultStart(client, S) -> consult     SIM.consultOptions(consult) -> [{id, text, kind}]
+     SIM.consultChoose(consult, choiceId, r) -> a NEW consult (the old one is untouched)
+     SIM.consultCommit(S, consult) -> {client, item}   writes the result into S (client record, history, booking, deposit)
+     SIM.clientLog(client, entry)               SIM.loyaltyBump(client, kind)          SIM.writeReview(client, piece, r)
+     SIM.referral(client, r, opts) -> client    SIM.scheduleReturns(S, r) -> [queue items]
+     SIM.addPiece(S, {client, design, out, heal}) -> piece                              SIM.findClient(S, id)
+   Time is (w, y): week 1..52 of year 2000..2030. SIM.weekIndex(w, y) counts weeks from week 1 of 2000.
+   Private helpers start with cl. ===== */
+
+/* ---- time ---- */
+const WEEKS_PER_YEAR=52;
+function weekIndex(w,y){return (y-2000)*WEEKS_PER_YEAR+(w-1);}
+function weekFrom(i){i=Math.max(0,Math.floor(i));return{w:i%WEEKS_PER_YEAR+1,y:2000+Math.floor(i/WEEKS_PER_YEAR)};}
+const clNow=S=>weekIndex(S.week,S.year);
+
+/* ---- traits: each drawn from a clamped normal, then nudged ---- */
+const CLIENT_TRAITS={
+  pain:{mean:0.5,sd:0.2,desc:"pain tolerance: 1 sits like a rock, 0 can't keep still"},
+  sun:{mean:0.4,sd:0.2,job:0.6,desc:"sun exposure: the job's sun counts for job share, the rest is dachas and beaches"},
+  aftercare:{mean:0.6,sd:0.2,age:0.002,desc:"how well they follow aftercare; a little better with age"},
+  budget:{mean:0.45,sd:0.18,job:0.5,desc:"how much they will spend: blended with the job's pay"},
+  loyalty:{mean:0.5,sd:0.2,age:0.003,desc:"how much they stick with one artist; a little more with age"},
+  talkative:{mean:0.5,sd:0.25,desc:"chatty in the chair; talkative clients give longer consults"},
+  trusting:{mean:0.5,sd:0.2,desc:"how readily they take the artist's advice"},
+  lo:0.02,hi:0.98
+};
+/* adults only: [from, to, weight], weighted young */
+const AGE_BANDS=[[18,24,30],[25,34,32],[35,44,18],[45,54,10],[55,64,6],[65,75,4]];
+const PRONOUNS=[["she/her",0.48],["he/him",0.44],["they/them",0.08]];
+const PRONOUN_WORDS={"she/her":{pr:"she",pos:"her",obj:"her"},"he/him":{pr:"he",pos:"his",obj:"him"},"they/them":{pr:"they",pos:"their",obj:"them"}};
+/* body shape by pronoun set */
+const BODY_BY_PRONOUN={"she/her":{femme:0.72,neutral:0.22,masc:0.06},"he/him":{masc:0.72,neutral:0.22,femme:0.06},"they/them":{neutral:0.6,femme:0.2,masc:0.2}};
+/* patronymic address: clients this old get "first + patronymic" in conversation */
+const FORMAL_AGE=50;
+
+/* ---- names: groups with weight and a broad skin-tone range. surnames are [masculine, feminine] pairs or a single
+   indeclinable form; they/them clients take an indeclinable surname where the group has one. Lombard's regulars and
+   specialists (and well-known public figures) are deliberately absent. ---- */
+const NAMES={
+  neutral:["Sasha","Zhenya","Valya","Slava","Shura","Tosha","Alex","Robin","Noa","Kai","Ari"],
+  groups:[
+    {id:"ru",w:0.72,tone:[0,0.5],patronymic:true,
+      he:["Aleksei","Andrei","Anton","Artyom","Boris","Daniil","Denis","Dmitri","Fyodor","Gleb","Grigory","Igor","Ilya","Kirill","Konstantin",
+        "Leonid","Maksim","Matvei","Mikhail","Nikolai","Oleg","Pavel","Pyotr","Roman","Semyon","Stepan","Timofei","Vadim","Viktor","Yaroslav","Yegor","Yuri"],
+      she:["Alina","Alyona","Anastasia","Anna","Darya","Ekaterina","Elena","Galina","Irina","Kira","Ksenia","Larisa","Lidia","Lyudmila","Margarita",
+        "Maria","Marina","Nadezhda","Natalya","Nina","Olga","Polina","Svetlana","Tamara","Tatyana","Ulyana","Valentina","Vera","Viktoria","Yulia","Zoya"],
+      they:["Sasha","Zhenya","Valya","Slava","Shura","Tosha"],
+      surnames:[["Sorokin","Sorokina"],["Belov","Belova"],["Volkov","Volkova"],["Zaitsev","Zaitseva"],["Morozov","Morozova"],["Lebedev","Lebedeva"],
+        ["Kozlov","Kozlova"],["Novikov","Novikova"],["Sokolov","Sokolova"],["Fedorov","Fedorova"],["Smirnov","Smirnova"],["Kuznetsov","Kuznetsova"],
+        ["Egorov","Egorova"],["Nikitin","Nikitina"],["Zakharov","Zakharova"],["Kovalyov","Kovalyova"],["Gusev","Guseva"],["Titov","Titova"],
+        ["Komarov","Komarova"],["Kiselyov","Kiselyova"],["Makarov","Makarova"],["Ilyin","Ilyina"],["Gromov","Gromova"],["Rybakov","Rybakova"],
+        ["Golubev","Golubeva"],["Shirokov","Shirokova"],["Tikhonov","Tikhonova"],["Vorobyov","Vorobyova"],["Lapin","Lapina"],["Polyakov","Polyakova"],
+        ["Zarechny","Zarechnaya"],["Lodochnikov","Lodochnikova"],["Kanatov","Kanatova"],["Pristanev","Pristaneva"],
+        "Petrenko","Bondarenko","Kovalenko","Shevchuk","Kravets","Melnik","Savchuk","Lysenko"]},
+    {id:"ru_korean",w:0.03,tone:[0.1,0.45],patronymic:true,from:"ru",surnames:["Kim","Pak","Li","Ten","Khegai","Nam"]},
+    {id:"tatar",w:0.07,tone:[0.1,0.55],patronymic:false,
+      he:["Rustam","Ildar","Timur","Marat","Rinat","Azat"],she:["Aigul","Dilyara","Alsu","Gulnara","Leysan","Elmira"],
+      surnames:[["Safin","Safina"],["Valiev","Valieva"],["Nurullin","Nurullina"],["Khairullin","Khairullina"],["Galiev","Galieva"],["Ismagilov","Ismagilova"]]},
+    {id:"caucasus",w:0.06,tone:[0.15,0.6],patronymic:false,
+      he:["Giorgi","Levan","Davit","Gor","Aram","Nodar"],she:["Nino","Mariam","Ani","Lusine","Eka","Salome"],
+      surnames:["Beridze","Kapanadze","Lomidze","Gelashvili","Hakobyan","Avetisyan","Mkrtchyan","Grigoryan"]},
+    {id:"baltic",w:0.04,tone:[0,0.3],patronymic:false,
+      he:["Juhan","Mati","Toomas","Arvo","Janis"],she:["Aino","Liis","Kadri","Ilze","Maarja"],surnames:["Tamm","Saar","Kask","Magi","Lepp","Ozols"]},
+    {id:"westafrica",w:0.03,tone:[0.6,1],patronymic:false,
+      he:["Kwame","Chidi","Emeka","Kofi","Tunde"],she:["Amara","Adaeze","Efua","Ngozi","Abena"],they:["Ayo","Sena"],
+      surnames:["Okafor","Mensah","Adeyemi","Boateng","Eze","Asante"]},
+    {id:"eastasia",w:0.02,tone:[0.1,0.45],patronymic:false,
+      he:["Wei","Hao","Jun"],she:["Mei","Lin","Xiu"],they:["Yu"],surnames:["Chen","Wang","Liu","Zhao"]},
+    {id:"far",w:0.03,tone:[0.1,0.75],patronymic:false,
+      he:["Mateo","Joao","Yusuf","Diego","Karim"],she:["Ines","Lucia","Leila","Sofia","Yasmin"],they:["Noa","Kai"],
+      surnames:["Ferreira","Haddad","Costa","Morales","Rahimi","Duarte"]}
+  ],
+  /* fathers' names -> [masculine, feminine] patronymic (only the "ru" groups use them) */
+  patronymics:[["Ivanovich","Ivanovna"],["Sergeyevich","Sergeyevna"],["Nikolayevich","Nikolayevna"],["Petrovich","Petrovna"],
+    ["Aleksandrovich","Aleksandrovna"],["Mikhailovich","Mikhailovna"],["Vasilyevich","Vasilyevna"],["Andreyevich","Andreyevna"],
+    ["Yuryevich","Yuryevna"],["Viktorovich","Viktorovna"],["Olegovich","Olegovna"],["Pavlovich","Pavlovna"],["Grigoryevich","Grigoryevna"],
+    ["Borisovich","Borisovna"],["Leonidovich","Leonidovna"],["Fyodorovich","Fyodorovna"]]
+};
+
+/* ---- jobs. name words line up with design.js JOB_COVER (tools/sim-test.js checks they agree within 0.25);
+   cover = how much it needs tattoos hidden, sun = daylight on the job, pay 0..1, w = how common,
+   from/to = the years the job exists, ages = [min, max] age for it ---- */
+const JOBS=[
+  {name:"bank clerk",cover:0.85,sun:0.1,pay:0.5,w:1.2},
+  {name:"notary's assistant",cover:0.9,sun:0.1,pay:0.5,w:0.5},
+  {name:"accountant at the port authority",cover:0.75,sun:0.1,pay:0.6,w:0.8},
+  {name:"civil servant at the district office",cover:0.8,sun:0.1,pay:0.5,w:0.8},
+  {name:"school teacher",cover:0.65,sun:0.2,pay:0.35,w:1,ages:[23,66]},
+  {name:"nurse at the city hospital",cover:0.5,sun:0.1,pay:0.35,w:1,ages:[20,66]},
+  {name:"doctor at the polyclinic",cover:0.6,sun:0.1,pay:0.6,w:0.6,ages:[25,70]},
+  {name:"police officer",cover:0.7,sun:0.5,pay:0.45,w:0.5,ages:[20,60]},
+  {name:"hotel receptionist",cover:0.6,sun:0.05,pay:0.35,w:0.8},
+  {name:"sales assistant on Kanatnaya Street",cover:0.5,sun:0.1,pay:0.3,w:1.2},
+  {name:"waiter at a canal cafe",cover:0.35,sun:0.3,pay:0.3,w:1.2,ages:[18,45]},
+  {name:"chef",cover:0.1,sun:0.05,pay:0.5,w:0.8},
+  {name:"line cook",cover:0.1,sun:0.05,pay:0.3,w:0.8,ages:[18,50]},
+  {name:"builder",cover:0.1,sun:0.85,pay:0.45,w:1},
+  {name:"bicycle courier",cover:0.1,sun:0.85,pay:0.25,w:0.6,ages:[18,40]},
+  {name:"delivery app courier",cover:0.1,sun:0.8,pay:0.25,w:1,from:2016,ages:[18,45]},
+  {name:"car mechanic",cover:0.1,sun:0.2,pay:0.4,w:0.8},
+  {name:"dock worker",cover:0.1,sun:0.8,pay:0.45,w:1},
+  {name:"crane operator at the docks",cover:0.1,sun:0.6,pay:0.55,w:0.6},
+  {name:"session musician",cover:0,sun:0.1,pay:0.3,w:0.6},
+  {name:"barista",cover:0.1,sun:0.1,pay:0.25,w:0.9,from:2006,ages:[18,40]},
+  {name:"university student",cover:0.2,sun:0.3,pay:0.1,w:1.6,ages:[18,28]},
+  {name:"art student",cover:0.2,sun:0.2,pay:0.1,w:0.6,ages:[18,28]},
+  {name:"illustrator",cover:0.15,sun:0.1,pay:0.4,w:0.5},
+  {name:"tram driver",cover:0.3,sun:0.3,pay:0.4,w:0.7,ages:[21,65]},
+  {name:"bridge operator",cover:0.3,sun:0.3,pay:0.4,w:0.4,ages:[21,65]},
+  {name:"tour boat skipper",cover:0.2,sun:0.9,pay:0.45,w:0.5,ages:[21,70]},
+  {name:"ferry deckhand",cover:0.1,sun:0.85,pay:0.3,w:0.5,ages:[18,55]},
+  {name:"fisherman",cover:0.1,sun:0.9,pay:0.35,w:0.4},
+  {name:"gardener at the botanical garden",cover:0.1,sun:0.9,pay:0.3,w:0.5},
+  {name:"market trader",cover:0.2,sun:0.6,pay:0.4,w:0.7},
+  {name:"baker",cover:0.2,sun:0.05,pay:0.3,w:0.6},
+  {name:"florist",cover:0.2,sun:0.2,pay:0.3,w:0.5},
+  {name:"taxi driver",cover:0.25,sun:0.4,pay:0.35,w:0.8,ages:[21,70]},
+  {name:"hairdresser",cover:0.1,sun:0.05,pay:0.35,w:0.8},
+  {name:"programmer",cover:0.25,sun:0.05,pay:0.7,w:0.9},
+  {name:"museum guide",cover:0.45,sun:0.1,pay:0.3,w:0.5},
+  {name:"librarian",cover:0.35,sun:0.05,pay:0.25,w:0.4},
+  {name:"pharmacist",cover:0.45,sun:0.05,pay:0.45,w:0.5,ages:[23,70]},
+  {name:"dentist",cover:0.45,sun:0.05,pay:0.7,w:0.4,ages:[25,70]},
+  {name:"postal worker",cover:0.35,sun:0.45,pay:0.3,w:0.5},
+  {name:"street cleaner",cover:0.1,sun:0.8,pay:0.2,w:0.4},
+  {name:"lift engineer",cover:0.15,sun:0.1,pay:0.45,w:0.4},
+  {name:"theatre stagehand",cover:0.1,sun:0.05,pay:0.3,w:0.4},
+  {name:"social media manager",cover:0.15,sun:0.05,pay:0.5,w:0.8,from:2014,ages:[20,45]},
+  {name:"yoga instructor",cover:0.1,sun:0.2,pay:0.35,w:0.4,from:2008},
+  {name:"security guard",cover:0.3,sun:0.3,pay:0.3,w:0.5},
+  {name:"tattoo artist at another shop",cover:0,sun:0.1,pay:0.4,w:0.15,ages:[20,60]},
+  {name:"merchant sailor",cover:0.1,sun:0.8,pay:0.5,w:0.5,ages:[20,62]},
+  {name:"port diver",cover:0.1,sun:0.5,pay:0.5,w:0.1,ages:[22,60]},
+  {name:"lighthouse keeper",cover:0.1,sun:0.6,pay:0.3,w:0.05,ages:[25,75]},
+  {name:"retired",cover:0.1,sun:0.4,pay:0.3,w:2,ages:[58,99]}
+];
+
+const JOB_AGES=[18,66];   // working ages for a job with no ages of its own
+/* ---- brief slots. Values that bring tags add them to the client's wants ---- */
+const BRIEF_SLOTS={
+  person:[{t:"grandmother",p:"she"},{t:"grandfather",p:"he"},{t:"mum",p:"she"},{t:"dad",p:"he"},{t:"aunt",p:"she"},{t:"uncle",p:"he"},
+    {t:"godmother",p:"she"},{t:"godfather",p:"he"},{t:"older brother",p:"he"},{t:"sister",p:"she"},{t:"best friend",p:"they"},{t:"old neighbour",p:"she"}],
+  loved:[{t:"gardens",tags:["botanical","flower"]},{t:"the sea",tags:["ocean","nautical"]},{t:"birds",tags:["bird"]},
+    {t:"the forest at the dacha",tags:["forest","nature"]},{t:"the night sky",tags:["night","sky"]},{t:"the White Nights",tags:["night","sky"]},
+    {t:"the swans on the canal",tags:["bird"]},{t:"mushroom picking",tags:["forest","nature"]},{t:"cats",tags:["pet","animal"]}],
+  habit:[{t:"feed the swans on the canal every Sunday",tags:["bird"]},{t:"pick mushrooms every autumn",tags:["forest","nature"]},
+    {t:"keep geraniums on every windowsill",tags:["botanical","flower"]},{t:"watch the bridges go up at night",tags:["night","sky"]},
+    {t:"sail out past the harbour on Sundays",tags:["nautical","ocean"]},{t:"read the stars to anyone who'd listen",tags:["sky","star"]}],
+  flower:[{t:"roses",tags:["flower"]},{t:"peonies",tags:["flower"]},{t:"daisies",tags:["flower"]},{t:"chrysanthemums",tags:["flower"]},{t:"lotus flowers",tags:["flower"]}],
+  petName:[{t:"Murka"},{t:"Barsik"},{t:"Vaska"},{t:"Pushok"},{t:"Belka"},{t:"Sharik"},{t:"Ryzhik"},{t:"Bublik"},{t:"Kesha"},{t:"Tuman"},{t:"Kefir"}],
+  workplace:[{t:"the tram depot"},{t:"the shipyard"},{t:"the post"},{t:"the city hospital"},{t:"the bakery on Kanatnaya Street"},{t:"the port"},{t:"the bridge office"}],
+  partner:[{t:"husband"},{t:"wife"},{t:"partner"},{t:"fiance"},{t:"girlfriend"},{t:"boyfriend"}]
+};
+/* size classes: [min, max] mm for the ask; wants.sizeMm widens it */
+const SIZE_CLASSES={tiny:[8,25],small:[25,65],medium:[60,130],large:[120,260],huge:[220,560]};
+/* how much colour a style's fans want (0 = black and grey only) */
+const STYLE_COLOUR={traditional:0.7,neotrad:0.8,blackwork:0,fineline:0.1,realism:0.25,japanese:0.8,lettering:0.05,geometric:0.05,watercolour:0.95};
+/* placement shorthand in briefs: a base id ("forearm" -> forearm_l or forearm_r) or a full PLACEMENTS id */
+
+/* ---- the briefs. text slots: {person} {Pr} {pr} {pos} {loved} {habit} {flower} {petName} {place} {workplace} {partner}
+   {pastYear}. theme groups them; tags must exist in ELEMENTS (tested); styles are the styles it suits; size is a
+   SIZE_CLASSES id; place lists where it can go; seg are STYLES clientSegments it draws; known: dealbreakers/must-haves
+   the brief states out loud; first = a first tattoo; from/to = years it can appear; ages = [min, max] client age (a brief
+   that looks back at {pastYear} needs 20+ so that year was an adult one too); job = the job (or jobs) the brief implies ---- */
+const BRIEFS=[
+  /* memorial */
+  {id:"mem_grandma",theme:"memorial",text:"Something for my {person}. {Pr} loved {loved}. Nothing too girly. {Place}, please.",tags:["memorial"],
+    styles:["fineline","neotrad","traditional","realism"],size:"medium",place:["forearm","upperarm","calf"],seg:["memorial"],known:{deal:[{kind:"tag",v:"cute"}]}},
+  {id:"mem_habit",theme:"memorial",text:"My {person} passed in the spring. {Pr} used to {habit}. I want something small I can see every day, on my {place}.",
+    tags:["memorial"],styles:["fineline","traditional","watercolour"],size:"small",place:["forearm","hand","shoulder"],seg:["memorial"]},
+  {id:"mem_flower",theme:"memorial",text:"I want my {person}'s favourite flower. {Pr} grew {flower} on the balcony every summer, even the year the frost came in May.",
+    tags:["flower","botanical"],styles:["fineline","neotrad","watercolour","traditional","japanese"],size:"medium",place:["forearm","upperarm","shoulder","calf","thigh"],seg:["memorial"]},
+  {id:"mem_bridge",theme:"memorial",text:"We scattered my {person}'s ashes off the Old Bridge. Something with water in it. {Place}.",tags:["water","memorial"],
+    styles:["fineline","japanese","geometric"],size:"medium",place:["forearm","upperarm","calf","ribs"],seg:["memorial"]},
+  {id:"mem_boats",theme:"memorial",text:"My {person} worked forty years on the boats. An anchor, or a lighthouse. Something {pr} would have recognised from across the harbour.",
+    tags:["nautical","memorial"],styles:["traditional","neotrad","blackwork"],size:"medium",place:["forearm","upperarm","calf"],seg:["memorial","old_school"]},
+  {id:"mem_candle",theme:"memorial",text:"A candle for my {person}. Simple. {Pr} always left one burning in the window on Lodochnaya Embankment.",tags:["light","memorial"],
+    styles:["traditional","neotrad","fineline"],size:"small",place:["forearm","upperarm","calf"],seg:["memorial"]},
+  {id:"mem_watch",theme:"memorial",text:"My {person}'s pocket watch stopped the week {pr} died. I'd like it on my {place}, stopped at that time.",tags:["time","memorial"],
+    styles:["realism","traditional","neotrad"],size:"medium",place:["forearm","upperarm","calf","chest_l"],seg:["memorial"]},
+  {id:"mem_song",theme:"memorial",text:"My {person} sang all day, every day, like a little bird. I want a bird for {pos} song. {Place}.",tags:["bird","memorial"],
+    styles:["fineline","traditional","watercolour","neotrad"],size:"small",place:["forearm","shoulder","nape"],seg:["memorial"]},
+  {id:"mem_hands",theme:"memorial",text:"I want my {person}'s heartbeat line. The hospital gave us the printout and I've kept it in my wallet for two years.",tags:["memorial","life"],
+    styles:["fineline","lettering"],size:"small",place:["forearm","ribs","chest_l"],seg:["memorial"]},
+  /* milestones */
+  {id:"ms_flat",ages:[30,75],theme:"milestone",text:"I finally paid off the flat. Twelve years. I want something to mark it, a key maybe, on my {place}.",tags:["key","home"],
+    styles:["traditional","neotrad","fineline"],size:"small",place:["forearm","upperarm","calf"],seg:["walk_in"]},
+  {id:"ms_shipyard",ages:[28,70],job:["dock worker","crane operator at the docks","builder","merchant sailor"],theme:"milestone",text:"Ten years at {workplace} as of Friday. I want a ship's wheel or an anchor. Proper old-school.",tags:["nautical"],
+    styles:["traditional","blackwork"],size:"medium",place:["forearm","upperarm","calf"],seg:["trades","old_school"]},
+  {id:"ms_captain",ages:[25,70],job:["tour boat skipper","ferry deckhand","merchant sailor"],theme:"milestone",text:"I got my captain's papers. A compass, bold, so it still reads when I'm seventy. {Place}.",tags:["direction","nautical"],
+    styles:["traditional","blackwork","geometric"],size:"medium",place:["forearm","upperarm","chest_l","chest_r"],seg:["trades","old_school"]},
+  {id:"ms_marathon",theme:"milestone",text:"I ran the White Nights half marathon. My knees are still angry. Something about feeling light, a feather or birds.",tags:["freedom"],
+    styles:["fineline","watercolour","blackwork"],size:"small",place:["calf","ribs","forearm","shoulder"],seg:["first_timer"]},
+  {id:"ms_retired",ages:[58,75],job:"retired",theme:"milestone",text:"I retired on Monday. Forty-one years at {workplace}. Now I want something just for me, and I want it big.",tags:["freedom"],
+    styles:["traditional","japanese","neotrad","realism"],size:"large",place:["upperarm","thigh","upperback","calf"],seg:["old_school"]},
+  {id:"ms_wedding",theme:"milestone",text:"My {partner} and I are getting married in June. I want the date in Roman numerals on my {place}.",tags:["date"],
+    styles:["lettering","fineline"],size:"small",place:["forearm","ribs","chest_l","nape"],seg:["couples"]},
+  {id:"ms_moved",ages:[23,75],theme:"milestone",text:"I came to Mostograd five years ago with one suitcase. Now it's home. I want something that says that.",tags:["home"],
+    styles:["traditional","fineline","lettering","neotrad"],size:"small",place:["forearm","upperarm","ribs"],seg:["travellers"]},
+  {id:"ms_degree",ages:[24,45],theme:"milestone",text:"I defended my thesis yesterday. Six years. An owl is a cliche, I know. I want the owl.",tags:["wisdom"],
+    styles:["neotrad","blackwork","realism"],size:"medium",place:["upperarm","forearm","calf","thigh"],seg:["students"]},
+  /* pets */
+  {id:"pet_cat",theme:"pets",text:"My cat {petName} is the boss of our whole building. I want {petName} on my {place} while she's still ruling it.",tags:["pet"],
+    styles:["fineline","neotrad","blackwork","realism"],size:"small",place:["forearm","upperarm","calf"],seg:["pet_owners"]},
+  {id:"pet_paw",theme:"pets",text:"Our dog {petName} died last winter. Just a paw print, maybe with a little heart. {Place}.",tags:["pet","memorial"],
+    styles:["fineline","traditional"],size:"tiny",place:["forearm","hand","foot","shoulder"],seg:["pet_owners","memorial"],known:{must:[{kind:"tag",v:"pet"}]}},
+  {id:"pet_portrait_hand",theme:"pets",text:"I want a realistic portrait of my dog {petName}. On the back of my hand, so I see him every day.",tags:["pet","animal"],
+    styles:["realism"],size:"small",place:["hand"],seg:["pet_owners"]},
+  {id:"pet_rabbit",theme:"pets",text:"A little rabbit for {petName}, who has chewed through every cable in the flat and is completely unrepentant.",tags:["pet","cute"],
+    styles:["fineline","neotrad"],size:"small",place:["forearm","calf","shoulder","foot"],seg:["pet_owners"]},
+  {id:"pet_parrot",ages:[30,75],theme:"pets",text:"My parrot {petName} is twenty-six and has outlived two of my sofas. He deserves a tattoo. Something bright.",tags:["bird","animal"],
+    styles:["neotrad","watercolour","traditional"],size:"medium",place:["upperarm","forearm","calf"],seg:["pet_owners"]},
+  /* travel */
+  {id:"tr_swallow",job:["merchant sailor","ferry deckhand","fisherman"],theme:"travel",text:"Just back from six months at sea. A swallow, the old way. My first five thousand miles.",tags:["bird","nautical"],
+    styles:["traditional","neotrad"],size:"small",place:["chest_l","chest_r","hand","forearm"],seg:["trades","old_school"]},
+  {id:"tr_plane",theme:"travel",text:"A paper plane, small, on my {place}. I'm leaving for a job abroad and I'm coming back, I promised my mum.",tags:["travel","freedom"],
+    styles:["fineline"],size:"tiny",place:["forearm","hand","nape","foot"],seg:["travellers","first_timer"]},
+  {id:"tr_mountains",theme:"travel",text:"Mountains. I walked the whole northern ridge last summer and I still dream about it. Wrapped round my {place} if that's a thing.",tags:["outdoors","nature"],
+    styles:["fineline","geometric","blackwork"],size:"medium",place:["forearm","calf","upperarm"],seg:["travellers"]},
+  {id:"tr_compass",theme:"travel",text:"A compass rose. I grew up by the port and I always want to know which way the sea is.",tags:["direction","travel"],
+    styles:["traditional","geometric","blackwork"],size:"medium",place:["forearm","upperarm","calf","shoulder"],seg:["travellers"]},
+  {id:"tr_whale",theme:"travel",text:"A whale tail. We saw one from the northern ferry and nobody at work believes me.",tags:["ocean","travel"],
+    styles:["fineline","watercolour","blackwork"],size:"small",place:["forearm","ribs","calf","foot"],seg:["travellers"]},
+  /* nature */
+  {id:"nat_fern",theme:"nature",text:"A fern, fine line, running down my {place}. Every weekend I'm out at the dacha in the woods.",tags:["botanical","nature"],
+    styles:["fineline","realism"],size:"medium",place:["forearm","ribs","calf","upperarm"],seg:["office","students"]},
+  {id:"nat_mushroom",theme:"nature",text:"Mushrooms. I'm serious. Mushroom season is the best two weeks of my year.",tags:["forest","nature"],
+    styles:["neotrad","fineline","traditional"],size:"small",place:["calf","forearm","shin","upperarm"],seg:["creatives"]},
+  {id:"nat_moon",theme:"nature",text:"The moon in all its phases, across my {place}. I work nights and the moon is my only colleague.",tags:["moon","night"],
+    styles:["fineline","geometric","blackwork"],size:"medium",place:["forearm","nape","upperback","sternum"],seg:["creatives","office"]},
+  {id:"nat_bees",theme:"nature",text:"Bees. My grandfather kept them, and now I keep two hives on the roof on Kanatnaya Street.",tags:["insect","work"],
+    styles:["neotrad","traditional","blackwork"],size:"small",place:["forearm","hand","upperarm","calf"],seg:["creatives"]},
+  {id:"nat_birds",theme:"nature",text:"Birds flying, on my {place}. I watch them over the canal from my kitchen window every morning.",tags:["bird","freedom"],
+    styles:["fineline","watercolour"],size:"small",place:["forearm","shoulder","ribs","nape"],seg:["first_timer","office"]},
+  {id:"nat_wolf",theme:"nature",text:"A wolf. I don't want to explain it. I just want a wolf, and I want it to look like it means it.",tags:["wild","animal"],
+    styles:["blackwork","realism","traditional","geometric"],size:"medium",place:["upperarm","thigh","calf","forearm"],seg:["collector","walk_in"]},
+  /* nautical */
+  {id:"nau_anchor",theme:"nautical",text:"An anchor with a rope round it. Proper sailor's work. My father had one just like it from his navy days.",tags:["nautical"],
+    styles:["traditional","blackwork"],size:"medium",place:["forearm","upperarm","calf"],seg:["old_school","trades"]},
+  {id:"nau_lighthouse",ages:[25,75],job:"lighthouse keeper",theme:"nautical",text:"A lighthouse, bold, on my {place}. I keep the light at the harbour mouth. It's about time I wore it.",tags:["coast","guidance"],
+    styles:["traditional","neotrad"],size:"medium",place:["upperarm","forearm","calf","thigh"],seg:["trades","old_school"]},
+  {id:"nau_octopus",ages:[22,60],job:"port diver",theme:"nautical",text:"An octopus wrapped round my {place}. I dive at the port for a living and I love the strange ones.",tags:["ocean"],
+    styles:["neotrad","traditional","blackwork"],size:"large",place:["upperarm","calf","thigh"],seg:["collector","trades"]},
+  {id:"nau_wave",theme:"nautical",text:"A big wave. I want my {place} to look like the river the night the dam gates opened.",tags:["water","ocean"],
+    styles:["japanese","blackwork"],size:"large",place:["upperarm","thigh","calf","upperback"],seg:["large_scale","collector"]},
+  /* first tattoos */
+  {id:"first_small",theme:"first",text:"It's my first one. Something small. A heart? A star? I honestly don't know. What do people get?",tags:["small"],first:true,
+    styles:["fineline","traditional"],size:"tiny",place:["forearm","ribs","foot","shoulder","nape"],seg:["first_timer","walk_in"]},
+  {id:"first_needles",theme:"first",text:"First tattoo. I've wanted one for years and I've finally stopped being scared of needles. Mostly.",tags:["flower"],first:true,
+    styles:["fineline","traditional","neotrad"],size:"small",place:["forearm","upperarm","calf","shoulder"],seg:["first_timer"]},
+  {id:"first_word",theme:"first",text:"All my friends have one and I'm the last. Something tiny on my wrist. A word, maybe. Hope.",tags:["script","hope"],first:true,
+    styles:["lettering","fineline"],size:"tiny",place:["forearm"],seg:["first_timer","students"]},
+  {id:"first_hide",theme:"first",text:"First tattoo, and my mother will be at New Year dinner, so somewhere I can hide it. Something with the sun in it.",tags:["sun"],first:true,
+    styles:["fineline","traditional","geometric"],size:"small",place:["ribs","upperarm","thigh","shoulder"],seg:["first_timer"]},
+  {id:"first_sparkle",theme:"first",text:"I saw a tiny sparkle on someone on the tram and I haven't stopped thinking about it for a month.",tags:["star"],first:true,
+    styles:["fineline"],size:"tiny",place:["forearm","hand","nape","foot"],seg:["first_timer","fashion"]},
+  {id:"first_online",theme:"first",text:"First one. I saved about four hundred pictures. Can we make something out of these? Fine line, botanical.",tags:["botanical"],first:true,from:2016,
+    styles:["fineline","watercolour"],size:"small",place:["forearm","ribs","upperarm","calf"],seg:["first_timer","fashion"]},
+  /* cover-ups of someone else's work */
+  {id:"cov_name",theme:"coverup",text:"I have a name on my {place} from a shop that isn't there any more. Please put it under something better. Anything dark.",tags:["botanical"],
+    styles:["blackwork","neotrad","japanese","traditional"],size:"medium",place:["forearm","upperarm","calf","shoulder"],seg:["cover_up"],known:{deal:[{kind:"tag",v:"script"}]}},
+  {id:"cov_band",ages:[22,75],theme:"coverup",text:"I got a barbed-wire band in {pastYear} on a dare. Make it into something I'm not embarrassed by at the beach.",tags:["band"],from:2004,
+    styles:["blackwork","geometric","japanese"],size:"medium",place:["upperarm","calf"],seg:["cover_up"]},
+  {id:"cov_party",ages:[20,75],theme:"coverup",text:"A friend did this with a sewing needle at a party in {pastYear}. It was meant to be a star. Can you cover it?",tags:["star"],from:2002,
+    styles:["blackwork","traditional","neotrad"],size:"small",place:["hand","forearm","foot"],seg:["cover_up","walk_in"]},
+  /* matching */
+  {id:"match_sister",theme:"matching",text:"My sister and I want matching ones. Small, simple, both on the {place}. She's in the waiting room, she's next.",tags:["small"],
+    styles:["fineline","traditional"],size:"tiny",place:["forearm","foot","nape","shoulder"],seg:["couples"]},
+  {id:"match_friend",ages:[35,75],theme:"matching",text:"My best friend and I have known each other thirty years. Matching moons. Don't let us talk you into anything bigger.",tags:["moon"],
+    styles:["fineline","geometric"],size:"tiny",place:["forearm","foot","hand","nape"],seg:["couples"]},
+  {id:"match_padlock",theme:"matching",text:"My {partner} and I want one each. A padlock, like the ones on the Old Bridge railings. Or infinity, but that's a bit much.",tags:["love"],
+    styles:["traditional","fineline","neotrad"],size:"small",place:["forearm","ribs","calf","shoulder"],seg:["couples"]},
+  /* collectors */
+  {id:"col_japanese",ages:[25,75],theme:"collector",text:"I want a Japanese piece on my {place}. Koi, water, the whole story. I'm in no hurry. Take a year if you need it.",tags:["japanese","water"],
+    styles:["japanese"],size:"huge",place:["upperarm","thigh","fullback","upperback"],seg:["collector","large_scale"]},
+  {id:"col_blackwork",ages:[22,75],theme:"collector",text:"I collect blackwork. I've seen your flash on the wall. Do what you want on my {place}, just keep it bold.",tags:["bold"],
+    styles:["blackwork"],size:"large",place:["calf","upperarm","thigh","forearm"],seg:["collector"]},
+  {id:"col_geometric",ages:[20,75],theme:"collector",text:"A geometric start on my {place}. Precise or don't bother. I'll know if the lines aren't straight.",tags:["geometric"],
+    styles:["geometric","blackwork"],size:"large",place:["upperarm","forearm","calf","sternum"],seg:["collector","students"]},
+  {id:"col_neotrad",ages:[25,75],theme:"collector",text:"A neo-trad owl, colour. I have work from four shops on this body and this one goes on my {place}.",tags:["bird","wisdom"],
+    styles:["neotrad"],size:"medium",place:["thigh","calf","upperarm","forearm"],seg:["collector"]},
+  {id:"col_tiger",ages:[30,75],theme:"collector",text:"A tiger. Big. My {place} has been empty for ten years waiting for the right artist.",tags:["power","animal"],
+    styles:["japanese","realism","traditional"],size:"large",place:["thigh","upperback","upperarm","ribs"],seg:["collector","large_scale"]},
+  /* trades */
+  {id:"job_bridge",job:"bridge operator",theme:"trades",text:"I raise the Old Bridge at two in the morning, every night from April to November. Something with the moon and the river.",tags:["moon","water"],
+    styles:["fineline","traditional","geometric"],size:"medium",place:["forearm","upperarm","calf"],seg:["trades"]},
+  {id:"job_chef",job:["chef","line cook"],theme:"trades",text:"Chef. I want a knife on my {place}. Fine, a dagger then. Bold enough to survive the kitchen.",tags:["blade"],
+    styles:["traditional","blackwork"],size:"medium",place:["forearm","upperarm"],seg:["trades","walk_in"]},
+  {id:"job_garden",job:"gardener at the botanical garden",theme:"trades",text:"I look after the glasshouses at the botanical garden. Something green and growing, and colour, lots of colour.",tags:["botanical","flower"],
+    styles:["neotrad","watercolour","traditional"],size:"medium",place:["forearm","upperarm","calf"],seg:["trades","creatives"]}
+];
+
+/* ---- what clients keep to themselves. kind/v is the design.js mustHave / dealbreaker shape; say is the line that
+   reveals it in the consult; themes limit where a must-have makes sense ---- */
+const HIDDEN_WANTS={
+  mustChance:0.38,dealChance:0.45,
+  must:[
+    {kind:"tag",v:"date",say:"It has to have the date in it. That part isn't up for discussion.",themes:["memorial","milestone","matching"]},
+    {kind:"colour",v:"red",say:"There has to be some red in it. Red was always {pos} colour.",themes:["memorial"]},
+    {kind:"tag",v:"pet",say:"There needs to be a little paw print somewhere. Even tiny.",themes:["pets","memorial"]},
+    {kind:"tag",v:"love",say:"I'd like a heart in it somewhere. Is that soppy? I don't care.",themes:["matching","memorial","milestone"]},
+    {kind:"tag",v:"nautical",say:"Whatever you draw, it has to feel like the sea.",themes:["nautical","travel","trades"]},
+    {kind:"tag",v:"flower",say:"I want flowers in it. Even if it's mainly something else.",themes:["memorial","nature","first","pets"]},
+    {kind:"tag",v:"bird",say:"There has to be a bird. I can't explain it, there just does.",themes:["memorial","travel","nature","milestone"]},
+    {kind:"tag",v:"script",say:"I need a word in it. Just one. You'll know which when I tell you.",themes:["memorial","milestone","first"]},
+    {kind:"style",v:"traditional",say:"I want it to look old-school, like the sailors' ones. Bold.",themes:["nautical","trades","milestone"]}
+  ],
+  deal:[
+    {kind:"tag",v:"skull",say:"No skulls. My mother would never speak to me again."},
+    {kind:"tag",v:"snake",say:"Nothing with snakes. I'm not joking, I can't look at them."},
+    {kind:"tag",v:"insect",say:"No bugs. Butterflies count. Don't argue."},
+    {kind:"tag",v:"blade",say:"Nothing sharp. No daggers, nothing like that."},
+    {kind:"style",v:"watercolour",say:"I don't want it to fade into a puddle. No watercolour."},
+    {kind:"colour",v:"pink",say:"Absolutely no pink. I've had enough pink for one lifetime."},
+    {kind:"tag",v:"cute",say:"Nothing cute. I'm a grown adult, not a greeting card."},
+    {kind:"tag",v:"love",say:"Please, nothing soppy. No hearts."},
+    {kind:"tag",v:"eye",say:"No eyes. Eyes on skin give me the creeps."},
+    {kind:"tag",v:"web",say:"Not a spider web. My uncle had one and it always looked like a bruise."}
+  ]
+};
+/* bad ideas: what a good artist talks a client out of. test(ask, client, P) says the ask is one; make(ask, r) turns
+   an ask into one (BAD_IDEA_CHANCE of walk-ins arrive with one); fix(ask) is the artist's alternative.
+   add: what the brief gains (addPlaced instead when the brief already names the spot).
+   gentle/blunt: the two ways to say it (blunt wins more respect when it lands and loses more clients when it doesn't).
+   yes: they come round; no: they walk; insist: they want it anyway */
+const BAD_IDEA_CHANCE=0.22;
+const BAD_IDEAS=[
+  {id:"tiny_script",fits:B=>["memorial","milestone","first","matching"].indexOf(B.theme)>=0&&B.size!=="large"&&B.size!=="huge",add:" Really small, like {mm} mm, on the inside of my wrist.",
+    test:(a)=>a.style==="lettering"&&a.sizeMm<20,
+    make:(a,r)=>{a.style="lettering";a.sizeMm=r.int(8,14);a.placement=r.chance(0.5)?"forearm_l":"forearm_r";a.tags=["script"].concat(a.tags.filter(t=>t!=="script"));},
+    fix:a=>{a.sizeMm=Math.max(35,a.sizeMm*3);},
+    gentle:"I love the idea. At that size the letters close up in a few years, though. Could we go to about 40 mm so it still reads when you're sixty?",
+    blunt:"At {mm} mm that word will be a smudge in five years. I've seen it a hundred times. Bigger, or I'd rather not.",
+    yes:"Forty, then. I'd rather it still says something.",no:"Then I'll find someone who'll just do it. Thanks.",insist:"I want it small. That's the whole point."},
+  {id:"hand_portrait",fits:B=>B.theme==="pets"&&B.styles.indexOf("realism")>=0||B.id==="pet_portrait_hand",add:" A proper portrait, on the back of my hand.",addPlaced:" A proper portrait.",
+    test:(a)=>a.style==="realism"&&/^hand/.test(a.placement||""),
+    make:(a,r)=>{a.style="realism";a.placement=r.chance(0.5)?"hand_l":"hand_r";a.sizeMm=r.int(45,65);},
+    fix:a=>{a.placement=a.placement==="hand_l"?"forearm_l":"forearm_r";a.sizeMm=Math.max(80,a.sizeMm);},
+    gentle:"A portrait needs room and fine shading. Hands shed skin fast and that detail goes soft in a year or two. The forearm would hold it far better.",
+    blunt:"A portrait on a hand won't look like anyone in two years. Hands eat fine detail. Forearm, or it's a waste of your money.",
+    yes:"The forearm. Fine. I'll still see it every day.",no:"It has to be the hand. I'll go somewhere else.",insist:"I want it on the hand. I'll come back for touch-ups."},
+  {id:"fine_hand",fits:B=>B.styles.indexOf("fineline")>=0&&(B.size==="tiny"||B.size==="small"),add:" Fine line, super delicate, on my {placename}.",addPlaced:" Fine line, super delicate.",
+    test:(a)=>a.style==="fineline"&&/^(hand|foot)/.test(a.placement||""),
+    make:(a,r)=>{a.style="fineline";a.placement=r.pick(["hand_l","hand_r","foot_l","foot_r"]);a.sizeMm=r.int(15,35);},
+    fix:a=>{a.placement=/_l$/.test(a.placement)?"forearm_l":"forearm_r";},
+    gentle:"Fine line on a {placename} tends to break up and blur within a couple of years. Same design on the forearm would stay crisp. What do you think?",
+    blunt:"Fine line on a {placename} falls apart. You'll be back in a year asking why it looks patchy. Put it on your forearm.",
+    yes:"Forearm it is. I don't want it falling apart.",no:"I came for the {placename}. Never mind.",insist:"I know. I still want it there."},
+  {id:"watercolour_sun",fits:B=>B.styles.indexOf("watercolour")>=0&&B.size!=="huge",add:" Soft watercolour, no outlines.",
+    test:(a,c,P)=>a.style==="watercolour"&&(/^(hand|foot)/.test(a.placement||"")||((c.traits&&c.traits.sun)||0)>=0.7&&P&&P.sun>=0.6),
+    make:(a,r)=>{a.style="watercolour";a.placement=r.pick(["hand_l","hand_r","foot_l","foot_r"]);},
+    fix:a=>{a.placement=/_l$/.test(a.placement||"")?"upperarm_l":"upperarm_r";a.outline=true;},
+    gentle:"Watercolour without outlines fades fast in the sun. Could we give it a soft black outline and put it somewhere it gets less light?",
+    blunt:"With no outline, out in the sun like that, it'll be a faint stain in five years. It needs an outline and a shadier spot.",
+    yes:"An outline's fine if it keeps it there.",no:"No outlines, that's the look. I'll try elsewhere.",insist:"No outlines. I'll keep it out of the sun. Mostly."},
+  {id:"cover_job",fits:B=>B.size==="tiny"||B.size==="small",add:" On my {placename}, where everyone can see it.",addPlaced:" Where everyone can see it.",
+    test:(a,c,P)=>P&&P.visibility>=0.9&&(c.cover||0)>=0.6,
+    make:(a,r)=>{a.placement=r.pick(["neck_l","neck_r","hand_l","hand_r"]);},
+    fix:a=>{a.placement=/_l$/.test(a.placement||"")?"upperarm_l":"upperarm_r";},
+    gentle:"You said you work as a {job}. The {placename} is hard to hide at work. Somewhere a shirt covers would keep you out of trouble.",
+    blunt:"With your job, a piece on the {placename} is a conversation with your boss you don't want. Somewhere you can cover.",
+    yes:"You're right. My manager would have a stroke. Somewhere I can cover.",no:"It's my body and my job's my problem. Forget it.",insist:"My job can deal with it."},
+  {id:"ribs_low_pain",fits:B=>B.size!=="tiny",add:" On my ribs.",addPlaced:"",
+    test:(a,c)=>/^ribs/.test(a.placement||"")&&((c.traits&&c.traits.pain)||0.5)<0.3,
+    make:(a,r)=>{a.placement=r.chance(0.5)?"ribs_l":"ribs_r";},
+    fix:a=>{a.placement=/_l$/.test(a.placement||"")?"thigh_l":"thigh_r";},
+    gentle:"Ribs are the hardest spot there is, and you said needles scare you. The thigh is far kinder and still easy to hide.",
+    blunt:"You'll tap out on the ribs halfway through and walk around with half a tattoo. Do the thigh.",
+    yes:"The thigh. Yes. Please.",no:"Ribs or nothing. I'll go somewhere else.",insist:"I'll manage. I want the ribs."}
+];
+
+/* ---- the consult: questions. reveal = what it can uncover; p = base + skill x consult level + trust x trusting +
+   talk x talkative (clamped to [0.05, 0.97]). text = the artist's line ---- */
+const CONSULT_QUESTIONS=[
+  {id:"q_story",reveal:"must",text:"What's the story behind it?",base:0.35,skill:0.04,trust:0.15,talk:0.25},
+  {id:"q_must",reveal:"must",text:"Is there anything it absolutely has to have?",base:0.45,skill:0.04,trust:0.2,talk:0.05},
+  {id:"q_avoid",reveal:"deal",text:"Anything you'd hate to see in it?",base:0.45,skill:0.04,trust:0.2,talk:0.1},
+  {id:"q_colour",reveal:"colour",text:"Colour, or black and grey?",base:0.75,skill:0.02,trust:0.1,talk:0.05},
+  {id:"q_size",reveal:"size",text:"How big are you picturing? Show me with your hands.",base:0.7,skill:0.02,trust:0.1,talk:0.1},
+  {id:"q_work",reveal:"cover",text:"What do you do for work? Do you need to cover it?",base:0.7,skill:0.02,trust:0.1,talk:0.1},
+  {id:"q_pain",reveal:"pain",text:"Have you sat for a tattoo before? How are you with needles?",base:0.6,skill:0.03,trust:0.15,talk:0.1},
+  {id:"q_sun",reveal:"sun",text:"Are you out in the sun much? Summers at the dacha?",base:0.65,skill:0.02,trust:0.05,talk:0.15},
+  {id:"q_budget",reveal:"budget",text:"Have you got a budget in mind?",base:0.5,skill:0.03,trust:0.25,talk:0.05},
+  {id:"q_aftercare",reveal:"aftercare",text:"Can you keep it out of the banya and the sun for two weeks?",base:0.55,skill:0.03,trust:0.2,talk:0.05},
+  {id:"q_style",reveal:"style",text:"Show me a few tattoos you've liked on other people.",base:0.55,skill:0.03,trust:0.1,talk:0.15}
+];
+/* how the client answers. value lines by band (0..1 split into low/mid/high), or the must/deal say lines */
+const CONSULT_ANSWERS={
+  vague:["Hm. I don't know. Whatever you think.","I haven't really thought about it.","You're the artist.","Let me think about that one.","No idea, honestly."],
+  noneMust:["No, nothing it has to have. I trust you.","Not really. Just make it good."],
+  noneDeal:["Honestly, I'm easy. Nothing I'd hate.","No, nothing comes to mind. Surprise me, within reason."],
+  colour:{low:"Black and grey. Colour's not me.",mid:"A little colour, maybe. Not a rainbow.",high:"Colour! Lots of it."},
+  size:{low:"Small. Like this. Smaller than a matchbox.",mid:"About the size of my palm?",high:"Big. I want people to see it from the tram."},
+  cover:{low:"I'm a {job}. Nobody cares what's on my arms.",mid:"I'm a {job}. Sleeves cover most things.",high:"I'm a {job}. It has to be hidden at work, always."},
+  pain:{low:"I fainted at my last blood test. Is that bad?",mid:"I'll be fine. Probably. Have you got biscuits?",high:"I sat four hours for my last one and fell asleep."},
+  sun:{low:"Sun? I live under fluorescent lights.",mid:"Weekends outside, in summer.",high:"I'm outdoors all day, every day."},
+  budget:{low:"Not much, honestly. Is that a problem?",mid:"I've put something aside. Within reason.",high:"Don't worry about money. Worry about making it good."},
+  aftercare:{low:"Two weeks? The banya is my whole social life.",mid:"I'll try. I'm not great with creams.",high:"I'll follow every instruction. I'll write them down."},
+  style:"I keep saving {style} pieces. That's what I like, I think."
+};
+/* consult structure */
+const CONSULT={
+  exchanges:[3,5],           // a consult is 3..5 exchanges: 3 + up to 2 more for talkative clients; the last is always the quote
+  questionsShown:3,          // questions offered per exchange (2 when there is a bad idea to talk about)
+  moodStart:0.5,moodAnswer:0.04,moodVague:-0.01,moodPushy:-0.06,quietTalk:0.3,quietMax:2,
+  talkGentle:{base:0.35,trust:0.45,skill:0.03,walk:0.4,respect:0.1},   // success chance and, on failure, chance they walk
+  talkBlunt:{base:0.25,trust:0.35,skill:0.04,walk:0.6,respect:0.16},
+  declineLoyal:0.02          // turning a job down honestly
+};
+/* the quote. rate per stage is a share of RATE_DEFAULT (S.rate wins once PR 7 sets it, already in today's rubles).
+   wtpLo/Hi = what a client will pay per hour in 2000 rubles at budget 0..1. acceptance falls off with price / wtp and
+   with the wait for a chair; collectors and loyal clients wait longer */
+const QUOTE={
+  stageRate:{apprentice:0.45,chair:1,studio:1.3,legacy:1.8},
+  deposit:0.2,depositMin:300,depositMax:0.5,round:100,   // depositMin is in 2000 rubles (x priceIndex); never more than depositMax of the price
+  wtpLo:450,wtpHi:1700,wtpLoyal:0.3,
+  acceptAt1:0.78,acceptSlope:1.4,acceptMin:0.03,acceptMax:0.97,moodK:0.4,
+  waitOk:4,waitOkLoyal:20,waitOkCollector:60,waitHit:0.015,
+  options:{q_fair:{mult:1,text:"Quote a fair price",loyal:0},q_high:{mult:1.3,text:"Quote high",loyal:-0.04},q_low:{mult:0.8,text:"Mate's rate",loyal:0.05}},
+  touchupFreeWeeks:52,touchupMult:0.4
+};
+/* loyalty deltas (gains scale with the loyalty trait: x lerp(lo, hi, trait)) */
+const LOYALTY={
+  start:0.15,startTrait:0.2,gainLo:0.6,gainHi:1.4,
+  accepted:0.05,walked:-0.03,talkedWon:0.12,talkedLost:-0.06,insisted:-0.02,declined:0.02,quoteHigh:-0.04,quoteLow:0.05,
+  piece:0.08,return:0.04,crisp:0.1,soft:0.03,patchy:-0.08,blownout:-0.18,infected:-0.25,review:0,noShow:-0.03,referral:0.03
+};
+/* reviews: [stars, text] by heal grade x loyalty band (low < 0.35 <= mid < 0.7 <= high). {label} {place} */
+const REVIEW_BANDS=[0.35,0.7];
+const REVIEW_CHANCE={crisp:0.35,soft:0.2,patchy:0.3,blownout:0.55,infected:0.8};
+const REVIEWS={
+  crisp:{
+    low:[[4,"Clean lines, healed well. Bit pricey."],[4,"Did a good job on my {label}. In and out."]],
+    mid:[[5,"My {label} healed perfectly. Already planning the next one."],[5,"Calm, careful, and the lines are razor sharp. Recommend."]],
+    high:[[5,"I'd trust this shop with my whole body. The {label} on my {place} is the best thing I own."],[5,"Third visit, still the best in Mostograd. The heal is flawless."]]},
+  soft:{
+    low:[[3,"It's fine. Softer than I expected once it healed."],[3,"OK work. A couple of lines went a bit fuzzy."]],
+    mid:[[4,"Healed a little soft in places but I love it."],[4,"Lovely to work with. The {label} settled in nicely."]],
+    high:[[5,"A line or two healed soft and they're already booking me a free touch-up. That's why I come back."],[4,"Not perfect, but it's mine and I'd come back tomorrow."]]},
+  patchy:{
+    low:[[2,"Healed patchy. Disappointed."],[2,"Paid full price for a {label} that looks half done."]],
+    mid:[[3,"The heal came out patchy, but they offered to fix it. We'll see."],[3,"Nice design. The colour didn't stay everywhere."]],
+    high:[[4,"Patchy heal, partly my fault, I went to the banya. They're fixing it."],[4,"Some spots fell out. Still coming back. Good people."]]},
+  blownout:{
+    low:[[1,"The lines blew out and my {label} looks like it's bleeding through paper. Avoid."],[1,"Lines spread everywhere. Never again."]],
+    mid:[[2,"Some lines blew out. They were honest about it, at least."],[2,"Blurry in places after it healed. Talked to them about a fix."]],
+    high:[[3,"A few lines blew out. It happens. They're making it right and I trust them."],[3,"Rough heal, but I've had six good ones here."]]},
+  infected:{
+    low:[[1,"Got infected. Doctor, antibiotics, the lot. Stay away."],[1,"Infection. That's all I'll say."]],
+    mid:[[2,"It got infected, and they handled it well, but still."],[2,"Infection after two weeks. They fixed it for free."]],
+    high:[[3,"It got infected, I'll admit I skipped the cream. They looked after me. Still my shop."],[3,"Bad week with an infection. The apology was real. I'll be back."]]}
+};
+/* pieces a client got somewhere else (for cover-ups of someone else's work) */
+const FOREIGN_PIECES=[
+  {label:"faded name",tags:["script"],where:"at a place by the station"},
+  {label:"barbed-wire band",tags:["band"],where:"at a booth on the outer ring",from:2000},
+  {label:"blurry star",tags:["star"],where:"from a friend with a sewing needle"},
+  {label:"wobbly heart with initials",tags:["love"],where:"on holiday down south"},
+  {label:"blown-out swallow",tags:["bird"],where:"at a shop that closed years ago"},
+  {label:"green-grey anchor",tags:["nautical"],where:"from a man on a ship who swore he knew what he was doing"},
+  {label:"cartoon dolphin",tags:["ocean"],where:"on a dare after a wedding"}
+];
+/* returns. after = [from, to] weeks since the piece (or since the last visit for "other"); p = chance over that window
+   at loyalty 0 .. 1 (spread evenly as a weekly chance); needs = what the piece must be; brief = client lines with
+   {label} {place} {year} {foreign} {where}. reckoning: PR 8 may turn this return into a scripted beat (SIM.onReturn) */
+const RETURN_RULES=[
+  {id:"touchup",after:[6,60],p:[0.04,0.18],needs:{},size:"tiny",ask:"same",
+    brief:["The {label} on my {place} from {year} has a couple of light spots. Can I come in for a touch-up?",
+      "Hi, it's me again. You did the {label} on my {place} in {year}. One line healed thin. Could you have a look?"]},
+  {id:"addon",after:[20,200],p:[0.05,0.4],needs:{},size:"small",ask:"near",
+    brief:["I keep looking at the {label} you did on my {place} in {year}. I want something next to it. It looks lonely.",
+      "Remember the {label} on my {place}? {year}. I want to add to it. Same hand, same feel."]},
+  {id:"sleeve",after:[40,520],p:[0.02,0.25],needs:{region:["arm","leg"]},size:"huge",ask:"grow",
+    brief:["You did the {label} on my {place} in {year}. I want a full sleeve now, built around it. Don't touch it, it's my favourite.",
+      "It's time. The {label} from {year} on my {place} needs company. Let's do the whole limb, and keep that one in the middle."]},
+  {id:"cover_own",after:[260,1040],p:[0.01,0.08],needs:{early:3},size:"medium",ask:"cover",reckoning:true,
+    brief:["The {label} you did on my {place} back in {year}... it's gone soft. Can you cover it, or rework it?",
+      "I still like you, I promise. But the {label} on my {place} from {year} has seen better days. Can we fix it?"]},
+  {id:"cover_other",after:[26,400],p:[0.01,0.1],needs:{},size:"medium",ask:"cover",foreign:true,
+    brief:["I had a {foreign} done on my {place} {where} in {year}. You've done my other work. Can you cover it?",
+      "Confession: there's a {foreign} on my {place}, from {year}, {where}. I want you to make it disappear."]}
+];
+/* word of mouth: a piece that healed REFERRAL.after weeks ago may send a friend (chance by loyalty) */
+const REFERRAL={after:4,chance:[0.02,0.3],
+  lines:["{name} sent me. {Pr} won't stop showing everyone {pos} {label}.","My friend {name} said you're the only one in Mostograd worth the wait.",
+    "{name} told me to ask for you specifically.","I saw {name}'s {label} at a birthday and I had to know who did it."]};
+
+/* ===== generation ===== */
+function clPick(r,list){return list[Math.floor(r()*list.length)];}
+function clTrait(r,k,shift){const t=CLIENT_TRAITS[k];return clamp(r.normal(t.mean+(shift||0),t.sd),CLIENT_TRAITS.lo,CLIENT_TRAITS.hi);}
+const clR2=v=>Math.round(v*100)/100;
+/* an adult age from AGE_BANDS, inside [lo, hi] when a brief asks for it (never under 18) */
+function clAge(r,range){
+  const lo=Math.max(18,range?range[0]:18),hi=Math.min(75,range?range[1]:75);
+  const bands=AGE_BANDS.map(b=>[Math.max(b[0],lo),Math.min(b[1],hi),b[2]*Math.max(0,Math.min(b[1],hi)-Math.max(b[0],lo)+1)/(b[1]-b[0]+1)]).filter(b=>b[2]>0);
+  const b=bands.length?r.weighted(bands,x=>x[2]):[lo,Math.max(lo,hi)];
+  return Math.max(18,r.int(b[0],b[1]));
+}
+function clName(r,pronouns){
+  const g=r.weighted(NAMES.groups,x=>x.w),src=g.from?NAMES.groups.find(x=>x.id===g.from):g;
+  let first;
+  if(pronouns==="they/them")first=clPick(r,(src.they&&src.they.length?src.they:NAMES.neutral));
+  else first=clPick(r,pronouns==="he/him"?src.he:src.she);
+  let sur=g.surnames,last;
+  if(pronouns==="they/them"){const ind=sur.filter(s=>typeof s==="string");last=ind.length?clPick(r,ind):clPick(r,sur)[0];}
+  else{const s=clPick(r,sur);last=typeof s==="string"?s:s[pronouns==="he/him"?0:1];}
+  let patronymic=null;
+  if(g.patronymic&&pronouns!=="they/them"){const p=clPick(r,NAMES.patronymics);patronymic=p[pronouns==="he/him"?0:1];}
+  return{first,last,patronymic,group:g.id,tone:g.tone};
+}
+function clJob(r,age,year,want){
+  if(want){const names=Array.isArray(want)?want:[want],js=JOBS.filter(j=>names.indexOf(j.name)>=0);if(js.length)return clPick(r,js);}
+  const ok=JOBS.filter(j=>{const a=j.ages||JOB_AGES;return(!j.from||year>=j.from)&&(!j.to||year<=j.to)&&age>=a[0]&&age<=a[1];});
+  return r.weighted(ok.length?ok:JOBS,j=>j.w);
+}
+/* a placement id from a brief's place entry ("forearm" -> forearm_l / forearm_r) */
+function clPlace(r,base){const P=SIM.PLACEMENTS||{};if(P[base])return base;const s=r.chance(0.5)?"_l":"_r";return P[base+s]?base+s:(P[base+"_l"]?base+"_l":"forearm_r");}
+/* how a client says a placement after "my" (and how a piece name says it after "Darya's") */
+const PLACE_WORDS={neck_l:"neck, left side",neck_r:"neck, right side",chest_l:"chest, left side",chest_r:"chest, right side"};
+function clPlaceName(id){if(PLACE_WORDS[id])return PLACE_WORDS[id];const p=(SIM.PLACEMENTS||{})[id];return p?p.name:"arm";}
+function clSlotFill(text,ctx){
+  return text.replace(/\{(\w+)\}/g,(m,k)=>{
+    if(ctx[k]!=null)return String(ctx[k]);
+    const lk=k.charAt(0).toLowerCase()+k.slice(1);
+    if(ctx[lk]!=null){const v=String(ctx[lk]);return v.charAt(0).toUpperCase()+v.slice(1);}
+    return m;});
+}
+/* style demand this year (STYLES[*].demandCurve, piecewise linear) */
+function styleDemand(styleId,year){
+  const tm=typeof SIM.trendMult==="function"?SIM.trendMult(styleId,year):1;   // PR 8's trend wave, when it exists
+  const st=(SIM.STYLES||{})[styleId],c=st&&st.demandCurve;if(!c||!c.length)return tm;
+  if(year<=c[0][0])return c[0][1]*tm;
+  for(let i=1;i<c.length;i++)if(year<=c[i][0]){const a=c[i-1],b=c[i];return lerp(a[1],b[1],(year-a[0])/((b[0]-a[0])||1))*tm;}
+  return c[c.length-1][1]*tm;
+}
+/* the brief and its style: weighted by the demand for the brief's styles, the segment boosts and the size the stage allows */
+function clChooseBrief(r,opts){
+  const year=opts.year,boost=opts.segBoost||{},sizes=opts.sizes||null;
+  const segW=list=>{let m=1;for(const s of list||[])m+=boost[s]||0;return m;};
+  const ok=BRIEFS.filter(b=>(!b.from||year>=b.from)&&(!b.to||year<=b.to)&&(!sizes||sizes.indexOf(b.size)>=0)&&(!opts.theme||b.theme===opts.theme)&&(!opts.style||b.styles.indexOf(opts.style)>=0));
+  const pool=ok.length?ok:BRIEFS;
+  const b=r.weighted(pool,x=>{let d=0;for(const s of x.styles)d+=styleDemand(s,year);return d/x.styles.length*segW(x.seg)*(x.w||1);});
+  const style=opts.style&&b.styles.indexOf(opts.style)>=0?opts.style:r.weighted(b.styles,s=>styleDemand(s,year)*segW(((SIM.STYLES||{})[s]||{}).clientSegments)*(s===b.styles[0]?1.3:1));
+  return{b,style};
+}
+/* id: the next free "c<n>" given S (scans S.clients, the newcomers waiting in the queue, and `taken`) */
+function clNextId(S,taken){
+  let mx=0;
+  const see=id=>{const m=/^c(\d+)$/.exec(id||"");if(m)mx=Math.max(mx,+m[1]);};
+  for(const c of S.clients||[])see(c.id);
+  for(const q of S.queue||[])if(q.newClient)see(q.newClient.id);
+  if(taken)for(const id of taken)see(id);
+  return "c"+(mx+1);
+}
+
+/* makeClient(r, opts): opts = {id, year, week, stage, segBoost:{segment:+weight}, sizes:[SIZE_CLASSES ids],
+   theme, style, briefId, referredBy: client, src:"walkin"|"referral"|"return"|"test", badIdea: true|false|undefined} */
+function makeClient(r,opts){
+  opts=opts||{};
+  const year=opts.year||2000,week=opts.week||1;
+  const pronouns=r.weighted(PRONOUNS,x=>x[1])[0];
+  /* the brief first: it can ask for an age range and a job */
+  const pick=opts.briefId?{b:BRIEFS.find(x=>x.id===opts.briefId)||BRIEFS[0],style:null}:clChooseBrief(r,{year,segBoost:opts.segBoost,sizes:opts.sizes,theme:opts.theme,style:opts.style});
+  const B=pick.b,style=pick.style||opts.style||B.styles[0];
+  const age=clAge(r,B.ages);
+  const nm=clName(r,pronouns);
+  const job=clJob(r,age,year,B.job);
+  const bodyShape=(()=>{const m=BODY_BY_PRONOUN[pronouns];return r.weighted(Object.keys(m),k=>m[k]);})();
+  const skinTone=clR2(r.range(nm.tone[0],nm.tone[1]));
+  const T=CLIENT_TRAITS;
+  const traits={
+    pain:clR2(clTrait(r,"pain")),
+    sun:clR2(clamp(lerp(clTrait(r,"sun"),job.sun,T.sun.job),T.lo,T.hi)),
+    aftercare:clR2(clTrait(r,"aftercare",T.aftercare.age*(age-30))),
+    budget:clR2(clamp(lerp(clTrait(r,"budget"),job.pay,T.budget.job),T.lo,T.hi)),
+    loyalty:clR2(clTrait(r,"loyalty",T.loyalty.age*(age-30))),
+    talkative:clR2(clTrait(r,"talkative")),
+    trusting:clR2(clTrait(r,"trusting"))
+  };
+  /* where and how big */
+  const placement=clPlace(r,clPick(r,B.place));
+  const sz=SIZE_CLASSES[B.size]||SIZE_CLASSES.small;
+  const ask={placement,sizeMm:r.int(sz[0],sz[1]),style,tags:B.tags.slice(),theme:B.theme,size:B.size,bad:null};
+  /* one in BAD_IDEA_CHANCE walk-ins (and some briefs on their own) arrive with something to talk them out of. The bad
+     idea is applied before the brief is written, so {place} names where they now want it */
+  const cover=job.cover,proto={traits,cover,job:job.name};
+  let badAdd="";
+  if(opts.badIdea===true||(opts.badIdea!==false&&r.chance(BAD_IDEA_CHANCE))){
+    const cands=BAD_IDEAS.filter(b=>b.fits(B)&&(b.id!=="cover_job"||cover>=0.6)&&(b.id!=="ribs_low_pain"||traits.pain<0.3));
+    if(cands.length){const bi=clPick(r,cands);bi.make(ask,r);badAdd=/\{place\}/i.test(B.text)&&bi.addPlaced!=null?bi.addPlaced:bi.add;}
+  }
+  const ctx={};
+  const person=clPick(r,BRIEF_SLOTS.person);ctx.person=person.t;
+  const pw=PRONOUN_WORDS[person.p==="he"?"he/him":person.p==="they"?"they/them":"she/her"];
+  ctx.pr=pw.pr;ctx.pos=pw.pos;
+  for(const k of ["loved","habit","flower","petName","workplace","partner"]){
+    if(B.text.indexOf("{"+k)<0)continue;const v=clPick(r,BRIEF_SLOTS[k]);ctx[k]=v.t;if(v.tags)for(const t of v.tags)if(ask.tags.indexOf(t)<0)ask.tags.push(t);}
+  ctx.place=clPlaceName(ask.placement);
+  ctx.pastYear=String(Math.min(year-1,Math.max(year-age+18,year-r.int(1,8))));   // a year they were already an adult
+  ctx.mm=ask.sizeMm;ctx.placename=ctx.place;
+  let brief=clSlotFill(B.text+badAdd,ctx);
+  for(const bi of BAD_IDEAS)if(bi.test(ask,proto,(SIM.PLACEMENTS||{})[ask.placement])){ask.bad=bi.id;break;}
+  /* wants */
+  const styles={};styles[style]=1;
+  const st=(SIM.STYLES||{})[style],blends=(st&&st.blendsWith)||[];
+  const nSec=r.int(1,2);for(let i=0;i<nSec&&blends.length;i++){const s=clPick(r,blends);if(!styles[s])styles[s]=clR2(r.range(0.35,0.75));}
+  const wsz=[Math.max(8,Math.round(sz[0]*r.range(0.7,0.95))),Math.round(sz[1]*r.range(1.05,1.5))];
+  const colour=clR2(clamp((STYLE_COLOUR[style]!=null?STYLE_COLOUR[style]:0.4)+r.normal(0,0.15),0,1));
+  const wants={styles,tags:ask.tags.slice(0,4),sizeMm:wsz,colour};
+  /* must-haves and dealbreakers: stated in the brief (known) and hidden */
+  const mustHaves=[],dealbreakers=[];
+  const known={styles:[style],tags:true,size:false,colour:false,pain:false,sun:false,cover:false,budget:false,aftercare:false,
+    mustHaves:[],dealbreakers:[],mustAll:false,dealAll:false};
+  const sameKV=(a,b)=>a.kind===b.kind&&a.v===b.v;
+  for(const m of (B.known&&B.known.must)||[]){mustHaves.push({kind:m.kind,v:m.v});known.mustHaves.push({kind:m.kind,v:m.v});}
+  for(const d of (B.known&&B.known.deal)||[]){dealbreakers.push({kind:d.kind,v:d.v});known.dealbreakers.push({kind:d.kind,v:d.v});}
+  if(r.chance(HIDDEN_WANTS.mustChance)){
+    const pal=(st&&st.palette)||[];
+    const pool=HIDDEN_WANTS.must.filter(m=>m.themes.indexOf(B.theme)>=0&&!mustHaves.some(x=>sameKV(x,m))&&!dealbreakers.some(x=>sameKV(x,m))&&
+      (m.kind!=="style"||B.styles.indexOf(m.v)>=0)&&(m.kind!=="colour"||pal.indexOf(m.v)>=0));
+    if(pool.length){const m=clPick(r,pool);mustHaves.push({kind:m.kind,v:m.v});}
+  }
+  if(r.chance(HIDDEN_WANTS.dealChance)){
+    const pool=HIDDEN_WANTS.deal.filter(d=>!dealbreakers.some(x=>sameKV(x,d))&&!(d.kind==="style"&&styles[d.v])&&!(d.kind==="tag"&&ask.tags.indexOf(d.v)>=0)&&!mustHaves.some(x=>x.kind===d.kind&&x.v===d.v));
+    if(pool.length){const d=clPick(r,pool);dealbreakers.push({kind:d.kind,v:d.v});}
+  }
+  if(/small|tiny/i.test(brief))known.size=true;
+  const rb=opts.referredBy||null;
+  if(rb){
+    const rp=PRONOUN_WORDS[rb.pronouns]||PRONOUN_WORDS["they/them"];
+    const lp=opts.referrerLabel||"tattoo";
+    brief=clSlotFill(clPick(r,REFERRAL.lines),{name:rb.first||rb.name,pr:rp.pr,pos:rp.pos,label:lp})+" "+brief;
+  }
+  const loyaltyStart=clR2(LOYALTY.start+LOYALTY.startTrait*traits.loyalty+(rb?LOYALTY.referral:0));
+  return{
+    id:opts.id||"c1",name:nm.first+" "+nm.last,first:nm.first,surname:nm.last,patronymic:nm.patronymic,
+    addr:age>=FORMAL_AGE&&nm.patronymic?nm.first+" "+nm.patronymic:nm.first,
+    pronouns,age,born:year-age,bodyShape,skinTone,job:job.name,cover:job.cover,
+    traits,wants,mustHaves,dealbreakers,known,
+    brief,ask,theme:B.theme,briefId:B.id,firstTattoo:!!B.first,
+    loyalty:loyaltyStart,referredBy:rb?rb.id:null,src:opts.src||"walkin",
+    since:{w:week,y:year},lastSeen:{w:week,y:year},visits:0,pieces:[],history:[]
+  };
+}
+const clientAge=(c,year)=>c.born!=null?year-c.born:c.age;
+
+/* ===== memory ===== */
+function clientLog(client,entry){if(!client.history)client.history=[];client.history.push(entry);if(entry.w&&entry.y)client.lastSeen={w:entry.w,y:entry.y};return entry;}
+function loyaltyBump(client,kind,scale){
+  const d=(typeof kind==="number"?kind:LOYALTY[kind]||0)*(scale==null?1:scale);
+  const t=(client.traits&&client.traits.loyalty!=null)?client.traits.loyalty:0.5;
+  const m=d>0?lerp(LOYALTY.gainLo,LOYALTY.gainHi,t):1;
+  client.loyalty=clR2(clamp((client.loyalty||0)+d*m,0,1));
+  return client.loyalty;
+}
+const clBand=l=>l<REVIEW_BANDS[0]?"low":l<REVIEW_BANDS[1]?"mid":"high";
+/* writeReview(client, piece, r) -> {stars, text} or null (most people don't write one). Logs it. */
+function writeReview(client,piece,r,force){
+  const g=piece.heal&&REVIEWS[piece.heal]?piece.heal:"soft";
+  if(!force&&!r.chance(REVIEW_CHANCE[g]||0.2))return null;
+  const row=clPick(r,REVIEWS[g][clBand(client.loyalty||0)]);
+  const text=clSlotFill(row[1],{label:piece.label||"tattoo",place:clPlaceName(piece.design&&piece.design.placement)});
+  return clientLog(client,{w:piece.healW||piece.w,y:piece.healY||piece.y,kind:"review",piece:piece.id,stars:row[0],text});
+}
+/* findClient(S, id): a Map index cached per clients array, rebuilt when the array grows or an entry is replaced */
+const clIdxCache=new WeakMap();
+function findClient(S,id){
+  const arr=S.clients||[];let e=clIdxCache.get(arr);
+  const hit=e&&e.n===arr.length?e.m.get(id):null;
+  if(hit&&arr[hit.i]===hit.c)return hit.c;
+  e={n:arr.length,m:new Map()};arr.forEach((c,i)=>e.m.set(c.id,{c,i}));clIdxCache.set(arr,e);
+  const h=e.m.get(id);return h?h.c:null;
+}
+
+/* ===== pieces ===== */
+/* the label a piece is known by: its biggest motif ("rose"); lettering reads as the word ("Hope" script) */
+function pieceLabel(design){
+  let best=null,bs=-1;
+  for(const e of (design&&design.elements)||[]){
+    const el=SIM.elementById?SIM.elementById(e.id):null;if(!el)continue;
+    const w=(e.scale||0.5)*(el.family==="fill"||el.family==="texture"||el.family==="frame"?0.3:1);
+    if(w>bs){bs=w;best=el;}
+  }
+  if(!best)return "tattoo";
+  const m=/^Script: (.+)$/.exec(best.name);if(m)return "\""+m[1]+"\" script";
+  return best.name.charAt(0).toLowerCase()+best.name.slice(1);
+}
+function pieceName(label,client,placement){return "the "+label+" on "+((client&&client.first)||"a client")+"'s "+clPlaceName(placement);}
+/* addPiece(S, {client, design, out, heal, price, item}) -> piece. Pieces are never dropped (ids p1, p2, ...). */
+function addPiece(S,o){
+  const c=typeof o.client==="object"?o.client:findClient(S,o.client);
+  const design=o.design||{};
+  const label=pieceLabel(design);
+  const piece={id:"p"+(S.pieces.length+1),client:c?c.id:o.client,design,out:o.out||null,heal:o.heal||null,w:S.week,y:S.year,
+    name:pieceName(label,c,design.placement),label,stage:(S.studio&&S.studio.stage)||"apprentice",price:o.price||0};
+  if(o.ret)piece.ret=o.ret;
+  S.pieces.push(piece);
+  if(c){
+    if(!c.pieces)c.pieces=[];c.pieces.push(piece.id);c.visits=(c.visits||0)+1;
+    clientLog(c,{w:S.week,y:S.year,kind:"piece",piece:piece.id,name:piece.name});
+    loyaltyBump(c,"piece");
+  }
+  return piece;
+}
+
+/* ===== the consult =====
+   consult = {client, step, max, stage:"talk"|"quote"|"done", transcript:[{who:"client"|"artist"|"note", text}],
+     known (a copy of client.known that grows), ask (a copy that the talk-out may change), asked:[question ids], mood,
+     bad: BAD_IDEAS id or null, talk: null|"won"|"lost"|"insisted", quote: null|{...}, outcome: null|"accepted"|"walked"|"declined",
+     skill, year, week, rate, wait, src, item } */
+function clCopy(o){return JSON.parse(JSON.stringify(o));}
+function clRate(S){
+  if(S.rate>0)return S.rate;
+  const st=(S.studio&&S.studio.stage)||"apprentice";
+  return RATE_DEFAULT.rate*(QUOTE.stageRate[st]||1)*SIM.priceIndex(S.year);
+}
+/* a one-element stand-in for the ask, so scoreDesign can estimate hours and sessions before the board exists */
+function clProxyDesign(ask){
+  const E=SIM.ELEMENTS||[];
+  let best=null,bs=-1;
+  for(const e of E){
+    if(e.family==="fill"||e.family==="texture"||e.family==="frame")continue;
+    let s=0;for(const t of ask.tags||[])if(e.tags.indexOf(t)>=0)s+=2;
+    if(e.styles.indexOf(ask.style)>=0)s+=1.5;
+    if(s>bs){bs=s;best=e;}
+  }
+  const st=(SIM.STYLES||{})[ask.style],lr=(st&&st.lineRange)||[5,9];
+  const rl=LINE_WEIGHTS.reduce((a,b)=>Math.abs(b-(lr[0]+lr[1])/2)<Math.abs(a-(lr[0]+lr[1])/2)?b:a);
+  return{placement:ask.placement,sizeMm:ask.sizeMm,style:ask.style,elements:best?[{id:best.id,x:0.5,y:0.5,scale:1,rot:0,lineWeight:rl,fill:0.5,colour:null}]:[]};
+}
+function clEstimate(ask,client,skills){
+  const sc=scoreDesign(clProxyDesign(ask),client,skills||{},{year:2000});
+  return{hours:sc.hours,sessions:sc.sessions};
+}
+/* consultStart(client, S, opts): opts.item = the queue item the client came in on (its brief/ask/ret win) */
+function consultStart(client,S,opts){
+  opts=opts||{};
+  const item=opts.item||null;
+  const ask=clCopy((item&&item.ask)||client.ask||{placement:"forearm_r",sizeMm:60,style:"traditional",tags:[]});
+  const brief=(item&&item.brief)||client.brief||"";
+  const P=(SIM.PLACEMENTS||{})[ask.placement];
+  let bad=ask.bad||null;
+  if(bad==null)for(const b of BAD_IDEAS)if(b.test(ask,client,P)){bad=b.id;break;}
+  const tk=(client.traits&&client.traits.talkative)||0.5;
+  const max=clamp(CONSULT.exchanges[0]+(tk>0.66?2:tk>0.33?1:0),CONSULT.exchanges[0],CONSULT.exchanges[1]);
+  const skills=S.skills||{};
+  const est=clEstimate(ask,client,skills);
+  const c={client,clientId:client.id,step:0,max,stage:"talk",transcript:[{who:"client",text:brief}],
+    known:clCopy(client.known||{}),ask,asked:[],mood:CONSULT.moodStart,bad,talk:null,quote:null,outcome:null,
+    skill:clamp(skills.consult||0,0,10),year:S.year,week:S.week,rate:Math.round(clRate(S)),wait:waitWeeks(S),
+    shopStage:(S.studio&&S.studio.stage)||"apprentice",est,src:(item&&item.src)||client.src||"walkin",item:item?item.id:null,ret:(item&&item.ret)||null};
+  c.transcript.push({who:"note",text:clientAge(client,S.year)+" years old · "+client.pronouns+" · "+(client.patronymic&&clientAge(client,S.year)>=FORMAL_AGE?"call them "+client.addr:"goes by "+client.first)});
+  return c;
+}
+/* options: questions not asked yet (a stable order per client and step, never sorted by what is hidden), the talk-out
+   options while a bad idea is open, "talk price" from the second exchange; at the last exchange only the quote */
+function consultOptions(c){
+  if(!c||c.stage==="done")return[];
+  if(c.stage==="quote"||c.step>=c.max-1){
+    const o=QUOTE.options,out=[];
+    for(const k of ["q_fair","q_high","q_low"])out.push({id:k,kind:"quote",text:o[k].text});
+    out.push({id:"decline",kind:"quote",text:"Turn it down"});
+    return out;
+  }
+  const out=[];
+  const talkOpen=c.bad&&!c.talk;
+  if(talkOpen){
+    out.push({id:"talk_gentle",kind:"talk",text:"Suggest something that will last"});
+    out.push({id:"talk_blunt",kind:"talk",text:"Tell them straight it won't hold up"});
+  }
+  const left=CONSULT_QUESTIONS.filter(q=>c.asked.indexOf(q.id)<0);
+  const rr=rng(hash(c.clientId+":"+c.step+":"+c.year));
+  const nq=talkOpen?CONSULT.questionsShown-1:CONSULT.questionsShown;
+  for(const q of rr.shuffle(left).slice(0,nq))out.push({id:q.id,kind:"ask",text:q.text});
+  if(c.step>=1)out.push({id:"to_quote",kind:"price",text:"Talk price"});
+  return out.slice(0,5);
+}
+function clBandOf(v){return v<0.34?"low":v<0.67?"mid":"high";}
+function clRevealLine(c,q,client){
+  const t=client.traits||{},A=CONSULT_ANSWERS;
+  const pw=PRONOUN_WORDS[client.pronouns]||PRONOUN_WORDS["they/them"];
+  switch(q.reveal){
+    case "must":{
+      const hid=(client.mustHaves||[]).filter(m=>!c.known.mustHaves.some(k=>k.kind===m.kind&&k.v===m.v));
+      if(!hid.length){c.known.mustAll=true;return null;}
+      const m=hid[0];c.known.mustHaves.push({kind:m.kind,v:m.v});if(hid.length===1)c.known.mustAll=true;
+      const row=HIDDEN_WANTS.must.find(x=>x.kind===m.kind&&x.v===m.v);
+      return clSlotFill(row?row.say:"It has to have "+m.v+" in it.",{pos:pw.pos});}
+    case "deal":{
+      const hid=(client.dealbreakers||[]).filter(m=>!c.known.dealbreakers.some(k=>k.kind===m.kind&&k.v===m.v));
+      if(!hid.length){c.known.dealAll=true;return null;}
+      const m=hid[0];c.known.dealbreakers.push({kind:m.kind,v:m.v});if(hid.length===1)c.known.dealAll=true;
+      const row=HIDDEN_WANTS.deal.find(x=>x.kind===m.kind&&x.v===m.v);
+      return row?row.say:"No "+m.v+", please.";}
+    case "colour":c.known.colour=true;return A.colour[clBandOf((client.wants&&client.wants.colour)||0)];
+    case "size":{c.known.size=true;const s=(client.wants&&client.wants.sizeMm)||[40,90];return A.size[clBandOf(clamp((s[0]+s[1])/2/260,0,1))];}
+    case "cover":c.known.cover=true;return clSlotFill(A.cover[clBandOf(client.cover||0)],{job:client.job});
+    case "pain":c.known.pain=true;return A.pain[clBandOf(t.pain||0.5)];
+    case "sun":c.known.sun=true;return A.sun[clBandOf(t.sun||0.4)];
+    case "budget":c.known.budget=true;return A.budget[clBandOf(t.budget||0.5)];
+    case "aftercare":c.known.aftercare=true;return A.aftercare[clBandOf(t.aftercare||0.5)];
+    case "style":{
+      const ws=(client.wants&&client.wants.styles)||{},next=Object.keys(ws).filter(s=>c.known.styles.indexOf(s)<0);
+      if(!next.length)return null;c.known.styles.push(next[0]);
+      const st=(SIM.STYLES||{})[next[0]];return clSlotFill(A.style,{style:st?st.name.toLowerCase():next[0]});}
+  }
+  return null;
+}
+function clArtistFill(text,c){
+  const P=(SIM.PLACEMENTS||{})[c.ask.placement];
+  return clSlotFill(text,{mm:c.ask.sizeMm,placename:P?P.name:"spot",job:c.client.job});
+}
+/* consultChoose(consult, choiceId, r) -> a new consult object */
+function consultChoose(c0,choiceId,r){
+  const c=Object.assign({},c0,{transcript:c0.transcript.slice(),known:clCopy(c0.known),ask:clCopy(c0.ask),asked:c0.asked.slice()});
+  if(c.stage==="done")return c;
+  const opts=consultOptions(c0),opt=opts.find(o=>o.id===choiceId);
+  if(!opt)return c;
+  const client=c.client,t=client.traits||{};
+  c.step++;
+  if(opt.kind==="ask"){
+    const q=CONSULT_QUESTIONS.find(x=>x.id===choiceId);
+    c.asked.push(q.id);c.transcript.push({who:"artist",text:q.text});
+    const p=clamp(q.base+q.skill*c.skill+q.trust*(t.trusting||0.5)+q.talk*(t.talkative||0.5),0.05,0.97);
+    let line=null;
+    if(r.chance(p)){line=clRevealLine(c,q,client);
+      if(line==null)line=q.reveal==="must"?clPick(r,CONSULT_ANSWERS.noneMust):q.reveal==="deal"?clPick(r,CONSULT_ANSWERS.noneDeal):clPick(r,CONSULT_ANSWERS.vague);
+      c.mood+=CONSULT.moodAnswer;}
+    else{line=clPick(r,CONSULT_ANSWERS.vague);c.mood+=CONSULT.moodVague;}
+    if((t.talkative||0.5)<CONSULT.quietTalk&&c.asked.length>CONSULT.quietMax)c.mood+=CONSULT.moodPushy;
+    c.transcript.push({who:"client",text:line});
+  }else if(opt.kind==="talk"){
+    const bi=BAD_IDEAS.find(b=>b.id===c.bad),T=choiceId==="talk_blunt"?CONSULT.talkBlunt:CONSULT.talkGentle;
+    c.transcript.push({who:"artist",text:clArtistFill(choiceId==="talk_blunt"?bi.blunt:bi.gentle,c)});
+    const p=clamp(T.base+T.trust*(t.trusting||0.5)+T.skill*c.skill+0.2*((client.loyalty||0)-0.2),0.05,0.95);
+    if(r.chance(p)){
+      bi.fix(c.ask);c.ask.bad=null;c.talk="won";c.respect=T.respect;c.mood+=0.08;
+      c.transcript.push({who:"client",text:clArtistFill(bi.yes,c)});
+      c.transcript.push({who:"note",text:"Changed to "+c.ask.sizeMm+" mm on the "+clPlaceName(c.ask.placement)+"."});
+    }else if(r.chance(T.walk*(1-0.6*(client.loyalty||0)))){
+      c.talk="lost";c.outcome="walked";c.stage="done";
+      c.transcript.push({who:"client",text:clArtistFill(bi.no,c)});
+      c.transcript.push({who:"note",text:client.first+" walked out."});
+    }else{
+      c.talk="insisted";c.mood-=0.05;
+      c.transcript.push({who:"client",text:clArtistFill(bi.insist,c)});
+    }
+  }else if(opt.kind==="price"){
+    c.stage="quote";c.transcript.push({who:"artist",text:"Let's talk about price."});
+  }else if(opt.kind==="quote"){
+    if(choiceId==="decline"){
+      c.transcript.push({who:"artist",text:"I don't think I'm the right artist for this one. Let me tell you who might be."});
+      c.transcript.push({who:"client",text:"Oh. Well. Thank you for being honest."});
+      c.outcome="declined";c.stage="done";
+    }else c.quote=clQuote(c,choiceId,r);
+  }
+  /* the last exchange must be the quote: if they haven't heard one by now, the next options are quote-only */
+  if(c.stage!=="done"&&c.step>=c.max-1&&c.stage==="talk")c.stage="quote";
+  if(c.stage!=="done"&&c.step>=c.max&&!c.quote){c.stage="done";c.outcome=c.outcome||"walked";c.transcript.push({who:"note",text:"They left to think about it."});}
+  c.mood=clamp(c.mood,0,1);
+  return c;
+}
+function clQuote(c,choiceId,r){
+  const client=c.client,t=client.traits||{},Q=QUOTE,o=Q.options[choiceId];
+  const est=clEstimate(c.ask,client,{});
+  let price=est.hours*c.rate*o.mult;
+  const ret=c.ret;
+  if(ret&&ret.rule==="touchup")price=(weekIndex(c.week,c.year)-weekIndex(ret.w||c.week,ret.year||c.year))<Q.touchupFreeWeeks?0:price*Q.touchupMult;
+  price=Math.round(price/Q.round)*Q.round;
+  const deposit=price>0?Math.min(Math.round(price*Q.depositMax/Q.round)*Q.round,Math.max(Math.round(Q.depositMin*SIM.priceIndex(c.year)/Q.round)*Q.round,Math.round(price*Q.deposit/Q.round)*Q.round)):0;
+  const wtp=est.hours*lerp(Q.wtpLo,Q.wtpHi,t.budget||0.5)*SIM.priceIndex(c.year)*(1+Q.wtpLoyal*(client.loyalty||0));
+  const ratio=wtp>0?price/wtp:0;
+  const coll=client.theme==="collector"?1:0;
+  const waitOk=lerp(Q.waitOk,Q.waitOkLoyal,client.loyalty||0)+coll*Q.waitOkCollector;
+  let pa=Q.acceptAt1-Q.acceptSlope*(ratio-1)+Q.moodK*(c.mood-0.5)-Q.waitHit*Math.max(0,c.wait-waitOk);
+  if(price===0)pa=0.99;
+  pa=clamp(pa,Q.acceptMin,Q.acceptMax);
+  const yes=r.chance(pa);
+  const hrs=est.hours,ss=est.sessions;
+  const when=c.wait<1?"next week":c.wait<2?"in a couple of weeks":"in about "+Math.round(c.wait)+" weeks";
+  c.transcript.push({who:"artist",text:price>0?(hrs<=1?"About an hour":"About "+hrs+" hours")+(ss>1?" over "+ss+" sessions":"")+". "+fmtRub(price)+", with a "+fmtRub(deposit)+" deposit to book. I can start "+when+".":"This one's on me. Come in "+when+"."});
+  c.transcript.push({who:"client",text:yes?(ratio<0.85?"That's fair. Book me in.":ratio<1.1?"OK. Yes. Let's do it.":"It's a lot. But I want it done right. Yes."):(c.wait>waitOk+20?"That's too long to wait. Sorry.":ratio>1.2?"That's more than I can do. Sorry.":"I need to think about it.")});
+  c.outcome=yes?"accepted":"walked";c.stage="done";
+  return{price,deposit,hours:hrs,sessions:ss,option:choiceId,mult:o.mult,wtp:Math.round(wtp),accept:clR2(pa),wait:c.wait};
+}
+const fmtRub=n=>Math.round(n).toLocaleString("en-CA")+" ₽";
+/* consultCommit(S, consult) -> {client, item}: the client joins S.clients if new; history, loyalty and known are
+   written; an accepted job books its first session into S.queue (after the wait) and the deposit goes into S.cash */
+function consultCommit(S,c){
+  const client=c.client;
+  let isNew=!S.clients.some(x=>x.id===client.id);
+  if(isNew)S.clients.push(client);
+  client.known=c.known;
+  if(c.talk==="won"||c.talk==="insisted"||c.outcome==="accepted")client.ask=c.ask;
+  const e={w:S.week,y:S.year,kind:"consult",outcome:c.outcome,src:c.src,asked:c.asked.slice()};
+  if(c.talk)e.talk=c.talk;if(c.bad)e.bad=c.bad;
+  if(c.quote)e.quote={price:c.quote.price,deposit:c.quote.deposit,option:c.quote.option};
+  if(c.ret)e.ret=c.ret.rule;
+  clientLog(client,e);
+  if(c.talk==="won")loyaltyBump(client,LOYALTY.talkedWon+(c.respect||0)-0.1);
+  else if(c.talk==="lost")loyaltyBump(client,"talkedLost");
+  else if(c.talk==="insisted")loyaltyBump(client,"insisted");
+  if(c.outcome==="accepted"){loyaltyBump(client,"accepted");if(c.quote&&c.quote.option==="q_high")loyaltyBump(client,"quoteHigh");if(c.quote&&c.quote.option==="q_low")loyaltyBump(client,"quoteLow");}
+  else if(c.outcome==="walked"&&!c.talk)loyaltyBump(client,"walked");
+  else if(c.outcome==="declined")loyaltyBump(client,"declined");
+  if(c.item)S.queue=S.queue.filter(q=>q.id!==c.item);
+  let item=null;
+  if(c.outcome==="accepted"&&c.quote){
+    const q=c.quote,n=Math.max(1,q.sessions||1),due=weekFrom(clNow(S)+Math.max(1,Math.ceil(c.wait)));
+    item={id:queueId(S),kind:"session",client:client.id,w:due.w,y:due.y,hours:Math.max(0.5,Math.round(q.hours/n*4)/4),
+      sessionNo:1,sessions:n,price:q.price,deposit:q.deposit,paid:q.deposit,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0};
+    if(c.ret)item.ret=c.ret;
+    S.queue.push(item);
+    S.cash=(S.cash||0)+q.deposit;
+  }
+  return{client,item,isNew};
+}
+/* queue ids: q1, q2, ... (the max in the queue + 1, so ids are unique among live items) */
+function queueId(S){let mx=0;for(const q of S.queue)if(q.id){const n=+String(q.id).slice(1);if(n>mx)mx=n;}return "q"+(mx+1);}
+/* how many weeks of booked session hours are ahead of a new client */
+function waitWeeks(S){
+  const hpw=(typeof weekHours==="function")?weekHours(S):30;let h=0;
+  for(const q of S.queue)if(q.kind==="session")h+=q.hours||0;
+  return Math.round(h/Math.max(1,hpw)*10)/10;
+}
+
+/* ===== referrals and returns ===== */
+/* referral(client, r, opts) -> a new client sent by `client` (referredBy = client.id; the brief names them).
+   opts = makeClient opts (year, week, stage, id, ...) plus label: the piece that did the talking */
+function referral(client,r,opts){
+  opts=Object.assign({},opts||{});
+  const c=makeClient(r,Object.assign(opts,{referredBy:client,referrerLabel:opts.label||null,src:"referral",badIdea:false}));
+  return c;
+}
+/* the brief for a return, in the client's voice, naming the piece and its year */
+function clReturnBrief(rule,piece,r,foreign){
+  const place=clPlaceName(piece?piece.design.placement:foreign.placement);
+  return clSlotFill(clPick(r,rule.brief),{label:piece?piece.label:foreign.label,place,year:piece?piece.y:foreign.y,foreign:foreign?foreign.label:"",where:foreign?foreign.where:""});
+}
+/* the new ask for a return, from the old piece */
+function clReturnAsk(rule,piece,client,r,foreign){
+  const P=SIM.PLACEMENTS||{},d=piece?piece.design:{placement:foreign.placement,sizeMm:foreign.sizeMm,style:"traditional"};
+  const sz=SIZE_CLASSES[rule.size]||SIZE_CLASSES.small;
+  const ask={placement:d.placement,sizeMm:r.int(sz[0],sz[1]),style:d.style||"traditional",tags:(client.wants&&client.wants.tags||[]).slice(0,3),theme:"return",size:rule.size,bad:null};
+  if(rule.ask==="same"){ask.sizeMm=d.sizeMm||ask.sizeMm;}
+  else if(rule.ask==="near"){const p=P[d.placement]||{};const near={arm:["forearm","upperarm","shoulder"],shoulder:["upperarm","forearm"],leg:["thigh","calf","shin"]}[p.region];
+    if(near&&p.side){const cand=near.map(b=>b+"_"+p.side).filter(id=>P[id]&&id!==d.placement);if(cand.length)ask.placement=clPick(r,cand);}}
+  else if(rule.ask==="grow"){const p=P[d.placement];ask.placement=p&&p.region==="leg"?"thigh_"+(p.side||"r"):"upperarm_"+((p&&p.side)||"r");ask.sizeMm=Math.max(ask.sizeMm,220);}
+  else if(rule.ask==="cover"){ask.sizeMm=Math.round(Math.max(ask.sizeMm,(d.sizeMm||40)*1.4));ask.style=r.pick(["blackwork","japanese","neotrad","traditional"]);ask.cover=true;}
+  if(!P[ask.placement])ask.placement=d.placement||"forearm_r";
+  return ask;
+}
+/* scheduleReturns(S, r): roll RETURN_RULES for every piece (weekly chance spread over each rule's window) and queue a
+   "consult" item (src "return") for the client, at most one pending return per client. Returns the new items. */
+function scheduleReturns(S,r){
+  const now=clNow(S),pending={},out=[];
+  for(const q of S.queue)if(q.kind==="consult"||q.kind==="session")pending[q.client]=1;
+  const idx=new Map();for(const c of S.clients)idx.set(c.id,c);
+  const lastPiece={};for(const p of S.pieces)lastPiece[p.client]=p;
+  const P=SIM.PLACEMENTS||{};
+  for(const p of S.pieces){
+    if(pending[p.client])continue;
+    const c=idx.get(p.client);if(!c||c.compact)continue;
+    const age=now-weekIndex(p.w,p.y);if(age<1)continue;
+    for(const rule of RETURN_RULES){
+      if(age<rule.after[0]||age>rule.after[1])continue;
+      if(rule.foreign&&lastPiece[p.client]!==p)continue;
+      const need=rule.needs||{};
+      if(need.region&&need.region.indexOf((P[p.design.placement]||{}).region)<0)continue;
+      if(need.early&&!(p.stage==="apprentice"||p.y-2000<need.early))continue;
+      const pw=lerp(rule.p[0],rule.p[1],c.loyalty||0),len=rule.after[1]-rule.after[0]+1;
+      const weekly=1-Math.pow(1-pw,1/len);
+      if(!r.chance(weekly))continue;
+      let foreign=null;
+      if(rule.foreign){
+        /* someone else's work, from a year the client was already an adult */
+        const born=c.born!=null?c.born:S.year-(c.age||30),fy=Math.max(born+18,S.year-r.int(2,15));
+        if(fy>=S.year)continue;
+        const f=clPick(r,FOREIGN_PIECES.filter(x=>!x.from||fy>=x.from));const pl=clPlace(r,clPick(r,["forearm","upperarm","calf","shoulder"]));
+        foreign={label:f.label,where:f.where,placement:pl,sizeMm:r.int(30,80),y:fy};}
+      const brief=clReturnBrief(rule,foreign?null:p,r,foreign);
+      const ask=clReturnAsk(rule,foreign?null:p,c,r,foreign);
+      const ret={rule:rule.id,piece:foreign?null:p.id,label:foreign?foreign.label:p.label,year:foreign?foreign.y:p.y,w:foreign?1:p.w,place:foreign?foreign.placement:p.design.placement};
+      if(foreign)ret.foreign=foreign;
+      const due=weekFrom(now+r.int(0,2));
+      const item={id:queueId(S),kind:"consult",src:"return",client:c.id,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+CAL_CONSULT_WAIT,brief,ask,ret};
+      if(rule.reckoning)item.beat=null;   // PR 8: SIM.onReturn may set a RECKONINGS id here
+      if(typeof SIM.onReturn==="function")SIM.onReturn(item,S);
+      c.brief=brief;c.ask=ask;
+      S.queue.push(item);out.push(item);pending[c.id]=1;
+      break;
+    }
+  }
+  return out;
+}
+const CAL_CONSULT_WAIT=2;   // weeks a booked consult (return or referral) waits before they give up
+
+SIM.WEEKS_PER_YEAR=WEEKS_PER_YEAR;SIM.weekIndex=weekIndex;SIM.weekFrom=weekFrom;
+SIM.CLIENT_TRAITS=CLIENT_TRAITS;SIM.AGE_BANDS=AGE_BANDS;SIM.PRONOUNS=PRONOUNS;SIM.NAMES=NAMES;SIM.JOBS=JOBS;SIM.BRIEFS=BRIEFS;
+SIM.BRIEF_SLOTS=BRIEF_SLOTS;SIM.SIZE_CLASSES=SIZE_CLASSES;SIM.STYLE_COLOUR=STYLE_COLOUR;SIM.HIDDEN_WANTS=HIDDEN_WANTS;
+SIM.BAD_IDEAS=BAD_IDEAS;SIM.BAD_IDEA_CHANCE=BAD_IDEA_CHANCE;SIM.CONSULT_QUESTIONS=CONSULT_QUESTIONS;SIM.CONSULT_ANSWERS=CONSULT_ANSWERS;
+SIM.CONSULT=CONSULT;SIM.QUOTE=QUOTE;SIM.LOYALTY=LOYALTY;SIM.REVIEWS=REVIEWS;SIM.REVIEW_CHANCE=REVIEW_CHANCE;SIM.FOREIGN_PIECES=FOREIGN_PIECES;
+SIM.RETURN_RULES=RETURN_RULES;SIM.REFERRAL=REFERRAL;SIM.PLACE_WORDS=PLACE_WORDS;SIM.placeWords=clPlaceName;
+SIM.styleDemand=styleDemand;SIM.makeClient=makeClient;SIM.clientAge=clientAge;SIM.clientLog=clientLog;SIM.loyaltyBump=loyaltyBump;
+SIM.writeReview=writeReview;SIM.findClient=findClient;SIM.pieceLabel=pieceLabel;SIM.pieceName=pieceName;SIM.addPiece=addPiece;
+SIM.consultStart=consultStart;SIM.consultOptions=consultOptions;SIM.consultChoose=consultChoose;SIM.consultCommit=consultCommit;
+SIM.referral=referral;SIM.scheduleReturns=scheduleReturns;SIM.proxyDesign=clProxyDesign;SIM.estimate=clEstimate;SIM.waitWeeks=waitWeeks;SIM.queueId=queueId;SIM.clNextId=clNextId;SIM.clientId=clNextId;
+/* ===== sim/calendar.js: the week clock: advanceWeek(S) is the only thing that moves time (PR 3) =====
+   A career is 2000 week 1 to 2030 week 52 (1,612 weeks; a "30-year" run is 1,560). Each advanceWeek closes the week that
+   is ending (walk-ins nobody saw leave, booked consults that waited too long give up), moves the clock one week (52 rolls
+   to week 1 of the next year), then runs WEEK_ORDER, in the plan's order:
+     heals     the bandage comes off pieces done WEEK.healWeeks ago (PR 5 fills in the grade through SIM.healPiece)
+     aging     on a year boundary: clients turn a year older and pieces cross a year (PR 5 re-renders them)
+     bookings  walk-ins from market.js, returns (RETURN_RULES), referrals (REFERRAL), then the week's chair hours are
+               filled from the queue; sessions that don't fit move to next week
+     costs     rent, supplies, staff (PR 7: a no-op here)
+     events    queued events, reckonings, inspections (PR 8: a no-op here)
+     trend     the trend wave (PR 8: a no-op here)
+   Later PRs replace a stub by assigning SIM.WEEK_HOOKS.<name> = function(S, ctx){...}. ctx = {r (an rng forked for that hook and
+   week), log, yearRolled, now (SIM.weekIndex of the new week)}; a hook pushes {k, text, ...} lines onto ctx.log.
+   advanceWeek returns that log: [{k, text, client?, piece?, item?}], k one of week left gaveup heal year walkin return referral
+   booked carried cost event trend end. At 2030 week 52 it stops: the log ends with {k:"end"} and log.end = true.
+   SIM.nextStop(S): the Career tab's Next button. Advances until a client is due (a booked session, a return, a referral or a
+   walk-in), a heal or an event, never more than WEEK.maxSkip weeks; returns {weeks, why, line, log}.
+   SIM.finishSession(S, itemId, {design, out, heal}): a sitting is done (PR 4 calls it): pays the share of the balance,
+   books the next sitting WEEK.sessionGap weeks later, or on the last one creates the piece (SIM.addPiece).
+   Private helpers start with cal. ===== */
+
+/* chair hours and bookings by career stage (S.studio.stage) */
+const WEEK={
+  stages:{
+    apprentice:{hours:8,maxBookings:2,walkinSlots:1},    // mostly sweeping and practising; a little flash
+    chair:{hours:30,maxBookings:8,walkinSlots:3},        // a rented chair
+    studio:{hours:36,maxBookings:10,walkinSlots:5},      // your own shop (your own chair; staff are PR 7)
+    legacy:{hours:28,maxBookings:6,walkinSlots:2}        // fewer, bigger pieces off the waiting list
+  },
+  healWeeks:2,          // weeks from the session to the bandage coming off (PR 5)
+  sessionGap:3,         // weeks between sittings of a multi-session piece
+  consultWait:CAL_CONSULT_WAIT,   // weeks a booked consult waits (see clients.js)
+  maxSkip:4,            // Next never jumps more than this
+  nextStopsOnWalkins:true,        // a walk-in at the door stops Next (Kelbo may prefer only booked clients)
+  first:{w:1,y:2000},last:{w:52,y:2030}
+};
+function weekHours(S){const st=WEEK.stages[(S.studio&&S.studio.stage)||"apprentice"]||WEEK.stages.chair;return st.hours;}
+function careerOver(S){return S.year>WEEK.last.y||(S.year===WEEK.last.y&&S.week>=WEEK.last.w);}
+const calWho=(S,item)=>{const c=item.newClient||findClient(S,item.client);return c?c.name:"a client";};
+const calFirst=(S,item)=>{const c=item.newClient||findClient(S,item.client);return c?c.first:"a client";};
+
+/* ---- the week that is ending ---- */
+function calCloseWeek(S,log){
+  const now=clNow(S);let left=0;const keep=[];
+  for(const q of S.queue){
+    if(q.kind==="walkin"&&weekIndex(q.w,q.y)<=now){left++;continue;}
+    if(q.kind==="consult"&&q.expires!=null&&q.expires<=now){
+      const c=q.newClient||findClient(S,q.client);
+      if(c&&!q.newClient){loyaltyBump(c,"noShow");clientLog(c,{w:S.week,y:S.year,kind:"note",text:"gave up waiting for a consult"});}
+      log.push({k:"gaveup",text:(c?c.name:"A client")+" gave up waiting for a consult.",client:c?c.id:null});
+      continue;}
+    keep.push(q);
+  }
+  S.queue=keep;
+  if(left)log.push({k:"left",text:left===1?"A walk-in left without a consult.":left+" walk-ins left without a consult.",n:left});
+}
+
+/* ---- hooks ---- */
+/* heals: pieces whose bandage comes off this week. PR 5 grades them via SIM.healPiece(S, piece, r, log) */
+function calHeals(S,ctx){
+  for(let i=S.pieces.length-1;i>=0;i--){
+    const p=S.pieces[i],age=ctx.now-weekIndex(p.w,p.y);
+    if(age>WEEK.healWeeks)break;
+    if(age!==WEEK.healWeeks||p.heal)continue;
+    if(typeof SIM.healPiece==="function")SIM.healPiece(S,p,ctx.r,ctx.log);
+    else ctx.log.push({k:"heal",text:"The bandage comes off "+p.name+".",piece:p.id,client:p.client});
+  }
+}
+/* aging: on week 1 every client turns a year older and every piece crosses a year (PR 5 re-renders pieces that did) */
+function calAging(S,ctx){
+  if(!ctx.yearRolled)return;
+  for(const c of S.clients)if(c.born!=null)c.age=S.year-c.born;
+  let n=0;for(const p of S.pieces)if(p.y<S.year)n++;
+  ctx.log.push({k:"year",text:S.year+(n?". "+n+(n===1?" piece turns":" pieces turn")+" a year older.":". A new year."),n});
+}
+/* bookings: walk-ins, returns, referrals, then fill the week's chair hours */
+function calBookings(S,ctx){
+  const r=ctx.r,log=ctx.log,now=ctx.now,wk=weekFrom(now);
+  /* walk-ins (market.js) */
+  const walk=typeof generateWalkins==="function"?generateWalkins(S,r.fork("walkins")):[];
+  for(const c of walk){
+    S.queue.push({id:queueId(S),kind:"walkin",client:c.id,newClient:c,src:"walkin",w:wk.w,y:wk.y,expires:now,brief:c.brief,ask:c.ask});
+  }
+  if(walk.length)log.push({k:"walkin",text:(walk.length===1?"A walk-in: ":walk.length+" walk-ins: ")+walk.map(c=>c.first).join(", ")+".",n:walk.length});
+  /* returns */
+  for(const it of scheduleReturns(S,r.fork("returns"))){
+    const c=findClient(S,it.client);
+    log.push({k:"return",text:(c?c.name:"A client")+" is coming back: "+calRetWords(it.ret)+".",client:it.client,item:it.id});
+  }
+  /* referrals: a piece that healed REFERRAL.after weeks ago may send a friend */
+  const rr=r.fork("referrals"),at=WEEK.healWeeks+REFERRAL.after;
+  for(let i=S.pieces.length-1;i>=0;i--){
+    const p=S.pieces[i],age=now-weekIndex(p.w,p.y);
+    if(age>at)break;if(age!==at)continue;
+    const c=findClient(S,p.client);if(!c||c.compact)continue;
+    if(p.heal==="patchy"||p.heal==="blownout"||p.heal==="infected")continue;
+    if(!rr.chance(lerp(REFERRAL.chance[0],REFERRAL.chance[1],c.loyalty||0)))continue;
+    const n=referral(c,rr,{id:clNextId(S),year:S.year,week:S.week,label:p.label,segBoost:typeof mkSegBoost==="function"?mkSegBoost(S):null});
+    const due=weekFrom(now+rr.int(0,1));
+    S.queue.push({id:queueId(S),kind:"consult",src:"referral",client:n.id,newClient:n,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:n.brief,ask:n.ask,from:c.id});
+    clientLog(c,{w:S.week,y:S.year,kind:"referral",client:n.id});loyaltyBump(c,"referral");
+    log.push({k:"referral",text:n.name+" is booked for a consult: "+c.first+" sent them.",client:n.id,from:c.id});
+  }
+  calAllocate(S,log,now);
+}
+function calRetWords(ret){
+  const y=ret.year,l=ret.label;
+  switch(ret.rule){
+    case "touchup":return "a touch-up on the "+l+" ("+y+")";
+    case "addon":return "something to go with the "+l+" ("+y+")";
+    case "sleeve":return "a sleeve around the "+l+" ("+y+")";
+    case "cover_own":return "the "+l+" from "+y+" needs covering";
+    case "cover_other":return "a cover-up of a "+l+" from another shop ("+y+")";
+  }
+  return "the "+l+" ("+y+")";
+}
+/* fill this week's chair hours from the sessions that are due (oldest first); the rest move to next week */
+function calAllocate(S,log,now){
+  const st=WEEK.stages[(S.studio&&S.studio.stage)||"apprentice"]||WEEK.stages.chair;
+  const due=S.queue.filter(q=>q.kind==="session"&&weekIndex(q.w,q.y)<=now).sort((a,b)=>weekIndex(a.w,a.y)-weekIndex(b.w,b.y)||(a.sessionNo>b.sessionNo?-1:1));
+  let hrs=0,n=0;const moved=[],rolled=[];const nx=weekFrom(now+1);
+  for(const q of due){
+    if(n<st.maxBookings&&(hrs+q.hours<=st.hours||n===0)){
+      if(weekIndex(q.w,q.y)<now)rolled.push(q);   // booked last week and not done: it rolls over
+      hrs+=q.hours;n++;q.w=weekFrom(now).w;q.y=weekFrom(now).y;}
+    else{q.w=nx.w;q.y=nx.y;q.moved=(q.moved||0)+1;moved.push(q);}
+  }
+  if(rolled.length)log.push({k:"carried",text:rolled.length===1?calFirst(S,rolled[0])+"'s session rolls over from last week.":rolled.length+" sessions roll over from last week.",n:rolled.length});
+  if(n)log.push({k:"booked",text:n+(n===1?" session":" sessions")+" this week ("+hrs+" of "+st.hours+" hours).",n,hours:hrs});
+  if(moved.length)log.push({k:"carried",text:moved.length===1?calFirst(S,moved[0])+"'s session moves to next week: no chair time left.":moved.length+" sessions move to next week: no chair time left.",n:moved.length});
+}
+function calNoop(){}
+const WEEK_HOOKS={heals:calHeals,aging:calAging,bookings:calBookings,costs:calNoop,events:calNoop,trend:calNoop};
+const WEEK_ORDER=["heals","aging","bookings","costs","events","trend"];
+
+/* advanceWeek(S) -> log. The only function that changes S.week / S.year. */
+function advanceWeek(S){
+  const log=[];
+  if(careerOver(S)){log.push({k:"end",text:"Week 52, 2030. Thirty years at the needle."});log.end=true;return log;}
+  const close=[];calCloseWeek(S,close);
+  const y0=S.year;
+  S.week++;if(S.week>WEEKS_PER_YEAR){S.week=1;S.year++;}
+  log.push({k:"week",text:"Week "+S.week+", "+S.year+"."});
+  for(const l of close)log.push(l);
+  const now=clNow(S),base=rng(S.seed).fork("week:"+S.year+":"+S.week);
+  for(const k of WEEK_ORDER){
+    const f=WEEK_HOOKS[k];
+    if(typeof f==="function")f(S,{r:base.fork(k),log,yearRolled:S.year!==y0,now});
+  }
+  if(careerOver(S)){log.push({k:"end",text:"Week 52, 2030. Thirty years at the needle."});log.end=true;}
+  return log;
+}
+/* what stops Next this week */
+function calStopReason(S,log){
+  if(log.some(l=>l.k==="event"))return "event";
+  const now=clNow(S);
+  for(const q of S.queue){
+    if(weekIndex(q.w,q.y)!==now)continue;
+    if(q.kind==="session"||q.kind==="consult")return "client";
+    if(q.kind==="walkin"&&WEEK.nextStopsOnWalkins)return "walkin";
+  }
+  if(log.some(l=>l.k==="heal"))return "heal";
+  return null;
+}
+/* one line for the Career tab */
+function calSummary(from,S,all,why,weeks){
+  const cnt=k=>all.filter(l=>l.k===k).reduce((a,l)=>a+(l.n||1),0);
+  const parts=[];
+  const head=weeks===1?"Week "+S.week+", "+S.year:"Weeks "+from.w+(from.y!==S.year?" ("+from.y+")":"")+" to "+S.week+", "+S.year;
+  const left=cnt("left");if(left)parts.push(left===1?"a walk-in left unseen":left+" walk-ins left unseen");
+  const gave=all.filter(l=>l.k==="gaveup").length;if(gave)parts.push(gave===1?"one consult gave up waiting":gave+" consults gave up waiting");
+  for(const l of all)if(l.k==="return"||l.k==="referral"||l.k==="heal"||l.k==="year"||l.k==="event"||l.k==="carried")parts.push(l.text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
+  const w=all.filter(l=>l.k==="walkin");if(w.length)parts.push(w[w.length-1].text.replace(/\.$/,"").replace(/^(The|A|An) /,m=>m.toLowerCase()));
+  const b=all.filter(l=>l.k==="booked");if(b.length)parts.push(b[b.length-1].text.replace(/\.$/,""));
+  if(why==="end")parts.push("the thirty years are up");
+  else if(why==="cap")parts.push("a quiet stretch");
+  return head+": "+(parts.length?parts.join("; "):"nothing much")+".";
+}
+/* nextStop(S) -> {weeks, why: "client"|"walkin"|"heal"|"event"|"cap"|"end", line, log} */
+function nextStop(S){
+  if(careerOver(S))return{weeks:0,why:"end",line:"Week 52, 2030: the thirty years are up.",log:[{k:"end",text:"Week 52, 2030. Thirty years at the needle."}]};
+  const from=weekFrom(clNow(S)+1),all=[];let why="cap",weeks=0;
+  while(weeks<WEEK.maxSkip){
+    const log=advanceWeek(S);weeks++;
+    for(const l of log)all.push(l);
+    if(log.end){why="end";break;}
+    const s=calStopReason(S,log);if(s){why=s;break;}
+  }
+  return{weeks,why,line:calSummary(from,S,all,why,weeks),log:all};
+}
+/* finishSession(S, itemId, {design, out, heal}) -> {piece, next, paid}. Removes the queue item, pays this sitting's share
+   of the balance into S.cash, books the next sitting or (on the last) creates the piece. */
+function finishSession(S,itemId,res){
+  res=res||{};
+  const i=S.queue.findIndex(q=>q.id===itemId);if(i<0)return null;
+  const q=S.queue[i];S.queue.splice(i,1);
+  const balance=Math.max(0,(q.price||0)-(q.deposit||0)),share=Math.round(balance/Math.max(1,q.sessions||1));
+  S.cash=(S.cash||0)+share;
+  const design=res.design||q.design||null;
+  if((q.sessionNo||1)<(q.sessions||1)){
+    const due=weekFrom(clNow(S)+WEEK.sessionGap);
+    const next=Object.assign({},q,{id:queueId(S),w:due.w,y:due.y,sessionNo:(q.sessionNo||1)+1,design,paid:(q.paid||0)+share,moved:0});
+    S.queue.push(next);
+    const c=findClient(S,q.client);if(c)clientLog(c,{w:S.week,y:S.year,kind:"session",n:q.sessionNo||1,of:q.sessions});
+    return{piece:null,next,paid:share};
+  }
+  const piece=addPiece(S,{client:q.client,design:design||{},out:res.out||null,heal:res.heal||null,price:q.price||0,ret:q.ret?{rule:q.ret.rule,piece:q.ret.piece}:null});
+  if(!piece.ret)delete piece.ret;
+  return{piece,next:null,paid:share};
+}
+
+SIM.WEEK=WEEK;SIM.WEEK_HOOKS=WEEK_HOOKS;SIM.WEEK_ORDER=WEEK_ORDER;SIM.weekHours=weekHours;SIM.careerOver=careerOver;
+SIM.advanceWeek=advanceWeek;SIM.nextStop=nextStop;SIM.finishSession=finishSession;
 /* ===== sim/session.js: the tattoo session: trace-and-rhythm scoring, client meters, outputs (PR 4) ===== */
 /* ===== sim/kit.js: the kit: MACHINES, NEEDLES, INKS, voltage (PR 4) ===== */
 /* ===== sim/market.js: walk-in generation and PRICE_INDEX by year (PR 3). Last sim file: it closes the INK_SIM IIFE. ===== */
@@ -1722,6 +3044,50 @@ SIM.priceIndex=year=>{
   const y=clamp(+year||2000,2000,2030),a=Math.floor(y),b=Math.min(2030,a+1);
   return lerp(PRICE_INDEX[a],PRICE_INDEX[b],y-a);
 };
+/* ---- walk-ins (PR 3) ----
+   SIM.generateWalkins(S, r) -> [client]: who comes through the door this week. How many: WALKINS.base for the studio stage,
+   times the season (WALKIN_SEASON: the White Nights bring the city out, January is dead), times the reputation tracks
+   (S.rep, read on a 0..WALKINS.repFull scale until PR 5 sets REP_TRACKS), capped by WEEK walk-in slots. What they want:
+   the brief and style are weighted by this year's style demand (STYLES[*].demandCurve; PR 8's trend wave multiplies in
+   through SIM.trendMult(style, year) when it exists) and by client segments the reputation tracks attract (WALKINS.seg).
+   The stage limits size (an apprentice only gets small flash). Booked clients come from returns and referrals, not here. */
+const WALKINS={
+  base:{apprentice:0.5,chair:2.2,studio:3.4,legacy:2.4},     // expected walk-ins a week, before season and reputation
+  repFull:100,                                               // S.rep values read on 0..repFull
+  rep:{walkins:0.9,collectors:0.25,peers:0.1},               // + share of the expected count at full reputation
+  seg:{walkins:{walk_in:1,first_timer:0.8,students:0.4,trades:0.3},       // segments each reputation track pulls in
+       collectors:{collector:1.5,large_scale:1.2,memorial:0.2,creatives:0.3},
+       peers:{cover_up:0.8,old_school:0.4}},
+  sizes:{apprentice:["tiny","small"],chair:["tiny","small","medium","large"],studio:["tiny","small","medium","large","huge"],legacy:["small","medium","large","huge"]}
+};
+/* [week, multiplier], piecewise linear over the year */
+const WALKIN_SEASON=[[1,0.55],[4,0.75],[12,0.9],[20,1.1],[24,1.4],[28,1.4],[33,1.1],[40,0.95],[48,0.85],[51,1.05],[52,0.7]];
+function mkSeason(w){
+  const t=WALKIN_SEASON;if(w<=t[0][0])return t[0][1];
+  for(let i=1;i<t.length;i++)if(w<=t[i][0]){const a=t[i-1],b=t[i];return lerp(a[1],b[1],(w-a[0])/((b[0]-a[0])||1));}
+  return t[t.length-1][1];
+}
+function mkRep(S,k){return clamp(((S.rep&&S.rep[k])||0)/WALKINS.repFull,0,1);}
+function mkSegBoost(S){
+  const out={};
+  for(const k in WALKINS.seg){const m=mkRep(S,k);for(const s in WALKINS.seg[k])out[s]=(out[s]||0)+WALKINS.seg[k][s]*m;}
+  return out;
+}
+function mkPoisson(r,lambda){const L=Math.exp(-lambda);let k=0,p=1;do{k++;p*=r();}while(p>L&&k<50);return k-1;}
+function generateWalkins(S,r){
+  const stage=(S.studio&&S.studio.stage)||"apprentice";
+  const slots=((typeof WEEK!=="undefined"&&WEEK.stages[stage])||{walkinSlots:3}).walkinSlots;
+  let lambda=(WALKINS.base[stage]||WALKINS.base.chair)*mkSeason(S.week);
+  for(const k in WALKINS.rep)lambda*=1+WALKINS.rep[k]*mkRep(S,k);
+  const n=Math.min(slots,mkPoisson(r,lambda));
+  const out=[],taken=[],segBoost=mkSegBoost(S),sizes=WALKINS.sizes[stage]||null;
+  for(let i=0;i<n;i++){
+    const id=clNextId(S,taken);taken.push(id);
+    out.push(makeClient(r,{id,year:S.year,week:S.week,stage,segBoost,sizes,src:"walkin"}));
+  }
+  return out;
+}
+SIM.WALKINS=WALKINS;SIM.WALKIN_SEASON=WALKIN_SEASON;SIM.generateWalkins=generateWalkins;
 return SIM;
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=INK_SIM;
@@ -1812,7 +3178,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.2.0";
+const VERSION="0.1.3.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1837,7 +3203,7 @@ function freshState(){return{
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
-  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office"},   // the design board (PR 2): the working design
+  board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
@@ -2104,7 +3470,8 @@ function showTab(t){if(!TABS.includes(t))t="studio";const pn=$("panel");tabScrol
   renderTab(t);pn.scrollTop=tabScroll[t]||0;
   if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();}
 function renderTab(t){({studio:renderStudio,design:renderDesign,session:renderSession,clients:renderClients,career:renderCareer})[t]();}
-function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);}
+function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);
+  const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;}
 function renderAll(){renderHeader();renderTab(curTab);}
 
 /* ---- the sheet ---- */
@@ -2204,7 +3571,8 @@ function renderStudio(){
    colour}); dzToDesign() turns it into a design in the docs/SIM-CONTRACT.md shape (sizeMm = the piece's longest side, x/y/
    scale normalised to it, pos = where its centre sits) and that is what S.board.design saves: parameters, never pictures.
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
-   Until PR 3 the board scores against a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
+   The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
+   booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
    memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved. */
 const DZ_SAMPLE_CLIENTS=[
   {id:"wk_office",name:"Darya",blurb:"accountant, first tattoo",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
@@ -2236,7 +3604,11 @@ const dzEBc={};
 function dzEB(id){return dzEBc[id]||(dzEBc[id]=INK_SIM.elementBox(id));}
 function dzDef(id){return INK_SIM.elementById(id);}
 function dzColHex(c){const C=INK_SIM.COLOURS[c||"black"];return C?C.hex:DZ_INK;}
-function dzClient(){const b=S.board,c=DZ_SAMPLE_CLIENTS.find(x=>x.id===b.client)||DZ_SAMPLE_CLIENTS[0];
+function dzClient(){const b=S.board,real=typeof clReal==="function"?clReal(b.client):null;
+  /* the board only knows what the consult found out: hidden must-haves and dealbreakers stay hidden until the reveal */
+  if(real){const k=real.known||{};return Object.assign({},real,{name:real.first,bodyShape:b.bodyShape||real.bodyShape,skinTone:b.skinTone!=null?b.skinTone:real.skinTone,
+    mustHaves:k.mustAll?real.mustHaves:(k.mustHaves||[]),dealbreakers:k.dealAll?real.dealbreakers:(k.dealbreakers||[])});}
+  const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===b.client)||DZ_SAMPLE_CLIENTS[0];
   return Object.assign({},c,{bodyShape:b.bodyShape||c.bodyShape,skinTone:b.skinTone!=null?b.skinTone:c.skinTone});}
 function dzBox(pl){return INK_SIM.placementBox(pl||DZ.m.placement,S.board.bodyShape)||{wrapMm:100,lengthMm:200};}
 function dzCap1(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
@@ -2330,8 +3702,9 @@ function renderDesign(){
   const v=DZ.view;
   $("designBody").innerHTML=`<div class="dz dz-${v}">
 <div class="dzSeg seg" role="tablist" aria-label="Design views">${[["body","Body"],["board","Board"],["flash","Flash"]].map(([k,l])=>`<button type="button" role="tab" data-v="${k}" class="${k===v?"on":""}" aria-selected="${k===v}">${l}</button>`).join("")}</div>
-<div id="dzView"></div>
+${v==="flash"||typeof clBookingBar!=="function"?"":clBookingBar()}<div id="dzView"></div>
 ${v==="flash"?"":`<div class="dzCap${DZ.capOpen&&v==="board"?"":" shut"}${v==="body"?" mini":""}" id="dzCap" aria-live="off"></div>`}</div>`;
+  if(typeof clBookingWire==="function")clBookingWire();
   $("designBody").querySelector(".dzSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===DZ.view)return;DZ.view=b.dataset.v;INK_SOUND.tick();renderDesign();});
   DZ.cur=dzScore();
   if(v==="body")dzRenderBody();else if(v==="flash")dzRenderFlash();else dzRenderBoardView();
@@ -2344,7 +3717,7 @@ function dzRenderBody(){
   const bar=(v,l)=>`<span class="dzBar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}" aria-label="${l}"><i style="width:${Math.round(v*100)}%"></i></span>`;
   const word=(v,w)=>w[Math.min(w.length-1,Math.floor(v*w.length))];
   const clientCard=`<div class="card dzClient"><div class="dzClientHd"><h2>Walk-in</h2><span class="dzTag">sample</span></div>
-<label class="dzFull">Who's in the chair<select id="dzCl">${DZ_SAMPLE_CLIENTS.map(c=>`<option value="${c.id}"${c.id===b.client?" selected":""}>${esc(c.name)}, ${esc(c.blurb)}</option>`).join("")}</select></label>
+<label class="dzFull">Who's in the chair<select id="dzCl">${clReal&&clReal(b.client)?`<option value="" selected>${esc(clReal(b.client).name)} (booked)</option>`:""}${DZ_SAMPLE_CLIENTS.map(c=>`<option value="${c.id}"${c.id===b.client?" selected":""}>${esc(c.name)}, ${esc(c.blurb)}</option>`).join("")}</select></label>
 <p class="hint">${esc(cl.name)} (${esc(cl.pronouns)}, ${cl.age}) likes ${esc(Object.keys(cl.wants.styles).map(s=>INK_SIM.STYLES[s].name.toLowerCase()).join(", "))}, about ${cl.wants.sizeMm[0]} to ${cl.wants.sizeMm[1]} mm.
 Practice walk-ins for now: real clients with their own wants start booking in the next update.</p></div>`;
   $("dzView").innerHTML=`<div class="card dzBody">
@@ -2366,7 +3739,7 @@ ${p.creases.length?`<p class="hint">Joint${p.creases.length>1?"s":""} at the ${e
   tone.addEventListener("input",()=>{S.board.skinTone=+tone.value;$("dzTone").nextElementSibling.style.background=bmSkin(S.board.skinTone)[0];
     $("dzFig").innerHTML=bmSvg(DZ.side,DZ.m.placement,S.board.bodyShape,S.board.skinTone);if(!DZ.base)DZ.base=DZ.cur;dzQueue(true);});
   tone.addEventListener("change",()=>{DZ.prev=DZ.base||DZ.prev;DZ.base=null;save();DZ.cur=dzScore();dzRenderCap();dzRenderAging();});
-  $("dzCl").addEventListener("change",e=>{const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===e.target.value);if(!c)return;dzSetBody({client:c.id,bodyShape:c.bodyShape,skinTone:c.skinTone});});
+  $("dzCl").addEventListener("change",e=>{const c=DZ_SAMPLE_CLIENTS.find(x=>x.id===e.target.value);if(!c)return;S.board.item=null;dzSetBody({client:c.id,bodyShape:c.bodyShape,skinTone:c.skinTone});});
   $("dzPl").addEventListener("change",e=>dzSetPlacement(e.target.value));
   const fig=$("dzFig");
   fig.addEventListener("click",e=>{const z=e.target.closest(".bmz");if(z){INK_SOUND.tick();dzSetPlacement(z.dataset.p);}});
@@ -2683,16 +4056,258 @@ function renderSession(){
 <p><b>No one in the chair.</b></p><p>Book a client from the Clients tab.</p>
 <button class="btn" id="toClients">Go to Clients</button></div>`;
   $("toClients").addEventListener("click",()=>showTab("clients"));}
-/* ===================== app/clients.js: the Clients tab =====================
-   Client list, filters, consults, each client's pieces as they look today (PR 3, PR 5). */
+/* ===================== app/clients.js: the Clients tab (PR 3) =====================
+   Two views on a segmented control:
+     This week  who is at the door (walk-ins, who leave at the end of the week), booked consults (returns and referrals),
+                the sittings due in the chair this week and the ones coming up. Each sitting needs a design: "Design it"
+                opens the board for that booking (S.board.client / S.board.item) and the board's "Save to booking" bar
+                writes it onto the queue item.
+     Clients    everyone who has come through the door, newest first, with filters and a search; tap one for their card:
+                what you know, their pieces as they look today (re-rendered from the design and the aging model), and
+                their history.
+   The consult replaces the tab while it runs: the chat transcript, 3 to 5 options a turn, then the quote. It is a pure
+   state machine in sim/clients.js; this file only draws it. Each choice's dice are forked from the save's seed, the
+   client, the week and the choice, so leaving and coming back replays the same answers. Nothing is written until the
+   consult ends (consultCommit).
+   clSession(item) starts a due sitting: PR 4's sessionStartBooked(item) when it exists; until then a quick, automatic
+   sitting worked out from your skills (clQuickSession). */
+const CL={view:"week",consult:null,done:null,filter:"all",q:"",show:40};
+const clNow=()=>INK_SIM.weekIndex(S.week,S.year);
+const clDue=q=>INK_SIM.weekIndex(q.w,q.y)<=clNow();
+const clByWeek=(a,b)=>INK_SIM.weekIndex(a.w,a.y)-INK_SIM.weekIndex(b.w,b.y);
+function clWho(q){return q.newClient||INK_SIM.findClient(S,q.client);}
+function clReal(id){return id&&/^c\d/.test(id)&&typeof INK_SIM.findClient==="function"?INK_SIM.findClient(S,id):null;}
+function clAge(c){return INK_SIM.clientAge?INK_SIM.clientAge(c,S.year):c.age;}
+function clAskLine(a){a=a||{};const P=INK_SIM.PLACEMENTS[a.placement],st=INK_SIM.STYLES[a.style];
+  return[st&&st.name,P&&P.name,a.sizeMm?`about ${Math.round(a.sizeMm)} mm`:""].filter(Boolean).join(" · ");}
+function clWant(w){if(!w)return"";if(w.kind==="style"){const s=INK_SIM.STYLES[w.v];return s?s.name:w.v;}return w.kind==="colour"?w.v+" ink":w.v;}
+function clWhat(c,known){known=known||c.known||{};const out=[];
+  const must=(known.mustHaves||[]).map(clWant),deal=(known.dealbreakers||[]).map(clWant);
+  if(must.length)out.push(`<span class="clChip must">Must have: ${esc(must.join(", "))}</span>`);
+  if(deal.length)out.push(`<span class="clChip deal">Avoid: ${esc(deal.join(", "))}</span>`);
+  const t=c.traits||{},band=v=>v<0.34?"low":v<0.67?"medium":"high";
+  if(known.pain)out.push(`<span class="clChip">Pain tolerance ${band(t.pain)}</span>`);
+  if(known.sun)out.push(`<span class="clChip">Sun ${band(t.sun)}</span>`);
+  if(known.budget)out.push(`<span class="clChip">Budget ${band(t.budget)}</span>`);
+  if(known.cover)out.push(`<span class="clChip">${(c.cover||0)>0.5?"Needs to cover it for work":"Can show it at work"}</span>`);
+  if(known.aftercare)out.push(`<span class="clChip">Aftercare ${band(t.aftercare)}</span>`);
+  return out.join("");}
+/* loyalty as a bar with notches, so it reads without colour */
+function clLoyal(v){v=clamp(v||0,0,1);return`<span class="clLoy" role="img" aria-label="Loyalty ${Math.round(v*100)} out of 100"><i style="width:${Math.round(v*100)}%"></i></span>`;}
+function clSrc(q){if(q.kind==="walkin")return"Walk-in";if(q.src==="referral"){const f=clReal(q.from);return f?`Sent by ${f.first}`:"Referral";}
+  if(q.ret)return"Coming back: "+(CL_RET[q.ret.rule]||"more work");return"Booked consult";}
+const CL_RET={touchup:"touch-up",addon:"add-on",sleeve:"sleeve",cover_own:"cover your old work",cover_other:"cover-up"};
+function clAskOf(q){return q.ask||(clWho(q)||{}).ask||{};}
+
 function renderClients(){
-  $("clientsBody").innerHTML=`<div class="card empty"><p><b>No clients yet.</b></p><p>Apprentices don't get clients. Sweep, practise, and the walk-ins will come.</p></div>`;}
+  const host=$("clientsBody");
+  if(typeof INK_SIM.consultStart!=="function"){host.innerHTML=`<div class="card"><p class="hint">The client model isn't in this build.</p></div>`;return;}
+  if(CL.consult)return clRenderConsult();
+  const n=S.clients.length;
+  host.innerHTML=`<div class="cl">${segHtml("clSeg",[["week","This week"],["list",`Clients${n?` · ${n}`:""}`]],CL.view)}<div id="clView"></div></div>`;
+  $("clSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===CL.view)return;CL.view=b.dataset.v;INK_SOUND.tick();renderClients();});
+  if(CL.view==="list")clRenderList();else clRenderWeek();}
+
+/* ---- This week ---- */
+function clCard(q){
+  const c=clWho(q);if(!c)return"";
+  const a=clAskOf(q);
+  if(q.kind==="session"){
+    const label=q.design&&q.design.elements&&q.design.elements.length?INK_SIM.pieceLabel(q.design):(a.tags||[]).slice(0,3).join(", ")||"a piece";
+    const ready=!!(q.design&&q.design.elements&&q.design.elements.length);
+    return`<article class="clQ ses"><header><span class="clK">In the chair</span><h3>${esc(c.name)}</h3><span class="clMeta">${clAge(c)} · ${esc(c.pronouns)}</span></header>
+<p class="clAsk">${esc(clAskLine(a))}</p>
+<p class="clMeta">Sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h · ${fmtMoney(q.price||0)} (${fmtMoney(q.deposit||0)} paid up front)${q.moved?` · moved ${q.moved}×`:""}</p>
+<p class="clDz ${ready?"ok":"todo"}"><span aria-hidden="true">${ready?"●":"○"}</span> ${ready?`Design ready: ${esc(label)}`:"Needs a design"}</p>
+<div class="row"><button class="btn sm${ready?"":" pri"}" data-dz="${q.id}">${ready?"Edit design":"Design it"}</button><button class="btn sm${ready?" pri":""}" data-ses="${q.id}"${ready?"":" disabled"}>${typeof sessionStartBooked==="function"?"Start session":"Quick session"}</button></div></article>`;}
+  const exp=q.expires!=null?INK_SIM.weekFrom(q.expires):null;
+  return`<article class="clQ ${q.kind}"><header><span class="clK">${esc(clSrc(q))}</span><h3>${esc(c.name)}</h3><span class="clMeta">${clAge(c)} · ${esc(c.pronouns)} · ${esc(c.job||"")}</span></header>
+<blockquote>${esc(q.brief||c.brief||"")}</blockquote>
+<p class="clMeta">${q.kind==="walkin"?"Leaves at the end of the week if nobody talks to them.":exp?`Will wait until week ${exp.w}, ${exp.y}.`:""}</p>
+<div class="row"><button class="btn sm pri" data-con="${q.id}">Consult</button></div></article>`;}
+function clRenderWeek(){
+  const due=S.queue.filter(clDue),door=due.filter(q=>q.kind==="walkin"),cons=due.filter(q=>q.kind==="consult"),chair=due.filter(q=>q.kind==="session").sort(clByWeek);
+  const later=S.queue.filter(q=>q.kind==="session"&&!clDue(q)).sort(clByWeek);
+  const used=chair.reduce((h,q)=>h+(q.hours||0),0),cap=INK_SIM.weekHours(S),wait=INK_SIM.waitWeeks(S);
+  const sec=(t,items)=>items.length?`<h2 class="clH">${t} <span class="dzTag">${items.length}</span></h2><div class="clQs">${items.map(clCard).join("")}</div>`:"";
+  let h=`<div class="card clSum"><dl class="kv"><dt>Week</dt><dd>${S.week}, ${S.year}</dd><dt>Chair this week</dt><dd>${+used.toFixed(1)} of ${cap} h booked</dd><dt>Waiting list</dt><dd>${wait<0.5?"none":`about ${Math.ceil(wait)} week${Math.ceil(wait)===1?"":"s"}`}</dd></dl></div>`;
+  h+=sec("At the door",door)+sec("Booked consults",cons)+sec("In the chair",chair);
+  if(!door.length&&!cons.length&&!chair.length)h+=`<div class="card empty"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><circle cx="15" cy="12" r="1"/></svg><p><b>Nobody at the door this week.</b></p><p>Practise, draw flash, then press Next on the Career tab.</p><div class="row" style="justify-content:center"><button class="btn pri" id="clGoNext">Go to Next</button></div></div>`;
+  if(later.length)h+=`<h2 class="clH">Coming up</h2><div class="card clLater">${later.slice(0,8).map(q=>{const c=clWho(q);return`<div class="clRow"><b>Week ${q.w}, ${q.y}</b><span>${esc(c?c.name:"?")}</span><span class="clMeta">sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h${q.design?"":" · needs a design"}</span>${q.design?"":`<button class="btn sm" data-dz="${q.id}">Design it</button>`}</div>`;}).join("")}${later.length>8?`<p class="hint">And ${later.length-8} more.</p>`:""}</div>`;
+  $("clView").innerHTML=h;
+  const v=$("clView");
+  v.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+    if(b.id==="clGoNext")return showTab("career");
+    if(b.dataset.con)clStartConsult(b.dataset.con);else if(b.dataset.dz)clDesignFor(b.dataset.dz);else if(b.dataset.ses)clSession(b.dataset.ses);});}
+
+/* ---- the consult ---- */
+function clStartConsult(id){
+  const q=S.queue.find(x=>x.id===id);if(!q)return;const c=clWho(q);if(!c)return;
+  CL.consult=INK_SIM.consultStart(c,S,{item:q});CL.done=null;INK_SOUND.tick();renderClients();$("panel").scrollTop=0;}
+function clRenderConsult(){
+  const c=CL.consult,cl=c.client,opts=INK_SIM.consultOptions(c);
+  const bub=t=>t.who==="note"?`<p class="clNote">${esc(t.text)}</p>`:`<div class="clB ${t.who}"><span class="clBw">${t.who==="client"?esc(cl.first):"You"}</span>${esc(t.text)}</div>`;
+  const left=Math.max(0,c.max-c.step);
+  let foot;
+  if(c.stage==="done"){
+    const o=c.outcome,it=CL.done&&CL.done.item;
+    const line=o==="accepted"?`Booked. ${it?`First sitting week ${it.w}, ${it.y}. `:""}${c.quote&&c.quote.deposit?`${fmtMoney(c.quote.deposit)} deposit taken.`:""}`:o==="walked"?`${cl.first} walked out.`:`No booking this time.`;
+    foot=`<div class="card clEnd ${o}"><p><b>${esc(line)}</b></p>${o==="accepted"?`<p class="hint">Design the piece before the sitting: the board scores it against what ${esc(cl.first)} wants, including anything you found out.</p>`:`<p class="hint">${esc(cl.first)} will remember how this went.</p>`}
+<div class="row">${o==="accepted"&&it?`<button class="btn pri" id="clEndDz">Design it now</button>`:""}<button class="btn" id="clEndBack">Back to this week</button></div></div>`;}
+  else foot=`<div class="clOpts" role="group" aria-label="What do you say?">${opts.map(o=>`<button class="btn clOpt k-${o.kind}" data-o="${esc(o.id)}">${esc(o.text)}</button>`).join("")}</div>`;
+  const q=c.quote;
+  $("clientsBody").innerHTML=`<div class="cl clCon">
+<div class="card clConHd"><div class="clConT"><button class="btn sm" id="clConX" aria-label="Leave the consult">‹ Back</button><div><h2>${esc(cl.name)}</h2><p class="clMeta">${esc(cl.job||"")} · ID checked, 18+ · ${c.stage==="done"?"done":`${left} exchange${left===1?"":"s"} left`}</p></div></div>
+<p class="clAsk">${esc(clAskLine(c.ask))}${(c.ask.tags||[]).length?` · ${esc(c.ask.tags.slice(0,4).join(", "))}`:""}</p>
+<div class="clChips">${clWhat(cl,c.known)||`<span class="clMeta">Ask questions to find out what matters to them.</span>`}</div>
+${q?`<p class="clQuote">Quote: <b>${fmtMoney(q.price)}</b> · ${fmtMoney(q.deposit)} deposit · ${+q.hours.toFixed(1)} h over ${q.sessions} sitting${q.sessions===1?"":"s"}</p>`:`<p class="clMeta">Rough size of the job: ${+c.est.hours.toFixed(1)} h${c.est.sessions>1?` over ${c.est.sessions} sittings`:""} · your rate ${fmtMoney(c.rate)} an hour${c.wait>0.5?` · ${Math.ceil(c.wait)} week wait`:""}</p>`}</div>
+<div class="clChat" id="clChat" aria-live="polite">${c.transcript.map(bub).join("")}</div>
+${foot}</div>`;
+  $("clConX").addEventListener("click",()=>{if(c.stage!=="done"&&!confirm(`Leave the consult? ${cl.first} is still waiting; you can come back to it this week.`))return;CL.consult=null;CL.done=null;renderClients();});
+  const ch=$("clChat");if(ch.lastElementChild&&c.step)ch.lastElementChild.scrollIntoView({block:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches||S.settings.reduced?"auto":"smooth"});
+  if(c.stage==="done"){
+    $("clEndBack").addEventListener("click",()=>{CL.consult=null;CL.done=null;CL.view="week";renderClients();});
+    const dz=$("clEndDz");if(dz)dz.addEventListener("click",()=>{const id=CL.done.item.id;CL.consult=null;CL.done=null;clDesignFor(id);});
+    return;}
+  $("clientsBody").querySelector(".clOpts").addEventListener("click",e=>{const b=e.target.closest("button[data-o]");if(b)clChoose(b.dataset.o);});}
+function clChoose(id){
+  const c=CL.consult;if(!c||c.stage==="done")return;
+  const r=INK_SIM.rng(S.seed).fork(`consult:${c.clientId}:${S.year}:${S.week}:${c.step}:${id}`);
+  CL.consult=INK_SIM.consultChoose(c,id,r);INK_SOUND.tick();
+  if(CL.consult.stage==="done"){CL.done=INK_SIM.consultCommit(S,CL.consult);save();renderHeader();
+    if(CL.consult.outcome==="accepted")toast(`${CL.consult.client.first} is booked`);}
+  renderClients();}
+
+/* ---- designing for a booking (the board's bar) ---- */
+function clDesignFor(id){
+  const q=S.queue.find(x=>x.id===id),c=q&&INK_SIM.findClient(S,q.client);if(!c)return;
+  const a=clAskOf(q),old=typeof DZ!=="undefined"&&DZ.m&&DZ.m.els.length&&S.board.item!==id?JSON.stringify(DZ.m):null;
+  Object.assign(S.board,{client:c.id,item:q.id,bodyShape:c.bodyShape||"neutral",skinTone:c.skinTone!=null?c.skinTone:0.3});
+  S.board.design=q.design?JSON.parse(JSON.stringify(q.design)):{placement:INK_SIM.PLACEMENTS[a.placement]?a.placement:"forearm_l",style:a.style||"traditional",flash:null,sizeMm:0,pos:{x:.5,y:.5},elements:[]};
+  if(typeof DZ!=="undefined"){DZ.m=null;DZ.undo.length=0;DZ.redo.length=0;DZ.base=null;DZ.prev=null;DZ.view="board";dzLoad();if(old)DZ.undo.push(old);}
+  save();showTab("design");$("panel").scrollTop=0;toast(`Designing for ${c.first}${old?" (Undo brings back what was on the board)":""}`);}
+/* called by renderDesign: the bar above the board when it's working on a real client */
+function clBookingBar(){
+  const b=S.board,c=clReal(b.client);if(!c)return"";
+  const q=b.item&&S.queue.find(x=>x.id===b.item);
+  if(b.item&&!q)b.item=null;
+  const a=q?clAskOf(q):c.ask||{},what=clWhat(c);
+  return`<div class="card clBk"><div class="clBkT"><span class="clK">Designing for</span><b>${esc(c.name)}</b>${q?`<span class="clMeta">sitting ${q.sessionNo||1} of ${q.sessions||1}, week ${q.w}, ${q.y}</span>`:""}</div>
+<p class="clAsk">Asked for: ${esc(clAskLine(a))}${(a.tags||[]).length?` · ${esc(a.tags.slice(0,4).join(", "))}`:""}</p>${what?`<div class="clChips">${what}</div>`:""}
+<div class="row">${q?`<button class="btn sm pri" id="clBkSave">Save to booking</button>`:""}<button class="btn sm" id="clBkOff">${q?"Stop":"Back to sample clients"}</button></div></div>`;}
+function clBookingWire(){
+  const s=$("clBkSave"),o=$("clBkOff");
+  if(s)s.addEventListener("click",()=>{const q=S.queue.find(x=>x.id===S.board.item),c=clReal(S.board.client);if(!q||!c)return;
+    const d=dzToDesign();if(!d.elements.length){toast("Put something on the board first");return;}
+    q.design=d;dzStore();toast(`Saved to ${c.first}'s booking`);INK_SOUND.tick();});
+  if(o)o.addEventListener("click",()=>{S.board.item=null;S.board.client=DZ_SAMPLE_CLIENTS[0].id;const s0=DZ_SAMPLE_CLIENTS[0];S.board.bodyShape=s0.bodyShape;S.board.skinTone=s0.skinTone;
+    DZ.m=Object.assign(dzFromDesign(dzToDesign()),{fsig:DZ.m.fsig});save();renderDesign();});}
+
+/* ---- sittings ---- */
+function clSession(id){
+  const q=S.queue.find(x=>x.id===id);if(!q)return;
+  if(!(q.design&&q.design.elements&&q.design.elements.length)){toast("Design it first");return;}
+  if(typeof sessionStartBooked==="function")return sessionStartBooked(q);
+  clQuickSession(q);}
+/* until PR 4's session: a sitting worked out from your skills, on dice forked from the item and the week */
+const CL_QUICK={base:0.55,perSkill:0.035,sd:0.06,trauma:0.25,traumaPerSkill:0.015};
+function clQuickSession(q){
+  const sk=S.skills||{},r=INK_SIM.rng(S.seed).fork(`quick:${q.id}:${S.year}:${S.week}`),K=CL_QUICK;
+  const roll=k=>clamp(K.base+K.perSkill*(sk[k]||0)+r.normal(0,K.sd),0.2,0.98);
+  const out={lineQuality:roll("linework"),depthQuality:roll("linework"),saturation:roll("shading"),trauma:clamp(K.trauma-K.traumaPerSkill*(sk.linework||0)+r.normal(0,K.sd),0,1)};
+  for(const k in out)out[k]=Math.round(out[k]*1000)/1000;
+  const res=INK_SIM.finishSession(S,q.id,{design:q.design,out,heal:null});if(!res)return;
+  if(S.board.item===q.id)S.board.item=res.next?res.next.id:null;
+  save();renderHeader();renderClients();INK_SOUND.tick();
+  toast(res.piece?`Finished: ${res.piece.name}. ${fmtMoney(res.paid)} paid.`:`Sitting ${q.sessionNo||1} of ${q.sessions||1} done, ${fmtMoney(res.paid)} paid. Next sitting week ${res.next.w}.`);}
+
+/* ---- the client list and a client's card ---- */
+const CL_FILTERS=[["all","All"],["regular","Regulars"],["booked","Booked"],["walked","Walked"]];
+function clLastConsult(c){for(let i=(c.history||[]).length-1;i>=0;i--)if(c.history[i].kind==="consult")return c.history[i];return null;}
+function clMatch(c,f,booked){
+  if(f==="regular")return(c.pieces||[]).length>=2;
+  if(f==="booked")return booked.has(c.id);
+  if(f==="walked"){const l=clLastConsult(c);return!!l&&l.outcome!=="accepted";}
+  return true;}
+function clRenderList(){
+  const booked=new Set(S.queue.filter(q=>q.client).map(q=>q.client)),qs=CL.q.trim().toLowerCase();
+  const list=S.clients.filter(c=>clMatch(c,CL.filter,booked)&&(!qs||(c.name||"").toLowerCase().includes(qs)))
+    .sort((a,b)=>INK_SIM.weekIndex((b.lastSeen||b.since||{}).w||1,(b.lastSeen||b.since||{}).y||2000)-INK_SIM.weekIndex((a.lastSeen||a.since||{}).w||1,(a.lastSeen||a.since||{}).y||2000));
+  const rows=list.slice(0,CL.show).map(c=>{const ls=c.lastSeen||c.since||{},np=(c.pieces||[]).length;
+    return`<button class="clLi" data-c="${esc(c.id)}"><span class="clLiN"><b>${esc(c.name)}</b><span class="clMeta">${clAge(c)} · ${esc(c.job||"")}</span></span><span class="clLiR"><span class="clMeta">${np} piece${np===1?"":"s"}${booked.has(c.id)?" · booked":""} · ${ls.y||""}</span>${clLoyal(c.loyalty)}</span></button>`;}).join("");
+  $("clView").innerHTML=`<div class="card clFil"><div class="row">${segHtml("clF",CL_FILTERS,CL.filter)}</div>
+<label class="clSearch"><span class="sr">Search by name</span><input id="clQ" type="search" placeholder="Search by name" value="${esc(CL.q)}" autocomplete="off"></label></div>
+${S.clients.length?(list.length?`<div class="clLis">${rows}</div>${list.length>CL.show?`<div class="row" style="justify-content:center"><button class="btn" id="clMore">Show more (${list.length-CL.show})</button></div>`:""}`:`<div class="card empty"><p>Nobody matches.</p></div>`)
+:`<div class="card empty"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/></svg><p><b>No clients yet.</b></p><p>Talk to whoever walks in. Everyone you consult is remembered here, even the ones who walk out.</p></div>`}`;
+  $("clF").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;CL.filter=b.dataset.v;CL.show=40;clRenderList();});
+  $("clQ").addEventListener("input",e=>{CL.q=e.target.value;CL.show=40;const pos=e.target.selectionStart;clRenderList();const i=$("clQ");i.focus();try{i.setSelectionRange(pos,pos);}catch(_){}});
+  const m=$("clMore");if(m)m.addEventListener("click",()=>{CL.show+=40;clRenderList();});
+  $("clView").querySelector(".clLis")?.addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(b)clOpenClient(b.dataset.c);});}
+/* a piece as it looks today: the design re-rendered, blurred and faded by the aging model for its age */
+function clPieceToday(p,c){
+  const yrs=Math.max(0,(S.year-p.y)+(S.week-p.w)/52);
+  let a={blur:0,fade:0,spread:0,readability:1};
+  try{a=INK_SIM.age({design:p.design,out:p.out,heal:p.heal,skinTone:c.skinTone,sun:(c.traits||{}).sun},yrs)||a;}catch(e){}
+  const d=p.design||{};if(!(d.elements||[]).length)return{svg:`<svg viewBox="0 0 10 10"></svg>`,a,yrs};
+  const m=dzFromDesign(d),pxPer=64/Math.max(1,(d.sizeMm||40)*1.16),fd=clamp(a.fade||0,0,1);
+  return{svg:dzMini(m,"",`filter:blur(${dzR2(Math.max(0,(a.blur||0)*pxPer))}px) saturate(${dzR2(1-fd*0.9)});opacity:${dzR2(1-fd*0.7)}`,a.spread||0),a,yrs};}
+const CL_HIST={consult:h=>`Consult: ${h.outcome==="accepted"?"booked":h.outcome==="walked"?"walked out":"no booking"}${h.talk==="won"?", talked out of a bad idea":h.talk==="lost"?", the talk went badly":""}${h.quote?` (${fmtMoney(h.quote.price)})`:""}`,
+  piece:h=>`Finished ${h.name||"a piece"}`,session:h=>`Sitting ${h.n} of ${h.of}`,review:h=>`Review: ${"★".repeat(h.stars||0)}${"☆".repeat(5-(h.stars||0))} “${h.text||""}”`,
+  referral:h=>{const r=clReal(h.client);return`Sent you ${r?r.first:"a friend"}`;},note:h=>h.text||"",heal:h=>`Healed: ${h.grade||""}`};
+function clOpenClient(id){
+  const c=INK_SIM.findClient(S,id);if(!c)return;
+  const pcs=(c.pieces||[]).map(pid=>S.pieces.find(p=>p.id===pid)).filter(Boolean);
+  const ref=clReal(c.referredBy),since=c.since||{};
+  const pieceHtml=pcs.length?`<div class="clPcs">${pcs.map(p=>{const t=clPieceToday(p,c),r=t.a.readability,cls=r<0.35?"bad":r<0.6?"meh":"ok";
+    return`<figure class="clPc"><div class="clPcA board">${t.svg}</div><figcaption><b>${esc(p.name)}</b><span class="clMeta">${p.y} · ${t.yrs<1?"fresh":Math.floor(t.yrs)+" yr"} · reads <b class="${cls}">${Math.round(r*100)}</b>${p.heal?` · healed ${esc(p.heal)}`:""}</span></figcaption></figure>`;}).join("")}</div>`:`<p class="hint">No pieces yet.</p>`;
+  const hist=(c.history||[]).slice(-30).reverse().map(h=>{const f=CL_HIST[h.kind];return f?`<li><span class="clMeta">Wk ${h.w}, ${h.y}</span> ${esc(f(h))}</li>`:"";}).join("");
+  openSheet(c.name,`<section><dl class="kv"><dt>Age</dt><dd>${clAge(c)}</dd><dt>Pronouns</dt><dd>${esc(c.pronouns)}</dd><dt>Job</dt><dd>${esc(c.job||"")}</dd>
+<dt>First seen</dt><dd>Week ${since.w||"?"}, ${since.y||"?"}${ref?` · sent by ${esc(ref.name)}`:""}</dd><dt>Loyalty</dt><dd>${clLoyal(c.loyalty)}</dd></dl>
+<div class="clChips" style="margin-top:10px">${clWhat(c)||`<span class="clMeta">You haven't found out much about them yet.</span>`}</div></section>
+<section><h3>Their pieces, as they look today</h3>${pieceHtml}</section>
+<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);}
 /* ===================== app/career.js: the Career tab =====================
-   The week clock's Next button, the acts (apprentice, chair, studio, legacy), skills, goals and the Legacy screen (PR 3,
-   PR 7). */
+   The week clock's Next button (PR 3): INK_SIM.nextStop(S) runs advanceWeek until a booked client, a walk-in, a heal or
+   an event is due, never more than WEEK.maxSkip (4) weeks, and returns one line plus the week log. If people are waiting
+   this week (walk-ins at the door, booked consults, sittings due), the first tap only warns and the second skips them:
+   walk-ins leave, consults wait or give up, sittings move to next week. The last few lines are kept in memory (CR.lines),
+   not in the save. The acts, skills, goals and the Legacy screen come in PR 7. */
+const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
+const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
+const CR={last:null,lines:[],arm:0,armT:0,LINES:8};
+const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",end:"The end"};
+function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
+  for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
+  return{w,c,s,n:w+c+s};}
 function renderCareer(){
-  $("careerBody").innerHTML=`<div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
-<dl class="kv"><dt>Act</dt><dd>1 · Apprentice</dd><dt>Date</dt><dd>Week ${S.week}, ${S.year}</dd></dl></div>`;}
+  const host=$("careerBody");
+  if(typeof INK_SIM.nextStop!=="function"){host.innerHTML=`<div class="card"><p class="hint">The week clock isn't in this build.</p></div>`;return;}
+  const st=(S.studio&&S.studio.stage)||"apprentice",over=INK_SIM.careerOver(S),wt=crWaiting();
+  const parts=[wt.w&&`${wt.w} walk-in${wt.w>1?"s":""} at the door`,wt.c&&`${wt.c} consult${wt.c>1?"s":""} booked`,wt.s&&`${wt.s} sitting${wt.s>1?"s":""} due`].filter(Boolean);
+  const last=CR.last,lg=last&&last.log?last.log.filter(l=>l.k!=="week"):[];
+  host.innerHTML=`<div class="card crNext">
+<div class="crWhen"><span class="clK">Act ${STAGE_ACT[st]||1} · ${esc(STAGE_NAMES[st]||st)}</span><b>Week ${S.week}, ${S.year}</b></div>
+${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">The Legacy screen arrives in a later update. Your clients, pieces and save are all still here.</p>`
+:`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
+<button class="btn pri crBtn${CR.arm?" arm":""}" id="crNextB">${CR.arm?`Skip them? Tap again`:`Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>`}</button>
+${CR.arm?`<p class="crWarn">Walk-ins leave, sittings move to next week.</p>`:""}`}</div>
+${last?`<div class="card crLast"><h2>${last.weeks?`${last.weeks} week${last.weeks>1?"s":""} later`:"This week"}</h2><p>${esc(last.line||"")}</p>
+${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}">${CR_KIND[l.k]?`<span class="crK">${CR_KIND[l.k]}</span>`:""}${esc(l.text||"")}</li>`).join("")}${lg.length>14?`<li class="hint">…and ${lg.length-14} more.</li>`:""}</ul>`:""}
+${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
+${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
+<div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
+<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;
+  const b=$("crNextB");if(b)b.addEventListener("click",crNext);
+  const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
+function crNext(){
+  if(INK_SIM.careerOver(S))return;
+  if(crWaiting().n&&!CR.arm){CR.arm=1;clearTimeout(CR.armT);CR.armT=setTimeout(()=>{CR.arm=0;if(curTab==="career")renderCareer();},4000);INK_SOUND.tick();renderCareer();return;}
+  CR.arm=0;clearTimeout(CR.armT);
+  if(typeof CL!=="undefined"){CL.consult=null;CL.done=null;}
+  const res=INK_SIM.nextStop(S);CR.last=res;
+  if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
+  if(S.board.item&&!S.queue.some(q=>q.id===S.board.item))S.board.item=null;
+  save();renderHeader();renderCareer();INK_SOUND.tick();}
 /* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================
    An original front/back drawing of the neutral, stylized mannequin (smooth capsule limbs, no face, no anatomical detail),
    dressed in a crop top and shorts so the ribs/side are bare. Drawn for Ink; no traced art.
