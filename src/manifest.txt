@@ -47,5 +47,6 @@ app/events.js
 app/slots.js
 app/gallery.js
 app/bodymap.js
+app/share.js
 app/help.js
 html/tail.html

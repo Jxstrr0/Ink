@@ -21,7 +21,11 @@
 .evGoals h2 .clMeta{font-weight:400;margin-left:6px}
 .evGoalL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .evGoalL li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
-.evGoalL li>span:nth-child(2){display:flex;flex-direction:column}
+.evGoalL li>span:nth-child(2){display:flex;flex-direction:column;flex:1 1 auto;min-width:0}
+.evGoalL li .shBtn{flex:0 0 auto;margin-left:auto}
+.evGoalNow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px}
+.evGoalNow .clK{flex-basis:100%}
+.evGoalNow b{flex:1 1 auto}
 .evTick{flex:0 0 auto;width:16px;height:16px;margin-top:2px;border:1.5px solid var(--faint);border-radius:50%}
 .evGoalL li.done .evTick{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--panel)}
 .evGoalL li:not(.done) b{color:var(--mute);font-weight:600}
