@@ -787,11 +787,14 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 /* ===================== ui-events.css: events, trends, social media, rivals, goals, conventions, cover-ups (PR 8) =====================
    The event cards and the shop-closed banner on the Career tab, what's in demand, the social card, rival shops, the goals
    list, the piece pickers in the post and convention sheets, convention results, and the cover-up layer and score on the
-   design board (which stays cream with black ink in both themes). Theme tokens only, so the light theme follows; no motion. */
+   design board (which stays cream with black ink in both themes). Theme tokens only, so the light theme follows; no motion.
+   0.1.13.0: the reputation event cards (flash day, Friday 13th, Igla, the Drawbridge Prize) are edged in teal. */
 .evClosed{border:1px solid var(--crit);background:var(--panel2)}
 .evClosed p{margin:4px 0 0}
 .evCard{border-left:3px solid var(--gold)}
 .evCard p{margin:6px 0}
+.evRepCard{border-left-color:var(--teal)}
+.evRepCard .clK{color:var(--teal)}
 .evCh{flex-wrap:wrap}
 .evCh .btn{flex:1 1 auto;min-height:44px}
 .evTop{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -3512,14 +3515,16 @@ const HEAL_APOLOGY=[
   "That's on my shop, and I'm sorry. The touch-up is free, whenever your skin is ready."
 ];
 /* the reputation tracks (S.rep, each 0..100). unlocks: segment -> the track value it starts pulling at (market.js reads
-   WALKINS.seg weights; a segment under its unlock pulls nothing). events: for PR 8 (conventions, guest spots, ...) */
+   WALKINS.seg weights; a segment under its unlock pulls nothing). events: event -> the track value it opens at; every one
+   is in the game: flash_day, friday_13, magazine and award are sim/events.js REP_EVENTS; waiting_list is Act 4
+   (sim/career.js legacyNeed); guest_spot is GUEST.peers and convention the capital's CONVENTIONS entry (sim/career.js) */
 const REP_TRACKS={
   walkins:{name:"Walk-ins",says:"speed and price: quick, fair, open doors",
     unlocks:{walk_in:0,first_timer:0,students:15,trades:25},
     events:{flash_day:40,friday_13:60}},
   collectors:{name:"Collectors",says:"custom work and style: people who plan a body of work",
     unlocks:{creatives:10,memorial:15,collector:25,large_scale:45},
-    events:{waiting_list:50,magazine:75}},
+    events:{waiting_list:60,magazine:75}},
   peers:{name:"Peers",says:"clean heals: what other artists notice",
     unlocks:{old_school:20,cover_up:35},
     events:{guest_spot:30,convention:55,award:85}}
@@ -4708,7 +4713,7 @@ function leaseStudio(S){
   cashOut(S,n.cost,"lease");S.studio.stage="studio";S.studio.lease={w:S.week,y:S.year};caReach(S,"studio");
   S.career.insp=weekIndex(S.week,S.year)+rng(S.seed).fork("insp:first").int(INSPECTION.first[0],INSPECTION.first[1]);
   S.rate=rateFor(S);return{ok:true,cost:n.cost};}
-function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=60};}
+function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=REP_TRACKS.collectors.events.waiting_list};}
 function goLegacy(S){careerEnsure(S);const n=legacyNeed(S);if(!(n.stage&&n.when))return{ok:false,need:n};
   S.studio.stage="legacy";caReach(S,"legacy");S.rate=rateFor(S);return{ok:true};}
 /* skipBroom(S): a new career that starts at Act 2 (plan Q3): week 1 of 2003, a rented chair, basic skills */
@@ -5237,15 +5242,18 @@ SIM.expandClient=expandClient;SIM.packSave=packSave;SIM.unpackSave=unpackSave;
      CONV_JUDGE    conventions: fresh-work and healed-work categories, booth sales, collectors, rivals' booths
      GOALS         the career's goals (S.goals: id -> {w, y}); checkGoals marks them
      EVENTS        the event sheets: how long a choice waits, and every line they say
+     REP_EVENTS    the reputation events REP_TRACKS names (0.1.13.0): flash days, the Friday 13th special, a feature in
+                   Igla (an invented Mostograd magazine) and the Drawbridge Prize (the Guild's yearly award, healed work)
    S.world (worldFresh): {fired {reckoning id: {w, y, ...}}, plan {first_year: week index}, pending [events waiting for a
    choice], nextEv, mods {rate: {mult, until}, fresh: until}, social {on {w,y} | null, followers, posts [[piece no, week
-   index, reach]], viral {piece, w, y} | null, booked, bad, gained}}. Rivals live in S.career.rivals; a closed shop in
+   index, reach]], viral {piece, w, y} | null, booked, bad, gained}, repEv (REP_EVENTS' history, below)}. Rivals live in S.career.rivals; a closed shop in
    S.career.closed {until, w, y} (sim/career.js, the inspection).
    Functions: SIM.worldFresh, SIM.worldEnsure(S), SIM.trendMult(style, year), SIM.trendNow(S), SIM.postPiece(S, pieceId),
    SIM.canPost(S, piece), SIM.followersTarget(S), SIM.eventChoose(S, id, choice), SIM.reckoningChoose(S, itemId, choice),
    SIM.onReturn(item, S), SIM.rivalsCopy(S, sig, ctx), SIM.rivalWalkins(S, out), SIM.coverOld(S, item),
-   SIM.coverScore(design, old, box), SIM.convCandidates(S), SIM.checkGoals(S, slow), SIM.goalList(S).
-   WEEK_HOOKS.events = evWeek (closure, expired choices, social, rivals, reckonings, cover-ups, goals) and
+   SIM.coverScore(design, old, box), SIM.convCandidates(S), SIM.checkGoals(S, slow), SIM.goalList(S),
+   SIM.friday13Weeks(year), SIM.awardJudge(S, r), SIM.repEventAt(id).
+   WEEK_HOOKS.events = evWeek (closure, expired choices, social, rivals, reckonings, reputation events, cover-ups, goals) and
    WEEK_HOOKS.trend = evTrend (a k:"trend" line when a wave starts, peaks or fades). Every draw is forked from the
    week's rng (ctx.r) or rng(S.seed), so the same save always plays out the same way. Private helpers start with ev. ===== */
 
@@ -5397,13 +5405,57 @@ const EVENTS={wait:3,
   goal:"Goal reached: {name}."
 };
 
+/* the reputation events REP_TRACKS names (0.1.13.0): each opens at its track's REP_TRACKS[track].events[id] number and
+   arrives as a choice card (S.world.pending, like a rival's move). Rubles are 2000 rubles x SIM.priceIndex(year).
+     flash_day   a day of small, cheap pieces off your own flash wall: many quick sittings, walk-ins and peers notice
+     friday_13   the old Friday-the-13th flash special, only in a week that really holds a Friday the 13th (calendar
+                 weeks are days 1-7, 8-14, ... of the year, so the date is exact; week 52 runs to 30 or 31 December)
+     magazine    Igla, Mostograd's tattoo quarterly (invented), features you once your collectors and portfolio are there
+     award       the Drawbridge Prize, the Mostograd Tattoo Guild's yearly award, judged on your best healed pieces
+   S.world.repEv (worldFresh): {flash_day {last, n, sittings}, friday_13 {last, n, sittings}, magazine [{w, y, at (week index), piece, yes}],
+   award [{y, place, score, pieces [ids]}]}; last is the week index the card was last offered */
+const REP_EVENTS={
+  flash_day:{track:"walkins",head:"Flash day",minFlash:3,chance:0.05,cool:26,wait:3,
+    sittings:{base:6,perRep:0.08,spread:3},price:1500,supplies:250,rep:{walkins:2.5,peers:0.8},own:{walkins:1,full:12},xp:{speed:0.06,linework:0.04},
+    text:"The shop next door says a flash day pulled a queue round the block. You've got {sheets} sheets of your own on the wall: small pieces, first come, first served, one fixed price.",
+    choices:[["run","Run a flash day"],["skip","Not this time"]],dflt:"skip",
+    says:{run:"Ten till close, one small piece after another: {n} of them off your wall, {top} the favourite. {pay} in the till after supplies. Artists from two other shops dropped by to watch.",
+      skip:"You keep the week as it is. Booked clients only."}},
+  friday_13:{track:"walkins",head:"Friday the 13th",wait:1,
+    sittings:{base:10,perRep:0.12,spread:4},price:1300,supplies:200,rep:{walkins:3,peers:0.3},xp:{speed:0.08},
+    text:"Friday the 13th falls this week ({date}). The old trick: small flash at a lucky price, the door open till the last one in the queue.",
+    choices:[["run","Run the Friday 13th special"],["skip","Keep a normal week"]],dflt:"skip",
+    says:{run:"The queue starts before you've unlocked the door. {n} small pieces by midnight, thirteens and black cats mostly. {pay} after supplies, and half the embankment knows your name.",
+      skip:"You let the date pass. Somebody else's shop has the queue this year."}},
+  magazine:{track:"collectors",head:"Igla magazine",name:"Igla",portfolio:4,chance:0.04,cool:260,max:3,wait:4,
+    rep:{yes:{collectors:4,walkins:2,peers:1},no:{peers:0.3}},
+    text:"Igla, the city's tattoo quarterly, wants to feature you: an interview in the shop and a photographer for your healed portfolio. They'd lead with {piece}.",
+    choices:[["yes","Do the interview"],["no","Turn it down"]],dflt:"no",
+    says:{yes:"The issue comes out with {piece} across two pages and you squinting at the camera on Kanatnaya Street. Collectors start quoting it at you.",
+      no:"You tell them you'd rather the work did the talking. A few artists hear about it and approve."},
+    met:"I read about you in Igla. I've kept the page."},
+  award:{track:"peers",head:"The Drawbridge Prize",name:"the Drawbridge Prize",by:"the Mostograd Tattoo Guild",week:48,pieces:3,minPieces:2,wait:2,
+    score:{healed:1,sig:0.1},sd:0.05,places:[0.66,0.58,0.5],prize:[30000,15000,7000],
+    rep:{peers:[3,2,1,0.3],collectors:[2.5,1.5,0.8,0]},
+    text:"The Mostograd Tattoo Guild has put you up for the Drawbridge Prize. The judges look at healed work only: three pieces, a year old or more.",
+    choices:[["enter","Send your best healed pieces"],["pass","Not this year"]],dflt:"enter",
+    says:{won:"{place} at the Drawbridge Prize, for {pieces}. {prize} and a brass plaque for the wall.",none:"No placing this year. The judges liked {pieces}, but the winners' work had more years on it.",
+      pass:"You let the nomination go. The Guild will ask again."}}
+};
+const REP_EV_PLACE=["","First place","Second place","Third place"];
+const REP_EV_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 /* ---- the state's world field (also used by app/state.js freshState through SIM.worldFresh) ---- */
 function worldFresh(){return{fired:{},plan:{},pending:[],nextEv:1,mods:{},
-  social:{on:null,followers:0,posts:[],viral:null,booked:0,bad:0,gained:0}};}
+  social:{on:null,followers:0,posts:[],viral:null,booked:0,bad:0,gained:0},
+  repEv:{flash_day:{last:null,n:0,sittings:0},friday_13:{last:null,n:0,sittings:0},magazine:[],award:[]}};}
 function worldEnsure(S){
   if(!S.world||typeof S.world!=="object"||Array.isArray(S.world))S.world=worldFresh();else caFill(S.world,worldFresh());
   if(!Array.isArray(S.world.pending))S.world.pending=[];
   if(!Array.isArray(S.world.social.posts))S.world.social.posts=[];
+  const RE=S.world.repEv;if(!RE||typeof RE!=="object"||Array.isArray(RE))S.world.repEv=worldFresh().repEv;   // 0.1.13.0: older saves get it here
+  else{for(const k of ["magazine","award"])if(!Array.isArray(RE[k]))RE[k]=[];
+    for(const k of ["flash_day","friday_13"])if(!RE[k]||typeof RE[k]!=="object"||Array.isArray(RE[k]))RE[k]={last:null,n:0,sittings:0};}
   if(!S.goals||typeof S.goals!=="object"||Array.isArray(S.goals))S.goals={};
   careerEnsure(S);evRivalsFix(S);
   return S.world;}
@@ -5503,7 +5555,7 @@ function rivalWalkins(S,out){
 function evPush(S,ctx,ev,text){
   const W=S.world;ev.id="e"+(W.nextEv++);ev.w=S.week;ev.y=S.year;ev.until=evNow(S)+(ev.wait||EVENTS.wait);ev.text=text;
   if(ev.rival){const rv=evRivals(S).find(x=>x.id===ev.rival);if(rv)rv.last=evNow(S);}
-  W.pending.push(ev);evLog(ctx,"event",text,{ev:ev.id,rival:ev.rival||undefined});return ev;}
+  W.pending.push(ev);evLog(ctx,"event",text,{ev:ev.id,rival:ev.rival||undefined,repEv:ev.repEv?ev.kind:undefined});return ev;}
 function evRivalsWeek(S,ctx){
   const L=evRivals(S),now=ctx.now,st=caStage(S),r=ctx.r.fork("rivals"),repSum=evRepSum(S),Rs=RIVAL.str;
   /* openings */
@@ -5567,7 +5619,8 @@ function eventChoose(S,id,choice){
   const ev=W.pending[i];W.pending.splice(i,1);
   const ok=(ev.choices||[]).some(c=>c[0]===choice)?choice:ev.dflt;
   const rv=ev.rival?evRivals(S).find(x=>x.id===ev.rival):null,r=rng(S.seed).fork("choose:"+ev.id+":"+ok);
-  const f=EV_DO[ev.kind];const text=f?(rv||!ev.rival?f(S,ev,ok,rv||{acts:{}},r):"They've closed since."):"";
+  const f=EV_DO[ev.kind],g=EV_REP_DO[ev.kind];
+  const text=g?g(S,ev,ok,r):f?(rv||!ev.rival?f(S,ev,ok,rv||{acts:{}},r):"They've closed since."):"";
   if(rv&&rv.acts)rv.acts[ev.kind]=(rv.acts[ev.kind]||0)+(ev.kind==="poach"||ev.kind==="copy"?0:1);
   return{ok:true,kind:ev.kind,choice:ok,text};}
 
@@ -5764,6 +5817,88 @@ function convJudge(S,inv,picks){
   C.conv.push(rec);
   return Object.assign({},rec,{metClient:met,rivals});}
 
+/* ===================== reputation events (REP_EVENTS, 0.1.13.0) ===================== */
+/* the number a track must reach for an event: REP_TRACKS is the one source */
+const evRepAt=id=>{const E=REP_EVENTS[id],t=REP_TRACKS[E.track];return t&&t.events&&t.events[id]!=null?t.events[id]:101;};
+const evRepOk=(S,id)=>((S.rep&&+S.rep[REP_EVENTS[id].track])||0)>=evRepAt(id);
+/* friday13Weeks(year) -> [{w, month, date}]: the calendar weeks that hold a Friday the 13th (week w is days 7(w-1)+1 to
+   7w of the year; days 365-366 count in week 52). Pure date maths, cached per year */
+const EV_F13={};
+function friday13Weeks(y){
+  if(EV_F13[y])return EV_F13[y];const out=[],j1=Date.UTC(y,0,1);
+  for(let m=0;m<12;m++){const t=Date.UTC(y,m,13);if(new Date(t).getUTCDay()!==5)continue;
+    const doy=Math.round((t-j1)/864e5);out.push({w:Math.min(WEEKS_PER_YEAR,Math.floor(doy/7)+1),month:m,date:"Friday 13 "+REP_EV_MONTHS[m]});}
+  return EV_F13[y]=out;}
+/* sittings for a flash day or the Friday special: base + perRep x walk-ins + a little luck */
+function evRepSittings(S,E,r){const k=E.sittings;return Math.max(1,Math.round(k.base+k.perRep*((S.rep&&+S.rep.walkins)||0)+r.int(0,k.spread)));}
+/* the portfolio pieces a magazine would shoot: healed, your own, reading well today, best first */
+function evPortfolio(S,max){const out=[];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];if(p.by||!p.portfolio||!p.heal||p.heal==="infected")continue;const rd=caReads(S,p);if(rd>=LEGACY.reads)out.push({p,rd});}
+  return out.sort((a,b)=>b.rd-a.rd).slice(0,max||out.length).map(x=>x.p);}
+function evRepWeek(S,ctx){
+  const W=S.world,RE=W.repEv,now=ctx.now,st=caStage(S);
+  if(st==="apprentice")return;
+  const busy=k=>W.pending.some(e=>e.kind===k);
+  /* a flash day: walk-ins at REP_TRACKS, three sheets of your own flash, the shop open */
+  const F=REP_EVENTS.flash_day,fd=RE.flash_day,mine=(S.flash||[]).length;
+  if(evRepOk(S,"flash_day")&&walkinsOpen(S)&&mine>=F.minFlash&&!busy("flash_day")&&(fd.last==null||now-fd.last>=F.cool)&&ctx.r.fork("rev:flash_day").chance(F.chance)){
+    fd.last=now;evPush(S,ctx,{kind:"flash_day",repEv:true,choices:F.choices,dflt:F.dflt,wait:F.wait},evFill(F.text,{sheets:mine}));}
+  /* Friday the 13th: only in a week that really has one */
+  const T=REP_EVENTS.friday_13,fr=RE.friday_13,f13=friday13Weeks(S.year).find(x=>x.w===S.week);
+  if(f13&&evRepOk(S,"friday_13")&&walkinsOpen(S)&&!busy("friday_13")&&fr.last!==now){
+    fr.last=now;evPush(S,ctx,{kind:"friday_13",repEv:true,date:f13.date,choices:T.choices,dflt:T.dflt,wait:T.wait},evFill(T.text,{date:f13.date}));}
+  /* Igla: collectors at REP_TRACKS, a portfolio worth a photographer, at most max features, years apart */
+  const M=REP_EVENTS.magazine,mg=RE.magazine,lastM=mg.length?mg[mg.length-1].at:null;
+  if(evRepOk(S,"magazine")&&mg.length<M.max&&!busy("magazine")&&(lastM==null||now-lastM>=M.cool)&&ctx.r.fork("rev:magazine").chance(M.chance)){
+    const pf=evPortfolio(S,M.portfolio);
+    if(pf.length>=M.portfolio)evPush(S,ctx,{kind:"magazine",repEv:true,piece:pf[0].id,choices:M.choices,dflt:M.dflt,wait:M.wait},evFill(M.text,{piece:pf[0].name}));}
+  /* the Drawbridge Prize: once a year, peers at REP_TRACKS, enough healed work to judge */
+  const A=REP_EVENTS.award;
+  if(S.week===A.week&&evRepOk(S,"award")&&!busy("award")&&!RE.award.some(x=>x.y===S.year)&&convCandidates(S).healed.length>=A.minPieces)
+    evPush(S,ctx,{kind:"award",repEv:true,choices:A.choices,dflt:A.dflt,wait:A.wait},A.text);}
+/* the day itself (a flash day or the Friday special): sittings, money after supplies, reputation and a little speed */
+function evRepDay(S,id,r){
+  const E=REP_EVENTS[id],n=evRepSittings(S,E,r),pay=evRub(S,n*(E.price-E.supplies));
+  cashIn(S,evRub(S,n*E.price),id==="flash_day"?"flashday":"friday13");cashOut(S,evRub(S,n*E.supplies),"supplies");
+  for(const k in E.rep)repAdd(S,k,E.rep[k]);
+  for(const k in E.xp)skillGain(S,k,E.xp[k]);
+  const rec=S.world.repEv[id];rec.n++;rec.sittings+=n;
+  return{n,pay};}
+const EV_REP_DO={
+  flash_day(S,ev,ch,r){const E=REP_EVENTS.flash_day;if(ch!=="run")return evFill(E.says.skip,{});
+    const d=evRepDay(S,"flash_day",r),mine=S.flash||[];
+    repAdd(S,"walkins",E.own.walkins*Math.min(1,mine.length/E.own.full));   // a full wall of your own sheets draws a bigger crowd
+    const top=mine.length?mine[r.int(0,mine.length-1)].name:"the swallows";
+    return evFill(E.says.run,{n:d.n,top:String(top).toLowerCase(),pay:evFmt(d.pay)});},
+  friday_13(S,ev,ch,r){const E=REP_EVENTS.friday_13;if(ch!=="run")return evFill(E.says.skip,{});
+    const d=evRepDay(S,"friday_13",r);return evFill(E.says.run,{n:d.n,pay:evFmt(d.pay)});},
+  magazine(S,ev,ch,r){const E=REP_EVENTS.magazine,p=S.pieces.find(x=>x.id===ev.piece),o={piece:p?p.name:"your best piece"};
+    S.world.repEv.magazine.push({w:S.week,y:S.year,at:evNow(S),piece:ev.piece||null,yes:ch==="yes"});
+    for(const k in E.rep[ch==="yes"?"yes":"no"])repAdd(S,k,E.rep[ch==="yes"?"yes":"no"][k]);
+    if(ch==="yes"&&walkinsOpen(S)){const rc=r.fork("met"),c=makeClient(rc,{id:clNextId(S),year:S.year,week:S.week,stage:caStage(S),src:"referral",theme:"collector",badIdea:false});
+      c.brief=E.met+" "+c.brief;const due=weekFrom(evNow(S)+rc.int(2,4));
+      S.queue.push({id:queueId(S),kind:"consult",src:"referral",client:c.id,newClient:c,w:due.w,y:due.y,expires:weekIndex(due.w,due.y)+WEEK.consultWait,brief:c.brief,ask:c.ask,from:"magazine"});}
+    return evFill(E.says[ch==="yes"?"yes":"no"],o);},
+  award(S,ev,ch,r){const E=REP_EVENTS.award;if(ch!=="enter")return evFill(E.says.pass,{});
+    const res=awardJudge(S,r);if(!res.pieces.length)return evFill(E.says.pass,{});
+    const names=res.pieces.map(id=>{const p=S.pieces.find(x=>x.id===id);return p?p.label:"";}).filter(Boolean);
+    const list=names.length>1?names.slice(0,-1).join(", ")+" and "+names[names.length-1]:names[0]||"your work";
+    return res.place?evFill(E.says.won,{place:REP_EV_PLACE[res.place],pieces:"the "+list,prize:evFmt(res.prize)}):evFill(E.says.none,{pieces:"the "+list});}
+};
+/* awardJudge(S, r) -> {place 0..3, score, prize, pieces [ids]}: the best healed pieces (convCandidates), their mean
+   healed score (how they read today, how they healed, their years) and how true they are to your signature, plus a little
+   luck. Records the result in S.world.repEv.award, pays the prize and moves peers and collectors by place */
+function awardJudge(S,r){
+  worldEnsure(S);const E=REP_EVENTS.award,pk=convCandidates(S).healed.slice(0,E.pieces),sig=signatureOf(S);
+  if(!pk.length)return{place:0,score:0,prize:0,pieces:[]};
+  const q=pk.reduce((a,p)=>a+evHealedQ(S,p),0)/pk.length,on=pk.filter(p=>sig.ready&&p.design.style===sig.style).length/pk.length;
+  const score=caR3(E.score.healed*q+E.score.sig*on*sig.strength+r.normal(0,E.sd));
+  const place=score>=E.places[0]?1:score>=E.places[1]?2:score>=E.places[2]?3:0,prize=place?evRub(S,E.prize[place-1]):0;
+  if(prize)cashIn(S,prize,"award");
+  for(const k in E.rep)repAdd(S,k,E.rep[k][place?place-1:3]);
+  const rec={y:S.year,place,score,pieces:pk.map(p=>p.id)};S.world.repEv.award.push(rec);
+  return Object.assign({prize},rec);}
+
 /* ===================== goals ===================== */
 const EV_GOAL_CHECK={
   first_heal:S=>S.pieces.some(p=>!p.by&&p.heal==="crisp"),
@@ -5800,6 +5935,7 @@ function evWeek(S,ctx){
   evSocialWeek(S,ctx);
   evRivalsWeek(S,ctx);
   evReckonWeek(S,ctx);
+  evRepWeek(S,ctx);
   if(st!=="apprentice"&&walkinsOpen(S)&&((S.rep&&S.rep.peers)||0)>=COVER_PUZZLE.peers&&!S.queue.some(q=>q.puzzle)&&ctx.r.fork("puzzle").chance(COVER_PUZZLE.chance))
     evCoverPuzzle(S,ctx,ctx.r.fork("puzzleClient"),null);
   for(const id of checkGoals(S,ctx.yearRolled||now%13===0)){const g=GOALS.find(x=>x.id===id);evLog(ctx,"goal",evFill(EVENTS.goal,{name:g.name}),{goal:id});}
@@ -5807,7 +5943,8 @@ function evWeek(S,ctx){
 
 WEEK_HOOKS.events=evWeek;WEEK_HOOKS.trend=evTrend;
 SIM.TREND_WAVES=TREND_WAVES;SIM.SOCIAL=SOCIAL;SIM.RIVALS=RIVALS;SIM.RIVAL=RIVAL;SIM.RECKONINGS=RECKONINGS;SIM.COVER_PUZZLE=COVER_PUZZLE;
-SIM.COVER_SCORE=COVER_SCORE;SIM.CONV_JUDGE=CONV_JUDGE;SIM.GOALS=GOALS;SIM.EVENTS=EVENTS;
+SIM.COVER_SCORE=COVER_SCORE;SIM.CONV_JUDGE=CONV_JUDGE;SIM.GOALS=GOALS;SIM.EVENTS=EVENTS;SIM.REP_EVENTS=REP_EVENTS;
+SIM.friday13Weeks=friday13Weeks;SIM.awardJudge=awardJudge;SIM.repEventAt=evRepAt;
 SIM.worldFresh=worldFresh;SIM.worldEnsure=worldEnsure;SIM.trendMult=trendMult;SIM.trendNow=trendNow;
 SIM.followersTarget=followersTarget;SIM.canPost=canPost;SIM.postPiece=postPiece;SIM.eventChoose=eventChoose;
 SIM.onReturn=onReturn;SIM.reckoningChoose=reckoningChoose;SIM.rivalsCopy=rivalsCopy;SIM.rivalWalkins=rivalWalkins;
@@ -6861,7 +6998,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.12.0";
+const VERSION="0.1.13.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -6931,7 +7068,7 @@ if(typeof addEventListener==="function"){addEventListener("pagehide",saveFlush);
 function saveJson(){return JSON.stringify(SIMOK("packSave")?INK_SIM.packSave(S):S);}
 function snapshot(){return JSON.parse(saveJson());}
 function saveFull(e){const now=Date.now();if(now-SAVE_WARN.at<SAVE_WARN.gap||typeof document==="undefined")return;SAVE_WARN.at=now;
-  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save");
+  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save","warn");
   if(typeof openSheet!=="function"||typeof buBackupOpen!=="function"||(typeof sheetOn==="function"&&sheetOn()))return;
   openSheet("Storage full",`<p style="margin-top:0">This browser wouldn't let Ink save (its storage is full or blocked). Your career is still open here, but it may be lost when you close the page.</p>
 <p class="hint">Make a backup code now and keep it in your notes. Clearing a save slot you don't need (Settings › Save) frees room too.</p>
@@ -6974,7 +7111,11 @@ function applyTheme(){const t=S.settings.theme||"dark";const eff=t==="auto"?(mat
 function applySettings(){applyTheme();document.documentElement.classList.toggle("noanim",!!S.settings.reduced);INK_SOUND.setOn(S.settings.sound!==false);applyGfx();}
 
 /* ---- toast ---- */
-function toast(msg){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");if(typeof INK_SOUND!=="undefined")INK_SOUND.chime();clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
+/* toast(msg, kind): kind names why it matters. Only the kinds in TOAST_CHIME play the chime (0.1.13.0); every other toast
+   (a hint, a confirmation, "Saved to slot 2") shows silently */
+const TOAST_CHIME={goal:1,event:1,heal:1,reveal:1,piece:1,money:1,milestone:1,warn:1};
+function toast(msg,kind){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");
+  if(kind&&TOAST_CHIME[kind]&&typeof INK_SOUND!=="undefined")INK_SOUND.chime();clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
 /* ===================== app/perf.js: graphics tiers and auto-adjust =====================
    Three tiers: lite (phone default), full, ultra. S.settings.gfx is the player's pick (null = automatic: lite on phones,
    full elsewhere). Auto-adjust (S.settings.gfxAuto, on unless false), lifted from Prairie Engine Works: while INK_VIS runs
@@ -7104,7 +7245,10 @@ function buSaveOk(o){
     for(const f of ["fired","plan","mods"])if(f in w&&!buObj(w[f]))return false;
     if("pending" in w&&!(Array.isArray(w.pending)&&w.pending.every(e=>buObj(e)&&typeof e.id==="string")))return false;
     if("social" in w){const so=w.social;if(!buObj(so))return false;if("followers" in so&&!buNum(so.followers))return false;
-      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}}
+      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}
+    if("repEv" in w){const re=w.repEv;if(!buObj(re))return false;   // 0.1.13.0: REP_EVENTS history
+      for(const f of ["magazine","award"])if(f in re&&!(Array.isArray(re[f])&&re[f].every(buObj)))return false;
+      for(const f of ["flash_day","friday_13"])if(f in re&&!(buObj(re[f])&&buNum(re[f].n||0)))return false;}}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
@@ -8699,7 +8843,7 @@ function clQuickSession(q){
   const res=INK_SIM.finishSession(S,q.id,{design:q.design,out,heal:null});if(!res)return;
   if(S.board.item===q.id)S.board.item=res.next?res.next.id:null;
   save();renderHeader();renderClients();INK_SOUND.tick();
-  toast(res.piece?`Finished: ${res.piece.name}. ${fmtMoney(res.paid)} paid.`:`Sitting ${q.sessionNo||1} of ${q.sessions||1} done, ${fmtMoney(res.paid)} paid. Next sitting week ${res.next.w}.`);}
+  toast(res.piece?`Finished: ${res.piece.name}. ${fmtMoney(res.paid)} paid.`:`Sitting ${q.sessionNo||1} of ${q.sessions||1} done, ${fmtMoney(res.paid)} paid. Next sitting week ${res.next.w}.`,res.piece?"piece":null);}
 
 /* ---- the client list and a client's card ---- */
 const CL_FILTERS=[["all","All"],["regular","Regulars"],["booked","Booked"],["walked","Walked"]];
@@ -8766,7 +8910,7 @@ const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
 const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",goal:"Goal",note:"",end:"The end"};
 /* the ledger's words (sim/career.js cashIn / cashOut kinds) */
 const CR_MONEY={sitting:"Sittings",deposit:"Deposits",flash:"Flash sales",book:"Flash book",merch:"Product line",convention:"Conventions",tv:"TV",loan:"Arkady's loan",staff:"Your artists' cut",
-  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop"};
+  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop",flashday:"Flash days",friday13:"Friday 13th specials",award:"The Drawbridge Prize"};
 function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
@@ -8808,9 +8952,10 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
-/* PR 9: the next thing a track opens, as the game has it today. Segments all bring walk-ins; of REP_TRACKS' events only
-   these two happen (guest spots at GUEST.peers, the capital's convention at its peers number), so the bars name only those */
-const CR_LIVE={guest_spot:"guest spot invitations",convention:"the big convention in the capital"};
+/* the next thing a track opens. Segments all bring walk-ins; every REP_TRACKS event is in the game (0.1.13.0: flash days,
+   Friday the 13th, Igla and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
+const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list (Act 4, in your own studio)",
+  magazine:"a feature in Igla (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
 function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
   const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
   for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
@@ -8903,19 +9048,19 @@ function caActWire(st){
   on("caChair",()=>{const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
     if(!confirm(early?"Leave Arkady's shop early and rent a chair?\n\nHe won't be pleased: it costs his goodwill.":"Leave Arkady's shop and rent your own chair?"))return;
     const r=INK_SIM.rentChair(S);if(!r.ok)return;CR.say=null;caStage();save();
-    toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment");
+    toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment","milestone");
     CR.last={weeks:0,line:`${INK_SIM.MENTOR.first}: “${r.line}”`,log:[]};renderCareer();});
   on("caLease",()=>{const n=INK_SIM.leaseNeed(S);if(!confirm(`Sign a lease? ${fmtMoney(n.cost)} deposit now, then rent and upkeep every week.`))return;
-    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
+    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.","milestone");renderCareer();});
   on("caShop",()=>showTab("studio"));
-  on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now");renderCareer();});
+  on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now","milestone");renderCareer();});
   on("caApp",()=>{const r=INK_SIM.takeApprentice(S);if(!r.ok){toast(r.why==="stage"?"You need your own studio first":"One apprentice at a time");return;}
     save();toast(`${r.apprentice.name} starts on the broom on Monday`);renderCareer();});
   const bk=$("caBooks");if(bk)bk.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;C.books=b.dataset.v==="closed"?"closed":"open";save();INK_SOUND.tick();renderCareer();});
   card.querySelectorAll("[data-proj]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.proj,o=INK_SIM.LEGACY_OFFERS[id];
     if(!confirm(`${o.name}: ${fmtMoney(caRub(o.cost))}. Go ahead?`))return;
     const r=INK_SIM.legacyAct(S,id);if(!r.ok){toast(r.why==="flash"?`You need ${r.need} sheets of your own flash`:r.why==="cash"?"Not enough cash":"Not now");return;}
-    save();renderHeader();toast(`${o.name}: done`);renderCareer();}));}
+    save();renderHeader();toast(`${o.name}: done`,"milestone");renderCareer();}));}
 /* a chore: a week passes (people waiting this week have to be seen or skipped with Next first) */
 function caChore(id){
   if(crWaiting().n){toast("Someone's waiting this week. See them, or press Next to let them go.");return;}
@@ -8951,7 +9096,8 @@ function caInvitesWire(){
     else if(r.kind==="chair"&&r.later)msg="Arkady shrugs. 'When you're ready.'";
     else if(r.kind==="chair")msg="You rent your own chair";
     if(S.studio.stage!==st0)caStage();
-    save();renderHeader();if(msg)toast(msg);INK_SOUND.tick();renderCareer();});}
+    const big=(r.kind==="conv"&&r.place)||r.kind==="tv"||(r.kind==="chair"&&!r.later);   // a placing, the TV call, your own chair
+    save();renderHeader();if(msg)toast(msg,big?"milestone":null);INK_SOUND.tick();renderCareer();});}
 
 /* ===================== money, skills, signature ===================== */
 function caMoneyHtml(){
@@ -9039,7 +9185,7 @@ function shopWire(){
     if(!r||r.ok===false){toast("Not enough cash");return;}toast(`${INK_SIM.STUDIO_STAGES[k].name}: ${INK_SIM.STUDIO_STAGES[k].levels[(S.studio.build[k]||1)-1]}`);re();}));
   body.querySelectorAll("[data-hire]").forEach(b=>b.addEventListener("click",()=>{const r=INK_SIM.hireStaff(S,b.dataset.hire);
     if(!r.ok){toast(r.why==="cash"?"Not enough cash for the hiring fee":r.why==="stations"?"No free station":"They've taken another job");return;}
-    SH.hire=false;if(typeof evGoalsNow==="function")evGoalsNow();toast(`${r.staff.name} starts at your shop`);re();}));
+    SH.hire=false;if(typeof evGoalsNow==="function")evGoalsNow();toast(`${r.staff.name} starts at your shop`,"milestone");re();}));
   body.querySelectorAll("[data-cut]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.cut);if(!s)return;
     INK_SIM.setStaffCut(S,s.id,Math.round((s.cut+(+b.dataset.d))*100)/100);INK_SOUND.tick();re();}));
   body.querySelectorAll("[data-letgo]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.letgo);if(!s)return;
@@ -9108,12 +9254,17 @@ ${L.fails?`<p class="hint">You lost a shop ${L.fails===1?"once":L.fails+" times"
                     or copying; the pawn shop on the canal), each with its buttons and what happens if you leave it
      evLowerHtml()  what's in demand (INK_SIM.trendNow), social media from 2016 (followers, far-away bookings, Post a
                     healed piece), rival shops, and the career's goals
-     evWire()       their buttons. evAfterLog(log) toasts goals reached after Next.
+     evWire()       their buttons. evAfterLog(log) toasts goals reached and reputation events after Next (both chime).
+   0.1.13.0: the reputation events (sim/events.js REP_EVENTS: a flash day, the Friday 13th special, a feature in Igla, the
+   Drawbridge Prize) arrive as the same choice cards, headed from EV_HEAD, with the first choice (the one that does something) highlighted; evRepHtml is their history on the Career tab.
    Sheets: evPostSheet (pick a healed piece to post), evConvOpen (pick a fresh and a healed piece for a convention, then
    the results), evReckonOpen (a reckoning: your old piece then and now, and three choices). evPostBtn(p) is the
    "Post it" button the piece sheet and the reveal use. Cover-ups draw on the design board (app/design.js dzOld). */
 const EV={};
 const EV_TACTIC={undercut:"undercuts on price",poach:"poaches artists",copy:"copies flash"};
+/* each card's heading: rivals' moves, the pawn shop, and the reputation events (their own heads in REP_EVENTS) */
+const EV_HEAD={undercut:"A rival shop",poach:"A rival shop",copy:"A rival shop",pawn:"The pawn shop"};
+function evHead(kind){const R=INK_SIM.REP_EVENTS&&INK_SIM.REP_EVENTS[kind];return R?R.head:EV_HEAD[kind]||"This week";}
 function evOn(){return SIMOK("worldEnsure");}
 function evStyle(id){return(INK_SIM.STYLES[id]||{}).name||id;}
 function evWeekStr(wi){const w=INK_SIM.weekFrom(wi);return`week ${w.w}${w.y!==S.year?", "+w.y:""}`;}
@@ -9125,8 +9276,8 @@ function evTopHtml(){
   if(C&&C.closed){const u=INK_SIM.weekFrom(C.closed.until);
     h+=`<div class="card evClosed" role="status"><span class="clK">Closed by the inspector</span><p><b>The shop is shut until week ${u.w}, ${u.y}.</b> ${esc(gvCapS(C.closed.why||""))}. Walk-ins go elsewhere and booked sittings move to the day you reopen.</p></div>`;}
   for(const e of W.pending){const dl=(e.choices||[]).find(c=>c[0]===e.dflt);
-    h+=`<div class="card evCard" data-ev="${esc(e.id)}"><span class="clK">${e.kind==="pawn"?"The pawn shop":"A rival shop"} · week ${e.w}, ${e.y}</span><p>${esc(e.text)}</p>
-<div class="row evCh">${(e.choices||[]).map(c=>`<button class="btn sm${c[0]===e.dflt?"":" pri"}" data-evc="${esc(c[0])}">${esc(c[1])}</button>`).join("")}</div>
+    h+=`<div class="card evCard${e.repEv?" evRepCard":""}" data-ev="${esc(e.id)}" data-kind="${esc(e.kind)}"><span class="clK">${esc(evHead(e.kind))} · week ${e.w}, ${e.y}</span><p>${esc(e.text)}</p>
+<div class="row evCh">${(e.choices||[]).map((c,i)=>`<button class="btn sm${(e.repEv?i===0:c[0]!==e.dflt)?" pri":""}" data-evc="${esc(c[0])}">${esc(c[1])}</button>`).join("")}</div>
 <p class="clMeta">Leave it past ${esc(evWeekStr(e.until))} and it's “${esc(dl?dl[1].toLowerCase():"")}”.</p></div>`;}
   return h;}
 
@@ -9153,9 +9304,16 @@ ${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name
 function evGoalsHtml(){
   const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
   return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span>${g.done&&typeof shGoalCard==="function"?`<button class="btn sm shBtn" data-gcard="${esc(g.id)}" aria-label="Share card: ${esc(g.name)}">${SH_ICON}Card</button>`:""}</li>`).join("")}</ul></div>`;}
+/* the reputation events so far: flash days and Friday 13ths run, Igla features, the Drawbridge Prize */
+function evRepHtml(){
+  const R=S.world.repEv;if(!R)return"";const fd=R.flash_day||{},fr=R.friday_13||{},mg=(R.magazine||[]).filter(m=>m.yes),aw=R.award||[];
+  if(!fd.n&&!fr.n&&!mg.length&&!aw.length)return"";
+  const pl=n=>["no placing","first place","second place","third place"][n]||"";
+  return`<div class="card evRepH"><h2>Days and honours</h2><dl class="kv">${fd.n?`<dt>Flash days</dt><dd>${fd.n} (${fd.sittings} pieces)</dd>`:""}${fr.n?`<dt>Friday 13th specials</dt><dd>${fr.n} (${fr.sittings} pieces)</dd>`:""}
+${mg.length?`<dt>Featured in Igla</dt><dd>${mg.map(m=>m.y).join(", ")}</dd>`:""}${aw.length?`<dt>The Drawbridge Prize</dt><dd>${aw.map(a=>`${a.y}: ${pl(a.place)}`).join(" · ")}</dd>`:""}</dl></div>`;}
 function evLowerHtml(){
   if(!evOn())return"";INK_SIM.worldEnsure(S);
-  return evTrendHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
+  return evTrendHtml()+evRepHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
 function evWire(){
   document.querySelectorAll(".evCard").forEach(card=>card.addEventListener("click",e=>{const b=e.target.closest("[data-evc]");if(!b)return;
     const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;evGoalsNow();
@@ -9168,12 +9326,15 @@ function evWire(){
    Returns the goals reached; quiet=true leaves the toast to the caller */
 function evGoalsNow(quiet){
   if(!SIMOK("checkGoals"))return[];const ids=INK_SIM.checkGoals(S,false);if(!ids.length)return ids;save();
-  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`),2700);}
+  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`,"goal"),2700);}
   return ids;}
-/* goals reached after Next: one toast */
+/* goals reached after Next: one toast; else a reputation event that just arrived (its card is at the top of the tab) */
 function evAfterLog(log){
-  const g=(log||[]).filter(l=>l.k==="goal");if(!g.length)return;
-  setTimeout(()=>toast(g[0].text+(g.length>1?` (and ${g.length-1} more)`:"")),300);}
+  const g=(log||[]).filter(l=>l.k==="goal");
+  if(g.length){setTimeout(()=>toast(g[0].text+(g.length>1?` (and ${g.length-1} more)`:""),"goal"),300);return;}
+  const e=(log||[]).find(l=>l.k==="event"&&l.repEv);if(e){setTimeout(()=>toast(`${evHead(e.repEv)}: your choice is at the top of the Career tab`,"event"),300);return;}
+  const h=(log||[]).filter(l=>l.k==="heal"&&l.piece&&S.reveals.indexOf(l.piece)>=0);
+  if(h.length)setTimeout(()=>toast(h.length>1?`${h.length} bandages come off: the reveals are on the Career tab`:"A bandage comes off: the reveal is on the Career tab","heal"),300);}
 
 /* ---- social: posting ---- */
 function evPostable(){const out=[];if(!evOn())return out;
@@ -9233,7 +9394,7 @@ function evReckonOpen(q){
 <div class="evChoices">${Object.keys(R.choices).map(k=>`<button class="btn${k===Object.keys(R.choices)[0]?" pri":""}" data-rc="${esc(k)}">${esc(R.choices[k].label)}</button>`).join("")}</div>`);
   $("sheetBody").querySelectorAll("[data-rc]").forEach(b=>b.addEventListener("click",()=>{
     const r=INK_SIM.reckoningChoose(S,q.id,b.dataset.rc);if(!r.ok)return;save();INK_SOUND.tick();
-    if(r.consult){closeSheet();toast(r.text);clStartConsult(q.id);return;}
+    if(r.consult){closeSheet();toast(r.text,"event");clStartConsult(q.id);return;}
     $("sheetBody").innerHTML=`<p>${esc(r.text)}</p>${r.item?`<p class="hint">A free sitting is booked for week ${r.item.w}, ${r.item.y}. The design is the old one; open it on the board to rework it.</p>`:""}<div class="row"><button class="btn pri" id="evOk">OK</button></div>`;
     $("evOk").addEventListener("click",closeSheet);if(typeof renderClients==="function"&&curTab==="clients")renderClients();}));
   return true;}
@@ -9244,7 +9405,9 @@ function evReckonOpen(q){
    and hand-made backups have) still loads; buSlotData (app/savecode.js) reads either.
    New career: the start screen on a first visit, and Settings › Save › New career after that. Two ways in: as Arkady's
    apprentice in week 1 of 2000 (Act 1, the tutorial), or "Skip the broom" (plan Q3): week 1 of 2003 in a rented chair
-   with basic skills (INK_SIM.skipBroom). Settings and the last-backup time carry over; nothing else does. */
+   with basic skills (INK_SIM.skipBroom). Settings and the last-backup time carry over; nothing else does, except the help
+   tips (0.1.13.0): Skip the broom is for players who know the ropes, so it starts with tips off; a full start turns them
+   on. Settings › Help turns them on or off either way. */
 function slMeta(i){const o=buStored(slotKey(i));if(!o)return null;
   return{i,savedAt:o.savedAt||0,week:o.week||1,year:o.year||2000,stage:o.stage||(o.studio&&o.studio.stage)||"apprentice",pieces:typeof o.pieces==="number"?o.pieces:Array.isArray(o.pieces)?o.pieces.length:null};}
 function slHtml(){
@@ -9285,7 +9448,7 @@ ${first?`<p class="hint">Played before on another phone? <button class="btn sm" 
 function slStart(skip,first){
   if(!first&&!confirm(skip?"Start a new career in a rented chair (2003)? The current one is replaced.":"Start a new career as an apprentice (2000)? The current one is replaced."))return;
   const keep={settings:S.settings,bkAt:S.bkAt};
-  S=freshState();S.settings=keep.settings;S.bkAt=keep.bkAt||0;
+  S=freshState();S.settings=Object.assign({},keep.settings,{tips:!skip});S.bkAt=keep.bkAt||0;
   if(skip&&SIMOK("skipBroom"))INK_SIM.skipBroom(S);
   slReset();save();closeSheet();if(typeof caStage==="function")caStage();
   if(typeof showTab==="function")showTab("career");
@@ -9595,7 +9758,8 @@ function bmSvg(view,sel,shape,tone){
   return h;}
 /* ===================== app/share.js: share cards (PR 9) =====================
    Three picture cards, all drawn on a plain 2D canvas (cheap on a Lite phone, no WebGL needed):
-     shPieceCard(id)   a healed piece on its limb as it looks today, with the design's name, the placement and the year
+     shPieceCard(id)   a healed piece on its limb as it looks today, with the design's name, whose it is and where
+                       ("Olga's forearm": the client's first name, 0.1.13.0; every client is invented), the style and year
      shGoalCard(id)    a trophy card for one of the career's GOALS (sim/events.js)
      shLegacyCard()    the Legacy screen's summary (INK_SIM.legacySummary)
    Every card is cream paper with black ink, like a flash sheet, and carries the credit line "© year Kelbo / Longlight
@@ -9670,17 +9834,22 @@ async function shLimb(x,p,X,Y,W,H){
   return t;}
 async function shRun(fn){if(SHR.busy)return;SHR.busy=true;try{await fn();}catch(e){toast("Couldn't make the picture here");}finally{SHR.busy=false;}}
 
+/* "Olga's forearm": the client's first name and the placement in words, or "" when the piece has no client on the books */
+function shWhose(p){const c=SIMOK("findClient")?INK_SIM.findClient(S,p.client):null,d=p.design||{};
+  if(!c||!c.first)return"";const pl=SIMOK("placeWords")?INK_SIM.placeWords(d.placement):((INK_SIM.PLACEMENTS[d.placement]||{}).name||"arm");
+  return`${c.first}'s ${pl}`;}
 /* ---- the piece card ---- */
 function shPieceCard(id){return shRun(async()=>{
   const p=S.pieces.find(q=>q.id===id);if(!p){toast("That piece isn't here");return;}
   const{c,x}=await shCanvas(),P=SHARE.pad,W=SHARE.w,L=SHARE.piece,d=p.design||{};
   const pl=(INK_SIM.PLACEMENTS[d.placement]||{}).name||"",st=(INK_SIM.STYLES[d.style]||{}).name||"";
+  const who=shWhose(p)||gvCap(pl);
   shFrame(x,p.by?"From the shop":"From the body of work");
   const t=await shLimb(x,p,P,L.top,W-2*P,L.h);
   const yrs=Math.floor(gvAgeYears(p)),grade=p.heal?(GV_WORDS[p.heal]||p.heal):"Healing";
   let Y=L.top+L.h+86;x.font=shFont("disp",68);
   shText(x,shFit(x,gvCap(p.label||"tattoo").toUpperCase(),W-2*P),P,Y,shFont("disp",68));
-  Y+=54;shText(x,shFit((x.font=shFont("ui",34,600),x),[gvCap(pl),st,String(p.y)].filter(Boolean).join(" · "),W-2*P),P,Y,shFont("ui",34,600));
+  Y+=54;shText(x,shFit((x.font=shFont("ui",34,600),x),[who,st,String(p.y)].filter(Boolean).join(" · "),W-2*P),P,Y,shFont("ui",34,600));
   Y+=46;shText(x,`Healed ${grade.toLowerCase()} · ${yrs<1?"fresh":yrs+(yrs===1?" year":" years")+" on the skin"} · reads ${Math.round((t.a.readability||0)*100)} today`,P,Y,shFont("ui",28,500),SHARE.mute);
   await shSave(c,`ink-${shSlug(p.label)}-${p.y}.png`,gvCap(p.label||"Tattoo"));});}
 

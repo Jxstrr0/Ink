@@ -310,7 +310,7 @@ function leaseStudio(S){
   cashOut(S,n.cost,"lease");S.studio.stage="studio";S.studio.lease={w:S.week,y:S.year};caReach(S,"studio");
   S.career.insp=weekIndex(S.week,S.year)+rng(S.seed).fork("insp:first").int(INSPECTION.first[0],INSPECTION.first[1]);
   S.rate=rateFor(S);return{ok:true,cost:n.cost};}
-function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=60};}
+function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=REP_TRACKS.collectors.events.waiting_list};}
 function goLegacy(S){careerEnsure(S);const n=legacyNeed(S);if(!(n.stage&&n.when))return{ok:false,need:n};
   S.studio.stage="legacy";caReach(S,"legacy");S.rate=rateFor(S);return{ok:true};}
 /* skipBroom(S): a new career that starts at Act 2 (plan Q3): week 1 of 2003, a rented chair, basic skills */

@@ -96,7 +96,10 @@ function buSaveOk(o){
     for(const f of ["fired","plan","mods"])if(f in w&&!buObj(w[f]))return false;
     if("pending" in w&&!(Array.isArray(w.pending)&&w.pending.every(e=>buObj(e)&&typeof e.id==="string")))return false;
     if("social" in w){const so=w.social;if(!buObj(so))return false;if("followers" in so&&!buNum(so.followers))return false;
-      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}}
+      if("posts" in so&&!(Array.isArray(so.posts)&&so.posts.every(p=>Array.isArray(p)&&p.every(buNum))))return false;}
+    if("repEv" in w){const re=w.repEv;if(!buObj(re))return false;   // 0.1.13.0: REP_EVENTS history
+      for(const f of ["magazine","award"])if(f in re&&!(Array.isArray(re[f])&&re[f].every(buObj)))return false;
+      for(const f of ["flash_day","friday_13"])if(f in re&&!(buObj(re[f])&&buNum(re[f].n||0)))return false;}}
   if("board" in o){const b=o.board;if(!buObj(b))return false;
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}

@@ -1,6 +1,7 @@
 /* ===================== app/share.js: share cards (PR 9) =====================
    Three picture cards, all drawn on a plain 2D canvas (cheap on a Lite phone, no WebGL needed):
-     shPieceCard(id)   a healed piece on its limb as it looks today, with the design's name, the placement and the year
+     shPieceCard(id)   a healed piece on its limb as it looks today, with the design's name, whose it is and where
+                       ("Olga's forearm": the client's first name, 0.1.13.0; every client is invented), the style and year
      shGoalCard(id)    a trophy card for one of the career's GOALS (sim/events.js)
      shLegacyCard()    the Legacy screen's summary (INK_SIM.legacySummary)
    Every card is cream paper with black ink, like a flash sheet, and carries the credit line "© year Kelbo / Longlight
@@ -75,17 +76,22 @@ async function shLimb(x,p,X,Y,W,H){
   return t;}
 async function shRun(fn){if(SHR.busy)return;SHR.busy=true;try{await fn();}catch(e){toast("Couldn't make the picture here");}finally{SHR.busy=false;}}
 
+/* "Olga's forearm": the client's first name and the placement in words, or "" when the piece has no client on the books */
+function shWhose(p){const c=SIMOK("findClient")?INK_SIM.findClient(S,p.client):null,d=p.design||{};
+  if(!c||!c.first)return"";const pl=SIMOK("placeWords")?INK_SIM.placeWords(d.placement):((INK_SIM.PLACEMENTS[d.placement]||{}).name||"arm");
+  return`${c.first}'s ${pl}`;}
 /* ---- the piece card ---- */
 function shPieceCard(id){return shRun(async()=>{
   const p=S.pieces.find(q=>q.id===id);if(!p){toast("That piece isn't here");return;}
   const{c,x}=await shCanvas(),P=SHARE.pad,W=SHARE.w,L=SHARE.piece,d=p.design||{};
   const pl=(INK_SIM.PLACEMENTS[d.placement]||{}).name||"",st=(INK_SIM.STYLES[d.style]||{}).name||"";
+  const who=shWhose(p)||gvCap(pl);
   shFrame(x,p.by?"From the shop":"From the body of work");
   const t=await shLimb(x,p,P,L.top,W-2*P,L.h);
   const yrs=Math.floor(gvAgeYears(p)),grade=p.heal?(GV_WORDS[p.heal]||p.heal):"Healing";
   let Y=L.top+L.h+86;x.font=shFont("disp",68);
   shText(x,shFit(x,gvCap(p.label||"tattoo").toUpperCase(),W-2*P),P,Y,shFont("disp",68));
-  Y+=54;shText(x,shFit((x.font=shFont("ui",34,600),x),[gvCap(pl),st,String(p.y)].filter(Boolean).join(" · "),W-2*P),P,Y,shFont("ui",34,600));
+  Y+=54;shText(x,shFit((x.font=shFont("ui",34,600),x),[who,st,String(p.y)].filter(Boolean).join(" · "),W-2*P),P,Y,shFont("ui",34,600));
   Y+=46;shText(x,`Healed ${grade.toLowerCase()} · ${yrs<1?"fresh":yrs+(yrs===1?" year":" years")+" on the skin"} · reads ${Math.round((t.a.readability||0)*100)} today`,P,Y,shFont("ui",28,500),SHARE.mute);
   await shSave(c,`ink-${shSlug(p.label)}-${p.y}.png`,gvCap(p.label||"Tattoo"));});}
 

@@ -16,7 +16,7 @@ const CR={last:null,lines:[],arm:0,armT:0,LINES:8,say:null};
 const CR_KIND={week:"",left:"Left",gaveup:"Gave up",heal:"Heal",year:"Year",walkin:"Walk-in",return:"Coming back",referral:"Referral",booked:"Chair",carried:"Moved",cost:"Costs",event:"Event",trend:"Trend",goal:"Goal",note:"",end:"The end"};
 /* the ledger's words (sim/career.js cashIn / cashOut kinds) */
 const CR_MONEY={sitting:"Sittings",deposit:"Deposits",flash:"Flash sales",book:"Flash book",merch:"Product line",convention:"Conventions",tv:"TV",loan:"Arkady's loan",staff:"Your artists' cut",
-  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop"};
+  mentor:"Arkady's cut",chair:"The shop's split",supplies:"Supplies",rent:"Rent and upkeep",marketing:"Marketing",apprentice:"Apprentice stipend",travel:"Travel",fine:"Fines",lease:"Lease deposit",build:"Build-out",kit:"Kit",line:"Product line",conv:"Your convention",pawn:"The pawn shop",flashday:"Flash days",friday13:"Friday 13th specials",award:"The Drawbridge Prize"};
 function crWaiting(){const now=INK_SIM.weekIndex(S.week,S.year);let w=0,c=0,s=0;
   for(const q of S.queue){if(INK_SIM.weekIndex(q.w,q.y)>now)continue;if(q.kind==="walkin")w++;else if(q.kind==="consult")c++;else if(q.kind==="session")s++;}
   return{w,c,s,n:w+c+s};}
@@ -58,9 +58,10 @@ ${C&&(st==="studio"||st==="legacy"||over)?`<div class="row" style="margin-top:12
 const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
   collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
-/* PR 9: the next thing a track opens, as the game has it today. Segments all bring walk-ins; of REP_TRACKS' events only
-   these two happen (guest spots at GUEST.peers, the capital's convention at its peers number), so the bars name only those */
-const CR_LIVE={guest_spot:"guest spot invitations",convention:"the big convention in the capital"};
+/* the next thing a track opens. Segments all bring walk-ins; every REP_TRACKS event is in the game (0.1.13.0: flash days,
+   Friday the 13th, Igla and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
+const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list (Act 4, in your own studio)",
+  magazine:"a feature in Igla (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
 function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
   const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
   for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
@@ -153,19 +154,19 @@ function caActWire(st){
   on("caChair",()=>{const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
     if(!confirm(early?"Leave Arkady's shop early and rent a chair?\n\nHe won't be pleased: it costs his goodwill.":"Leave Arkady's shop and rent your own chair?"))return;
     const r=INK_SIM.rentChair(S);if(!r.ok)return;CR.say=null;caStage();save();
-    toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment");
+    toast(r.split==="mentor"?"Arkady gives you his own chair at a fair split":"You rent a chair in a shop off the embankment","milestone");
     CR.last={weeks:0,line:`${INK_SIM.MENTOR.first}: “${r.line}”`,log:[]};renderCareer();});
   on("caLease",()=>{const n=INK_SIM.leaseNeed(S);if(!confirm(`Sign a lease? ${fmtMoney(n.cost)} deposit now, then rent and upkeep every week.`))return;
-    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.");renderCareer();});
+    const r=INK_SIM.leaseStudio(S);if(!r.ok){toast("Not yet");return;}if(typeof evGoalsNow==="function")evGoalsNow();caStage();save();toast("The keys are yours. Build it out on the Studio tab.","milestone");renderCareer();});
   on("caShop",()=>showTab("studio"));
-  on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now");renderCareer();});
+  on("caLegacy",()=>{const r=INK_SIM.goLegacy(S);if(!r.ok)return;caStage();save();toast("Act 4: people wait for you now","milestone");renderCareer();});
   on("caApp",()=>{const r=INK_SIM.takeApprentice(S);if(!r.ok){toast(r.why==="stage"?"You need your own studio first":"One apprentice at a time");return;}
     save();toast(`${r.apprentice.name} starts on the broom on Monday`);renderCareer();});
   const bk=$("caBooks");if(bk)bk.addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;C.books=b.dataset.v==="closed"?"closed":"open";save();INK_SOUND.tick();renderCareer();});
   card.querySelectorAll("[data-proj]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.proj,o=INK_SIM.LEGACY_OFFERS[id];
     if(!confirm(`${o.name}: ${fmtMoney(caRub(o.cost))}. Go ahead?`))return;
     const r=INK_SIM.legacyAct(S,id);if(!r.ok){toast(r.why==="flash"?`You need ${r.need} sheets of your own flash`:r.why==="cash"?"Not enough cash":"Not now");return;}
-    save();renderHeader();toast(`${o.name}: done`);renderCareer();}));}
+    save();renderHeader();toast(`${o.name}: done`,"milestone");renderCareer();}));}
 /* a chore: a week passes (people waiting this week have to be seen or skipped with Next first) */
 function caChore(id){
   if(crWaiting().n){toast("Someone's waiting this week. See them, or press Next to let them go.");return;}
@@ -201,7 +202,8 @@ function caInvitesWire(){
     else if(r.kind==="chair"&&r.later)msg="Arkady shrugs. 'When you're ready.'";
     else if(r.kind==="chair")msg="You rent your own chair";
     if(S.studio.stage!==st0)caStage();
-    save();renderHeader();if(msg)toast(msg);INK_SOUND.tick();renderCareer();});}
+    const big=(r.kind==="conv"&&r.place)||r.kind==="tv"||(r.kind==="chair"&&!r.later);   // a placing, the TV call, your own chair
+    save();renderHeader();if(msg)toast(msg,big?"milestone":null);INK_SOUND.tick();renderCareer();});}
 
 /* ===================== money, skills, signature ===================== */
 function caMoneyHtml(){
