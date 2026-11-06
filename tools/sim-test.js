@@ -487,7 +487,7 @@ if (!QUIET) {
   console.log("Next, four presses, if only booked clients, heals and events stopped it:");
   for (let i = 0; i < 4; i++) { const res = SIM.nextStop(NY); console.log("  [" + res.weeks + " wk, stop: " + res.why + "] " + res.line); }
   SIM.WEEK.nextStopsOnWalkins = true;
-  const retN = LONG.clients.filter(c => c.history.some(h => h.kind === "consult" && h.src === "return")).length;
+  const retN = LONG.clients.filter(c => (c.history || []).some(h => h.kind === "consult" && h.src === "return")).length;
   console.log("\n30-year run: " + LONG.clients.length + " clients, " + LONG.pieces.length + " pieces, " + LONG.clients.filter(c => c.referredBy).length + " referred, " + retN + " came back, queue " + LONG.queue.length +
     ", cash " + LONG.cash.toLocaleString("en-CA") + " RUB, S as JSON " + Math.round(JSON.stringify(LONG).length / 1024) + " KB unpacked. whole run " + Math.round(runMs) + " ms");
   console.log("last advanceWeek log: " + lastLog.map(l => l.text).join(" | "));

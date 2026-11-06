@@ -5,6 +5,7 @@ css/ui-design.css
 css/ui-clients.css
 css/ui-session.css
 css/ui-gallery.css
+css/ui-career.css
 html/body.html
 html/ld-libs.html
 sim/rng.js
@@ -38,6 +39,9 @@ app/design.js
 app/session.js
 app/clients.js
 app/career.js
+app/shop.js
+app/legacy.js
+app/slots.js
 app/gallery.js
 app/bodymap.js
 app/help.js

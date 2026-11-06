@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.6.0";
+const VERSION="0.1.7.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -34,7 +34,15 @@ function freshState(){return{
                      // healW/healY, portfolio (true or absent) and, for a sample walk-in, review {stars, text}
   reveals:[],        // ids of healed pieces whose reveal you haven't seen yet, oldest first (PR 5, sim/heal.js REVEAL_CAP)
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
-  studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
+  studio:SIMOK("studioFresh")?INK_SIM.studioFresh():{stage:"apprentice",staff:[]},
+                     // the shop (PR 7, sim/career.js studioFresh): stage apprentice | chair | studio | legacy, staff [{id, name,
+                     // style, skill, ego, cut, loyalty, pieces, earned, ...}], build {stations, waiting, flash, steril, lighting,
+                     // storefront} levels, vibe, marketing (MARKETING index), rep (the shop's own 0..100), lease {w,y}, nextStaff
+  career:SIMOK("careerFresh")?INK_SIM.careerFresh():null,
+                     // the career (PR 7, sim/career.js careerFresh): mentor {goodwill, left, loan}, Act 1 steps/chores/practice/
+                     // friends, sig (signature counts), money {cur, prev, total} ledger, broke weeks, fails, scene (a full-screen
+                     // scene waiting: broke | legacy), invites, conv (conventions entered), guest (a guest spot running), offers
+                     // (Act 4), apprentices, alumni, rivals (PR 8 hook), reached {chair, studio, legacy: {w,y}}, books, skipped, insp
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
   board:{design:null,bodyShape:"neutral",skinTone:0.3,client:"wk_office",item:null},   // the design board (PR 2): the working design; client = a sample id or a real client id, item = the booking being designed for (PR 3)
                      // (a design as in docs/SIM-CONTRACT.md, null = empty), the body shape and skin tone it is drawn for,
@@ -45,9 +53,20 @@ function freshState(){return{
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
 let S=freshState();
+function SIMOK(f){return typeof INK_SIM!=="undefined"&&typeof INK_SIM[f]==="function";}
 
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot()));if(typeof buPersist==="function")buPersist();}catch(e){}}
-function snapshot(){return JSON.parse(JSON.stringify(S));}
+/* save(): the game into ink-save, packed (INK_SIM.packSave: older pieces and archived clients as short arrays; hydrate
+   unpacks them). If the browser refuses (storage full), say so once in a while and offer a backup code */
+const SAVE_WARN={at:0,gap:120000};
+function save(){try{localStorage.setItem(SAVE_KEY,saveJson());if(typeof buPersist==="function")buPersist();}catch(e){saveFull(e);}}
+function saveJson(){return JSON.stringify(SIMOK("packSave")?INK_SIM.packSave(S):S);}
+function snapshot(){return JSON.parse(saveJson());}
+function saveFull(e){const now=Date.now();if(now-SAVE_WARN.at<SAVE_WARN.gap||typeof document==="undefined")return;SAVE_WARN.at=now;
+  if(typeof toast==="function")toast("This phone's storage is full, so the game couldn't save");
+  if(typeof openSheet!=="function"||typeof buBackupOpen!=="function"||(typeof sheetOn==="function"&&sheetOn()))return;
+  openSheet("Storage full",`<p style="margin-top:0">This browser wouldn't let Ink save (its storage is full or blocked). Your career is still open here, but it may be lost when you close the page.</p>
+<p class="hint">Make a backup code now and keep it in your notes. Clearing a save slot you don't need (Settings › Save) frees room too.</p>
+<div class="row"><button class="btn pri" id="sfBack" style="flex:1">Back up now</button></div>`);$("sfBack").addEventListener("click",buBackupOpen);}
 /* load a saved object into S on top of a fresh state, so a field added since that save gets its default. false if it
    isn't an Ink save. */
 function hydrate(o){
@@ -64,6 +83,12 @@ function hydrate(o){
   for(const k of ["walkins","collectors","peers"])S.rep[k]=Math.max(0,Math.min(100,+S.rep[k]||0));
   if(S.session!=null&&(typeof S.session!=="object"||Array.isArray(S.session)))S.session=null;
   if(typeof INK_SIM!=="undefined"&&INK_SIM.kitClean)S.kit=INK_SIM.kitClean(S.kit);   // unknown ids dropped, sliders clamped
+  /* PR 7: a save from before the career has no career (careerEnsure then treats the tutorial as done); packed pieces and
+     archived clients come back as records; studio and career get any field added since */
+  if(!o.career||typeof o.career!=="object"||Array.isArray(o.career))S.career=null;
+  if(!o.studio||typeof o.studio!=="object"||Array.isArray(o.studio))S.studio=freshState().studio;
+  if(SIMOK("unpackSave"))INK_SIM.unpackSave(S);
+  if(SIMOK("careerEnsure"))INK_SIM.careerEnsure(S);
   S.v=SAVE_V;
   return true;}
 function loadSaved(){try{const j=localStorage.getItem(SAVE_KEY);if(j&&hydrate(JSON.parse(j)))return true;}catch(e){}S=freshState();return false;}
