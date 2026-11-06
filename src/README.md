@@ -42,6 +42,7 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `html/head.html` | doctype, inline critical style, `<title>`, the `#boot` loading splash and its loader (`__ld`, `__ldGo`, `__ldDone`), Google Fonts (Space Grotesk, Oswald), the `<style>` line |
 | `css/ui-design.css` | the Design tab: body diagram, cream board, toolbar, drawer, capsule with deltas and aging strip, stress report, flash wall (PR 2) |
 | `css/ui-clients.css` | the Clients and Career tabs: this week's cards, the consult chat, the client list and card, the board's booking bar, the Next button (PR 3) |
+| `css/ui-session.css` | the Session tab (the chair: meters, the care rail, the stacked canvases, the steady-hand gauge, liner chips, placement, results) and the Studio kit panel (PR 4) |
 | `css/style.css` | theme tokens (dark default, `html[data-theme=light]`), the app frame (header, `#panel`, bottom `#tabs`), cards, buttons, segmented controls, the sheet, toast, the update bar, the cream `.board`, reduced motion / transparency |
 | `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
 | `html/ld-libs.html`, `ld-sim.html`, `ld-vis.html` | one-line `<script>__ld(fraction,"message")</script>` loading-bar steps after the block they report |
@@ -54,11 +55,11 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `sim/aging.js` | `age(tattoo, years)`, `COLOUR_FADE`, `PLACEMENT_WEAR` (PR 1) |
 | `sim/clients.js` | `CLIENT_TRAITS`, `NAMES`, `JOBS`, `BRIEFS`, `HIDDEN_WANTS`, `BAD_IDEAS`, `CONSULT_QUESTIONS`, `QUOTE`, `LOYALTY`, `REVIEWS`, `RETURN_RULES`, `REFERRAL`; `makeClient`, the consult state machine (`consultStart`/`Options`/`Choose`/`Commit`), `addPiece`, `scheduleReturns`, `referral`, `writeReview`, `findClient` (PR 3) |
 | `sim/calendar.js` | `WEEK`, `WEEK_HOOKS`/`WEEK_ORDER`, `advanceWeek(S)` (the only thing that moves time), `nextStop(S)`, `finishSession`, `careerOver` (PR 3) |
-| `sim/session.js` | the session scoring and client meters (PR 4) |
-| `sim/kit.js` | `MACHINES`, `NEEDLES`, `INKS` (PR 4) |
+| `sim/session.js` | the session (PR 4): the SVG flattener and stencil plan (`sessionPlan`), trace-and-rhythm scoring (`penDown`/`penMove`/`penUp`), shading and colour zones, the client's pain and fatigue (`sessionAction`: break, numb, chat), `sessionFinish` (outputs and progress), `sessionXp`; tables `STENCIL`, `PACE`, `ACC`, `DEPTH`, `BLOW`, `JOIN`, `LW_FIT`, `ZONE`, `COLOUR_PACK`, `TRAUMA`, `PAIN`, `FATIGUE`, `BREAK`, `NUMB`, `CHAT`, `CLOCK`, `SKILL_XP` |
+| `sim/kit.js` | the kit (PR 4): `MACHINES`, `NEEDLES`, `INKS` (the one ink table; `aging.js` reads it, `INK_TIERS` is the same object), `VOLTAGE`, `STROKE`, `KIT_TUNE`, `ASSIST`, `KIT_DEFAULT`; `kitBands`, `kitDeltas`, `kitPrice`, `kitClean` |
 | `sim/market.js` | `PRICE_INDEX` (PR 1), `WALKINS`, `WALKIN_SEASON`, `generateWalkins` (PR 3); closes the IIFE, `</script>` |
 | **INK_SOUND** | |
-| `sound/synth.js` | the whole block: audio context on first tap, `tick()`; the machine buzz in PR 4 |
+| `sound/synth.js` | the whole block: audio context on first tap, `tick()`; the machine buzz `buzzStart`/`buzzSet`/`buzzStop` and its `BUZZ` table (PR 4) |
 | **INK_VIS** | |
 | `vis/core.js` | `<script>`, IIFE open, shared state `V`, tier table, `init`, `resize`, `setTier`, `draw` (render once per change) |
 | `vis/body.js` | the mannequin (PR 6) |
@@ -70,11 +71,11 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `app/perf.js` | graphics tiers (`perfTier`, `applyGfx`) and auto-adjust (`PERF`, `perfPoll`) |
 | `app/savecode.js` | save codes: `buCode`, `buRead`, `buWrite`, the Back up / Restore sheets, backup files, `buPersist` |
 | `app/boot.js` | `showTab`, `renderAll`, the sheet (`openSheet`/`closeSheet`), Settings, PWA install and update bar, `start()` |
-| `app/studio.js` | `renderStudio` |
-| `app/design.js` | `renderDesign`: the design board (Body, Board, Flash views), `DZ_SAMPLE_CLIENTS`, the working model `DZ`, undo/redo, drawer, capsule, stress report, flash wall (PR 2) |
-| `app/session.js` | `renderSession` (empty state when nobody is booked) |
+| `app/studio.js` | `renderStudio`; the kit build panel (`kpRender`: summary, Machine / Needles / Ink / Tune with up/down deltas, buying) (PR 4) |
+| `app/design.js` | `renderDesign`: the design board (Body, Board, Flash views), `DZ_SAMPLE_CLIENTS`, the working model `DZ`, undo/redo, drawer, capsule, stress report, flash wall (PR 2); Tattoo this and Practice on fake skin under the board (PR 4) |
+| `app/session.js` | `renderSession` (PR 4): the lobby (sittings due, a sample piece's next sitting, Practice on fake skin), stencil placement, the chair (four canvases, meters, care rail, liner chips, zones), results; `sessionStartBooked(item)` (booked, via `INK_SIM.finishSession`), `seTattooThis` (the board's Tattoo this), `seStartPractice`; `SE_PAY`, `SE_HEAL_WEEKS`, `SE_FPS`; `window.__inkSessFps()` |
 | `app/clients.js` | `renderClients`: This week (walk-ins, booked consults, sittings due, coming up) and the client list with filters and a client card (pieces as they look today, history); the consult view; `clDesignFor` and the board's booking bar (`clBookingBar`); `clSession` (PR 4's `sessionStartBooked` if present, else `clQuickSession`) (PR 3) |
-| `app/career.js` | `renderCareer`: the Next button (`crNext` → `INK_SIM.nextStop`, warns once if people are waiting), the stop's log, `STAGE_NAMES` (PR 3) |
+| `app/career.js` | `renderCareer`: the Next button (`crNext` → `INK_SIM.nextStop`, warns once if people are waiting; refuses while a booked sitting is in the chair, PR 4), the stop's log, `STAGE_NAMES` (PR 3) |
 | `app/bodymap.js` | `bmSvg`: the front/back body diagram with a tappable zone per placement (PR 2) |
 | `app/help.js` | help overlays (PR 9); closes the app script |
 | `html/tail.html` | `<script>__ldGo(start)</script></body></html>` (no trailing newline) |
@@ -88,20 +89,21 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`. `h
 | `v` | number | save format version (`SAVE_V`) |
 | `week` | number | 1..52 within the year |
 | `year` | number | 2000..2030 |
-| `cash` | number | money on hand |
+| `cash` | number | money on hand; a new career starts with 3,000 ₽ (PR 4) |
 | `rate` | number | your hourly rate (PR 7: `RATE_BY_REP` × `PRICE_INDEX`); 0 while an apprentice |
 | `rep` | object | the three reputation tracks `{walkins, collectors, peers}` (`REP_TRACKS`, PR 5) |
 | `skills` | object | `{styles:{styleId:0..10}, consult, linework, shading, colour, speed}` (`SKILLS`, PR 7) |
-| `kit` | object | machine, needles, inks, voltage (PR 4) |
+| `kit` | object | the kit (PR 4): `{machine, needles:[NEEDLES ids on the tray, at most KIT_TRAY_MAX], ink, voltage (V), stroke (mm), owned:{machines:[], needles:[], inks:[]}}`; a new career has `KIT_DEFAULT` (used coil, 3RL/7RL/7M1, budget ink, 7 V, 3.5 mm); `hydrate` turns an older save's `{}` into it |
 | `clients` | array | client records (PR 3; shape in `docs/SIM-CONTRACT.md`), compacted past `CLIENT_CAP` (PR 7) |
-| `pieces` | array | every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5) |
-| `queue` | array | booked sessions, including later sessions of multi-session pieces (PR 3, PR 4) |
+| `pieces` | array | every tattoo: design parameters + session outputs + date, never pictures (`SIM.addPiece`, PR 3); PR 4 adds `heal:null`, `healDue {w, y}`, `sessionsUsed`, `blowouts`, `joins`, `ink`, `machine` (PR 5 fills `heal`) |
+| `queue` | array | booked sessions, including later sessions of multi-session pieces (PR 3); a session item carries `progress` (PR 4: the session's `{next, zsat, acc, cur}`, numbers only) once a sitting of it is done |
+| `session` | object | the chair (PR 4): null, or `{live, next}`: `live` is the sitting in progress (the object `INK_SIM.sessionNew` makes, saved at every finger lift, so a reload resumes it) or null; `next` is a sample walk-in's unfinished piece `{client, design, bodyShape, skinTone, progress, part, partsTotal}` or null |
 | `studio` | object | `{stage: "apprentice"\|"chair"\|"studio"\|"legacy", staff:[]}` (PR 7) |
 | `goals` | object | `GOALS` done, id → `{w, y}` (PR 8) |
 | `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id, or a real client id from PR 3), `item` (PR 3: the `S.queue` session item being designed for, or null) |
 | `flash` | array | your own flash, saved from the board: `{id, name, design, w, y}`, at most `FLASH_MINE_CAP` (40) (PR 2) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
-| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced` |
+| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced`, `handed` (`"right"`/`"left"`, PR 4), `assist` (PR 4) |
 | `bkAt` | number | when the last backup was made (ms), 0 = never |
 
 The sim's data shapes (designs, clients, elements, placements) are in `docs/SIM-CONTRACT.md`.

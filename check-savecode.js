@@ -157,12 +157,24 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
     { v: 1, save: game({ board: { design: null, skinTone: "dark" } }), slots: [] },  // skin tone not a number
     { v: 1, save: game({ flash: {} }), slots: [] },                                  // flash not a list
     { v: 1, save: game({ flash: [{ id: "mf1", design: null }] }), slots: [] },       // a flash entry without a design
+    { v: 1, save: game({ kit: [] }), slots: [] },                                    // kit not an object
+    { v: 1, save: game({ kit: { needles: "3RL" } }), slots: [] },                    // needles not a list
+    { v: 1, save: game({ kit: { needles: [3] } }), slots: [] },                      // a needle that isn't a name
+    { v: 1, save: game({ kit: { voltage: "hot" } }), slots: [] },                    // voltage not a number
+    { v: 1, save: game({ kit: { owned: { machines: "coil" } } }), slots: [] },       // owned machines not a list
+    { v: 1, save: game({ session: "chair" }), slots: [] },                           // session not an object
+    { v: 1, save: game({ session: { live: { next: 2, design: null } } }), slots: [] },   // a sitting without a design
+    { v: 1, save: game({ session: { live: { next: "a", design: { elements: [] } } } }), slots: [] },   // a sitting with no position
     { v: 2, save: game(), slots: [] },
     { v: 1, save: [game()], slots: [] },
     [game()], "just a string", 42, null
   ];
   for (const d of bad) assert.strictEqual(msg(a, pack(a, d)), "bad", JSON.stringify(d).slice(0, 80));
   assert.strictEqual(msg(a, pack(a, { v: 1, save: game(), slots: [] })), "ok", "and the same thing done right passes");
+  const kitOk = { machine: "coil", needles: ["3RL", "9RL"], ink: "standard", voltage: 7.5, stroke: 3, owned: { machines: ["coil_used", "coil"], needles: ["3RL", "9RL"], inks: ["budget", "standard"] } };
+  const sessOk = { live: { next: 3, kind: "practice", design: { elements: [] }, m: { pain: 0 } }, next: null };
+  assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: kitOk, session: sessOk }), slots: [] })), "ok", "a kit and a sitting in progress pass");
+  assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: {}, session: null }), slots: [] })), "ok", "an older save's empty kit passes");
   assert.deepStrictEqual(a.localStorage.dump(), before);
 });
 check("a write that fails half way (storage full) puts every key back the way it was", () => {
@@ -186,10 +198,16 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   const a = load();
   assert(a.hydrate({ week: 5, year: 2001, settings: { theme: "light" } }));
   const s = plain(a.__get());
-  assert.strictEqual(s.week, 5); assert.strictEqual(s.settings.theme, "light"); assert.strictEqual(s.settings.gfxAuto, true); assert.strictEqual(s.cash, 0);
+  assert.strictEqual(s.week, 5); assert.strictEqual(s.settings.theme, "light"); assert.strictEqual(s.settings.gfxAuto, true); assert.strictEqual(s.cash, 3000);
   assert.strictEqual(s.board.design, null); assert.strictEqual(s.board.bodyShape, "neutral"); assert.deepStrictEqual(s.flash, []);
   assert(a.hydrate({ week: 6, board: { skinTone: 0.8 } }), "a board missing fields gets the defaults");
   const t = plain(a.__get()); assert.strictEqual(t.board.skinTone, 0.8); assert.strictEqual(t.board.bodyShape, "neutral"); assert.strictEqual(t.board.client, "wk_office");
+  assert.strictEqual(t.kit.machine, "coil_used"); assert.deepStrictEqual(t.kit.needles, ["3RL", "7RL", "7M1"]); assert.strictEqual(t.session, null);
+  assert.strictEqual(t.settings.handed, "right"); assert.strictEqual(t.settings.assist, false);
+  assert(a.hydrate({ week: 7, kit: {} }), "an older save's kit:{} becomes the starter kit");
+  const u = plain(a.__get()); assert.strictEqual(u.kit.ink, "budget"); assert.strictEqual(u.kit.voltage, 7); assert.deepStrictEqual(u.kit.owned.machines, ["coil_used"]);
+  assert(a.hydrate({ week: 8, kit: { machine: "rotary", owned: { machines: ["coil_used", "rotary"] } }, session: "x" }));
+  const v = plain(a.__get()); assert.strictEqual(v.kit.machine, "rotary"); assert.deepStrictEqual(v.kit.owned.inks, ["budget"], "owned lists not in the save keep the starter ones"); assert.strictEqual(v.session, null);
 });
 check("packing survives big, varied saves (LZW dictionary fills up)", () => {
   const a = load();

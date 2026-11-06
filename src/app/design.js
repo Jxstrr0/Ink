@@ -12,7 +12,9 @@
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
    The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
    booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
-   memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved. */
+   memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved.
+   Under the board (PR 4): Tattoo this (the booking it's designing for, or a sample walk-in: app/session.js seTattooThis) and
+   Practice on fake skin. */
 const DZ_SAMPLE_CLIENTS=[
   {id:"wk_office",name:"Darya",blurb:"accountant, first tattoo",pronouns:"she/her",age:29,bodyShape:"femme",skinTone:.15,job:"accountant",
    traits:{pain:.4,sun:.2,aftercare:.8,budget:.6,loyalty:.6,talkative:.5,trusting:.6},
@@ -211,7 +213,9 @@ function dzRenderBoardView(){
 <button class="dzChip${DZ.snap?" on":""}" id="dzSnap" aria-pressed="${DZ.snap}" title="Rotation snaps to the flow of the limb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3c-2 6 2 12 0 18M17 3c-2 6 2 12 0 18"/></svg>Snap to flow</button>
 <span class="sp"></span>${m.flash?`<span class="dzFlashTag" id="dzFlashTag" title="Flash: ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours">Flash −${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% h</span>`:""}</div>
 <div id="dzTools" class="dzTools"></div>
-<div class="row dzBar3"><button class="btn sm" id="dzSaveFl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save to my flash</button>
+<div class="row dzBar3"><button class="btn sm pri" id="dzTattoo"${m.els.length?"":" disabled"}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>Tattoo this</button>
+<button class="btn sm" id="dzPractice"${m.els.length?"":" disabled"}>Practice on fake skin</button>
+<button class="btn sm" id="dzSaveFl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Save to my flash</button>
 <button class="btn sm" id="dzClear"${m.els.length?"":" disabled"}>Clear board</button></div>
 <div class="card dzStress" id="dzStress"></div>`;
   $("dzSpotBtn").addEventListener("click",()=>{DZ.view="body";renderDesign();});
@@ -221,6 +225,8 @@ function dzRenderBoardView(){
   $("dzSnap").addEventListener("click",()=>{DZ.snap=!DZ.snap;const b=$("dzSnap");b.classList.toggle("on",DZ.snap);b.setAttribute("aria-pressed",DZ.snap);
     if(DZ.snap&&DZ.sel>=0)dzChange(()=>dzSnapEl(DZ.m.els[DZ.sel]));toast(DZ.snap?"Rotation snaps to the flow":"Free rotation");});
   $("dzSaveFl").addEventListener("click",dzSaveFlash);
+  if(typeof seTattooThis==="function"){$("dzTattoo").addEventListener("click",seTattooThis);$("dzPractice").addEventListener("click",()=>{SE.pick="board";seStartPractice("board");});}
+  else{$("dzTattoo").remove();$("dzPractice").remove();}
   $("dzClear").addEventListener("click",()=>{if(!DZ.m.els.length)return;dzChange(()=>{DZ.m.els=[];DZ.m.flash=null;DZ.m.fsig=null;DZ.sel=-1;});$("dzClear").disabled=true;toast("Board cleared (Undo brings it back)");});
   dzRenderBoard();dzRenderTools();dzRenderStress();dzSyncUndo();
   const bw=$("dzBoardWrap");
@@ -431,7 +437,8 @@ function dzAddEl(d){
   const e={id:d.id,mx:box.wrapMm/2+(n%4)*6,my:box.lengthMm/2+(n%4)*6,mm,rot:0,lineWeight:d.lineWeightDefault,fill:d.fill?(d.fill===d.path?1:0.5):0,colour:null};
   dzChange(()=>{if(!n&&!d.styles.includes(DZ.m.style))DZ.m.style=d.styles[0];if(DZ.snap)dzSnapEl(e);DZ.m.els.push(e);DZ.sel=DZ.m.els.length-1;});
   if(DZ.view!=="board"){DZ.view="board";renderDesign();}
-  else{const s=$("dzStyleSel");if(s)s.value=DZ.m.style;const c=$("dzClear");if(c)c.disabled=false;}}
+  else{const s=$("dzStyleSel");if(s)s.value=DZ.m.style;const c=$("dzClear");if(c)c.disabled=false;}
+  for(const id of ["dzTattoo","dzPractice"]){const b=$(id);if(b)b.disabled=!DZ.m.els.length;}}
 
 /* ---- flash: the wall and your own ---- */
 function dzSaveFlash(){

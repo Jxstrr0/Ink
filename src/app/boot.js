@@ -33,6 +33,9 @@ function openSettings(){
 <section><h3>Graphics</h3><div class="row">${segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||"")}</div>
 <div class="row" style="margin-top:8px">${segHtml("setGfxAuto",[["1","Auto-adjust on"],["0","Off"]],st.gfxAuto===false?0:1)}</div>
 <p class="hint">Lite is the phone default. Auto-adjust steps down a tier if the studio stutters.</p></section>
+<section><h3>Session</h3><div class="row">${segHtml("setHand",[["right","Right-handed"],["left","Left-handed"]],st.handed==="left"?"left":"right")}</div>
+<div class="row" style="margin-top:8px">${segHtml("setAssist",[["0","Assist off"],["1","Assist on"]],st.assist?1:0)}</div>
+<p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
 <section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
 <section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
 <div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div></section>
@@ -46,6 +49,8 @@ function openSettings(){
   seg("setReduced",v=>{st.reduced=v==="1";applySettings();});
   seg("setGfx",v=>{st.gfx=v||null;PERF.manual=true;perfReset(true);applyGfx();});
   seg("setGfxAuto",v=>{st.gfxAuto=v==="1";PERF.dropped=PERF.manual=false;perfReset(true);});
+  seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
+  seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
