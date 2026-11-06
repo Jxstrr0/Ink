@@ -3,7 +3,9 @@
    an event is due, never more than WEEK.maxSkip (4) weeks, and returns one line plus the week log. If people are waiting
    this week (walk-ins at the door, booked consults, sittings due), the first tap only warns and the second skips them:
    walk-ins leave, consults wait or give up, sittings move to next week. The last few lines are kept in memory (CR.lines),
-   not in the save. The acts, skills, goals and the Legacy screen come in PR 7. */
+   not in the save. PR 5: healed pieces wait in S.reveals and show at the top, one at a time (app/gallery.js rvHtml), and
+   the Career card shows the three reputation tracks (REP_TRACKS) with what each opens next. The acts, skills, goals and
+   the Legacy screen come in PR 7. */
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
 const CR={last:null,lines:[],arm:0,armT:0,LINES:8};
@@ -17,7 +19,7 @@ function renderCareer(){
   const st=(S.studio&&S.studio.stage)||"apprentice",over=INK_SIM.careerOver(S),wt=crWaiting();
   const parts=[wt.w&&`${wt.w} walk-in${wt.w>1?"s":""} at the door`,wt.c&&`${wt.c} consult${wt.c>1?"s":""} booked`,wt.s&&`${wt.s} sitting${wt.s>1?"s":""} due`].filter(Boolean);
   const last=CR.last,lg=last&&last.log?last.log.filter(l=>l.k!=="week"):[];
-  host.innerHTML=`<div class="card crNext">
+  host.innerHTML=`${typeof rvHtml==="function"?rvHtml():""}<div class="card crNext">
 <div class="crWhen"><span class="clK">Act ${STAGE_ACT[st]||1} · ${esc(STAGE_NAMES[st]||st)}</span><b>Week ${S.week}, ${S.year}</b></div>
 ${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">The Legacy screen arrives in a later update. Your clients, pieces and save are all still here.</p>`
 :`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
@@ -28,9 +30,19 @@ ${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}
 ${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
 ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
 <div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
-<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;
+<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>${crRep()}</div>`;
+  if(typeof rvWire==="function")rvWire(()=>{renderCareer();$("panel").scrollTop=0;});
   const b=$("crNextB");if(b)b.addEventListener("click",crNext);
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
+/* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
+const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
+  collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
+  waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
+function crRep(){
+  const T=INK_SIM.REP_TRACKS;if(!T)return"";
+  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=INK_SIM.repNext(S,k);
+    return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
+<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(CR_SEG[n.id]||n.id.replace(/_/g," "))}${n.kind==="event"?" (later update)":""}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}

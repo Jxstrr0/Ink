@@ -83,6 +83,8 @@ function buSaveOk(o){
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
   if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
+  if("reveals" in o&&!(Array.isArray(o.reveals)&&o.reveals.every(x=>typeof x==="string")))return false;   // PR 5: piece ids
+  if("rep" in o){if(!buObj(o.rep))return false;for(const k of ["walkins","collectors","peers"])if(k in o.rep&&!buNum(o.rep[k]))return false;}
   if("kit" in o){const k=o.kit;if(!buObj(k))return false;   // PR 4: an old save's kit:{} is fine (hydrate fills the starter kit)
     if("needles" in k&&!(Array.isArray(k.needles)&&k.needles.every(n=>typeof n==="string")))return false;
     for(const f of ["voltage","stroke"])if(f in k&&!buNum(k[f]))return false;

@@ -254,6 +254,74 @@ check("sessions that don't fit the week's hours carry to next week", CQ.queue.fi
 const fin = SIM.finishSession(CQ, CQ.queue.find(q => q.w === 11).id, { design: rose });
 check("finishing a session pays the balance and creates the piece", fin.piece && CQ.pieces.length === 1 && CQ.cash === 800);
 
+/* ---- PR 5: heals and the reputation tracks (all on fixed seeds) ---- */
+const HC = (care, loyalty) => Object.assign(SIM.makeClient(SIM.rng(31), { id: "c1", year: 2004 }), { loyalty: loyalty == null ? 0.5 : loyalty });
+const healRun = (out, care, n, extra) => {   // n fresh pieces healed with these outputs and this aftercare -> grade counts
+  const counts = { crisp: 0, soft: 0, patchy: 0, blownout: 0, infected: 0 };
+  for (let i = 0; i < n; i++) {
+    const c = HC(); c.traits.aftercare = care;
+    const H = S0({ week: 10, year: 2004, clients: [c], reveals: [] });
+    const p = SIM.addPiece(H, Object.assign({ client: "c1", design: rose, out }, extra || {}));
+    Object.assign(p, extra || {}); p.id = "p" + (i + 1);
+    counts[SIM.healPiece(H, p, SIM.rng(SEED + i), [])]++;
+  }
+  return counts;
+};
+const GOOD = { lineQuality: 0.88, depthQuality: 0.86, saturation: 0.85, trauma: 0.12 };
+const ROUGH = { lineQuality: 0.4, depthQuality: 0.45, saturation: 0.5, trauma: 0.85 };
+const hGood = healRun(GOOD, 0.8, 300), hRoughBad = healRun(ROUGH, 0.1, 300), hLowT = healRun(Object.assign({}, ROUGH, { trauma: 0.3 }), 0.05, 300);
+const hBlow = healRun(Object.assign({}, GOOD, { blowouts: 8 }), 0.7, 300, { blowouts: 8 });
+check("heal: good outputs with good aftercare mostly heal crisp", hGood.crisp / 300 > 0.8 && hGood.infected === 0 && hGood.blownout === 0, JSON.stringify(hGood));
+check("heal: high trauma with bad aftercare can get infected (rarely)", hRoughBad.infected > 0 && hRoughBad.infected / 300 < 0.45, JSON.stringify(hRoughBad));
+check("heal: low trauma never gets infected, even with bad aftercare", hLowT.infected === 0, JSON.stringify(hLowT));
+check("heal: blowouts lead to blown-out heals", hBlow.blownout / 300 > 0.6 && hGood.blownout === 0, JSON.stringify(hBlow));
+check("heal: poor outputs heal worse than good ones", (hRoughBad.patchy + hRoughBad.blownout + hRoughBad.infected) > 200 && hRoughBad.crisp < 10, JSON.stringify(hRoughBad));
+check("heal: every grade is a HEAL_GRADES id with reaction lines for every loyalty band", Object.keys(SIM.HEAL_GRADES).every(g => ["low", "mid", "high"].every(b => SIM.HEAL_REACTIONS[g][b].length >= 2)));
+// through the calendar: a piece heals exactly once, two weeks on, and lands in the reveal queue
+const HW = S0({ week: 10, year: 2004, studio: { stage: "chair", staff: [] }, clients: [HC()], reveals: [] });
+const hp = SIM.addPiece(HW, { client: "c1", design: rose, out: GOOD });
+const healLogs = []; let healAt = null;
+for (let i = 0; i < 6; i++) { const lg = SIM.advanceWeek(HW); for (const l of lg) if (l.k === "heal" && l.piece === hp.id) { healLogs.push(l); healAt = SIM.weekIndex(HW.week, HW.year); } }
+const firstGrade = hp.heal; SIM.healPiece(HW, hp, SIM.rng(1), []);
+check("heal: advanceWeek heals a piece exactly once, two weeks after it was done", healLogs.length === 1 && healAt === SIM.weekIndex(10, 2004) + SIM.WEEK.healWeeks && hp.heal === firstGrade && hp.healW === 12 && hp.healY === 2004, JSON.stringify(healLogs.map(l => l.text)));
+check("heal: the piece is queued for its reveal and the client remembers the heal", HW.reveals.indexOf(hp.id) >= 0 && HW.clients[0].history.some(h => h.kind === "heal" && h.piece === hp.id && h.grade === hp.heal));
+check("heal: the heal grade feeds the aging model", (() => { const t = { design: rose, out: GOOD, skinTone: 0.3, sun: 0.4 }; const a = SIM.age(Object.assign({}, t, { heal: "crisp" }), 0), b = SIM.age(Object.assign({}, t, { heal: "blownout" }), 0); return b.spread > a.spread && b.readability <= a.readability; })());
+// reviews and loyalty
+let reviews = 0, loyUp = 0, loyDown = 0;
+for (let i = 0; i < 200; i++) {
+  const c = HC(null, 0.5); c.traits.aftercare = 0.8;
+  const H = S0({ week: 10, year: 2004, clients: [c] });
+  const p = SIM.addPiece(H, { client: "c1", design: rose, out: i % 2 ? GOOD : ROUGH }); const l0 = c.loyalty;
+  SIM.healPiece(H, p, SIM.rng(SEED * 3 + i), []);
+  if (SIM.pieceReview(H, p)) reviews++;
+  if (p.heal === "crisp" && c.loyalty > l0) loyUp++;
+  if ((p.heal === "patchy" || p.heal === "blownout" || p.heal === "infected") && c.loyalty < l0) loyDown++;
+}
+check("heal: a review gets written sometimes, not always", reviews > 20 && reviews < 150, reviews + " of 200");
+check("heal: crisp heals raise loyalty and bad ones lower it", loyUp > 20 && loyDown > 10, loyUp + " up, " + loyDown + " down");
+// an infection: a free fix for a client on the books
+const infS = (() => { for (let i = 0; i < 400; i++) { const c = HC(); c.traits.aftercare = 0.05; const H = S0({ week: 10, year: 2004, clients: [c], rep: { walkins: 30, collectors: 30, peers: 30 } }); const p = SIM.addPiece(H, { client: "c1", design: rose, out: ROUGH }); if (SIM.healPiece(H, p, SIM.rng(SEED + 7 * i), []) === "infected") return { H, p }; } return null; })();
+check("heal: an infection books a free fix and costs reputation", infS && infS.H.queue.some(q => q.kind === "session" && q.fix === infS.p.id && q.price === 0 && q.client === "c1") && infS.H.rep.peers < 30 && infS.H.rep.walkins < 30);
+// reputation
+const RP = S0({ week: 10, year: 2004, clients: [HC()] });
+const rp1 = SIM.addPiece(RP, { client: "c1", design: rose, out: GOOD }); rp1.heal = "crisp";
+const dCrisp = SIM.repHealDelta(RP, rp1), dBlown = SIM.repHealDelta(RP, Object.assign({}, rp1, { heal: "blownout" }));
+const dFlash = SIM.repHealDelta(RP, Object.assign({}, rp1, { design: Object.assign({}, rose, { flash: "fl_bold_rose", sizeMm: 50 }) }));
+check("rep: a crisp heal raises peers and walk-ins, a blowout lowers them", dCrisp.peers > 0 && dCrisp.walkins > 0 && dBlown.peers < 0 && dBlown.walkins < 0);
+check("rep: custom work moves collectors, small flash moves walk-ins", dCrisp.collectors > 0 && dFlash.collectors === 0 && dFlash.walkins > dCrisp.walkins);
+const R0 = S0({ rep: { walkins: 10, collectors: 90, peers: 50 } }); SIM.repAdd(R0, "walkins", 2); SIM.repAdd(R0, "collectors", 2); SIM.repAdd(R0, "peers", -200);
+check("rep: gains soften as a track fills, every track stays in 0..100", R0.rep.walkins - 10 > R0.rep.collectors - 90 && R0.rep.collectors < 92 && R0.rep.peers === 0);
+const R1 = S0({ rep: { walkins: 50, collectors: 50, peers: 50 } }); for (let i = 0; i < 52; i++) SIM.repWeek(R1);
+check("rep: a track slips a little each week when nothing happens", R1.rep.walkins < 50 && R1.rep.walkins > 40, R1.rep.walkins);
+const pf = S0({ clients: [HC()], rep: { walkins: 0, collectors: 20, peers: 0 } }), pfp = SIM.addPiece(pf, { client: "c1", design: rose, out: GOOD });
+const pfBefore = SIM.setPortfolio(pf, pfp, true); pfp.heal = "crisp"; SIM.setPortfolio(pf, pfp, true); const pfOn = pf.rep.collectors; SIM.setPortfolio(pf, pfp, false);
+check("rep: the portfolio flag (healed pieces only) nudges collectors and comes back off", pfBefore === false && pfOn > 20 && Math.abs(pf.rep.collectors - 20) < 0.05 && !pfp.portfolio);
+check("rep: segments unlock with their track", !SIM.repUnlocked(S0(), "collectors", "collector") && SIM.repUnlocked(S0({ rep: { walkins: 0, collectors: 30, peers: 0 } }), "collectors", "collector") && SIM.repNext(S0(), "peers").id === "old_school");
+const HR = S0({ week: 10, year: 2004, studio: { stage: "chair", staff: [] }, clients: [HC()], rep: { walkins: 20, collectors: 20, peers: 20 } });
+for (let i = 0; i < 12; i++) { const c = HC(); c.id = "c" + (i + 2); c.traits.aftercare = 0.8; HR.clients.push(c); SIM.addPiece(HR, { client: c.id, design: rose, out: GOOD }); }
+for (let i = 0; i < 3; i++) SIM.advanceWeek(HR);
+check("rep: a run of clean heals through the calendar raises peers", HR.rep.peers > 20 && HR.pieces.every(p => p.heal), HR.rep.peers + " peers, grades " + HR.pieces.map(p => p.heal).join(","));
+
 /* ---- the synthetic 30-year run: consult and accept walk-ins, do every session with default outputs ---- */
 function autoWeek(S) {
   const yrs = S.year - 2000;
@@ -312,6 +380,10 @@ if (!QUIET) {
   console.log("\n30-year run: " + LONG.clients.length + " clients, " + LONG.pieces.length + " pieces, " + LONG.clients.filter(c => c.referredBy).length + " referred, " + retN + " came back, queue " + LONG.queue.length +
     ", cash " + LONG.cash.toLocaleString("en-CA") + " RUB, S as JSON " + Math.round(JSON.stringify(LONG).length / 1024) + " KB (uncompacted; CLIENT_CAP is PR 7). whole run " + Math.round(runMs) + " ms");
   console.log("last advanceWeek log: " + lastLog.map(l => l.text).join(" | "));
+  console.log("\nheals (300 pieces each): good outputs + good aftercare " + JSON.stringify(hGood) + "; rough + bad aftercare " + JSON.stringify(hRoughBad) +
+    "; rough but low trauma " + JSON.stringify(hLowT) + "; good with 8 blowouts " + JSON.stringify(hBlow));
+  const lg = LONG.pieces.reduce((a, p) => (a[p.heal || "none"] = (a[p.heal || "none"] || 0) + 1, a), {});
+  console.log("30-year run heals: " + JSON.stringify(lg) + "; rep after 12 clean heals from 20/20/20: " + JSON.stringify(HR.rep));
 }
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 

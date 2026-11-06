@@ -568,6 +568,99 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 html[data-theme=light] .seMB s{opacity:.9}
 html[data-theme=light] .seGT .band{background:rgba(47,138,82,.18)}
 html[data-theme=light] .seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.5) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
+/* ===================== css/ui-gallery.css: the heal reveal, the body of work, reputation (PR 5) =====================
+   The reveal card on the Career tab (verdict, fresh against healed with the stencil ghost, reaction, review, portfolio),
+   the Work view on the Clients tab (filters, the grid of pieces as they look today), a piece's history in the sheet,
+   and the reputation bars on the Career card. Heal grades always carry a shape and a word, never colour alone. */
+/* heal grades: shape + word */
+.gvShape{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px}
+.gvShape .f{fill:currentColor;stroke:none}
+.g-crisp{--g:var(--ok)}.g-soft{--g:var(--teal)}.g-patchy{--g:var(--warn)}.g-blownout{--g:var(--crit)}.g-infected{--g:var(--crit)}.g-none{--g:var(--mute)}.g-port{--g:var(--gold)}
+.gvShape[class*="g-"]{color:var(--g)}
+.gvGrade{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:3px 9px 3px 6px;border-radius:999px;border:1px solid var(--g);color:var(--text);background:var(--panel2)}
+.gvGrade .gvShape{width:16px;height:16px;color:var(--g)}
+/* skin renders */
+.gvSvg{display:block;width:100%;height:100%;border-radius:8px}
+
+/* ---- the reveal ---- */
+.rv{border-color:var(--g);border-width:1px 1px 1px 5px;animation:rvIn .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rvIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rvHd h2{margin:2px 0}
+.rvVerdict{display:flex;gap:12px;align-items:center;margin:10px 0 12px;padding:10px 12px;border-radius:10px;border:1px solid var(--g);background:var(--panel2)}
+.rvVerdict .gvShape.big{width:40px;height:40px;stroke-width:1.8}
+.rvBig{font-family:var(--disp);font-size:26px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;line-height:1;color:var(--g)}
+.rvVerdict p{margin:4px 0 0;font-size:14px;color:var(--mute);line-height:1.4}
+.rvPair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rvPair figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.rvPair figcaption{font-size:12.5px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.rvFrame{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid var(--line);box-shadow:inset 0 0 0 1px rgba(0,0,0,.04)}
+/* the bandage comes off: a gauze pad that peels away once (none with reduced motion) */
+.rvFrame.heal::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,#f6f1e6 0 6px,#ece4d4 6px 12px);border-radius:10px;
+  transform-origin:100% 0;animation:rvPeel .8s .25s cubic-bezier(.5,0,.3,1) forwards;pointer-events:none}
+@keyframes rvPeel{0%{transform:none;opacity:1}70%{opacity:1}100%{transform:translate(40%,-40%) rotate(18deg) scale(.6);opacity:0}}
+html.noanim .rvFrame.heal::after{display:none}
+@media (prefers-reduced-motion:reduce){.rvFrame.heal::after{display:none}}
+.rvKey{display:inline-flex;align-items:center;gap:4px}
+.rvKey i{display:inline-block;width:16px;height:0;border-top:2px dashed #7b52ea}
+html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
+.rvScene{display:flex;flex-direction:column;margin:10px 0 0}
+.rvScene .clB{max-width:92%}
+.rvNote{margin:8px 0 0;font-size:13.5px;font-weight:600;color:var(--crit)}
+.rvRev{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+.rvRev blockquote{margin:4px 0 0;font-size:14px;line-height:1.45;font-style:italic}
+.rvStars{font-size:16px;letter-spacing:2px;color:var(--gold)}.rvStars span{color:var(--faint)}
+.rvAsk{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.rvAsk p{margin:0 0 8px}
+.rvAsk .btn{flex:1 1 140px}
+
+/* ---- the body of work ---- */
+.gvFil{padding:12px 14px}
+.gvSel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.gvSel select{width:100%}
+.gvFil .row{flex-wrap:nowrap}
+.gvQ{flex:1 1 auto;min-width:0}
+.gvPortB{flex:0 0 auto;min-height:44px}
+.gvPortB svg,.gvPort svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.gvPortB.on{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+.gvPortB.on svg{fill:var(--gold);stroke:var(--gold)}
+.gvCount{margin:8px 0 0}
+.gvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.gvT{display:flex;flex-direction:column;gap:0;padding:0;text-align:left;border-radius:var(--r);border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;content-visibility:auto;contain-intrinsic-size:150px 220px}
+.gvT:hover{border-color:var(--faint)}.gvT:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.gvT.port{border-color:var(--gold)}
+.gvA{position:relative;display:block;aspect-ratio:1/1;padding:8px;background:var(--panel2)}
+.gvA .gvSvg{border-radius:8px}
+.gvPort{position:absolute;top:12px;right:12px;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1f1a15;color:var(--gold);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.gvPort svg{fill:var(--gold);stroke:var(--gold)}
+.gvL{display:flex;flex-direction:column;gap:2px;padding:8px 10px 10px;font-size:13.5px}
+.gvL b{font-size:14px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gvM{display:flex;align-items:center;gap:5px}
+.gvM .gvShape{width:15px;height:15px}
+.gvR.ok{color:var(--ok)}.gvR.meh{color:var(--warn)}.gvR.bad{color:var(--crit)}
+/* a piece's history */
+.gvHead{display:flex;gap:14px;align-items:flex-start}
+.gvBigA{flex:0 0 auto;width:132px;height:132px}
+.gvHead p{margin:0 0 6px}
+.gvName{font-weight:700;font-size:15px}
+.gvStrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.gvStrip figure{margin:0;display:flex;flex-direction:column;gap:4px}
+.gvStrip .gvSvg{aspect-ratio:1/1;height:auto}
+.gvStrip figcaption{font-size:12px;color:var(--mute);line-height:1.3}
+.clPc[data-gp]{cursor:pointer}
+.clPc[data-gp]:focus-visible{outline:2px solid var(--red2);outline-offset:2px;border-radius:10px}
+
+/* ---- reputation on the Career card ---- */
+.crRepH{margin:14px 0 6px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.crRep{display:flex;flex-direction:column;gap:10px}
+.crRepR{display:grid;grid-template-columns:minmax(0,1fr) 96px 36px;grid-template-areas:"n b v" "x x x";gap:2px 10px;align-items:center}
+.crRepN{grid-area:n;display:flex;flex-direction:column;line-height:1.2}
+.crRepB{grid-area:b;height:10px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);position:relative;overflow:hidden;
+  background-image:linear-gradient(90deg,transparent 24%,var(--line) 24% 26%,transparent 26% 49%,var(--line) 49% 51%,transparent 51% 74%,var(--line) 74% 76%,transparent 76%)}
+.crRepB i{position:absolute;inset:0 auto 0 0;background:var(--teal)}
+.crRepV{grid-area:v;text-align:right;font-variant-numeric:tabular-nums}
+.crRepX{grid-area:x}
+@media (max-width:380px){.gvGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.gvBigA{width:104px;height:104px}}
+@media (prefers-reduced-transparency:reduce){.gvPort{box-shadow:none}}
 </style>
 
 <div id="app">
@@ -3166,6 +3259,233 @@ function finishSession(S,itemId,res){
 
 SIM.WEEK=WEEK;SIM.WEEK_HOOKS=WEEK_HOOKS;SIM.WEEK_ORDER=WEEK_ORDER;SIM.weekHours=weekHours;SIM.careerOver=careerOver;
 SIM.advanceWeek=advanceWeek;SIM.nextStop=nextStop;SIM.finishSession=finishSession;
+/* ===== sim/heal.js: the heal two weeks after a session, and the three reputation tracks (PR 5) =====
+   Two in-game weeks after the last sitting the bandage comes off (calendar.js calHeals calls SIM.healPiece). The grade is
+   one of the HEAL_GRADES ids in aging.js (crisp, soft, patchy, blownout, infected) and from then on feeds the aging model.
+     HEAL           how the session outputs and the client's aftercare trait become a grade:
+                      infected  rare: needs trauma over infect.trauma AND aftercare under infect.care (low trauma never does)
+                      blownout  a chance that climbs with the session's blowouts (none: never)
+                      otherwise a heal score from lineQuality, depthQuality, saturation, (1 - trauma) and aftercare, with
+                      a little dice: crisp over crisp, slightly soft over soft, else patchy; each join costs a little
+     HEAL_REACTIONS what the client says when they see it, by grade x loyalty band (REVIEW_BANDS in clients.js)
+     HEAL_APOLOGY   what you say when it got infected (the reveal's apology scene)
+     REP_TRACKS     walk-ins (speed and price), collectors (custom work and style), peers (clean heals; conventions later).
+                    Each is 0..100 in S.rep. unlocks: the client segments (WALKINS.seg in market.js) a track pulls in only
+                    once it reaches that number; events: the PR 8 events it opens (data only until then)
+     REP            how a heal, a review and the portfolio move each track; gains shrink as a track fills (soft cap), losses
+                    don't; every track slips a little each week (decayWeek) so a reputation has to be kept up
+   healPiece(S, piece, r, log): grades it once (piece.heal set, never changed after), stamps healW/healY, logs a heal line,
+   writes the client's heal history, moves loyalty (LOYALTY[grade]), may write a review (writeReview), moves S.rep, and on
+   an infection books a free fix (a price-0 session item with fix: piece id) for a client on the books. It queues the piece
+   for the reveal in S.reveals (when S has that list; at most REVEAL_CAP waiting). Sample walk-ins aren't in S.clients:
+   the app may set SIM.guestClient(id) -> {traits, skinTone} so their aftercare counts; their review rides on piece.review.
+   Practice pieces are never saved, so they never heal.
+   Private helpers start with hl (healing) and rp (reputation). ===== */
+
+const HEAL={
+  w:{line:0.28,depth:0.32,sat:0.18,trauma:0.22},   // the heal score's weights (trauma counts as 1 - trauma)
+  care:0.3,careMid:0.55,                           // aftercare: + care x (aftercare - careMid)
+  joinCost:0.012,joinMax:0.08,                      // each visible join takes this off the score, up to joinMax
+  noise:0.05,                                       // sd of the dice on the score
+  crisp:0.76,soft:0.6,                              // score thresholds; under soft is patchy
+  infect:{trauma:0.55,care:0.45,max:0.5},           // both over/under or never; chance = max x trauma excess x care shortfall
+  blow:{k:4,max:0.95},                              // chance of a blown-out heal = max x (1 - e^(-blowouts / k))
+  careDefault:0.6,                                  // aftercare when the client isn't known
+  fix:{weeksAfter:3,hoursPerMm:0.02,minHours:1,maxHours:4}   // the free fix after an infection: when, and how long
+};
+const REVEAL_CAP=12;
+/* what the client says at the reveal: grade x loyalty band */
+const HEAL_REACTIONS={
+  crisp:{
+    low:["Huh. That's actually really clean.","OK. Yes. That came out well."],
+    mid:["Look at those lines. I keep catching it in shop windows.","It's perfect. My sister wants your number."],
+    high:["Every time, you do this. It's the best one yet.","I didn't think it could look better than the day we did it. It does."]},
+  soft:{
+    low:["It's fine. Softer than I pictured.","A couple of the lines look a bit fuzzy, no?"],
+    mid:["It settled in a bit soft, but I love it.","Not as sharp as day one, but it's mine."],
+    high:["A line went soft. I don't care, I still love it.","Bit soft by the elbow. Next time we go bolder?"]},
+  patchy:{
+    low:["It looks half done. Is that normal?","There are gaps in the colour. I paid for all of it."],
+    mid:["Some spots fell out. Can you fill them in?","It's patchy in places. Was it me? I did go swimming."],
+    high:["Patchy, but I trust you'll fix it.","I picked at it, I'll admit it. Can we touch it up?"]},
+  blownout:{
+    low:["The lines have spread. It looks like it's bleeding.","This isn't what I paid for. It's all blurry."],
+    mid:["Some of the lines blew out. Can anything be done?","It's gone blurry here and here. Honestly I'm upset."],
+    high:["It blew out a bit. It happens, right? What can we do?","I'll be honest, the lines have spread. I still want you to fix it."]},
+  infected:{
+    low:["It got infected. I had to see a doctor.","Two weeks of antibiotics. I'm not happy."],
+    mid:["It got infected. I'm OK now, but I was scared.","Doctor said it was infected. I didn't skip the cream, I swear. Mostly."],
+    high:["It got infected. I know I didn't keep it clean. I'm still coming back.","Rough fortnight. The doctor sorted it. Can we fix the marks?"]}
+};
+/* the artist's apology when a piece got infected */
+const HEAL_APOLOGY=[
+  "I'm sorry. That should never happen in my chair. The fix is on me, and I'm going over every step of how I work.",
+  "I'm truly sorry. Come back when it's settled and I'll make it right, no charge. I'm changing how I set up.",
+  "That's on my shop, and I'm sorry. The touch-up is free, whenever your skin is ready."
+];
+/* the reputation tracks (S.rep, each 0..100). unlocks: segment -> the track value it starts pulling at (market.js reads
+   WALKINS.seg weights; a segment under its unlock pulls nothing). events: for PR 8 (conventions, guest spots, ...) */
+const REP_TRACKS={
+  walkins:{name:"Walk-ins",says:"speed and price: quick, fair, open doors",
+    unlocks:{walk_in:0,first_timer:0,students:15,trades:25},
+    events:{flash_day:40,friday_13:60}},
+  collectors:{name:"Collectors",says:"custom work and style: people who plan a body of work",
+    unlocks:{creatives:10,memorial:15,collector:25,large_scale:45},
+    events:{waiting_list:50,magazine:75}},
+  peers:{name:"Peers",says:"clean heals: what other artists notice",
+    unlocks:{old_school:20,cover_up:35},
+    events:{guest_spot:30,convention:55,award:85}}
+};
+/* how things move the tracks (points on 0..100) */
+const REP={
+  full:100,soft:0.85,          // a gain is x (1 - soft x track / full), so a track fills slower as it rises
+  decayWeek:0.0015,            // every track loses this share of itself each week
+  heal:{                       // when a piece heals, by grade
+    walkins:{crisp:0.3,soft:0.18,patchy:-0.2,blownout:-0.6,infected:-1.5},
+    peers:{crisp:0.3,soft:0.08,patchy:-0.3,blownout:-1,infected:-2.5}
+  },
+  flash:{walkins:0.12},        // a flash piece (quick and cheap) adds this to walk-ins
+  small:{mm:60,walkins:0.08},  // a piece this small or smaller adds this to walk-ins
+  custom:{collectors:0.15,perMm:0.003,maxMm:250},   // a custom (not flash) piece: + this + perMm x size (to maxMm)
+  collectorGrade:{crisp:1,soft:0.7,patchy:0.2,blownout:-0.6,infected:-1.2},   // the custom gain x this
+  styleOk:{collectors:0.06,skill:6},                // a piece in a style you hold at skill or above adds this
+  review:{walkins:0.25,collectors:0.12,peers:0.05}, // per star from 3 (5 stars = +2 x, 1 star = -2 x)
+  portfolio:{collectors:0.5}   // putting a healed piece in your portfolio (taking it out takes it back)
+};
+
+/* ---- reputation ---- */
+function rpEnsure(S){if(!S.rep||typeof S.rep!=="object")S.rep={walkins:0,collectors:0,peers:0};return S.rep;}
+/* repAdd(S, track, delta) -> the new value. Gains are softened as the track fills; the result stays in 0..full */
+function repAdd(S,k,d){
+  const rep=rpEnsure(S),cur=+rep[k]||0;
+  const eff=d>0?d*(1-REP.soft*cur/REP.full):d;
+  rep[k]=Math.round(clamp(cur+eff,0,REP.full)*100)/100;
+  return rep[k];
+}
+function repWeek(S){
+  const rep=rpEnsure(S);
+  for(const k in REP_TRACKS)if(rep[k]>0)rep[k]=Math.round(rep[k]*(1-REP.decayWeek)*1000)/1000;
+}
+/* repUnlocked(S, track, id): a segment or an event id the track has reached */
+function repUnlocked(S,k,id){
+  const t=REP_TRACKS[k];if(!t)return false;
+  const at=t.unlocks[id]!=null?t.unlocks[id]:t.events[id];
+  return at==null?true:((S.rep&&+S.rep[k])||0)>=at;
+}
+/* repNext(S, track) -> {id, kind:"segment"|"event", at} the next thing the track opens, or null */
+function repNext(S,k){
+  const t=REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
+  if(!t)return null;
+  for(const kind of ["unlocks","events"])for(const id in t[kind]){const at=t[kind][id];if(at>v&&(!best||at<best.at))best={id,kind:kind==="unlocks"?"segment":"event",at};}
+  return best;
+}
+/* what a heal does to each track: {walkins, collectors, peers} in points before the soft cap */
+function repHealDelta(S,piece){
+  const g=piece.heal,d=piece.design||{},out={walkins:0,collectors:0,peers:0};
+  out.walkins+=REP.heal.walkins[g]||0;out.peers+=REP.heal.peers[g]||0;
+  if(d.flash)out.walkins+=REP.flash.walkins;
+  if((d.sizeMm||0)>0&&d.sizeMm<=REP.small.mm)out.walkins+=REP.small.walkins;
+  if(!d.flash){
+    const mm=Math.min(REP.custom.maxMm,d.sizeMm||0);
+    let c=REP.custom.collectors+REP.custom.perMm*mm;
+    const lvl=((S.skills||{}).styles||{})[d.style]||0;
+    if(lvl>=REP.styleOk.skill)c+=REP.styleOk.collectors;
+    out.collectors+=c*(REP.collectorGrade[g]!=null?REP.collectorGrade[g]:0.5);
+  }
+  return out;
+}
+function repApply(S,delta){const after={};for(const k in delta)if(delta[k])after[k]=repAdd(S,k,delta[k]);return after;}
+/* setPortfolio(S, piece, on): the piece's portfolio flag; collectors notice (a little). Only a healed piece. -> bool */
+function setPortfolio(S,piece,on){
+  on=!!on;if(!piece||!piece.heal||!!piece.portfolio===on)return !!(piece&&piece.portfolio);
+  if(on)piece.portfolio=true;else delete piece.portfolio;
+  const rep=rpEnsure(S);   // no soft cap here, so taking it out gives back exactly what putting it in gave
+  rep.collectors=Math.round(clamp((+rep.collectors||0)+(on?1:-1)*REP.portfolio.collectors,0,REP.full)*100)/100;
+  return on;
+}
+
+/* ---- the heal ---- */
+const hlR3=v=>Math.round(v*1000)/1000;
+function hlAftercare(c){const t=c&&c.traits;return t&&t.aftercare!=null?clamp(t.aftercare,0,1):HEAL.careDefault;}
+function hlBlowouts(piece){const o=piece.out||{};return Math.max(0,+(piece.blowouts!=null?piece.blowouts:o.blowouts)||0);}
+function hlJoins(piece){const o=piece.out||{};return Math.max(0,+(piece.joins!=null?piece.joins:o.joins)||0);}
+/* healOdds(piece, aftercare) -> {infect, blow, score} before the dice: the chances and the heal score with no noise */
+function healOdds(piece,care){
+  const o=Object.assign({},DEFAULT_OUT,piece.out||{}),W=HEAL.w,I=HEAL.infect;
+  const t=clamp(o.trauma,0,1);
+  const infect=t>I.trauma&&care<I.care?I.max*((t-I.trauma)/(1-I.trauma))*((I.care-care)/I.care):0;
+  const b=hlBlowouts(piece),blow=b>0?HEAL.blow.max*(1-Math.exp(-b/HEAL.blow.k)):0;
+  const score=W.line*clamp(o.lineQuality,0,1)+W.depth*clamp(o.depthQuality,0,1)+W.sat*clamp(o.saturation,0,1)+W.trauma*(1-t)
+    +HEAL.care*(care-HEAL.careMid)-Math.min(HEAL.joinMax,HEAL.joinCost*hlJoins(piece));
+  return{infect:hlR3(infect),blow:hlR3(blow),score:hlR3(score)};
+}
+/* healGrade(piece, aftercare, r) -> HEAL_GRADES id. Draw order is fixed (infection, blowout, score) so it replays */
+function healGrade(piece,care,r){
+  const k=healOdds(piece,care);
+  const a=r(),b=r(),s=k.score+r.normal(0,HEAL.noise);
+  if(k.infect>0&&a<k.infect)return "infected";
+  if(k.blow>0&&b<k.blow)return "blownout";
+  return s>=HEAL.crisp?"crisp":s>=HEAL.soft?"soft":"patchy";
+}
+const hlBand=l=>l<REVIEW_BANDS[0]?"low":l<REVIEW_BANDS[1]?"mid":"high";
+/* healReaction(piece, loyalty) -> the client's line at the reveal (stable per piece) */
+function healReaction(piece,loyalty){
+  const row=HEAL_REACTIONS[piece.heal];if(!row)return "";
+  const list=row[hlBand(loyalty||0)];return list[hash(piece.id+":react")%list.length];
+}
+function healApology(piece){return HEAL_APOLOGY[hash(piece.id+":sorry")%HEAL_APOLOGY.length];}
+/* the review for a piece: the client's history entry, or piece.review for a sample walk-in */
+function pieceReview(S,piece){
+  if(piece.review)return piece.review;
+  const c=findClient(S,piece.client);if(!c)return null;
+  for(let i=(c.history||[]).length-1;i>=0;i--){const h=c.history[i];if(h.kind==="review"&&h.piece===piece.id)return h;}
+  return null;
+}
+/* the free fix after an infection: a price-0 session for a client on the books, after the skin settles */
+function hlBookFix(S,piece,c){
+  const d=piece.design||{},F=HEAL.fix;
+  const hours=Math.round(clamp((d.sizeMm||40)*F.hoursPerMm,F.minHours,F.maxHours)*4)/4;
+  const due=weekFrom(weekIndex(S.week,S.year)+F.weeksAfter);
+  const ask={placement:d.placement,sizeMm:d.sizeMm,style:d.style,tags:[],theme:"fix",size:"tiny",bad:null};
+  const item={id:queueId(S),kind:"session",client:c.id,w:due.w,y:due.y,hours,sessionNo:1,sessions:1,price:0,deposit:0,paid:0,
+    ask,design:JSON.parse(JSON.stringify(d)),booked:{w:S.week,y:S.year},moved:0,fix:piece.id,ret:{rule:"touchup",piece:piece.id}};
+  S.queue.push(item);
+  return item;
+}
+/* healPiece(S, piece, r, log) -> the grade (or the existing one: a piece heals exactly once) */
+function healPiece(S,piece,r,log){
+  if(!piece||piece.heal)return piece&&piece.heal;
+  const real=findClient(S,piece.client);
+  const guest=!real&&typeof SIM.guestClient==="function"?SIM.guestClient(piece.client):null;
+  const c=real||{id:piece.client,first:"",traits:(guest&&guest.traits)||{},loyalty:guest&&guest.loyalty!=null?guest.loyalty:0.3,history:[]};
+  const g=healGrade(piece,hlAftercare(c),r.fork("grade:"+piece.id));
+  piece.heal=g;piece.healW=S.week;piece.healY=S.year;
+  const name=HEAL_GRADES[g].name;
+  let text="The bandage comes off "+piece.name+": "+(g==="infected"?"it got infected.":"healed "+name+".");
+  if(real){clientLog(real,{w:S.week,y:S.year,kind:"heal",piece:piece.id,grade:g});loyaltyBump(real,g);}
+  /* reputation: the heal, then the review */
+  repApply(S,repHealDelta(S,piece));
+  const rv=writeReview(c,piece,r.fork("review:"+piece.id));
+  if(rv){
+    if(!real)piece.review={stars:rv.stars,text:rv.text};
+    const st=rv.stars-3;repApply(S,{walkins:st*REP.review.walkins,collectors:st*REP.review.collectors,peers:st*REP.review.peers});
+  }
+  if(g==="infected"&&real&&!real.compact){
+    const fx=hlBookFix(S,piece,real);
+    text+=" A free fix is booked for week "+fx.w+", "+fx.y+".";
+  }
+  if(Array.isArray(S.reveals)){S.reveals.push(piece.id);if(S.reveals.length>REVEAL_CAP)S.reveals.splice(0,S.reveals.length-REVEAL_CAP);}
+  if(log)log.push({k:"heal",text,piece:piece.id,client:piece.client,grade:g,review:rv?rv.stars:null});
+  return g;
+}
+/* every week: heal what is due (calendar.js), then each track slips a little */
+const hlCalHeals=WEEK_HOOKS.heals;
+WEEK_HOOKS.heals=function(S,ctx){hlCalHeals(S,ctx);repWeek(S);};
+
+SIM.HEAL=HEAL;SIM.HEAL_REACTIONS=HEAL_REACTIONS;SIM.HEAL_APOLOGY=HEAL_APOLOGY;SIM.REVEAL_CAP=REVEAL_CAP;
+SIM.REP_TRACKS=REP_TRACKS;SIM.REP=REP;SIM.repAdd=repAdd;SIM.repWeek=repWeek;SIM.repUnlocked=repUnlocked;SIM.repNext=repNext;
+SIM.repHealDelta=repHealDelta;SIM.setPortfolio=setPortfolio;SIM.healOdds=healOdds;SIM.healGrade=healGrade;SIM.healPiece=healPiece;
+SIM.healReaction=healReaction;SIM.healApology=healApology;SIM.pieceReview=pieceReview;
 /* ===== sim/session.js: the tattoo session: stencil, trace-and-rhythm scoring, shading, client meters, outputs (PR 4) =====
    A pure, deterministic model of one sitting in the chair. The app feeds it pointer samples in millimetres on the
    placement box (time in ms) and it keeps every running number in a plain object `sess` that saves as JSON (numbers and
@@ -3882,9 +4202,9 @@ SIM.priceIndex=year=>{
 /* ---- walk-ins (PR 3) ----
    SIM.generateWalkins(S, r) -> [client]: who comes through the door this week. How many: WALKINS.base for the studio stage,
    times the season (WALKIN_SEASON: the White Nights bring the city out, January is dead), times the reputation tracks
-   (S.rep, read on a 0..WALKINS.repFull scale until PR 5 sets REP_TRACKS), capped by WEEK walk-in slots. What they want:
+   (S.rep on 0..WALKINS.repFull = 100, the REP_TRACKS scale in sim/heal.js), capped by WEEK walk-in slots. What they want:
    the brief and style are weighted by this year's style demand (STYLES[*].demandCurve; PR 8's trend wave multiplies in
-   through SIM.trendMult(style, year) when it exists) and by client segments the reputation tracks attract (WALKINS.seg).
+   through SIM.trendMult(style, year) when it exists) and by client segments the reputation tracks attract (WALKINS.seg, each from its REP_TRACKS unlock).
    The stage limits size (an apprentice only gets small flash). Booked clients come from returns and referrals, not here. */
 const WALKINS={
   base:{apprentice:0.5,chair:2.2,studio:3.4,legacy:2.4},     // expected walk-ins a week, before season and reputation
@@ -3903,9 +4223,11 @@ function mkSeason(w){
   return t[t.length-1][1];
 }
 function mkRep(S,k){return clamp(((S.rep&&S.rep[k])||0)/WALKINS.repFull,0,1);}
+/* the segments each track pulls in, scaled by the track; a segment under its REP_TRACKS unlock (sim/heal.js) pulls nothing */
 function mkSegBoost(S){
-  const out={};
-  for(const k in WALKINS.seg){const m=mkRep(S,k);for(const s in WALKINS.seg[k])out[s]=(out[s]||0)+WALKINS.seg[k][s]*m;}
+  const out={},T=typeof REP_TRACKS!=="undefined"?REP_TRACKS:null;
+  for(const k in WALKINS.seg){const m=mkRep(S,k),v=m*WALKINS.repFull,u=T&&T[k]?T[k].unlocks:null;
+    for(const s in WALKINS.seg[k]){if(u&&u[s]!=null&&v<u[s])continue;out[s]=(out[s]||0)+WALKINS.seg[k][s]*m;}}
   return out;
 }
 function mkPoisson(r,lambda){const L=Math.exp(-lambda);let k=0,p=1;do{k++;p*=r();}while(p>L&&k<50);return k-1;}
@@ -4034,7 +4356,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.4.0";
+const VERSION="0.1.5.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -4051,7 +4373,7 @@ function freshState(){return{
   year:2000,         // 2000..2030
   cash:3000,         // money on hand; an apprentice starts with a little saved for needles and ink (PR 4)
   rate:0,            // your hourly rate (PR 7: RATE_BY_REP x PRICE_INDEX); 0 while an apprentice
-  rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks (REP_TRACKS, PR 5)
+  rep:{walkins:0,collectors:0,peers:0},   // the three reputation tracks, each 0..100 (sim/heal.js REP_TRACKS, PR 5)
   skills:{styles:{},consult:0,linework:0,shading:0,colour:0,speed:0},   // levels 0..10; styles keyed by STYLES id (SKILLS, PR 7)
   kit:{machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}},
                      // the kit (PR 4, sim/kit.js KIT_DEFAULT): machine, the needle groupings on the tray, ink tier, voltage (V),
@@ -4059,7 +4381,9 @@ function freshState(){return{
   session:null,      // the chair (PR 4): null, or {live: the sitting in progress (INK_SIM.sessionNew's object, numbers only)
                      // or null, next: a sample walk-in's piece waiting for its next sitting or null}
   clients:[],        // client records (PR 3); full for the CLIENT_CAP most recent/loyal, compacted after (PR 7)
-  pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4, PR 5)
+  pieces:[],         // every tattoo: design parameters + session outputs + date, never pictures (PR 4); PR 5 adds heal,
+                     // healW/healY, portfolio (true or absent) and, for a sample walk-in, review {stars, text}
+  reveals:[],        // ids of healed pieces whose reveal you haven't seen yet, oldest first (PR 5, sim/heal.js REVEAL_CAP)
   queue:[],          // booked sessions, including later sessions of multi-session pieces (PR 3, PR 4)
   studio:{stage:"apprentice",staff:[]},   // apprentice | chair | studio | legacy (PR 7)
   goals:{},          // GOALS done, id -> {w,y} (PR 8)
@@ -4086,6 +4410,9 @@ function hydrate(o){
   S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
+  if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
+  for(const k of ["walkins","collectors","peers"])S.rep[k]=Math.max(0,Math.min(100,+S.rep[k]||0));
   if(S.session!=null&&(typeof S.session!=="object"||Array.isArray(S.session)))S.session=null;
   if(typeof INK_SIM!=="undefined"&&INK_SIM.kitClean)S.kit=INK_SIM.kitClean(S.kit);   // unknown ids dropped, sliders clamped
   S.v=SAVE_V;
@@ -4216,6 +4543,8 @@ function buSaveOk(o){
     if(b.design!=null&&(!buObj(b.design)||!Array.isArray(b.design.elements)))return false;
     if("skinTone" in b&&!buNum(b.skinTone))return false;}
   if("flash" in o&&!o.flash.every(f=>buObj(f)&&buObj(f.design)&&Array.isArray(f.design.elements)))return false;
+  if("reveals" in o&&!(Array.isArray(o.reveals)&&o.reveals.every(x=>typeof x==="string")))return false;   // PR 5: piece ids
+  if("rep" in o){if(!buObj(o.rep))return false;for(const k of ["walkins","collectors","peers"])if(k in o.rep&&!buNum(o.rep[k]))return false;}
   if("kit" in o){const k=o.kit;if(!buObj(k))return false;   // PR 4: an old save's kit:{} is fine (hydrate fills the starter kit)
     if("needles" in k&&!(Array.isArray(k.needles)&&k.needles.every(n=>typeof n==="string")))return false;
     for(const f of ["voltage","stroke"])if(f in k&&!buNum(k[f]))return false;
@@ -5520,6 +5849,7 @@ ${xp.length?`<div class="clChips">${xp.join("")}</div>`:""}${next}
      Clients    everyone who has come through the door, newest first, with filters and a search; tap one for their card:
                 what you know, their pieces as they look today (re-rendered from the design and the aging model), and
                 their history.
+     Work       the body of work (PR 5, app/gallery.js gvRenderWork): every piece as it looks today, with filters.
    The consult replaces the tab while it runs: the chat transcript, 3 to 5 options a turn, then the quote. It is a pure
    state machine in sim/clients.js; this file only draws it. Each choice's dice are forked from the save's seed, the
    client, the week and the choice, so leaving and coming back replays the same answers. Nothing is written until the
@@ -5559,9 +5889,9 @@ function renderClients(){
   if(typeof INK_SIM.consultStart!=="function"){host.innerHTML=`<div class="card"><p class="hint">The client model isn't in this build.</p></div>`;return;}
   if(CL.consult)return clRenderConsult();
   const n=S.clients.length;
-  host.innerHTML=`<div class="cl">${segHtml("clSeg",[["week","This week"],["list",`Clients${n?` · ${n}`:""}`]],CL.view)}<div id="clView"></div></div>`;
+  host.innerHTML=`<div class="cl">${segHtml("clSeg",[["week","This week"],["list",`Clients${n?` · ${n}`:""}`],["work","Work"]],CL.view)}<div id="clView"></div></div>`;
   $("clSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.dataset.v===CL.view)return;CL.view=b.dataset.v;INK_SOUND.tick();renderClients();});
-  if(CL.view==="list")clRenderList();else clRenderWeek();}
+  if(CL.view==="list")clRenderList();else if(CL.view==="work"&&typeof gvRenderWork==="function")gvRenderWork($("clView"));else clRenderWeek();}
 
 /* ---- This week ---- */
 function clCard(q){
@@ -5572,7 +5902,7 @@ function clCard(q){
     const ready=!!(q.design&&q.design.elements&&q.design.elements.length);
     return`<article class="clQ ses"><header><span class="clK">In the chair</span><h3>${esc(c.name)}</h3><span class="clMeta">${clAge(c)} · ${esc(c.pronouns)}</span></header>
 <p class="clAsk">${esc(clAskLine(a))}</p>
-<p class="clMeta">Sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h · ${fmtMoney(q.price||0)} (${fmtMoney(q.deposit||0)} paid up front)${q.moved?` · moved ${q.moved}×`:""}</p>
+<p class="clMeta">Sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h · ${q.fix?"free fix after an infection":`${fmtMoney(q.price||0)} (${fmtMoney(q.deposit||0)} paid up front)`}${q.moved?` · moved ${q.moved}×`:""}</p>
 <p class="clDz ${ready?"ok":"todo"}"><span aria-hidden="true">${ready?"●":"○"}</span> ${ready?`Design ready: ${esc(label)}`:"Needs a design"}</p>
 <div class="row"><button class="btn sm${ready?"":" pri"}" data-dz="${q.id}">${ready?"Edit design":"Design it"}</button><button class="btn sm${ready?" pri":""}" data-ses="${q.id}"${ready?"":" disabled"}>${typeof sessionStartBooked==="function"?"Start session":"Quick session"}</button></div></article>`;}
   const exp=q.expires!=null?INK_SIM.weekFrom(q.expires):null;
@@ -5708,25 +6038,29 @@ function clPieceToday(p,c){
   return{svg:dzMini(m,"",`filter:blur(${dzR2(Math.max(0,(a.blur||0)*pxPer))}px) saturate(${dzR2(1-fd*0.9)});opacity:${dzR2(1-fd*0.7)}`,a.spread||0),a,yrs};}
 const CL_HIST={consult:h=>`Consult: ${h.outcome==="accepted"?"booked":h.outcome==="walked"?"walked out":"no booking"}${h.talk==="won"?", talked out of a bad idea":h.talk==="lost"?", the talk went badly":""}${h.quote?` (${fmtMoney(h.quote.price)})`:""}`,
   piece:h=>`Finished ${h.name||"a piece"}`,session:h=>`Sitting ${h.n} of ${h.of}`,review:h=>`Review: ${"★".repeat(h.stars||0)}${"☆".repeat(5-(h.stars||0))} “${h.text||""}”`,
-  referral:h=>{const r=clReal(h.client);return`Sent you ${r?r.first:"a friend"}`;},note:h=>h.text||"",heal:h=>`Healed: ${h.grade||""}`};
+  referral:h=>{const r=clReal(h.client);return`Sent you ${r?r.first:"a friend"}`;},note:h=>h.text||"",heal:h=>`Healed: ${(INK_SIM.HEAL_GRADES[h.grade]||{}).name||h.grade||""}`};
 function clOpenClient(id){
   const c=INK_SIM.findClient(S,id);if(!c)return;
   const pcs=(c.pieces||[]).map(pid=>S.pieces.find(p=>p.id===pid)).filter(Boolean);
   const ref=clReal(c.referredBy),since=c.since||{};
   const pieceHtml=pcs.length?`<div class="clPcs">${pcs.map(p=>{const t=clPieceToday(p,c),r=t.a.readability,cls=r<0.35?"bad":r<0.6?"meh":"ok";
-    return`<figure class="clPc"><div class="clPcA board">${t.svg}</div><figcaption><b>${esc(p.name)}</b><span class="clMeta">${p.y} · ${t.yrs<1?"fresh":Math.floor(t.yrs)+" yr"} · reads <b class="${cls}">${Math.round(r*100)}</b>${p.heal?` · healed ${esc(p.heal)}`:""}</span></figcaption></figure>`;}).join("")}</div>`:`<p class="hint">No pieces yet.</p>`;
+    return`<figure class="clPc"${typeof gvOpen==="function"?` data-gp="${esc(p.id)}" role="button" tabindex="0"`:""}><div class="clPcA board">${t.svg}</div><figcaption><b>${esc(p.name)}</b><span class="clMeta">${p.y} · ${t.yrs<1?"fresh":Math.floor(t.yrs)+" yr"} · reads <b class="${cls}">${Math.round(r*100)}</b>${p.heal?` · healed ${esc((INK_SIM.HEAL_GRADES[p.heal]||{}).name||p.heal)}`:""}${p.portfolio?" · ★ portfolio":""}</span></figcaption></figure>`;}).join("")}</div>`:`<p class="hint">No pieces yet.</p>`;
   const hist=(c.history||[]).slice(-30).reverse().map(h=>{const f=CL_HIST[h.kind];return f?`<li><span class="clMeta">Wk ${h.w}, ${h.y}</span> ${esc(f(h))}</li>`:"";}).join("");
   openSheet(c.name,`<section><dl class="kv"><dt>Age</dt><dd>${clAge(c)}</dd><dt>Pronouns</dt><dd>${esc(c.pronouns)}</dd><dt>Job</dt><dd>${esc(c.job||"")}</dd>
 <dt>First seen</dt><dd>Week ${since.w||"?"}, ${since.y||"?"}${ref?` · sent by ${esc(ref.name)}`:""}</dd><dt>Loyalty</dt><dd>${clLoyal(c.loyalty)}</dd></dl>
 <div class="clChips" style="margin-top:10px">${clWhat(c)||`<span class="clMeta">You haven't found out much about them yet.</span>`}</div></section>
 <section><h3>Their pieces, as they look today</h3>${pieceHtml}</section>
-<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);}
+<section><h3>History</h3>${hist?`<ul class="clHist">${hist}</ul>`:`<p class="hint">Nothing yet.</p>`}</section>`);
+  const pc=$("sheetBody").querySelector(".clPcs");
+  if(pc&&typeof gvOpen==="function"){const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();gvOpen(f.dataset.gp);}};pc.addEventListener("click",go);pc.addEventListener("keydown",go);}}
 /* ===================== app/career.js: the Career tab =====================
    The week clock's Next button (PR 3): INK_SIM.nextStop(S) runs advanceWeek until a booked client, a walk-in, a heal or
    an event is due, never more than WEEK.maxSkip (4) weeks, and returns one line plus the week log. If people are waiting
    this week (walk-ins at the door, booked consults, sittings due), the first tap only warns and the second skips them:
    walk-ins leave, consults wait or give up, sittings move to next week. The last few lines are kept in memory (CR.lines),
-   not in the save. The acts, skills, goals and the Legacy screen come in PR 7. */
+   not in the save. PR 5: healed pieces wait in S.reveals and show at the top, one at a time (app/gallery.js rvHtml), and
+   the Career card shows the three reputation tracks (REP_TRACKS) with what each opens next. The acts, skills, goals and
+   the Legacy screen come in PR 7. */
 const STAGE_NAMES={apprentice:"Apprentice",chair:"Rented chair",studio:"Your studio",legacy:"Legacy"};
 const STAGE_ACT={apprentice:1,chair:2,studio:3,legacy:4};
 const CR={last:null,lines:[],arm:0,armT:0,LINES:8};
@@ -5740,7 +6074,7 @@ function renderCareer(){
   const st=(S.studio&&S.studio.stage)||"apprentice",over=INK_SIM.careerOver(S),wt=crWaiting();
   const parts=[wt.w&&`${wt.w} walk-in${wt.w>1?"s":""} at the door`,wt.c&&`${wt.c} consult${wt.c>1?"s":""} booked`,wt.s&&`${wt.s} sitting${wt.s>1?"s":""} due`].filter(Boolean);
   const last=CR.last,lg=last&&last.log?last.log.filter(l=>l.k!=="week"):[];
-  host.innerHTML=`<div class="card crNext">
+  host.innerHTML=`${typeof rvHtml==="function"?rvHtml():""}<div class="card crNext">
 <div class="crWhen"><span class="clK">Act ${STAGE_ACT[st]||1} · ${esc(STAGE_NAMES[st]||st)}</span><b>Week ${S.week}, ${S.year}</b></div>
 ${over?`<p><b>Week 52, 2030. Thirty years at the needle.</b></p><p class="hint">The Legacy screen arrives in a later update. Your clients, pieces and save are all still here.</p>`
 :`<p class="hint">${parts.length?`This week: ${esc(parts.join(", "))}.`:"Nothing waiting this week."} Next skips to the next booked client, walk-in or heal, at most 4 weeks.</p>
@@ -5751,9 +6085,19 @@ ${lg.length?`<ul class="crLog">${lg.slice(0,14).map(l=>`<li class="k-${esc(l.k)}
 ${["client","walkin"].includes(last.why)?`<div class="row"><button class="btn" id="crSee">See who's here</button></div>`:""}</div>`:""}
 ${CR.lines.length>1?`<div class="card"><h3>Earlier</h3><ul class="crLines">${CR.lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
 <div class="card"><h2>Career</h2><p class="hint" style="margin-top:0">Thirty years, 2000 to 2030. Apprentice, then a rented chair, then your own studio, then a waiting list.</p>
-<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl></div>`;
+<dl class="kv"><dt>Clients</dt><dd>${S.clients.length}</dd><dt>Pieces</dt><dd>${S.pieces.length}</dd><dt>Cash</dt><dd>${fmtMoney(S.cash)}</dd></dl>${crRep()}</div>`;
+  if(typeof rvWire==="function")rvWire(()=>{renderCareer();$("panel").scrollTop=0;});
   const b=$("crNextB");if(b)b.addEventListener("click",crNext);
   const see=$("crSee");if(see)see.addEventListener("click",()=>{CL.view="week";showTab("clients");});}
+/* the three reputation tracks as notched bars (a number too, so it reads without colour) and what each opens next */
+const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",students:"students",trades:"trades",creatives:"creatives",memorial:"memorial pieces",
+  collector:"collectors",large_scale:"large-scale work",old_school:"old-school regulars",cover_up:"cover-ups",flash_day:"flash days",friday_13:"Friday the 13th",
+  waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
+function crRep(){
+  const T=INK_SIM.REP_TRACKS;if(!T)return"";
+  return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=INK_SIM.repNext(S,k);
+    return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
+<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(CR_SEG[n.id]||n.id.replace(/_/g," "))}${n.kind==="event"?" (later update)":""}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}
@@ -5764,6 +6108,194 @@ function crNext(){
   if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
   if(S.board.item&&!S.queue.some(q=>q.id===S.board.item))S.board.item=null;
   save();renderHeader();renderCareer();INK_SOUND.tick();}
+/* ===================== app/gallery.js: the heal reveal and the body of work (PR 5) =====================
+   Pictures of healed and aged pieces, all re-rendered from the sim (INK_SIM.age); nothing here is ever saved.
+     gvSvg(piece, {years, fresh, ghost, big})  one piece on the client's skin: the design with the aging model's spread,
+                  blur and fade for that many years (heal grade included); a blown-out heal gets a halo, a patchy or infected
+                  one a mottled mask, and the stencil can be laid over it as a faint purple ghost so drift and blowouts show.
+     gvToday(p)   the gallery's render: cached in memory (GV.cache) by piece id + whole years of age + heal + skin, so a piece
+                  is drawn again only when it crosses a year or changes.
+     the reveal   rvHtml / rvWire on the Career tab: S.reveals holds the healed pieces you haven't looked at yet (sim/heal.js
+                  pushes them). Fresh next to healed, the grade as a shape and a word (never colour alone), the client's
+                  reaction, the review if one was written, an apology scene when it got infected, and "Put it in your
+                  portfolio?" (piece.portfolio via INK_SIM.setPortfolio). One tap moves on. PEW's analysis-screen verdict.
+     the work     gvRenderWork(host): the Clients tab's third view. Every piece as it looks today, newest first, filtered by
+                  year, style, client name and portfolio, 40 at a time ("Show more"). Tap one for its history (gvOpen): the
+                  session outputs, the heal, how it looks at 0, 5 and 10 years and today, and the client's ledger.
+   Sample walk-ins aren't in S.clients: INK_SIM.guestClient (set below) hands the sim their traits so their aftercare counts. */
+const GV={cache:new Map(),CAP:1500,n:0,show:40,year:"",style:"",q:"",port:false,seq:0};
+const GV_BLOW="#263a63";      // a blowout: ink pushed too deep reads as a blue-black haze round the line
+const GV_STENCIL="#7b52ea";   // the stencil ghost: transfer purple, dashed, over the healed ink
+const GV_WORDS={crisp:"Crisp",soft:"Slightly soft",patchy:"Patchy",blownout:"Blown out",infected:"Infected"};
+/* each grade's shape, so it reads without colour */
+const GV_SHAPE={
+  crisp:'<circle cx="12" cy="12" r="8" class="f"/>',
+  soft:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="f"/>',
+  patchy:'<circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/><circle cx="9" cy="10" r="1.6" class="f"/><circle cx="15" cy="14" r="1.6" class="f"/>',
+  blownout:'<path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3.5 3.5M15.5 15.5 19 19M19 5l-3.5 3.5M8.5 15.5 5 19"/><circle cx="12" cy="12" r="2.5" class="f"/>',
+  infected:'<path d="M12 3 22 20H2z"/><path d="M12 9v5"/><circle cx="12" cy="17" r="1" class="f"/>'};
+const GV_SAYS={
+  crisp:"Every line held its edge.",
+  soft:"It settled in a little soft at the edges.",
+  patchy:"Some of the ink didn't stay. It needs a touch-up.",
+  blownout:"Ink spread under the skin where the needle went too deep.",
+  infected:"It got infected while it healed. That one is on the shop."};
+function gvShape(g,cls){return GV_SHAPE[g]?`<svg class="gvShape ${cls||""} g-${g}" viewBox="0 0 24 24" aria-hidden="true">${GV_SHAPE[g]}</svg>`:"";}
+function gvGrade(g){return g?`<span class="gvGrade g-${g}">${gvShape(g)}${esc(GV_WORDS[g]||g)}</span>`:`<span class="gvGrade g-none">Healing</span>`;}
+
+/* ---- who a piece belongs to: a real client, or a sample walk-in from the Design tab ---- */
+function gvSample(id){return typeof DZ_SAMPLE_CLIENTS!=="undefined"?DZ_SAMPLE_CLIENTS.find(x=>x.id===id):null;}
+function gvClient(p){
+  const c=INK_SIM.findClient(S,p.client);if(c)return c;
+  const s=gvSample(p.client);
+  return s?{id:s.id,first:s.name,name:s.name+" (sample walk-in)",skinTone:s.skinTone,traits:s.traits,guest:true}:{id:p.client,first:"a client",name:"A client",skinTone:0.3,traits:{},guest:true};}
+INK_SIM.guestClient=id=>{const s=gvSample(id);return s?{traits:s.traits,loyalty:0.3,skinTone:s.skinTone}:null;};
+function gvAgeYears(p){return Math.max(0,(S.year-p.y)+(S.week-p.w)/52);}
+function gvCap(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
+
+/* ---- drawing ---- */
+/* one element: mode "ink" (fill + line), "halo" (a wide soft line: blowout), "ghost" (the stencil: a thin purple line) */
+function gvEl(e,style,spread,mode,extra){
+  const d=dzDef(e.id);if(!d)return"";
+  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),lw=INK_SIM.lineMm(e.lineWeight);
+  const fc=e.colour?dzColHex(e.colour):DZ_INK,lc=e.colour&&(style==="watercolour"||!(e.fill>0))?fc:DZ_INK;
+  let h=`<g transform="${dzTf(e)}">`;
+  if(mode==="ghost")h+=`<path d="${d.path}" fill="none" stroke="${GV_STENCIL}" stroke-width="${dzR4(0.42/k)}" stroke-dasharray="${dzR4(1.4/k)} ${dzR4(0.9/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else if(mode==="halo")h+=`<path d="${d.path}" fill="none" stroke="${GV_BLOW}" stroke-width="${dzR4((lw+extra)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  else{if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+    h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((lw+spread)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
+  return h+"</g>";}
+/* gvSvg(p, o) -> {svg, a}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls */
+function gvSvg(p,o){
+  o=o||{};const d=p.design||{},c=gvClient(p),tone=c.skinTone!=null?c.skinTone:0.3;
+  const yrs=o.years!=null?o.years:gvAgeYears(p);
+  let a={blur:0,fade:0,spread:0,readability:1};
+  if(!o.fresh)try{a=INK_SIM.age({design:d,out:p.out,heal:p.heal,ink:p.ink,skinTone:tone,sun:(c.traits||{}).sun},yrs)||a;}catch(e){}
+  const skin=seRgb(seSkinRgb(tone));
+  if(!(d.elements||[]).length)return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="0 0 10 10" style="background:${skin}" aria-hidden="true"></svg>`,a};
+  const m=dzFromDesign(d),box=dzBox(m.placement),sz=d.sizeMm||40,pos=d.pos||{x:.5,y:.5};
+  const cx=pos.x*box.wrapMm,cy=pos.y*box.lengthMm,pad=sz*0.12,x0=cx-sz/2-pad,y0=cy-sz/2-pad,W=sz+2*pad;
+  const id="gv"+(++GV.seq),fd=clamp(a.fade||0,0,1),blur=Math.max(0,a.blur||0),sp=Math.max(0,a.spread||0);
+  const g=o.fresh?null:p.heal,blown=!o.fresh&&(g==="blownout"||g==="infected"||(p.blowouts||0)>0);
+  let defs="",inkAttr="";
+  if(!o.fresh&&(blur>0.02||fd>0.02)){
+    defs+=`<filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${dzR4(blur*0.5)}"/><feColorMatrix type="saturate" values="${dzR2(1-fd*0.85)}"/></filter>`;
+    inkAttr+=` filter="url(#${id}f)"`;}
+  if(g==="patchy"||g==="infected"){   // a mottled heal: spots where the ink didn't take, the same spots every time
+    let spots="",hs=INK_SIM.hash(p.id+":patch");const rr=()=>((hs=Math.imul(hs^(hs>>>15),2246822507)>>>0)%10000)/10000;
+    const n=g==="infected"?16:11;
+    for(let i=0;i<n;i++)spots+=`<circle cx="${dzR2(x0+pad+rr()*sz)}" cy="${dzR2(y0+pad+rr()*sz)}" r="${dzR2(sz*(0.04+rr()*0.07))}" fill="#000" fill-opacity="${dzR2(0.45+rr()*0.4)}"/>`;
+    defs+=`<filter id="${id}s"><feGaussianBlur stdDeviation="${dzR4(sz*0.012)}"/></filter><mask id="${id}m" maskUnits="userSpaceOnUse" x="${dzR2(x0)}" y="${dzR2(y0)}" width="${dzR2(W)}" height="${dzR2(W)}"><rect x="${dzR2(x0)}" y="${dzR2(y0)}" width="${dzR2(W)}" height="${dzR2(W)}" fill="#fff"/><g filter="url(#${id}s)">${spots}</g></mask>`;
+    inkAttr+=` mask="url(#${id}m)"`;}
+  let body="";
+  if(g==="infected"&&yrs<0.5)body+=`<radialGradient id="${id}r"><stop offset="0" stop-color="#c8553d" stop-opacity=".32"/><stop offset="1" stop-color="#c8553d" stop-opacity="0"/></radialGradient><rect x="${dzR2(x0)}" y="${dzR2(y0)}" width="${dzR2(W)}" height="${dzR2(W)}" fill="url(#${id}r)"/>`;
+  if(blown){defs+=`<filter id="${id}h" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${dzR4(0.5+sp*0.6)}"/></filter>`;
+    body+=`<g filter="url(#${id}h)" opacity="${dzR2(g==="blownout"?0.5:0.28)}">${m.els.map(e=>gvEl(e,m.style,0,"halo",0.9+sp*2.2)).join("")}</g>`;}
+  body+=`<g${inkAttr} opacity="${dzR2(1-fd*0.72)}">${m.els.map(e=>gvEl(e,m.style,o.fresh?0:sp,"ink")).join("")}</g>`;
+  if(o.ghost)body+=`<g class="gvGhost" opacity=".8">${m.els.map(e=>gvEl(e,m.style,0,"ghost")).join("")}</g>`;
+  return{svg:`<svg class="gvSvg ${o.cls||""}" viewBox="${dzR2(x0)} ${dzR2(y0)} ${dzR2(W)} ${dzR2(W)}" style="background:${skin}" aria-hidden="true">${defs?`<defs>${defs}</defs>`:""}${body}</svg>`,a};}
+/* today's render for the gallery, cached by piece + whole years + heal + skin */
+function gvToday(p){
+  const c=gvClient(p),yr=Math.floor(gvAgeYears(p)),key=p.id+"|"+yr+"|"+(p.heal||"-")+"|"+(c.skinTone!=null?c.skinTone:"")+"|"+(p.design&&p.design.sizeMm);
+  let hit=GV.cache.get(key);
+  if(!hit){if(GV.cache.size>=GV.CAP)GV.cache.clear();hit=gvSvg(p,{years:yr});hit.yr=yr;GV.cache.set(key,hit);GV.n++;}
+  return hit;}
+const gvReads=r=>{r=clamp(r||0,0,1);const cls=r<0.35?"bad":r<0.6?"meh":"ok";return`<b class="gvR ${cls}">${Math.round(r*100)}</b>`;};
+
+/* ===================== the reveal (Career tab) ===================== */
+function rvPending(){
+  if(!Array.isArray(S.reveals))S.reveals=[];
+  while(S.reveals.length){const p=S.pieces.find(x=>x.id===S.reveals[0]);if(p&&p.heal)return p;S.reveals.shift();}
+  return null;}
+function rvStars(n){n=clamp(n||0,0,5);return`<span class="rvStars" role="img" aria-label="${n} out of 5 stars">${"★".repeat(n)}<span>${"☆".repeat(5-n)}</span></span>`;}
+function rvHtml(){
+  const p=rvPending();if(!p)return"";
+  const c=gvClient(p),g=p.heal,left=S.reveals.length-1;
+  const fresh=gvSvg(p,{fresh:true,cls:"rvImg"}),healed=gvSvg(p,{years:0,ghost:true,cls:"rvImg"});
+  const loy=c.guest?0.3:c.loyalty,react=INK_SIM.healReaction(p,loy),rv=INK_SIM.pieceReview(S,p);
+  const fix=g==="infected"?S.queue.find(q=>q.fix===p.id):null;
+  const r=healed.a.readability;
+  return`<article class="card rv g-${g}" id="rvCard" aria-labelledby="rvT">
+<header class="rvHd"><span class="clK">The bandage comes off${left>0?` · ${left} more waiting`:""}</span><h2 id="rvT">${esc(gvCap(p.name))}</h2>
+<span class="clMeta">Done week ${p.w}, ${p.y} · healed week ${p.healW||"?"}, ${p.healY||"?"}</span></header>
+<div class="rvVerdict g-${g}">${gvShape(g,"big")}<div><div class="rvBig">${esc(GV_WORDS[g]||g)}</div><p>${esc(GV_SAYS[g]||"")} It reads ${Math.round(r*100)} today.</p></div></div>
+<div class="rvPair"><figure><div class="rvFrame">${fresh.svg}</div><figcaption>The day you did it</figcaption></figure>
+<figure><div class="rvFrame heal">${healed.svg}</div><figcaption>Healed <span class="rvKey"><i aria-hidden="true"></i>your stencil</span></figcaption></figure></div>
+${g==="infected"?`<div class="rvScene"><div class="clB artist"><span class="clBw">You</span>${esc(INK_SIM.healApology(p))}</div></div>`:""}
+${react?`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c.first||"Client")}</span>${esc(react)}</div></div>`:""}
+${g==="infected"?`<p class="rvNote">${fix?`Free fix booked for week ${fix.w}, ${fix.y}. Reputation took a hit.`:"Reputation took a hit."}</p>`:""}
+${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc(c.first)} left a review`}</span>${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}
+<div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
+:`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div>`}</div>
+</article>`;}
+function rvWire(after){
+  const card=$("rvCard");if(!card)return;
+  card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
+    const p=rvPending();if(!p)return;
+    if(b.dataset.rv==="yes"){INK_SIM.setPortfolio(S,p,true);toast("In your portfolio");}
+    S.reveals.shift();save();INK_SOUND.tick();if(after)after();});}
+
+/* ===================== the body of work (Clients tab, Work view) ===================== */
+function gvList(){
+  const qs=GV.q.trim().toLowerCase(),out=[];
+  for(let i=S.pieces.length-1;i>=0;i--){const p=S.pieces[i];
+    if(GV.year&&String(p.y)!==GV.year)continue;
+    if(GV.style&&(p.design||{}).style!==GV.style)continue;
+    if(GV.port&&!p.portfolio)continue;
+    if(qs){const c=gvClient(p);if(!(c.name||"").toLowerCase().includes(qs))continue;}
+    out.push(p);}
+  return out;}
+function gvTile(p){
+  const t=gvToday(p),c=gvClient(p),st=INK_SIM.STYLES[(p.design||{}).style];
+  return`<button class="gvT${p.portfolio?" port":""}" data-p="${esc(p.id)}"><span class="gvA">${t.svg}${p.portfolio?`<span class="gvPort" title="In your portfolio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span class="sr">In your portfolio</span></span>`:""}</span>
+<span class="gvL"><b>${esc(gvCap(p.label||"tattoo"))}</b><span class="clMeta">${p.y} · ${esc(c.first||"")}${st?` · ${esc(st.name)}`:""}</span><span class="gvM">${p.heal?gvShape(p.heal):""}<span class="clMeta">${t.yr<1?"fresh":t.yr+" yr"} · reads ${gvReads(t.a.readability)}</span></span></span></button>`;}
+function gvRenderWork(host){
+  const all=S.pieces,years=[...new Set(all.map(p=>p.y))].sort((a,b)=>b-a),styles=Object.keys(INK_SIM.STYLES).filter(k=>all.some(p=>(p.design||{}).style===k));
+  const list=gvList(),nPort=all.filter(p=>p.portfolio).length;
+  if(!all.length){host.innerHTML=`<div class="card empty"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg><p><b>No finished pieces yet.</b></p><p>Every tattoo you finish lands here and ages with the person wearing it.</p></div>`;return;}
+  host.innerHTML=`<div class="card gvFil">
+<div class="gvSel"><label>Year<select id="gvY"><option value="">All years</option>${years.map(y=>`<option${String(y)===GV.year?" selected":""}>${y}</option>`).join("")}</select></label>
+<label>Style<select id="gvS"><option value="">All styles</option>${styles.map(k=>`<option value="${k}"${k===GV.style?" selected":""}>${esc(INK_SIM.STYLES[k].name)}</option>`).join("")}</select></label></div>
+<div class="row"><label class="clSearch gvQ"><span class="sr">Search by client</span><input id="gvQ" type="search" placeholder="Search by client" value="${esc(GV.q)}" autocomplete="off"></label>
+<button class="btn sm gvPortB${GV.port?" on":""}" id="gvP" aria-pressed="${GV.port}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Portfolio · ${nPort}</button></div>
+<p class="clMeta gvCount">${list.length===all.length?`${all.length} piece${all.length===1?"":"s"}`:`${list.length} of ${all.length} pieces`}, as they look in ${S.year}.</p></div>
+${list.length?`<div class="gvGrid" id="gvGrid">${list.slice(0,GV.show).map(gvTile).join("")}</div>${list.length>GV.show?`<div class="row" style="justify-content:center"><button class="btn" id="gvMore">Show more (${list.length-GV.show})</button></div>`:""}`:`<div class="card empty"><p>Nothing matches.</p></div>`}`;
+  const re=()=>{GV.show=40;gvRenderWork(host);};
+  $("gvY").addEventListener("change",e=>{GV.year=e.target.value;re();});
+  $("gvS").addEventListener("change",e=>{GV.style=e.target.value;re();});
+  $("gvP").addEventListener("click",()=>{GV.port=!GV.port;INK_SOUND.tick();re();});
+  $("gvQ").addEventListener("input",e=>{GV.q=e.target.value;const pos=e.target.selectionStart;re();const i=$("gvQ");i.focus();try{i.setSelectionRange(pos,pos);}catch(_){}});
+  const m=$("gvMore");if(m)m.addEventListener("click",()=>{GV.show+=40;gvRenderWork(host);});
+  const g=$("gvGrid");if(g)g.addEventListener("click",e=>{const b=e.target.closest("[data-p]");if(b)gvOpen(b.dataset.p);});}
+/* a piece's history in the sheet */
+function gvOpen(id){
+  const p=S.pieces.find(x=>x.id===id);if(!p)return;
+  const c=gvClient(p),o=p.out||{},yrs=gvAgeYears(p),now=gvSvg(p,{cls:"gvBig"}),rv=INK_SIM.pieceReview(S,p);
+  const pct=v=>v==null?"–":Math.round(clamp(v,0,1)*100)+"%";
+  const strip=[0,5,10].map(y=>({y,lbl:y===0?"Healed":y+" years"+(y>yrs?" (forecast)":"")}));
+  if(yrs>=1&&![0,5,10].includes(Math.floor(yrs)))strip.push({y:Math.floor(yrs),lbl:"Today, "+Math.floor(yrs)+" yr"});
+  strip.sort((a,b)=>a.y-b.y);
+  const ink=INK_SIM.INKS&&INK_SIM.INKS[p.ink],mach=INK_SIM.MACHINES&&INK_SIM.MACHINES[p.machine];
+  const mine=c.guest?[p]:(c.pieces||[]).map(pid=>S.pieces.find(x=>x.id===pid)).filter(Boolean);
+  const spent=mine.reduce((s,x)=>s+(x.price||0),0);
+  openSheet(gvCap(p.label||"Piece"),`<section class="gvHist"><div class="gvHead"><div class="gvBigA">${now.svg}</div><div>
+<p class="gvName">${esc(gvCap(p.name))}</p><p>${gvGrade(p.heal)}${p.portfolio?` <span class="gvGrade g-port">★ Portfolio</span>`:""}</p>
+<p class="clMeta">${yrs<1?"Fresh":Math.floor(yrs)+(Math.floor(yrs)===1?" year":" years")+" on the skin"} · reads ${gvReads(now.a.readability)}</p></div></div></section>
+<section><h3>The work</h3><dl class="kv"><dt>Done</dt><dd>Week ${p.w}, ${p.y}${p.stage?` · ${esc((typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[p.stage])||p.stage)}`:""}</dd>
+<dt>Style</dt><dd>${esc((INK_SIM.STYLES[(p.design||{}).style]||{}).name||"")} · ${Math.round((p.design||{}).sizeMm||0)} mm${(p.design||{}).flash?" · flash":""}</dd>
+${p.price?`<dt>Price</dt><dd>${fmtMoney(p.price)}</dd>`:""}${p.sessionsUsed?`<dt>Sittings</dt><dd>${p.sessionsUsed}</dd>`:""}
+<dt>Lines</dt><dd>${pct(o.lineQuality)}</dd><dt>Depth</dt><dd>${pct(o.depthQuality)}</dd><dt>Saturation</dt><dd>${pct(o.saturation)}</dd><dt>Trauma</dt><dd>${pct(o.trauma)} <span class="hint">lower is better</span></dd>
+${p.blowouts!=null?`<dt>Blowouts</dt><dd>${p.blowouts}</dd>`:""}${p.joins!=null?`<dt>Joins</dt><dd>${p.joins}</dd>`:""}
+${ink||mach?`<dt>Kit</dt><dd>${esc([mach&&mach.name,ink&&(ink.name||p.ink)+" ink"].filter(Boolean).join(" · "))}</dd>`:""}
+<dt>Heal</dt><dd>${p.heal?`${gvGrade(p.heal)} week ${p.healW||"?"}, ${p.healY||"?"}`:"Still under the bandage"}</dd></dl>
+${rv?`<div class="rvRev">${rvStars(rv.stars)}<blockquote>${esc(rv.text)}</blockquote></div>`:""}</section>
+<section><h3>How it ages</h3><div class="gvStrip">${strip.map(s=>{const t=gvSvg(p,{years:s.y,cls:"gvSm"});return`<figure>${t.svg}<figcaption>${esc(s.lbl)}<br>reads ${gvReads(t.a.readability)}</figcaption></figure>`;}).join("")}</div></section>
+${p.heal?`<section><div class="row"><button class="btn${p.portfolio?"":" pri"}" id="gvPf">${p.portfolio?"Take it out of your portfolio":"Add to your portfolio"}</button></div></section>`:""}
+<section><h3>${esc(c.first||"Client")}'s ledger</h3><ul class="clHist">${mine.map(x=>`<li><span class="clMeta">${x.y}</span> ${esc(gvCap(x.label||"tattoo"))}${x.heal?` · ${esc((INK_SIM.HEAL_GRADES[x.heal]||{}).name||x.heal)}`:""}${x.price?` · ${fmtMoney(x.price)}`:""}${x.id===p.id?" <b>(this one)</b>":""}</li>`).join("")}</ul>
+<p class="clMeta">${mine.length} piece${mine.length===1?"":"s"}, ${fmtMoney(spent)} in all.</p>
+${c.guest?`<p class="hint">A sample walk-in from the Design tab: not on your books.</p>`:`<div class="row"><button class="btn" id="gvCl">Open ${esc(c.first)}'s card</button></div>`}</section>`);
+  const pf=$("gvPf");if(pf)pf.addEventListener("click",()=>{INK_SIM.setPortfolio(S,p,!p.portfolio);save();toast(p.portfolio?"In your portfolio":"Out of your portfolio");gvOpen(p.id);if(curTab==="clients"&&CL.view==="work")renderClients();});
+  const cl=$("gvCl");if(cl)cl.addEventListener("click",()=>clOpenClient(c.id));}
 /* ===================== app/bodymap.js: the body diagram on the Design tab (PR 2) =====================
    An original front/back drawing of the neutral, stylized mannequin (smooth capsule limbs, no face, no anatomical detail),
    dressed in a crop top and shorts so the ribs/side are bare. Drawn for Ink; no traced art.
