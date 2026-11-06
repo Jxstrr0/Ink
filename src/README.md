@@ -46,8 +46,8 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `css/ui-gallery.css` | the heal reveal on the Career tab, the Work view (body of work) on the Clients tab, a piece's history sheet, the reputation bars (PR 5) |
 | `css/ui-career.css` | the act card, invitations, money and skills on the Career tab; the shop cards on the Studio tab; the shop-closed scene and the Legacy screen; save slots and the New career sheet (PR 7) |
 | `css/ui-events.css` | PR 8: event cards and the shop-closed banner on the Career tab, what's in demand, social media, rival shops, goals, the piece pickers in the post and convention sheets, convention results, the reckoning's choices; the cover-up layer (`.dzOld`, its label) and the cover score on the design board |
-| `css/style.css` | theme tokens (dark default, `html[data-theme=light]`), the app frame (header, `#panel`, bottom `#tabs`), cards, buttons, segmented controls, the sheet, toast, the update bar, the cream `.board`, reduced motion / transparency |
-| `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
+| `css/style.css` | theme tokens (dark default, `html[data-theme=light]`), the app frame (header, `#panel`, bottom `#tabs`), cards, buttons, segmented controls, the sheet, toast (at the top while a sheet or tip is open, PR 9), the update bar, the cream `.board`; PR 9: the help overlay, Settings rows, the share button icon, the short-landscape layout; reduced motion / transparency |
+| `html/body.html` | `</style>`, all the markup (`#app`, `#hdr`, the five `.tabpage`s, `#tabs`, `#sheet`, `#help` (PR 9), `#toast`), the three.js r128 CDN tag, `INK_LIBS` and `__inkLibs()` |
 | `html/ld-libs.html`, `ld-sim.html`, `ld-vis.html` | one-line `<script>__ld(fraction,"message")</script>` loading-bar steps after the block they report |
 | **INK_SIM** | |
 | `sim/rng.js` | `<script>`, the INK_SIM IIFE open, `rng(seed)` (mulberry32 with `range`, `int`, `chance`, `pick`, `weighted`, `shuffle`, `normal`, `fork`), `hash`, `clamp`, `lerp` |
@@ -89,7 +89,8 @@ One place: `src/app/state.js`, `const VERSION="x.y.z.w";` (major.minor.feature.h
 | `app/slots.js` | save slots and New career (PR 7): `slHtml`/`slWire` in Settings › Save, `slSave`/`slLoad`/`slClear` (a slot is `{z: buZip of the packed save, savedAt, week, year, stage, pieces}`), `slNewOpen` (the start screen; Start as an apprentice / Skip the broom), `slStart` |
 | `app/gallery.js` | the reveal and the body of work (PR 5; PR 7: the Yours / Shop switch, `GV.shop`, staff pieces by `p.by`): `gvSvg` (a piece on skin, aged by `INK_SIM.age`, with the blowout halo, the patchy mask and the stencil ghost), `gvToday` (cached per piece + whole year + heal), the reveal (`rvHtml`/`rvWire`, `S.reveals`), the Work view `gvRenderWork` (filters, 40 at a time), a piece's history `gvOpen`; sets `INK_SIM.guestClient` for sample walk-ins |
 | `app/bodymap.js` | `bmSvg`: the front/back body diagram with a tappable zone per placement (PR 2) |
-| `app/help.js` | help overlays (PR 9); closes the app script |
+| `app/share.js` | share cards (PR 9): `SHARE` (card size, paper and ink colours, fonts, the limb window), `shSave` (one share path, PEW's `phoSave`: `navigator.share` with the PNG where the browser can share files, else a download; the toast says which), `shLimb` (a piece on its placement as skin, drawn from `gvSvg`), `shPieceCard(id)`, `shGoalCard(goal id)`, `shLegacyCard()`, `SH_ICON`; every card carries "© year Kelbo / Longlight Interactive" |
+| `app/help.js` | help overlays on Act 1 (PR 9, PEW's help.js pattern): `HELP_TIPS` (id, tab, the control to spotlight, when it applies, the words), `helpSoon`/`helpCheck` (after a tab draws), `helpShow`/`helpPlace` (spotlight and card), `helpClose`, `helpOff`, `helpReset` (Settings › Help › Show tips again); closes the app script |
 | `html/tail.html` | `<script>__ldGo(start)</script></body></html>` (no trailing newline) |
 
 ## The state object `S`
@@ -118,7 +119,8 @@ Defined once, in `freshState()` in `app/state.js`. Saved whole as `ink-save`, pa
 | `board` | object | the design board (PR 2): `design` (the working design, shape in `docs/SIM-CONTRACT.md`, null = empty), `bodyShape` (`BODY_SHAPES` id), `skinTone` 0..1, `client` (a `DZ_SAMPLE_CLIENTS` id, or a real client id from PR 3), `item` (PR 3: the `S.queue` session item being designed for, or null) |
 | `flash` | array | your own flash, saved from the board: `{id, name, design, w, y}`, at most `FLASH_MINE_CAP` (40) (PR 2) |
 | `seed` | number | the career's rng seed (`INK_SIM.rng`) |
-| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced`, `handed` (`"right"`/`"left"`, PR 4), `assist` (PR 4), `flatStencil` (PR 6: place the stencil on the flat box instead of the 3D body) |
+| `settings` | object | `theme` (dark/light/auto), `gfx` (null = auto, lite/full/ultra), `gfxAuto`, `sound`, `reduced`, `handed` (`"right"`/`"left"`, PR 4), `assist` (PR 4), `flatStencil` (PR 6: place the stencil on the flat box instead of the 3D body), `tips` (PR 9: help overlays on; kept by a new career) |
+| `help` | object | PR 9: help overlays already seen, tip id (`HELP_TIPS`) -> `{w, y}`; a new career starts with `{}`; `hydrate` drops anything that isn't an object |
 | `bkAt` | number | when the last backup was made (ms), 0 = never |
 
 The sim's data shapes (designs, clients, elements, placements) are in `docs/SIM-CONTRACT.md`.

@@ -216,6 +216,9 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   const t = plain(a.__get()); assert.strictEqual(t.board.skinTone, 0.8); assert.strictEqual(t.board.bodyShape, "neutral"); assert.strictEqual(t.board.client, "wk_office");
   assert.strictEqual(t.kit.machine, "coil_used"); assert.deepStrictEqual(t.kit.needles, ["3RL", "7RL", "7M1"]); assert.strictEqual(t.session, null);
   assert.strictEqual(t.settings.handed, "right"); assert.strictEqual(t.settings.assist, false); assert.strictEqual(t.settings.flatStencil, false);
+  assert.strictEqual(t.settings.tips, true); assert.deepStrictEqual(t.help, {}, "PR 9: tips on and none seen");
+  assert(a.hydrate({ week: 6, help: [1], settings: { tips: false } })); const h = plain(a.__get());
+  assert.deepStrictEqual(h.help, {}, "a help field that isn't an object is dropped"); assert.strictEqual(h.settings.tips, false);
   assert(a.hydrate({ week: 7, kit: {} }), "an older save's kit:{} becomes the starter kit");
   const u = plain(a.__get()); assert.strictEqual(u.kit.ink, "budget"); assert.strictEqual(u.kit.voltage, 7); assert.deepStrictEqual(u.kit.owned.machines, ["coil_used"]);
   assert(a.hydrate({ week: 8, kit: { machine: "rotary", owned: { machines: ["coil_used", "rotary"] } }, session: "x" }));

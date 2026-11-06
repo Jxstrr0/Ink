@@ -81,6 +81,8 @@ function buSaveOk(o){
   if(!buObj(o))return false;
   if("settings" in o&&!buObj(o.settings))return false;
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
+  if(buObj(o.settings)&&"tips" in o.settings&&typeof o.settings.tips!=="boolean")return false;   // PR 9
+  if("help" in o&&o.help!=null&&!buObj(o.help))return false;   // PR 9: tip id -> {w, y}
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
   if("studio" in o&&(!buObj(o.studio)||("staff" in o.studio&&!Array.isArray(o.studio.staff))||("stage" in o.studio&&typeof o.studio.stage!=="string")))return false;   // PR 7
