@@ -22,6 +22,8 @@ node tools/element-sheet.js [--png out.png]   # validate the element library (an
 node tools/session-test.js   # the session and kit on fixed traces: flattener, steady vs rushed, blowouts, joins, pain, zones, multi-session
 ```
 
+Asset tools (by hand, not checks): `python3 tools/pack-model.py IN.glb models/OUT.glb --budget N` (Pillow + numpy) packs a Blender export; `node tools/body-ref.js [URL]` (Playwright, a local server) re-exports the coded mannequin reference into `models/base-mesh/reference/`. See `docs/BLENDER.md`.
+
 Run all of them before every commit. To play a local copy: `python3 -m http.server` in the repo root and open it in a browser. The service worker only registers on a real host (or with `?sw=1`), so local testing is never cached.
 
 ## Source and build
@@ -77,7 +79,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.9.0, November 2026)
+## Current status (0.1.10.0, November 2026)
+
+- PR 10 (code and free assets) built; **the Blender batch is pending Kelbo** (`docs/BLENDER.md` is his brief). `vis/assets.js`: the `ASSETS` table and loader, Full/Ultra only (Lite makes no request): Poly Haven CC0 textures on the floor, walls and dado (`models/textures/`, about 270 KB, cached by the service worker as fetched), and a slot per coded prop (`vis/studio.js` now builds each prop as a named group in `room.props`): a model file replaces its stand-in when its entry is `on:true`; entries ship `on:false` until the file exists (no 404s); a failed load keeps the stand-in silently. The mannequin (`ASSETS.body`) is listed but not swapped yet: a follow-up once `models/ink-mannequin.glb` exists. Kenney CC0 UI sounds (`sounds/tap.wav`, `sounds/toast.wav`, `UI_SOUNDS` in `sound/synth.js`: `tick()` and the new `chime()` on toasts; synth fallback; the buzz stays synthesised). The CC0 base mesh (pistachio's Human Basemeshes) is in `models/base-mesh/`; `tools/body-ref.js` (Playwright) exported the coded body to `models/base-mesh/reference/` (three shapes as OBJ, UV atlas, zones); `tools/pack-model.py` is PEW's, adapted (reads .glb, keeps shape keys, prints triangles/size/origin). Credits in `models/CREDITS.md`, `sounds/CREDITS.md` and Settings › About. `build.js` hashes `models/textures/` into the media cache name. No new S fields.
 
 - PR 9 built: help overlays on Act 1 (`app/help.js` `HELP_TIPS`: Arkady's shop, practice on fake skin, draw a flash sheet, the friend's free piece, the first heal; each once, a spotlight on the real control, `S.help` and `S.settings.tips`, Settings › Help › Show tips again); share cards (`app/share.js`: the piece card on its limb, goal trophy cards, the Legacy card, 2D canvas, one share path `shSave`: the share sheet with the file, else a download, the toast says which; every card carries the credit line); Settings grouped into Display, Graphics, Sound, Session (now with the stencil view), Help and Save with one labelled row per control; a landscape layout for short screens (slim header, tab labels beside the icons); toasts drop to the top while a sheet or a tip is open; goals reached by a convention, a lease, a hire or an event tick at once; the reputation bars only name what the game has (no "later update"); contrast fixes (the board's empty hint, done Act 1 steps, the light theme's board edge). New S fields: `help`, `settings.tips`.
 

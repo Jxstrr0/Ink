@@ -295,7 +295,7 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 2. ~~**(PR 0 / PR 8)** Era~~ **Answered: 2000–2030, social media arrives as a system in 2016.**
 3. ~~**(PR 7)** Career start~~ **Answered: apprentice, with a "Skip the broom" option.**
 4. ~~**(PR 4)** Session control~~ **Answered: trace-and-rhythm with pace meter.**
-5. **(PR 10)** Mannequin: Kelbo models it in Blender, or Claude Code sources a CC0 base mesh and Kelbo clothes it?
+5. ~~**(PR 10)** Mannequin: Kelbo models it in Blender, or Claude Code sources a CC0 base mesh and Kelbo clothes it?~~ **Answered: Claude Code sources a CC0 base mesh; Kelbo retopologises and dresses it.** (pistachio's Human Basemeshes, CC0, in `models/base-mesh/`; brief in `docs/BLENDER.md`.)
 6. ~~**(PR 1)** Element art~~ **Answered: a mix. Claude Code draws original SVG and pulls credited CC0 motifs for the rest (`art/CREDITS.md`).**
 7. ~~**(PR 8)** TV show offer~~ **Answered: include it.**
 8. ~~**(PR 0 / PR 1)** Ribs/side placement~~ **Answered: in.** Crop top on the mannequin, high-pain side zones in `PLACEMENTS`.
@@ -328,4 +328,5 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 - [x] PR 7: Career acts, staff auto-sim, signature, lineage, money with soft fail, Legacy screen, save cap, saves
 - [x] PR 8: Conventions, trends, social, rivals, reckonings, inspections, goals
 - [x] PR 9: Help overlays, piece and Legacy cards, settings, polish
-- [ ] PR 10: Blender props, mannequin, CC0/CC-BY assets
+- [x] PR 10 (part): code and free assets (0.1.10.0: the loader and slots, Poly Haven textures, Kenney UI sounds, the CC0 base mesh, `docs/BLENDER.md`, `tools/pack-model.py`); Blender batch pending
+- [ ] PR 10 (rest): Blender props and the dressed mannequin from Kelbo, and the mannequin swap
