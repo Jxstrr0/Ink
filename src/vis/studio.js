@@ -8,7 +8,7 @@
    studio | legacy (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 3k
    triangles. Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build.
    PR 10: every prop is a named group in `props` (chair, station, machine, lamp, stool, shelves, bench, flashframe, sign,
-   plant, photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
+   plant, plant2 (PR 11: the legacy studio's second plant), photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
    photo textures on them and swap a Blender model in for a coded prop on Full and Ultra. Lite never sees either. ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
 function vrCanvas(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);
@@ -136,7 +136,7 @@ function vsRoom(){
   /* legacy: framed photos of healed work along the right wall and a second plant; vis/assets.js adds the trophy shelf when its file exists */
   const PG=pg("photos",st.legacy);for(let i=0;i<6;i++){const f=box(0.03,0.3,0.24,M.wood,[2.77,1.35+(i%2)*0.4,0.4+Math.floor(i/2)*0.42],PG);
     box(0.01,0.24,0.18,M.cream,[2.755,f.position.y,f.position.z],PG);}
-  cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],st.legacy);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],st.legacy);
+  const P2=pg("plant2",st.legacy);cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],P2);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],P2);
   pg("trophies",st.legacy);   // empty: no coded stand-in, a model only
   for(const s of VR_STAGES)grp.add(st[s]);grp.add(st.apprenticeOnly);
   /* light: warm hemisphere, the work lamp, the pendant, a little cold moonlight through the window */

@@ -2,6 +2,8 @@
 
 This is the job list for the Blender batch: the client mannequin and the shop props for Full and Ultra graphics. Everything the game needs from the code side is already in (0.1.10.0): the loader, the slots, the photo textures, the packing tool. Your files slot in by name; nothing else changes. Lite phones never load any of this and keep the coded shop and mannequin, so nothing you do can break Lite.
 
+**Status (0.1.11.0):** a first version of every file now ships, made by script: `tools/blender/` (`mannequin.py`, `props.py`, `check_mannequin.py`; how to run them in `tools/blender/README.md`). The scripted mannequin is built from the coded body's own reference export (`models/base-mesh/reference/`), not from the pistachio base mesh, so its UVs and shapes match the game exactly. Every entry in `ASSETS` is `on:true`. This brief still holds: any file you make by hand to it replaces the scripted one under the same name (pack it, run `check_mannequin.py` for the mannequin, credit it, and stop running the script for that file).
+
 Every number below is taken from the code (`src/vis/body.js`, `src/vis/studio.js`, `src/vis/assets.js`, `src/sim/placements.js`). If a number here and the code ever disagree, the code wins: tell Claude and the doc gets fixed.
 
 Contents: [0. Set up](#0-set-up) · [1. The mannequin](#1-the-mannequin) · [2. The shop props](#2-the-shop-props) · [3. Pack and check](#3-pack-and-check) · [4. Credit it](#4-credit-it) · [5. Rules](#5-rules)
