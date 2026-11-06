@@ -87,6 +87,7 @@ pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12
 
 /* ---- design board: cream in both themes ---- */
 .board{background:var(--board);color:var(--boardInk);border:1px solid var(--boardLine);border-radius:var(--r)}
+html[data-theme=light] .board{border-color:#c4b28c;box-shadow:0 1px 3px rgba(60,40,20,.12)}   /* PR 9: cream on a cream page needs a firmer edge */
 
 /* ---- sheet (Settings, Back up, Restore) ---- */
 #scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:70}
@@ -102,8 +103,12 @@ textarea.code{width:100%;min-height:120px;padding:10px;border-radius:8px;border:
 .buerr{color:var(--crit);min-height:1.2em}
 
 /* ---- toast ---- */
-#toast{position:fixed;left:50%;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:80;max-width:calc(100% - 32px);padding:10px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#toast{position:fixed;left:50%;width:max-content;text-align:center;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:80;max-width:calc(100% - 32px);padding:10px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+/* PR 9: with a sheet open the toast drops in from the top, so it never sits over the sheet's buttons */
+html.sheetOn #toast,html.helpOn #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;transform:translate(-50%,-12px)}
+html.sheetOn #toast.on,html.helpOn #toast.on{transform:translate(-50%,0)}
+html[data-theme=light] #toast{background:#2a231c}
 
 /* ---- "New version ready" bar (app/boot.js, PEW's pwa.js pattern) ---- */
 #pwaBar{position:fixed;left:50%;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);z-index:75;display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100% - 24px);padding:8px 8px 8px 14px;border-radius:10px;background:#1f1a15;color:#f2ebdd;border:1px solid var(--red);box-shadow:var(--shadow);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
@@ -111,10 +116,43 @@ textarea.code{width:100%;min-height:120px;padding:10px;border-radius:8px;border:
 #pwaBar .btn{min-height:44px}
 #pwaBar .pwalater{min-height:44px;min-width:44px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:#b6ac9b;font-weight:500;cursor:pointer}
 
+/* ---- help overlays (PR 9, app/help.js): a spotlight on the real control and a short card ---- */
+#help{position:fixed;inset:0;z-index:60}
+#help[hidden]{display:none}
+#helpSpot{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(10,8,6,.62);border:2px solid var(--gold);pointer-events:none;transition:all .25s ease}
+#helpBox{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));max-width:440px;margin:0 auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);transition:top .25s ease,bottom .25s ease}
+#helpBox h3{font-size:17px;margin:2px 0 4px}
+#helpBox p{margin:0 0 10px;font-size:14.5px;line-height:1.45}
+#helpBox .row{justify-content:flex-end}
+#helpBox .clK{color:var(--gold)}
+
+/* ---- Settings rows (PR 9) ---- */
+.setS .setR{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding:8px 0;border-top:1px solid var(--line)}
+.setS .setR:first-of-type{border-top:0;padding-top:0}
+.setL{display:flex;flex-direction:column;font-weight:600;min-width:0;flex:1 1 140px}
+.setL .clMeta{font-weight:400}
+.setS .row{margin-top:8px}
+
+/* ---- share cards (PR 9, app/share.js) ---- */
+.shBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- short screens: a phone on its side (PR 9). A slimmer header and a tab bar with the label beside the icon ---- */
+@media (max-height:500px) and (orientation:landscape){
+  :root{--tabh:44px;--hdr:40px}
+  #hdr{padding-top:calc(env(safe-area-inset-top,0px) + 2px);padding-bottom:2px}
+  #hdr .brand{font-size:20px}
+  #hdr .when{flex-direction:row;gap:8px;align-items:baseline}
+  #tabs button{flex-direction:row;gap:6px;font-size:12.5px}
+  #tabs button svg{width:20px;height:20px}
+  #panel{padding-top:10px}
+  #sheet{max-height:94vh}
+  #studioView{height:min(56vh,260px)}
+}
+
 /* ---- wide screens ---- */
 @media (min-width:900px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
 /* ---- accessibility preferences ---- */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
-@media (prefers-reduced-transparency:reduce){#scrim{background:rgba(0,0,0,.8)}#studioView .cap{background:#0f0c09}}
+@media (prefers-reduced-transparency:reduce){#scrim{background:rgba(0,0,0,.8)}#studioView .cap{background:#0f0c09}#helpSpot{box-shadow:0 0 0 9999px rgba(10,8,6,.86)}}
 html.noanim *,html.noanim *::before,html.noanim *::after{transition:none!important;animation:none!important}

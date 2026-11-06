@@ -11,7 +11,8 @@ function showTab(t){if(!TABS.includes(t))t="studio";const pn=$("panel");tabScrol
   document.querySelectorAll("#tabs button").forEach(b=>{const on=b.dataset.tab===t;b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   document.querySelectorAll(".tabpage").forEach(p=>p.classList.toggle("on",p.id==="tab-"+t));
   renderTab(t);pn.scrollTop=tabScroll[t]||0;
-  if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();}
+  if(t==="studio"&&typeof INK_VIS!=="undefined"&&INK_VIS.ready())INK_VIS.resize();
+  if(typeof helpSoon==="function")helpSoon();}
 function renderTab(t){({studio:renderStudio,design:renderDesign,session:renderSession,clients:renderClients,career:renderCareer})[t]();}
 function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);
   const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;}
@@ -19,25 +20,29 @@ function renderAll(){renderHeader();renderTab(curTab);}
 
 /* ---- the sheet ---- */
 let sheetBack=null;
-function openSheet(title,html){sheetBack=document.activeElement;$("sheetTitle").textContent=title;$("sheetBody").innerHTML=html;$("sheet").classList.add("on");$("scrim").classList.add("on");$("sheetBody").scrollTop=0;}
-function closeSheet(){$("sheet").classList.remove("on");$("scrim").classList.remove("on");if(sheetBack&&sheetBack.focus)try{sheetBack.focus({preventScroll:true});}catch(e){}sheetBack=null;}
+function openSheet(title,html){if(typeof helpOff==="function")helpOff();sheetBack=document.activeElement;$("sheetTitle").textContent=title;$("sheetBody").innerHTML=html;$("sheet").classList.add("on");$("scrim").classList.add("on");document.documentElement.classList.add("sheetOn");$("sheetBody").scrollTop=0;}
+function closeSheet(){if(typeof helpSoon==="function")setTimeout(helpSoon,0);$("sheet").classList.remove("on");$("scrim").classList.remove("on");document.documentElement.classList.remove("sheetOn");if(sheetBack&&sheetBack.focus)try{sheetBack.focus({preventScroll:true});}catch(e){}sheetBack=null;}
 function sheetOn(){return $("sheet").classList.contains("on");}
 
 /* ---- Settings ---- */
 function segHtml(id,opts,cur){return `<div class="seg" id="${id}" role="group">${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${String(v)===String(cur)?"on":""}" aria-pressed="${String(v)===String(cur)}">${l}</button>`).join("")}</div>`;}
+/* Settings, grouped (PR 9): Display, Graphics, Sound, Session, Help, Save, App, About. One labelled row per control */
+function setRow(label,ctl,sub){return`<div class="setR"><span class="setL">${label}${sub?`<span class="clMeta">${sub}</span>`:""}</span>${ctl}</div>`;}
 function openSettings(){
   const st=S.settings;
   openSheet("Settings",`
-<section><h3>Look</h3><div class="row">${segHtml("setTheme",[["dark","Dark"],["light","Light"],["auto","Auto"]],st.theme)}</div>
-<div class="row" style="margin-top:8px">${segHtml("setReduced",[["0","Effects on"],["1","Reduced"]],st.reduced?1:0)}</div></section>
-<section><h3>Graphics</h3><div class="row">${segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||"")}</div>
-<div class="row" style="margin-top:8px">${segHtml("setGfxAuto",[["1","Auto-adjust on"],["0","Off"]],st.gfxAuto===false?0:1)}</div>
-<p class="hint">Lite is the phone default. Auto-adjust steps down a tier if the studio stutters.</p></section>
-<section><h3>Session</h3><div class="row">${segHtml("setHand",[["right","Right-handed"],["left","Left-handed"]],st.handed==="left"?"left":"right")}</div>
-<div class="row" style="margin-top:8px">${segHtml("setAssist",[["0","Assist off"],["1","Assist on"]],st.assist?1:0)}</div>
-<p class="hint">Handedness puts Break, Numb and Chat on your free hand's side. Assist slows the pacing marker and widens what counts as steady and on the line. It counts from the next sitting.</p></section>
-<section><h3>Sound</h3><div class="row">${segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1)}</div></section>
-<section><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
+<section class="setS"><h3>Display</h3>${setRow("Theme",segHtml("setTheme",[["dark","Dark"],["light","Light"],["auto","Auto"]],st.theme))}
+${setRow("Effects",segHtml("setReduced",[["0","On"],["1","Reduced"]],st.reduced?1:0),"Reduced turns off camera moves and animations")}</section>
+<section class="setS"><h3>Graphics</h3>${setRow("Tier",segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||""))}
+${setRow("Auto-adjust",segHtml("setGfxAuto",[["1","On"],["0","Off"]],st.gfxAuto===false?0:1),"Steps down a tier if the studio stutters")}
+<p class="hint">Lite is the phone default.</p></section>
+<section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"The machine buzz and taps")}</section>
+<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side")}
+${setRow("Assist",segHtml("setAssist",[["0","Off"],["1","On"]],st.assist?1:0),"A slower marker and a wider steady band, from the next sitting")}
+${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}</section>
+<section class="setS"><h3>Help</h3>${setRow("Tips",segHtml("setTips",[["1","On"],["0","Off"]],st.tips===false?0:1),"Short notes the first time you meet something in Act 1")}
+<div class="row"><button class="btn" id="setTipsAgain">Show tips again</button></div></section>
+<section class="setS"><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
 <div class="row"><button class="btn" id="bkCode">Back up</button><button class="btn" id="bkRestore">Restore</button><button class="btn" id="bkFile">Save file</button><button class="btn" id="bkLoad">Load file</button></div>
 ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtml()}`:""}</section>
 <section id="set-app" hidden><h3>App</h3><div class="row"><button class="btn pri" id="pwaInstall" hidden>Install app</button></div>
@@ -53,6 +58,9 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
   seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
   seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
+  seg("setFlat",v=>{st.flatStencil=v==="1";});
+  seg("setTips",v=>{st.tips=v==="1";if(!st.tips&&typeof helpOff==="function")helpOff();});
+  $("setTipsAgain").addEventListener("click",()=>{if(typeof helpReset==="function")helpReset();$("setTips").querySelectorAll("button").forEach(x=>{const on=x.dataset.v==="1";x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});toast("Tips will show again as you meet each thing");});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
   $("bkFile").addEventListener("click",buFileSave);$("bkLoad").addEventListener("click",buFileLoad);
   if(typeof slWire==="function")slWire();

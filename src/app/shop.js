@@ -60,7 +60,7 @@ function shopWire(){
     if(!r||r.ok===false){toast("Not enough cash");return;}toast(`${INK_SIM.STUDIO_STAGES[k].name}: ${INK_SIM.STUDIO_STAGES[k].levels[(S.studio.build[k]||1)-1]}`);re();}));
   body.querySelectorAll("[data-hire]").forEach(b=>b.addEventListener("click",()=>{const r=INK_SIM.hireStaff(S,b.dataset.hire);
     if(!r.ok){toast(r.why==="cash"?"Not enough cash for the hiring fee":r.why==="stations"?"No free station":"They've taken another job");return;}
-    SH.hire=false;toast(`${r.staff.name} starts at your shop`);re();}));
+    SH.hire=false;if(typeof evGoalsNow==="function")evGoalsNow();toast(`${r.staff.name} starts at your shop`);re();}));
   body.querySelectorAll("[data-cut]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.cut);if(!s)return;
     INK_SIM.setStaffCut(S,s.id,Math.round((s.cut+(+b.dataset.d))*100)/100);INK_SOUND.tick();re();}));
   body.querySelectorAll("[data-letgo]").forEach(b=>b.addEventListener("click",()=>{const s=S.studio.staff.find(x=>x.id===b.dataset.letgo);if(!s)return;

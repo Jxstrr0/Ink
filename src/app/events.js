@@ -49,17 +49,24 @@ function evRivalsHtml(){
 ${gone.length?`<p class="clMeta">Closed: ${gone.map(r=>esc(gvCapS(r.shop||r.name))+(r.gone?" ("+r.gone.y+")":"")).join(", ")}.</p>`:""}</div>`;}
 function evGoalsHtml(){
   const G=INK_SIM.goalList(S),n=G.filter(g=>g.done).length;
-  return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span></li>`).join("")}</ul></div>`;}
+  return`<div class="card evGoals"><h2>Goals <span class="clMeta">${n} of ${G.length}</span></h2><ul class="evGoalL">${G.map(g=>`<li class="${g.done?"done":""}"><span class="evTick" aria-hidden="true"></span><span><b>${esc(g.name)}</b><span class="clMeta">${g.done?`Reached week ${g.done.w}, ${g.done.y}`:esc(g.says)}</span></span><span class="sr">${g.done?"done":"not yet"}</span>${g.done&&typeof shGoalCard==="function"?`<button class="btn sm shBtn" data-gcard="${esc(g.id)}" aria-label="Share card: ${esc(g.name)}">${SH_ICON}Card</button>`:""}</li>`).join("")}</ul></div>`;}
 function evLowerHtml(){
   if(!evOn())return"";INK_SIM.worldEnsure(S);
   return evTrendHtml()+evSocialHtml()+evRivalsHtml()+evGoalsHtml();}
 function evWire(){
   document.querySelectorAll(".evCard").forEach(card=>card.addEventListener("click",e=>{const b=e.target.closest("[data-evc]");if(!b)return;
-    const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;
+    const st0=S.studio.stage,r=INK_SIM.eventChoose(S,card.dataset.ev,b.dataset.evc);if(!r||!r.ok)return;evGoalsNow();
     if(S.studio.stage!==st0&&typeof caStage==="function")caStage();
     save();renderHeader();INK_SOUND.tick();if(r.text)openSheet("What happens",`<p>${esc(r.text)}</p><div class="row"><button class="btn pri" id="evOk">OK</button></div>`);
     const ok=$("evOk");if(ok)ok.addEventListener("click",closeSheet);renderCareer();}));
-  const p=$("evPost");if(p)p.addEventListener("click",evPostSheet);}
+  const p=$("evPost");if(p)p.addEventListener("click",evPostSheet);
+  document.querySelectorAll("[data-gcard]").forEach(b=>b.addEventListener("click",()=>shGoalCard(b.dataset.gcard)));}
+/* PR 9: goals reached by something you just did (a convention placing, a lease, a hire) tick now, not on the next Next.
+   Returns the goals reached; quiet=true leaves the toast to the caller */
+function evGoalsNow(quiet){
+  if(!SIMOK("checkGoals"))return[];const ids=INK_SIM.checkGoals(S,false);if(!ids.length)return ids;save();
+  if(!quiet){const g=INK_SIM.GOALS.find(x=>x.id===ids[0]);setTimeout(()=>toast(`Goal reached: ${g.name}${ids.length>1?` (and ${ids.length-1} more)`:""}. Its card is under Goals.`),2700);}
+  return ids;}
 /* goals reached after Next: one toast */
 function evAfterLog(log){
   const g=(log||[]).filter(l=>l.k==="goal");if(!g.length)return;
@@ -98,7 +105,7 @@ ${row("healed",cand.healed,"Healed work","A year old or more. Judged on how it r
   body.querySelectorAll(".evPick").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest(".evPk");if(!b)return;EV.pick[g.dataset.kind]=b.dataset.pid||null;
     g.querySelectorAll(".evPk").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});INK_SOUND.tick();}));
   $("evConvNo").addEventListener("click",()=>{INK_SIM.enterInvite(S,invId,false);save();closeSheet();renderCareer();});
-  $("evConvGo").addEventListener("click",()=>{const r=INK_SIM.enterInvite(S,invId,true,EV.pick);if(!r||!r.ok)return;save();renderHeader();evConvResult(r);renderCareer();});}
+  $("evConvGo").addEventListener("click",()=>{const r=INK_SIM.enterInvite(S,invId,true,EV.pick);if(!r||!r.ok)return;r.goals=evGoalsNow(true);save();renderHeader();evConvResult(r);renderCareer();});}
 function evConvResult(r){
   const pl=n=>n?["","First place","Second place","Third place"][n]:"No placing";
   const cat=(c,l)=>c?`<div class="evRes p${c.place}"><span class="clK">${l}</span><b>${pl(c.place)}</b><span class="clMeta">${esc(gvCap(c.name||""))} · scored ${Math.round(c.score*100)}${c.prize?" · "+fmtMoney(c.prize):""}</span></div>`:"";
@@ -106,8 +113,10 @@ function evConvResult(r){
 <dl class="kv"><dt>Booth sales</dt><dd class="in">+${fmtMoney(r.booth)}</dd></dl>
 ${r.metClient?`<p>${esc(r.metClient.name)} stood at your booth for half an hour and booked a consult for week ${r.metClient.w}.</p>`:`<p class="clMeta">Plenty of people stopped at the booth. Nobody booked on the spot.</p>`}
 ${r.rivals&&r.rivals.length?`<section><h3>Other shops from Mostograd</h3><ul class="caPast">${r.rivals.map(x=>`<li>${esc(x.line)}</li>`).join("")}</ul></section>`:""}
+${(r.goals||[]).map(id=>{const g=INK_SIM.GOALS.find(x=>x.id===id);return g?`<div class="evGoalNow"><span class="clK">Goal reached</span><b>${esc(g.name)}</b><button class="btn sm shBtn" data-gcard="${esc(id)}">${SH_ICON}Share card</button></div>`:"";}).join("")}
 <div class="row"><button class="btn pri" id="evOk">Back to the shop</button></div>`);
-  $("evOk").addEventListener("click",closeSheet);}
+  $("evOk").addEventListener("click",closeSheet);
+  $("sheetBody").querySelectorAll("[data-gcard]").forEach(b=>b.addEventListener("click",()=>shGoalCard(b.dataset.gcard)));}
 
 /* ---- reckonings: the old piece, then and now (no bandage peel: it healed years ago, so "now" shows at once) ---- */
 function evReckonOpen(q){

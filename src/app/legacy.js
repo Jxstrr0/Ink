@@ -7,8 +7,8 @@
    tab until you tap through, so a closed sheet never loses it.
    lgOpen(): the Legacy screen (INK_SIM.legacySummary): the oldest piece that still reads, the client with the most
    pieces, pieces per decade, the best heal, conventions, apprentices and the shop. It opens from the Career tab once you
-   have a studio, and by itself at the end. The save stays playable afterwards. The share card is PR 9
-   (INK_SIM.SHARE_CARD stays null until then). */
+   have a studio, and by itself at the end. The save stays playable afterwards. PR 9: Share card draws it as a picture
+   (app/share.js shLegacyCard). */
 const LG={shown:""};
 function lgScene(){return S.career&&S.career.scene||null;}
 function lgSceneKey(sc){return sc?sc.kind+":"+sc.w+":"+sc.y:"";}
@@ -51,7 +51,7 @@ ${L.conv.list.length?`<ul class="caPast">${L.conv.list.map(c=>`<li>${c.y} · ${e
 ${L.staff.length?`<p class="hint">On your staff now: ${L.staff.map(s=>`${esc(s.name)} (${s.pieces} pieces)`).join(", ")}.</p>`:""}
 ${L.fails?`<p class="hint">You lost a shop ${L.fails===1?"once":L.fails+" times"} and kept going.</p>`:""}${L.tv?`<p class="hint">The TV show: ${L.tv==="yes"?"you did it.":"you said no."}</p>`:""}</section>
 <section><p class="hint">${end?"The thirty years are done, but the shop isn't. Your save stays open: keep working, look back through your clients, or start a new career from Settings › Save.":"Everything here is worked out from your save as it stands today."}</p>
-<div class="row"><button class="btn pri" id="lgClose" style="flex:1">Back to the shop</button></div></section></div>`);
-  $("lgClose").addEventListener("click",closeSheet);
+<div class="row"><button class="btn shBtn" id="lgCard">${SH_ICON}Share card</button><button class="btn pri" id="lgClose" style="flex:1">Back to the shop</button></div></section></div>`);
+  $("lgClose").addEventListener("click",closeSheet);$("lgCard").addEventListener("click",shLegacyCard);
   const go=e=>{const f=e.target.closest("[data-gp]");if(f&&(e.type==="click"||e.key==="Enter"||e.key===" ")){e.preventDefault();if(typeof gvOpen==="function")gvOpen(f.dataset.gp);}};
   $("lgBody").addEventListener("click",go);$("lgBody").addEventListener("keydown",go);}
