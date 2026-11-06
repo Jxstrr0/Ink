@@ -6,7 +6,10 @@
    lines, runs that in a vm sandbox and takes INK_SIM. Every TEST_DESIGN (tools/sim-fixtures.js) is scored against the
    client it was drawn for and one contrasting client: every sub-score, hours/sessions/price, and the aging prediction at
    5/10/20 years (fade lost / readability today). Then it asserts sanity orderings (tiny script reads worse than big
-   script, watercolour fades faster than traditional, ...) and exits 1 if any fail. Last, it times 10,000 scoreDesign calls.
+   script, watercolour fades faster than traditional, ...) and exits 1 if any fail. PR 3 adds client generation, the consult,
+   memory and returns, the week clock, Next, and a synthetic 30-year run (auto-play: consult every walk-in, return and
+   referral, do every session with default outputs) that times advanceWeek at year 30, and prints sample briefs, a consult
+   transcript and a few Next lines to read the voice. Last, it times 10,000 scoreDesign calls.
    Zero dependencies. */
 "use strict";
 const fs = require("fs"), path = require("path"), vm = require("vm");
@@ -135,6 +138,175 @@ check("totals spread out (max - min > 0.4)", Math.max(...totals) - Math.min(...t
 check("every sub-score spreads by at least 0.35", ["readability", "flow", "balance", "coherence", "fit"].every(k => subs(k) >= 0.35), ["readability", "flow", "balance", "coherence", "fit"].map(k => k + " " + f2(subs(k))).join(", "));
 check("every score is 0..1", TEST_DESIGNS.every(t => Object.values(RES[t.id]).every(r => ["readability", "flow", "balance", "coherence", "fit", "total"].every(k => r[k] >= 0 && r[k] <= 1))));
 check("scoring is deterministic", JSON.stringify(SIM.scoreDesign(D("koi"), TEST_CLIENTS.dmitri, SKILLS)) === JSON.stringify(R("koi", "dmitri")));
+
+/* ---- PR 3: clients, the consult, the week clock ---- */
+const S0 = (o) => Object.assign({ v: 1, week: 1, year: 2000, cash: 0, rate: 0, rep: { walkins: 0, collectors: 0, peers: 0 },
+  skills: { styles: {}, consult: 0, linework: 0, shading: 0, colour: 0, speed: 0 }, kit: {}, clients: [], pieces: [], queue: [],
+  studio: { stage: "apprentice", staff: [] }, goals: {}, seed: SEED, settings: {}, bkAt: 0 }, o || {});
+const clone = o => JSON.parse(JSON.stringify(o));
+// tables
+const elTags = new Set(); for (const e of SIM.ELEMENTS) for (const t of e.tags) elTags.add(t);
+check("40+ brief templates across every theme", SIM.BRIEFS.length >= 40 && ["memorial", "milestone", "pets", "travel", "nature", "nautical", "first", "coverup", "matching", "collector"].every(t => SIM.BRIEFS.some(b => b.theme === t)), SIM.BRIEFS.length + " briefs");
+check("brief ids unique", new Set(SIM.BRIEFS.map(b => b.id)).size === SIM.BRIEFS.length);
+check("every brief tag, slot tag and hidden-want tag exists in ELEMENTS", SIM.BRIEFS.every(b => b.tags.every(t => elTags.has(t))) &&
+  Object.values(SIM.BRIEF_SLOTS).every(l => l.every(v => !v.tags || v.tags.every(t => elTags.has(t)))) &&
+  SIM.HIDDEN_WANTS.must.concat(SIM.HIDDEN_WANTS.deal).every(m => m.kind !== "tag" || elTags.has(m.v)),
+  SIM.BRIEFS.map(b => b.tags.filter(t => !elTags.has(t)).join(",")).filter(Boolean).join(" "));
+check("every brief style, size and placement exists", SIM.BRIEFS.every(b => b.styles.every(s => SIM.STYLES[s]) && SIM.SIZE_CLASSES[b.size] && b.place.every(p => P[p] || P[p + "_l"])));
+const jc = j => { const s = j.toLowerCase(); for (const [k, v] of SIM.JOB_COVER) if (k !== "DEFAULT" && s.indexOf(k) >= 0) return v; return SIM.JOB_COVER[SIM.JOB_COVER.length - 1][1]; };
+check("every job's cover agrees with design.js JOB_COVER within 0.25", SIM.JOBS.every(j => Math.abs(j.cover - jc(j.name)) <= 0.25), SIM.JOBS.filter(j => Math.abs(j.cover - jc(j.name)) > 0.25).map(j => j.name + " " + j.cover + " vs " + jc(j.name)).join("; "));
+check("names include he/him, she/her and they/them pools", SIM.NAMES.groups.some(g => g.he && g.he.length) && SIM.NAMES.groups.some(g => g.she && g.she.length) && SIM.NAMES.neutral.length >= 5);
+/* content guard: nothing in the client tables reads as a minor, and no real brands (curated words) */
+const tableText = JSON.stringify([SIM.BRIEFS, SIM.BRIEF_SLOTS, SIM.NAMES, SIM.JOBS, SIM.HIDDEN_WANTS, SIM.CONSULT_QUESTIONS, SIM.CONSULT_ANSWERS, SIM.REVIEWS, SIM.RETURN_RULES, SIM.FOREIGN_PIECES, SIM.REFERRAL, SIM.BAD_IDEAS.map(b => [b.add, b.gentle, b.blunt, b.yes, b.no, b.insist])]);
+const BANNED = /\b(child|children|kid|kids|teen|teens|teenager|son|daughter|baby|babies|boy|girl|minor|minors|underage|toddler|infant|schoolgirl|schoolboy|pupil|nephew|niece|grandson|granddaughter|instagram|facebook|tiktok|vkontakte|coca|nike|adidas|disney)\b/i;
+check("client tables contain no words that read as minors or real brands", !BANNED.test(tableText), (tableText.match(BANNED) || [])[0]);
+// generation
+const gen = [];
+for (let i = 0; i < 3000; i++) { const yr = 2000 + (i % 31); gen.push(SIM.makeClient(SIM.rng(SEED).fork("gen:" + i), { id: "c" + (i + 1), year: yr, week: 1 + (i % 52) })); }
+check("every generated client is 18..75", gen.every(c => c.age >= 18 && c.age <= 75 && SIM.clientAge(c, 2030) >= 18), gen.filter(c => c.age < 18 || c.age > 75).map(c => c.age).join(","));
+check("ages lean young (median under 35)", gen.map(c => c.age).sort((a, b) => a - b)[1500] < 35);
+check("all three pronoun sets appear", ["he/him", "she/her", "they/them"].every(p => gen.some(c => c.pronouns === p)));
+check("clients carry the full contract shape", gen.every(c => c.id && c.name && SIM.BODY_SHAPES[c.bodyShape] && c.skinTone >= 0 && c.skinTone <= 1 && c.job &&
+  ["pain", "sun", "aftercare", "budget", "loyalty", "talkative", "trusting"].every(k => c.traits[k] >= 0 && c.traits[k] <= 1) &&
+  c.wants && c.wants.sizeMm[0] < c.wants.sizeMm[1] && Array.isArray(c.mustHaves) && Array.isArray(c.dealbreakers) && Array.isArray(c.history) && c.known && c.brief && P[c.ask.placement]));
+check("no brief has an unfilled {slot}", gen.every(c => !/\{\w+\}/.test(c.brief)), (gen.find(c => /\{\w+\}/.test(c.brief)) || {}).brief);
+check("a dealbreaker never contradicts a must-have", gen.every(c => c.dealbreakers.every(d => !c.mustHaves.some(m => m.kind === d.kind && m.v === d.v))));
+check("makeClient is deterministic", JSON.stringify(SIM.makeClient(SIM.rng(SEED).fork("gen:7"), { id: "c8", year: 2007, week: 8 })) === JSON.stringify(gen[7]));
+check("era-limited jobs and briefs stay in their years", gen.every(c => { const j = SIM.JOBS.find(x => x.name === c.job), b = SIM.BRIEFS.find(x => x.id === c.briefId), y = c.since.y; return (!j.from || y >= j.from) && (!b.from || y >= b.from); }));
+check("roughly one in five walk-ins brings a bad idea", (() => { const n = gen.filter(c => c.ask.bad).length / gen.length; return n > 0.1 && n < 0.4; })(), (gen.filter(c => c.ask.bad).length / gen.length).toFixed(2));
+// the consult
+const autoPick = (c, prefer) => { const o = SIM.consultOptions(c); const by = k => o.find(x => x.kind === k);
+  if (prefer && o.find(x => x.id === prefer)) return prefer;
+  return (by("talk") || (c.asked.length < 2 && by("ask")) || by("price") || o.find(x => x.id === "q_fair") || o[0]).id; };
+function runConsult(client, S, r, prefer, item) {
+  let c = SIM.consultStart(client, S, { item }), n = 0;
+  while (c.stage !== "done" && n < 20) { const o = SIM.consultOptions(c); if (o.length < 3 || o.length > 5) return { c, bad: o.length + " options" }; c = SIM.consultChoose(c, autoPick(c, prefer), r); n++; }
+  return { c, n };
+}
+const CS = S0({ year: 2010, studio: { stage: "chair", staff: [] }, skills: { styles: {}, consult: 4, linework: 0, shading: 0, colour: 0, speed: 0 } });
+let maxEx = 0, optOk = true, allDone = true;
+for (let i = 0; i < 600; i++) {
+  const res = runConsult(gen[i], CS, SIM.rng(SEED).fork("consult:" + i), ["q_avoid", "q_must", null, "to_quote", "q_high", "q_low", "decline"][i % 7]);
+  if (res.bad) optOk = false; if (res.c.stage !== "done" || !res.c.outcome) allDone = false;
+  maxEx = Math.max(maxEx, res.n == null ? 99 : res.n);
+}
+check("the consult offers 3..5 choices at every step", optOk);
+check("every consult terminates with an outcome in at most 5 exchanges", allDone && maxEx <= 5, "max " + maxEx);
+const bads = gen.filter(c => c.ask.bad), talkRes = { won: 0, lost: 0, insisted: 0 };
+for (let i = 0; i < bads.length; i++) for (const how of ["talk_gentle", "talk_blunt"]) {
+  const c = SIM.consultChoose(SIM.consultStart(bads[i], CS), how, SIM.rng(SEED).fork("talk:" + how + i));
+  talkRes[c.talk]++;
+}
+check("talking a client out of a bad idea can win them or lose the booking", talkRes.won > 10 && talkRes.lost > 10, JSON.stringify(talkRes));
+const tiny = SIM.makeClient(SIM.rng(SEED).fork("tiny"), { id: "c9001", year: 2012, briefId: "first_word", badIdea: false });
+const tinyAsk = c => Object.assign(clone(c), { ask: Object.assign(clone(c.ask), { style: "lettering", sizeMm: 9, placement: "forearm_l", bad: null }) });
+check("a 9 mm script ask is flagged as a bad idea", SIM.consultStart(tinyAsk(tiny), CS).bad === "tiny_script");
+const wonTalk = (() => { for (let i = 0; i < 200; i++) { const c = SIM.consultChoose(SIM.consultStart(tinyAsk(tiny), CS), "talk_gentle", SIM.rng(i + 1)); if (c.talk === "won") return c; } return null; })();
+check("winning the tiny-script talk makes the script bigger and earns loyalty", wonTalk && wonTalk.ask.sizeMm >= 35 && (() => { const S1 = S0({ year: 2012 }); const before = wonTalk.client.loyalty; SIM.consultCommit(S1, wonTalk); return S1.clients[0].loyalty > before; })());
+check("consultChoose does not mutate the consult it was given", (() => { const c = SIM.consultStart(gen[3], CS), j = JSON.stringify(c.transcript) + JSON.stringify(c.known); SIM.consultChoose(c, SIM.consultOptions(c)[0].id, SIM.rng(3)); return JSON.stringify(c.transcript) + JSON.stringify(c.known) === j; })());
+check("asking about dealbreakers can reveal a hidden one", (() => { let hit = 0; gen.filter(c => c.dealbreakers.length > c.known.dealbreakers.length).slice(0, 100).forEach((cl, i) => { const c = SIM.consultChoose(SIM.consultStart(cl, CS), "q_avoid", SIM.rng(SEED + i)); if (c.known.dealbreakers.length > cl.known.dealbreakers.length) hit++; }); return hit > 20; })());
+const acc = (() => { for (let i = 0; i < 100; i++) { const S1 = S0({ year: 2010, studio: { stage: "chair", staff: [] } }); const cl = SIM.makeClient(SIM.rng(i), { id: "c1", year: 2010, badIdea: false }); const res = runConsult(cl, S1, SIM.rng(i + 50), "q_low"); if (res.c.outcome === "accepted") { const out = SIM.consultCommit(S1, res.c); return { S1, out, c: res.c }; } } return null; })();
+check("an accepted consult books a session and takes the deposit", acc && acc.out.item && acc.out.item.kind === "session" && acc.S1.cash === acc.c.quote.deposit && acc.S1.clients.length === 1 && acc.S1.clients[0].history[0].kind === "consult");
+// memory: pieces, referral, returns, reviews
+const MS = S0({ year: 2003, week: 10 });
+const darya = SIM.makeClient(SIM.rng(11), { id: "c1", year: 2003, week: 10 }); MS.clients.push(darya);
+const rose = { placement: "forearm_l", sizeMm: 85, style: "traditional", elements: [{ id: "rose_trad", x: 0.5, y: 0.5, scale: 0.8, rot: 0, lineWeight: 14, fill: 0.6, colour: "red" }] };
+const pc = SIM.addPiece(MS, { client: "c1", design: rose, out: { lineQuality: 0.8, depthQuality: 0.8, saturation: 0.8, trauma: 0.5 } });
+check("a piece is named after its motif, client and placement", pc.id === "p1" && pc.name === "the rose on " + darya.first + "'s left forearm" && darya.pieces[0] === "p1" && darya.history.some(h => h.kind === "piece"), pc.name);
+const ref = SIM.referral(darya, SIM.rng(5), { id: "c2", year: 2003, week: 14, label: pc.label });
+check("a referral names its referrer", ref.referredBy === "c1" && ref.brief.indexOf(darya.first) >= 0 && ref.age >= 18, ref.brief);
+const RS = S0({ year: 2009, week: 20, studio: { stage: "studio", staff: [] } });
+RS.clients.push(Object.assign(clone(darya), { loyalty: 1 })); RS.pieces.push(clone(pc));
+let retItems = [];
+for (let i = 0; i < 6000 && !retItems.length; i++) retItems = SIM.scheduleReturns(RS, SIM.rng(SEED).fork("ret:" + i));
+const ri = retItems[0];
+check("a return brief names the piece and its year", ri && ri.brief.indexOf(ri.ret.label) >= 0 && ri.brief.indexOf(String(ri.ret.year)) >= 0 && (ri.ret.rule === "cover_other" || (ri.ret.year === 2003 && ri.brief.indexOf("rose") >= 0)), ri && ri.brief);
+check("every return rule's brief template names the piece and the year", SIM.RETURN_RULES.every(rr => rr.brief.every(t => /\{label\}|\{foreign\}/.test(t) && /\{year\}/.test(t))));
+check("only one pending return per client", SIM.scheduleReturns(RS, SIM.rng(1)).length === 0);
+const rv = SIM.writeReview(darya, Object.assign(clone(pc), { heal: "crisp" }), SIM.rng(2), true);
+check("a review is written from REVIEWS and logged", rv && rv.kind === "review" && rv.stars >= 1 && rv.stars <= 5 && darya.history.indexOf(rv) >= 0);
+// the week clock
+const WS = S0({ week: 52, year: 2003, studio: { stage: "chair", staff: [] } });
+const wl = SIM.advanceWeek(WS);
+check("advanceWeek moves exactly one week and rolls the year", WS.week === 1 && WS.year === 2004 && wl[0].k === "week" && wl.some(l => l.k === "year"));
+const WS2 = S0({ week: 17, year: 2011, studio: { stage: "studio", staff: [] } }); SIM.advanceWeek(WS2);
+check("advanceWeek mid-year moves one week", WS2.week === 18 && WS2.year === 2011);
+const ES = S0({ week: 51, year: 2030 }); SIM.advanceWeek(ES); const el2 = SIM.advanceWeek(ES);
+check("the clock stops at 2030 week 52 with a flag", ES.week === 52 && ES.year === 2030 && el2.end === true && SIM.careerOver(ES) && SIM.nextStop(ES).weeks === 0);
+check("advanceWeek is deterministic", (() => { const a = S0({ week: 30, year: 2015, studio: { stage: "studio", staff: [] }, rep: { walkins: 60, collectors: 30, peers: 10 } }), b = clone(a); SIM.advanceWeek(a); SIM.advanceWeek(b); return JSON.stringify(a) === JSON.stringify(b); })());
+const NS = S0({ week: 5, year: 2002 });
+let nsMax = 0; const nsLogs = [];
+for (let i = 0; i < 60; i++) { const w0 = SIM.weekIndex(NS.week, NS.year), res = SIM.nextStop(NS); nsMax = Math.max(nsMax, SIM.weekIndex(NS.week, NS.year) - w0, res.weeks); nsLogs.push(res); }
+check("nextStop never jumps more than 4 weeks", nsMax <= 4 && nsLogs.every(x => x.weeks >= 1 && typeof x.line === "string"), "max " + nsMax);
+check("nextStop stops early for a client and runs to 4 on a quiet stretch", nsLogs.some(x => x.weeks < 4 && (x.why === "walkin" || x.why === "client")) && nsLogs.some(x => x.why === "cap" && x.weeks === 4));
+const CQ = S0({ week: 10, year: 2006, studio: { stage: "chair", staff: [] } });
+const cqC = SIM.makeClient(SIM.rng(9), { id: "c1", year: 2006 }); CQ.clients.push(cqC);
+for (let i = 0; i < 8; i++) CQ.queue.push({ id: "q" + (i + 1), kind: "session", client: "c1", w: 11, y: 2006, hours: 6, sessionNo: 1, sessions: 1, price: 1000, deposit: 200, ask: cqC.ask });
+const cqLog = SIM.advanceWeek(CQ);
+check("sessions that don't fit the week's hours carry to next week", CQ.queue.filter(q => q.w === 11).reduce((a, q) => a + q.hours, 0) <= SIM.WEEK.stages.chair.hours && CQ.queue.some(q => q.w === 12) && cqLog.some(l => l.k === "carried"));
+const fin = SIM.finishSession(CQ, CQ.queue.find(q => q.w === 11).id, { design: rose });
+check("finishing a session pays the balance and creates the piece", fin.piece && CQ.pieces.length === 1 && CQ.cash === 800);
+
+/* ---- the synthetic 30-year run: consult and accept walk-ins, do every session with default outputs ---- */
+function autoWeek(S) {
+  const yrs = S.year - 2000;
+  S.studio.stage = yrs < 3 ? "apprentice" : yrs < 8 ? "chair" : yrs < 20 ? "studio" : "legacy";
+  S.rep.walkins = Math.min(100, yrs * 6); S.rep.collectors = Math.min(100, yrs * 4); S.rep.peers = Math.min(100, yrs * 3);
+  S.skills.consult = Math.min(10, Math.floor(yrs / 2)); S.skills.speed = Math.min(10, Math.floor(yrs / 3));
+  const r = SIM.rng(S.seed).fork("auto:" + S.year + ":" + S.week), now = SIM.weekIndex(S.week, S.year);
+  for (const q of S.queue.slice()) {
+    if (SIM.weekIndex(q.w, q.y) !== now || (q.kind !== "walkin" && q.kind !== "consult")) continue;
+    const client = q.newClient || SIM.findClient(S, q.client); if (!client) continue;
+    let c = SIM.consultStart(client, S, { item: q });
+    while (c.stage !== "done") c = SIM.consultChoose(c, autoPick(c), r);
+    SIM.consultCommit(S, c);
+  }
+  for (const q of S.queue.slice()) if (q.kind === "session" && SIM.weekIndex(q.w, q.y) === now)
+    SIM.finishSession(S, q.id, { design: q.design || SIM.proxyDesign(q.ask), out: { lineQuality: 0.8, depthQuality: 0.8, saturation: 0.8, trauma: 0.4 } });
+}
+const LONG = S0({ seed: SEED });
+const perYear = {}, tRun = process.hrtime.bigint();
+let lastLog = null;
+for (let i = 0; i < 1560; i++) {
+  autoWeek(LONG);
+  const t0 = process.hrtime.bigint(); lastLog = SIM.advanceWeek(LONG); const dt = Number(process.hrtime.bigint() - t0) / 1e6;
+  (perYear[LONG.year] = perYear[LONG.year] || []).push(dt);
+}
+const runMs = Number(process.hrtime.bigint() - tRun) / 1e6;
+const y30 = perYear[2029], avg30 = y30.reduce((a, b) => a + b, 0) / y30.length, max30 = Math.max(...y30);
+const ids = LONG.clients.map(c => c.id);
+check("30-year run: 1,560 weeks lands on 2030 week 1", LONG.year === 2030 && LONG.week === 1, LONG.week + "/" + LONG.year);
+check("30-year run: no duplicate client, piece or queue ids", new Set(ids).size === ids.length && new Set(LONG.pieces.map(p => p.id)).size === LONG.pieces.length && new Set(LONG.queue.map(q => q.id)).size === LONG.queue.length);
+check("30-year run: every client is an adult", LONG.clients.every(c => c.age >= 18 && SIM.clientAge(c, LONG.year) >= 18));
+check("30-year run: referrals, returns and named pieces all happen", LONG.clients.some(c => c.referredBy) && LONG.clients.some(c => c.history.some(h => h.kind === "consult" && h.src === "return")) && LONG.pieces.every(p => /^the .+ on .+'s .+/.test(p.name)));
+check("30-year run: advanceWeek under 50 ms at year 30", avg30 < 50 && max30 < 150, avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
+check("the 30-year run is deterministic (first 2 years, twice)", (() => { const a = S0({ seed: 77 }), b = S0({ seed: 77 }); for (let i = 0; i < 104; i++) { autoWeek(a); SIM.advanceWeek(a); autoWeek(b); SIM.advanceWeek(b); } return JSON.stringify(a) === JSON.stringify(b) && a.clients.length > 0; })());
+
+if (!QUIET) {
+  console.log("\nsample briefs:");
+  for (const c of gen.filter((c, i) => i % 433 === 5).slice(0, 7)) console.log("  [" + c.since.y + ", " + c.name + ", " + c.age + ", " + c.job + "] " + c.brief);
+  const tr = (() => { for (let i = 0; i < 600; i++) { const cl = gen[i]; if (!cl.ask.bad || cl.dealbreakers.length <= cl.known.dealbreakers.length) continue; const r = SIM.rng(SEED + i); let c = SIM.consultStart(cl, CS);
+    for (const id of ["q_avoid", "talk_gentle", "q_pain", "to_quote", "q_fair"]) { if (c.stage === "done") break; const o = SIM.consultOptions(c); c = SIM.consultChoose(c, o.find(x => x.id === id) ? id : autoPick(c), r); }
+    while (c.stage !== "done") c = SIM.consultChoose(c, autoPick(c), r); if (c.outcome === "accepted" && c.talk === "won" && c.known.dealbreakers.length > cl.known.dealbreakers.length) return c; } return null; })();
+  if (tr) { console.log("\nsample consult (" + tr.client.name + ", " + tr.client.job + ", consult skill " + tr.skill + "):"); for (const l of tr.transcript) console.log("  " + (l.who === "artist" ? "YOU:    " : l.who === "client" ? "CLIENT: " : "        (") + l.text + (l.who === "note" ? ")" : "")); console.log("  -> " + tr.outcome + ", quote " + JSON.stringify(tr.quote)); }
+  const keep = new Set(LONG.clients.slice(0, 40).map(c => c.id));
+  const NX = S0({ week: 20, year: 2004, studio: { stage: "chair", staff: [] }, rep: { walkins: 30, collectors: 10, peers: 5 }, clients: clone(LONG.clients.slice(0, 40)), pieces: clone(LONG.pieces.filter(p => keep.has(p.client))) });
+  console.log("\nNext, four presses (a 2004 chair; nobody is consulted in between, so walk-ins leave unseen):");
+  for (let i = 0; i < 4; i++) { const res = SIM.nextStop(NX); console.log("  [" + res.weeks + " wk, stop: " + res.why + "] " + res.line); }
+  /* the same shop if walk-ins did not stop Next (WEEK.nextStopsOnWalkins = false), with a fresh piece healing */
+  const NY = S0({ week: 20, year: 2004, studio: { stage: "chair", staff: [] }, rep: { walkins: 30, collectors: 10, peers: 5 }, clients: clone(LONG.clients.slice(0, 40)), pieces: clone(LONG.pieces.filter(p => keep.has(p.client))) });
+  const nyC = NY.clients[0]; NY.pieces.push(Object.assign(clone(pc), { id: "p" + (NY.pieces.length + 1), client: nyC.id, w: 19, y: 2004, name: SIM.pieceName(pc.label, nyC, pc.design.placement) }));
+  NY.queue.push({ id: "q1", kind: "session", client: nyC.id, w: 27, y: 2004, hours: 4, sessionNo: 1, sessions: 1, price: 9000, deposit: 1800, ask: nyC.ask });
+  SIM.WEEK.nextStopsOnWalkins = false;
+  console.log("Next, four presses, if only booked clients, heals and events stopped it:");
+  for (let i = 0; i < 4; i++) { const res = SIM.nextStop(NY); console.log("  [" + res.weeks + " wk, stop: " + res.why + "] " + res.line); }
+  SIM.WEEK.nextStopsOnWalkins = true;
+  const retN = LONG.clients.filter(c => c.history.some(h => h.kind === "consult" && h.src === "return")).length;
+  console.log("\n30-year run: " + LONG.clients.length + " clients, " + LONG.pieces.length + " pieces, " + LONG.clients.filter(c => c.referredBy).length + " referred, " + retN + " came back, queue " + LONG.queue.length +
+    ", cash " + LONG.cash.toLocaleString("en-CA") + " RUB, S as JSON " + Math.round(JSON.stringify(LONG).length / 1024) + " KB (uncompacted; CLIENT_CAP is PR 7). whole run " + Math.round(runMs) + " ms");
+  console.log("last advanceWeek log: " + lastLog.map(l => l.text).join(" | "));
+}
+console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
 /* ---- timing ---- */
 const N = 10000, cl = Object.values(TEST_CLIENTS);
