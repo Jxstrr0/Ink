@@ -109,14 +109,14 @@ ${r.rivals&&r.rivals.length?`<section><h3>Other shops from Mostograd</h3><ul cla
 <div class="row"><button class="btn pri" id="evOk">Back to the shop</button></div>`);
   $("evOk").addEventListener("click",closeSheet);}
 
-/* ---- reckonings: the old piece, then and now ---- */
+/* ---- reckonings: the old piece, then and now (no bandage peel: it healed years ago, so "now" shows at once) ---- */
 function evReckonOpen(q){
   const R=INK_SIM.RECKONINGS[q.beat],c=clWho(q),p=q.ret&&S.pieces.find(x=>x.id===q.ret.piece);if(!R||!c||!p)return false;
   const then=gvSvg(p,{fresh:true,cls:"rvImg"}),now=gvSvg(p,{cls:"rvImg"}),yrs=Math.floor(gvAgeYears(p));
   const head=q.beat==="first_year"?"One of your first":"The bad review";
   openSheet(head,`<div class="rvScene"><div class="clB client"><span class="clBw">${esc(c.first)}</span>${esc(q.brief||"")}</div></div>
 <div class="rvPair"><figure><div class="rvFrame">${then.svg}</div><figcaption>The day you did it, ${p.y}</figcaption></figure>
-<figure><div class="rvFrame heal">${now.svg}</div><figcaption>Today, ${yrs} year${yrs===1?"":"s"} on · reads ${Math.round(now.a.readability*100)}</figcaption></figure></div>
+<figure><div class="rvFrame">${now.svg}</div><figcaption>Today, ${yrs} year${yrs===1?"":"s"} on · reads ${Math.round(now.a.readability*100)}</figcaption></figure></div>
 <p class="clMeta">${esc(gvCap(p.name))}${p.stage==="apprentice"?" · done while you were an apprentice":""}.</p>
 <div class="evChoices">${Object.keys(R.choices).map(k=>`<button class="btn${k===Object.keys(R.choices)[0]?" pri":""}" data-rc="${esc(k)}">${esc(R.choices[k].label)}</button>`).join("")}</div>`);
   $("sheetBody").querySelectorAll("[data-rc]").forEach(b=>b.addEventListener("click",()=>{
