@@ -6,7 +6,7 @@
      aging     on a year boundary: clients turn a year older and pieces cross a year (PR 5 re-renders them)
      bookings  walk-ins from market.js, returns (RETURN_RULES), referrals (REFERRAL), then the week's chair hours are
                filled from the queue; sessions that don't fit move to next week
-     costs     rent, supplies, staff (PR 7: a no-op here)
+     costs     the shop's cut, supplies, rent, staff, sales (PR 7: sim/career.js careerWeek replaces the stub)
      events    queued events, reckonings, inspections (PR 8: a no-op here)
      trend     the trend wave (PR 8: a no-op here)
    Later PRs replace a stub by assigning SIM.WEEK_HOOKS.<name> = function(S, ctx){...}. ctx = {r (an rng forked for that hook and
@@ -195,7 +195,7 @@ function finishSession(S,itemId,res){
   const i=S.queue.findIndex(q=>q.id===itemId);if(i<0)return null;
   const q=S.queue[i];S.queue.splice(i,1);
   const balance=Math.max(0,(q.price||0)-(q.deposit||0)),share=Math.round(balance/Math.max(1,q.sessions||1));
-  S.cash=(S.cash||0)+share;
+  cashIn(S,share,"sitting");   // PR 7: through the ledger (sim/career.js)
   const design=res.design||q.design||null;
   if((q.sessionNo||1)<(q.sessions||1)){
     const due=weekFrom(clNow(S)+WEEK.sessionGap);
