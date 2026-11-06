@@ -6456,7 +6456,7 @@ function dcStencil(design,shape,tone){
    studio | legacy (small variations for now: PR 7 builds the stages out). Lite: Lambert materials, no shadows, about 3k
    triangles. Full / Ultra: Standard materials and one shadow-casting lamp. Canvas textures are drawn once per build.
    PR 10: every prop is a named group in `props` (chair, station, machine, lamp, stool, shelves, bench, flashframe, sign,
-   plant, photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
+   plant, plant2 (PR 11: the legacy studio's second plant), photos, trophies) and the floor, walls and dado have their own materials in `mats`, so vis/assets.js can put
    photo textures on them and swap a Blender model in for a coded prop on Full and Ultra. Lite never sees either. ===== */
 const VR_STAGES=["apprentice","chair","studio","legacy"];
 function vrCanvas(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);
@@ -6584,7 +6584,7 @@ function vsRoom(){
   /* legacy: framed photos of healed work along the right wall and a second plant; vis/assets.js adds the trophy shelf when its file exists */
   const PG=pg("photos",st.legacy);for(let i=0;i<6;i++){const f=box(0.03,0.3,0.24,M.wood,[2.77,1.35+(i%2)*0.4,0.4+Math.floor(i/2)*0.42],PG);
     box(0.01,0.24,0.18,M.cream,[2.755,f.position.y,f.position.z],PG);}
-  cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],st.legacy);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],st.legacy);
+  const P2=pg("plant2",st.legacy);cyl(0.14,0.11,0.26,14,M.pot,[-2.45,0.13,1.85],P2);add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,1),M.green),[-2.45,0.52,1.85],P2);
   pg("trophies",st.legacy);   // empty: no coded stand-in, a model only
   for(const s of VR_STAGES)grp.add(st[s]);grp.add(st.apprenticeOnly);
   /* light: warm hemisphere, the work lamp, the pendant, a little cold moonlight through the window */
@@ -6620,29 +6620,36 @@ function vsArmrests(w){
    Models: metres, +Y up, the front facing +Z (Blender's -Y with the glTF exporter's +Y up), origin where `at` says
    (on the floor under the prop unless the note says otherwise); `rot` turns it round +Y. A model replaces every coded mesh
    in its group and sits in that group, so it shows and hides with its stage exactly as the stand-in did.
-   The mannequin (ASSETS.body) is listed for the record only: nothing reads it yet. Swapping the coded body for Kelbo's needs
-   his file to test against (same UV atlas, three shape keys); that is a small follow-up once models/ink-mannequin.glb exists. ===== */
+   PR 11 (the Blender batch, tools/blender/): every prop file is in, and the mannequin (ASSETS.body) swaps in too. The model
+   is one smooth skin ("skin" material) plus the bandeau and shorts ("cloth_top", "cloth_shorts"), with the game's UV atlas
+   and two shape keys, "masc" and "femme" (Average is the basis). vaBodyApply puts it in the coded body's group with the
+   game's own materials (the skin wears the decal texture, so tattoos paint into the same atlas), drives the shape keys from
+   the client's shape mix (vaBodyShape, called by vsApplyShape) and hides the coded meshes. The coded body stays built and
+   keeps its shapes: the stencil drag raycasts it and the camera presets and armrests read it, and its surface is the one the
+   model was made on, so both agree to a millimetre or two. glTF UVs run down from the top, the game's canvas UVs up, so the
+   loader flips v once per file. A file without those names or keys, or one that fails to load, leaves the coded body. ===== */
 const ASSETS={
   tex:{
     floor:{mat:"floor",file:"models/textures/floor-parquet.jpg",repeat:[1.65,1.45],tint:"#c9b19a",rough:0.72,on:true},
     wall:{mat:"plaster",file:"models/textures/wall-plaster.jpg",normal:"models/textures/wall-plaster-nor.jpg",normalScale:0.7,repeat:[2.8,1.4],tint:"#b68d6b",rough:0.95,on:true},
     dado:{mat:"dado",file:"models/textures/dado-planks.jpg",repeat:[2.8,0.45],tint:"#b28361",rough:0.7,on:true}},
   props:{
-    chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:false},
-    station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:false},
-    machine:{file:"models/ink-machine-coil.glb",at:[0.78,0.81,0.37],rot:0.4,on:false},
-    lamp:{file:"models/ink-lamp.glb",at:[1.05,0,-0.45],rot:0,on:false},
-    stool:{file:"models/ink-stool.glb",at:[0.95,0,0.86],rot:0,on:false},
-    shelves:{file:"models/ink-shelves.glb",at:[-2.66,0,-0.6],rot:Math.PI/2,on:false},
-    bench:{file:"models/ink-bench.glb",at:[-1.3,0,2.25],rot:Math.PI,on:false},
-    flashframe:{file:"models/ink-flash-frame.glb",at:[0.85,1.72,-2.31],rot:0,on:false},
-    sign:{file:"models/ink-sign.glb",at:[2.77,2.05,-0.6],rot:-Math.PI/2,on:false},
-    plant:{file:"models/ink-plant.glb",at:[2.45,0,-2.0],rot:0,on:false},
-    photos:{file:"models/ink-photos.glb",at:[2.77,1.55,0.82],rot:-Math.PI/2,on:false},
-    trophies:{file:"models/ink-trophies.glb",at:[-2.62,0,0.9],rot:Math.PI/2,on:false}},
-  body:{file:"models/ink-mannequin.glb",on:false}
+    chair:{file:"models/ink-chair.glb",at:[0,0,0.06],rot:0,on:true},
+    station:{file:"models/ink-station.glb",at:[0.86,0,0.32],rot:0,on:true},
+    machine:{file:"models/ink-machine-coil.glb",at:[0.78,0.81,0.37],rot:0.4,on:true},
+    lamp:{file:"models/ink-lamp.glb",at:[1.05,0,-0.45],rot:0,on:true},
+    stool:{file:"models/ink-stool.glb",at:[0.95,0,0.86],rot:0,on:true},
+    shelves:{file:"models/ink-shelves.glb",at:[-2.66,0,-0.6],rot:Math.PI/2,on:true},
+    bench:{file:"models/ink-bench.glb",at:[-1.3,0,2.25],rot:Math.PI,on:true},
+    flashframe:{file:"models/ink-flash-frame.glb",at:[0.85,1.72,-2.31],rot:0,on:true},
+    sign:{file:"models/ink-sign.glb",at:[2.77,2.05,-0.6],rot:-Math.PI/2,on:true},
+    plant:{file:"models/ink-plant.glb",at:[2.45,0,-2.0],rot:0,on:true},
+    plant2:{file:"models/ink-plant.glb",at:[-2.45,0,1.85],rot:2.2,scale:0.86,on:true},   // the legacy studio's second plant: the same file, smaller
+    photos:{file:"models/ink-photos.glb",at:[2.77,1.55,0.82],rot:-Math.PI/2,on:true},
+    trophies:{file:"models/ink-trophies.glb",at:[-2.62,0,0.9],rot:Math.PI/2,on:true}},
+  body:{file:"models/ink-mannequin.glb",on:true}
 };
-/* the session cache: key -> {st: "loading" | "in" | "failed", tex / scene} */
+/* the session cache: file -> {st: "loading" | "in" | "failed", tex / scene} (two slots may share a file) */
 const VA={tex:{},nor:{},props:{}};
 function vaTexture(file,srgb,done){
   const c=srgb?VA.tex:VA.nor;
@@ -6660,33 +6667,65 @@ function vaTexApply(room,a){
     m.map=x;m.color.copy(vsCol(a.tint||"#ffffff"));if(a.rough!=null)m.roughness=a.rough;m.needsUpdate=true;V.dirty=true;draw();
     if(a.normal)vaTexture(a.normal,false,n=>{if(V.room!==room)return;const y=n;y.repeat.copy(x.repeat);
       m.normalMap=y;m.normalScale.set(a.normalScale||1,a.normalScale||1);m.needsUpdate=true;V.dirty=true;draw();});});}
-function vaModel(key,a,done){
+function vaModel(key,a,done,prep){
   const e=VA.props[key];
   if(e&&e.st==="in"){done(e.scene);return;}
   if(e&&e.st==="loading"){e.wait.push(done);return;}
   if(e&&e.st==="failed")return;
   const n=VA.props[key]={st:"loading",wait:[done]};
-  try{new THREE.GLTFLoader().load(a.file,g=>{n.st="in";n.scene=g.scene;const w=n.wait;n.wait=[];for(const f of w)f(g.scene);},
+  try{new THREE.GLTFLoader().load(a.file,g=>{try{if(prep)prep(g.scene);}catch(err){n.st="failed";n.wait=[];return;}
+      n.st="in";n.scene=g.scene;const w=n.wait;n.wait=[];for(const f of w)f(g.scene);},
     undefined,()=>{n.st="failed";n.wait=[];});}catch(err){n.st="failed";}}
 /* swap a loaded model in for the coded meshes of its prop group */
 function vaPropApply(room,key,a){
-  vaModel(key,a,src=>{
+  vaModel(a.file,a,src=>{
     const g=room.props&&room.props[key];if(V.room!==room||!g)return;
-    const T=TIER[V.tier],o=src.clone(true);o.name="model:"+key;o.position.set(a.at[0],a.at[1],a.at[2]);o.rotation.y=a.rot||0;
+    const T=TIER[V.tier],o=src.clone(true);o.name="model:"+key;o.position.set(a.at[0],a.at[1],a.at[2]);o.rotation.y=a.rot||0;if(a.scale)o.scale.setScalar(a.scale);
     o.traverse(m=>{if(m.isMesh){m.castShadow=m.receiveShadow=T.shadows;}});
     for(const c of g.children)c.visible=false;g.add(o);V.dirty=true;draw();});}
+/* ---- the mannequin (PR 11) ---- */
+/* once per file: glTF v runs down from the top of the atlas, the game's canvas UVs (body.js bdUV) run up */
+function vaBodyPrep(scene){
+  scene.traverse(m=>{const a=m.isMesh&&m.geometry.attributes.uv;if(!a)return;
+    const A=a.array,top=a.normalized?(A instanceof Uint8Array?255:A instanceof Uint16Array?65535:1):1;
+    for(let i=1;i<A.length;i+=2)A[i]=top-A[i];a.needsUpdate=true;});}
+function vaBodyMeshes(o){const out={};o.traverse(m=>{if(m.isMesh&&m.material&&!out[m.material.name])out[m.material.name]=m;});return out;}
+/* the file the game can use: a skin with UVs and both shape keys, and the two clothes */
+function vaBodyOk(M){const ok=m=>m&&m.morphTargetDictionary&&m.morphTargetDictionary.masc!=null&&m.morphTargetDictionary.femme!=null;
+  return ok(M.skin)&&!!M.skin.geometry.attributes.uv&&ok(M.cloth_top)&&ok(M.cloth_shorts);}
+function vaBodyApply(room){
+  vaModel(ASSETS.body.file,ASSETS.body,src=>{
+    const B=V.body;if(V.room!==room||!B||B.glb||!V.mats)return;
+    if(!vaBodyOk(vaBodyMeshes(src)))return;   // not the mannequin the game expects: keep the coded body
+    const T=TIER[V.tier],o=src.clone(true),M=vaBodyMeshes(o);o.name="model:body";
+    const mm=m=>{const c=m.clone();c.morphTargets=true;c.morphNormals=true;return c;};
+    V.mats.skinM=mm(V.mats.skin);V.mats.ovM=mm(V.mats.ov);V.mats.ovM.morphNormals=false;
+    const use={skin:V.mats.skinM,cloth_top:mm(V.mats.top),cloth_shorts:mm(V.mats.shorts)},morph=[];
+    for(const k in use){const m=M[k];m.material=use[k];m.castShadow=m.receiveShadow=T.shadows;m.frustumCulled=false;morph.push(m);}
+    /* the stencil overlay: the skin's geometry again with the overlay material, sharing the skin's shape weights */
+    const ov=new THREE.Mesh(M.skin.geometry,V.mats.ovM);ov.morphTargetDictionary=M.skin.morphTargetDictionary;ov.morphTargetInfluences=M.skin.morphTargetInfluences;
+    ov.renderOrder=2;ov.frustumCulled=false;ov.visible=false;ov.userData.islands=Object.keys(BD.islands);M.skin.add(ov);
+    for(const m of B.parts)m.visible=false;if(B.head)B.head.visible=false;for(const m of V.ovMeshes)m.visible=false;
+    V.ovMeshes=[ov];
+    let tris=0;for(const m of morph){const g=m.geometry;tris+=(g.index?g.index.count:g.attributes.position.count)/3;}
+    B.glb={o,morph,tris};B.grp.add(o);
+    vaBodyShape(V.shapeW);vsStencilApply();V.dirty=true;draw();},vaBodyPrep);}
+/* the shape mix {neutral, masc, femme} on the model's shape keys (Average is the basis) */
+function vaBodyShape(w){const G=V.body&&V.body.glb;if(!G)return;
+  for(const m of G.morph){const d=m.morphTargetDictionary,f=m.morphTargetInfluences;f[d.masc]=w.masc||0;f[d.femme]=w.femme||0;}}
 /* called by vsBuild after a new room is up */
 function vaLoad(room){
   if(!room||!TIER[V.tier].std||typeof THREE==="undefined")return;   // Lite: nothing, ever
   for(const k in ASSETS.tex){const a=ASSETS.tex[k];if(a.on)vaTexApply(room,a);}
-  const want=Object.keys(ASSETS.props).filter(k=>ASSETS.props[k].on);if(!want.length)return;
-  const go=()=>{for(const k of want)vaPropApply(room,k,ASSETS.props[k]);};
+  const want=Object.keys(ASSETS.props).filter(k=>ASSETS.props[k].on);if(!want.length&&!ASSETS.body.on)return;
+  const go=()=>{for(const k of want)vaPropApply(room,k,ASSETS.props[k]);if(ASSETS.body.on)vaBodyApply(room);};
   if(THREE.GLTFLoader)go();else if(window.__inkLibs)window.__inkLibs().then(ok=>{if(ok&&THREE.GLTFLoader&&V.room===room)go();});}
 /* for tests: what each entry is doing */
 function vaStatus(){
   const out={tier:V.tier,tex:{},props:{}};
   for(const k in ASSETS.tex){const a=ASSETS.tex[k],e=VA.tex[a.file];out.tex[k]=!a.on?"off":e?e.st:"not asked";}
-  for(const k in ASSETS.props){const a=ASSETS.props[k],e=VA.props[k];out.props[k]=!a.on?"off":e?e.st:"not asked";}
+  for(const k in ASSETS.props){const a=ASSETS.props[k],e=VA.props[a.file];out.props[k]=!a.on?"off":e?e.st:"not asked";}
+  const b=VA.props[ASSETS.body.file];out.body=!ASSETS.body.on?"off":b?(b.st==="in"&&!(V.body&&V.body.glb)?"in, not used":b.st):"not asked";
   return out;}
 /* ===== vis/api.js: the INK_VIS public object, IIFE close (PR 6) =====
    vsBuild() assembles the scene for the current tier (room, mannequin, skin texture, stencil overlay); a tier change that
@@ -6702,7 +6741,9 @@ function vaStatus(){
      setStudio(stage)              apprentice | chair | studio | legacy
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
-   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. ===== */
+   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. PR 11: on Full and Ultra that also swaps
+   in the Blender mannequin (vaBodyApply); vsApplyShape drives its shape keys, vsStencilApply its overlay, and the coded body
+   stays built underneath (hidden) for the stencil raycast, the camera aims and the armrests. ===== */
 function vsBuild(){
   if(!V.renderer)return;const T=TIER[V.tier],key=V.tier;if(V.built===key)return;V.built=key;
   const s=V.scene;while(s.children.length)s.remove(s.children[0]);
@@ -6724,11 +6765,11 @@ function vsBuild(){
   dcCompose(V.tattoos,V.shape);vsStencilApply();
   vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();
   vaLoad(V.room);}   // PR 10: photo textures and Blender props on Full / Ultra (vis/assets.js); nothing on Lite
-function vsApplyShape(w){V.shapeW=w;if(V.body)bdApplyShape(V.body.parts,w);vsArmrests(w);V.dirty=true;}
+function vsApplyShape(w){V.shapeW=w;if(V.body){bdApplyShape(V.body.parts,w);vaBodyShape(w);}vsArmrests(w);V.dirty=true;}
 function vsAfterShape(){if(V.view!=="consult")vsView(V.view,V.viewOpt);}
 function vsStencilApply(){
   if(!V.mats)return;const isl=V.stencil&&V.clientOn?dcStencil(V.stencil,V.shape,V.tone):dcStencil(null);
-  const ov=V.mats.ov;if(isl){ov.map=DC.ov.tex;ov.visible=true;ov.needsUpdate=true;}else ov.visible=false;
+  for(const ov of [V.mats.ov,V.mats.ovM]){if(!ov)continue;if(isl){ov.map=DC.ov.tex;ov.visible=true;ov.needsUpdate=true;}else ov.visible=false;}
   for(const o of V.ovMeshes)o.visible=!!isl&&o.userData.islands.indexOf(isl)>=0;
   V.dirty=true;}
 /* where each view puts the camera */
@@ -6757,7 +6798,7 @@ function vsView(name,o){
 function vsClient(c){
   const on=!!c;V.clientOn=on;if(V.body)V.body.grp.visible=on;
   if(c){const shape=BD_FORM[c.bodyShape]?c.bodyShape:"neutral";V.tone=c.skinTone!=null?+c.skinTone:0.3;if(c.skin)V.skin=c.skin;
-    if(V.mats)V.mats.skin.color.copy(vsCol(V.skin));
+    if(V.mats)for(const m of [V.mats.skin,V.mats.skinM])if(m)m.color.copy(vsCol(V.skin));
     if(shape!==V.shape){V.shape=shape;const w1={neutral:0,masc:0,femme:0};w1[shape]=1;
       if(V.reduced||!V.body){V.shapeTw=null;vsApplyShape(w1);vsAfterShape();}else{V.shapeTw={w0:Object.assign({},V.shapeW),w1,t0:performance.now(),dur:450};vsKick();}
       dcCompose(V.tattoos,V.shape);vsStencilApply();}}
@@ -6777,7 +6818,7 @@ window.INK_VIS={
   setStudio(stage){V.stage=stage||"apprentice";if(V.room){vsStage(V.stage);draw();}},
   setReduced(b){V.reduced=!!b;},
   stats(){const tri=o=>{let n=0;o.traverse(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
-    return V.renderer?{tier:V.tier,body:V.body?bdTriangles(V.body.parts.concat([V.body.head])):0,room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
+    return V.renderer?{tier:V.tier,body:V.body?(V.body.glb?V.body.glb.tris:bdTriangles(V.body.parts.concat([V.body.head]))):0,bodyModel:!!(V.body&&V.body.glb),room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
   /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
   _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,
     hit:(cx,cy,pl)=>{const q=vsHit({clientX:cx,clientY:cy}),z=bdZone(pl);return q&&z&&q.isl===z.isl?bdZonePos(z,q.x,q.y):null;}})
@@ -6792,7 +6833,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.10.0";
+const VERSION="0.1.11.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -7207,7 +7248,7 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
 <p class="hint" id="pwaIos" hidden>On iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</p></section>
 <section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p>
 <p class="hint">Some design elements are icons by Lorc and Delapouite from <a href="https://game-icons.net/" target="_blank" rel="noopener">game-icons.net</a>, licensed <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a> and reshaped for tattoo flash. Full list: <a href="https://github.com/Jxstrr0/Ink/blob/main/art/CREDITS.md" target="_blank" rel="noopener">art/CREDITS.md</a>.</p>
-<p class="hint">On Full and Ultra graphics the shop uses CC0 textures from <a href="https://polyhaven.com/" target="_blank" rel="noopener">Poly Haven</a> (Herringbone Parquet by Jenelle van Heerden and Sergej Majboroda; Painted Plaster Wall and Dark Wooden Planks by Amal Kumar). UI sounds: Interface Sounds by <a href="https://kenney.nl/" target="_blank" rel="noopener">Kenney</a>, CC0. Lists: <a href="https://github.com/Jxstrr0/Ink/blob/main/models/CREDITS.md" target="_blank" rel="noopener">models/CREDITS.md</a>, <a href="https://github.com/Jxstrr0/Ink/blob/main/sounds/CREDITS.md" target="_blank" rel="noopener">sounds/CREDITS.md</a>.</p></section>`);
+<p class="hint">On Full and Ultra graphics the shop uses CC0 textures from <a href="https://polyhaven.com/" target="_blank" rel="noopener">Poly Haven</a> (Herringbone Parquet by Jenelle van Heerden and Sergej Majboroda; Painted Plaster Wall and Dark Wooden Planks by Amal Kumar). Its furniture and the client mannequin are original, made in Blender for Ink; the sign's letters are from the Inter typeface by Rasmus Andersson (SIL Open Font License). UI sounds: Interface Sounds by <a href="https://kenney.nl/" target="_blank" rel="noopener">Kenney</a>, CC0. Lists: <a href="https://github.com/Jxstrr0/Ink/blob/main/models/CREDITS.md" target="_blank" rel="noopener">models/CREDITS.md</a>, <a href="https://github.com/Jxstrr0/Ink/blob/main/sounds/CREDITS.md" target="_blank" rel="noopener">sounds/CREDITS.md</a>.</p></section>`);
   const seg=(id,fn)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;
     $(id).querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});fn(b.dataset.v);save();});
   seg("setTheme",v=>{st.theme=v;applyTheme();});

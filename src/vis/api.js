@@ -12,7 +12,9 @@
      setStudio(stage)              apprentice | chair | studio | legacy
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
-   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. ===== */
+   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. PR 11: on Full and Ultra that also swaps
+   in the Blender mannequin (vaBodyApply); vsApplyShape drives its shape keys, vsStencilApply its overlay, and the coded body
+   stays built underneath (hidden) for the stencil raycast, the camera aims and the armrests. ===== */
 function vsBuild(){
   if(!V.renderer)return;const T=TIER[V.tier],key=V.tier;if(V.built===key)return;V.built=key;
   const s=V.scene;while(s.children.length)s.remove(s.children[0]);
@@ -34,11 +36,11 @@ function vsBuild(){
   dcCompose(V.tattoos,V.shape);vsStencilApply();
   vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();
   vaLoad(V.room);}   // PR 10: photo textures and Blender props on Full / Ultra (vis/assets.js); nothing on Lite
-function vsApplyShape(w){V.shapeW=w;if(V.body)bdApplyShape(V.body.parts,w);vsArmrests(w);V.dirty=true;}
+function vsApplyShape(w){V.shapeW=w;if(V.body){bdApplyShape(V.body.parts,w);vaBodyShape(w);}vsArmrests(w);V.dirty=true;}
 function vsAfterShape(){if(V.view!=="consult")vsView(V.view,V.viewOpt);}
 function vsStencilApply(){
   if(!V.mats)return;const isl=V.stencil&&V.clientOn?dcStencil(V.stencil,V.shape,V.tone):dcStencil(null);
-  const ov=V.mats.ov;if(isl){ov.map=DC.ov.tex;ov.visible=true;ov.needsUpdate=true;}else ov.visible=false;
+  for(const ov of [V.mats.ov,V.mats.ovM]){if(!ov)continue;if(isl){ov.map=DC.ov.tex;ov.visible=true;ov.needsUpdate=true;}else ov.visible=false;}
   for(const o of V.ovMeshes)o.visible=!!isl&&o.userData.islands.indexOf(isl)>=0;
   V.dirty=true;}
 /* where each view puts the camera */
@@ -67,7 +69,7 @@ function vsView(name,o){
 function vsClient(c){
   const on=!!c;V.clientOn=on;if(V.body)V.body.grp.visible=on;
   if(c){const shape=BD_FORM[c.bodyShape]?c.bodyShape:"neutral";V.tone=c.skinTone!=null?+c.skinTone:0.3;if(c.skin)V.skin=c.skin;
-    if(V.mats)V.mats.skin.color.copy(vsCol(V.skin));
+    if(V.mats)for(const m of [V.mats.skin,V.mats.skinM])if(m)m.color.copy(vsCol(V.skin));
     if(shape!==V.shape){V.shape=shape;const w1={neutral:0,masc:0,femme:0};w1[shape]=1;
       if(V.reduced||!V.body){V.shapeTw=null;vsApplyShape(w1);vsAfterShape();}else{V.shapeTw={w0:Object.assign({},V.shapeW),w1,t0:performance.now(),dur:450};vsKick();}
       dcCompose(V.tattoos,V.shape);vsStencilApply();}}
@@ -87,7 +89,7 @@ window.INK_VIS={
   setStudio(stage){V.stage=stage||"apprentice";if(V.room){vsStage(V.stage);draw();}},
   setReduced(b){V.reduced=!!b;},
   stats(){const tri=o=>{let n=0;o.traverse(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
-    return V.renderer?{tier:V.tier,body:V.body?bdTriangles(V.body.parts.concat([V.body.head])):0,room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
+    return V.renderer?{tier:V.tier,body:V.body?(V.body.glb?V.body.glb.tris:bdTriangles(V.body.parts.concat([V.body.head]))):0,bodyModel:!!(V.body&&V.body.glb),room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
   /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
   _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,
     hit:(cx,cy,pl)=>{const q=vsHit({clientX:cx,clientY:cy}),z=bdZone(pl);return q&&z&&q.isl===z.isl?bdZonePos(z,q.x,q.y):null;}})
