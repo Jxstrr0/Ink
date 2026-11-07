@@ -2,6 +2,14 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.18.0: a better mannequin, on every phone
+
+Visual only: the sim's scores, heals and aging numbers are the same, and the tattoos map onto the same UV islands and zones.
+
+- **The mannequin on Lite.** Phones now load `models/ink-mannequin.glb` (about 352 KB, the one file Lite fetches under `models/`; the service worker precaches it), so every tier sees the smooth body instead of the coded tubes. Props and photo textures stay on Full and Ultra. If the file fails to load, the coded body shows, as before.
+- **Hands and a face.** Each hand has four fingers and a thumb resting over the armrest's front edge. The head has a sculpted face (brow, eye sockets, nose, cheekbones, jaw, ears) with no painted features and no hair, so it stays a neutral mannequin. The clavicles, arms, elbows, knees and ankles are stronger and the toes are suggested. 7,740 triangles (was 6,511), the three body shapes unchanged.
+- **Props.** A rounder chair, bench, flash frames, photos, sign and plant, warmer leather, and the wood grain now actually shows on Full and Ultra (its UVs used to be lost when the file was packed).
+
 ## 0.1.17.0: tattoos that look like tattoos
 
 How a piece looks on the 3D body (`vis/decals.js`, tuning in `DC_LOOK`, per-tier sizes in `TIER` in `vis/core.js`). Only the picture changed: the sim's scores, heals and aging numbers are the same, and the design board, the flash wall, the gallery, the share cards and the chair's laid ink are untouched.
