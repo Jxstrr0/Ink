@@ -19,8 +19,8 @@
                                    of your studio and legacy studio and the rented chair's partition; repaints only on a change
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
-   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js), which does nothing on Lite. PR 11: on Full and Ultra that also swaps
-   in the Blender mannequin (vaBodyApply); vsApplyShape drives its shape keys, vsStencilApply its overlay, and the coded body
+   PR 10: vsBuild ends with vaLoad(room) (vis/assets.js). PR 11: that swaps in the Blender mannequin (vaBodyApply; on every
+   tier since 0.1.18.0, the textures and props on Full and Ultra only); vsApplyShape drives its shape keys, vsStencilApply its overlay, and the coded body
    stays built underneath (hidden) for the stencil raycast, the camera aims and the armrests. ===== */
 function vsBuild(){
   if(!V.renderer)return;const T=TIER[V.tier],key=V.tier;if(V.built===key)return;V.built=key;
@@ -43,7 +43,7 @@ function vsBuild(){
   vsApplyShape(V.shapeW);vsStage(V.stage);
   dcCompose(V.tattoos,V.shape);vsStencilApply();
   vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();
-  vaLoad(V.room);}   // PR 10: photo textures and Blender props on Full / Ultra (vis/assets.js); nothing on Lite
+  vaLoad(V.room);}   // PR 10: the mannequin on every tier, photo textures and Blender props on Full / Ultra (vis/assets.js)
 /* 0.1.17.0: every skin material carries the decal patch; Material.clone() drops it (the mannequin's skinM is a clone), so
    draw() runs this before each render: a no-op once patched */
 function vsSkinPatch(){const M=V.mats;if(M.skin)dcPatch(M.skin);if(M.skinM)dcPatch(M.skinM);}
