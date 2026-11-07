@@ -77,12 +77,12 @@ function clRenderWeek(){
   const sec=(t,items)=>items.length?`<h2 class="clH">${t} <span class="dzTag">${items.length}</span></h2><div class="clQs">${items.map(clCard).join("")}</div>`:"";
   let h=`<div class="card clSum"><dl class="kv"><dt>Week</dt><dd>${S.week}, ${S.year}</dd><dt>Chair this week</dt><dd>${+used.toFixed(1)} of ${cap} h booked</dd><dt>Waiting list</dt><dd>${wait<0.5?"none":`about ${Math.ceil(wait)} week${Math.ceil(wait)===1?"":"s"}`}</dd></dl></div>`;
   h+=sec("At the door",door)+sec("Booked consults",cons)+sec("In the chair",chair);
-  if(!door.length&&!cons.length&&!chair.length)h+=`<div class="card empty"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><circle cx="15" cy="12" r="1"/></svg><p><b>Nobody at the door this week.</b></p><p>Practise, draw flash, then press Next on the Career tab.</p><div class="row" style="justify-content:center"><button class="btn pri" id="clGoNext">Go to Next</button></div></div>`;
+  if(!door.length&&!cons.length&&!chair.length)h+=`<div class="card empty"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><circle cx="15" cy="12" r="1"/></svg><p><b>Nobody at the door this week.</b></p><p>Practise, draw flash, or move the clock on to the next week.</p><div class="row" style="justify-content:center"><button class="btn pri" id="clGoNext">Next week</button></div></div>`;
   if(later.length)h+=`<h2 class="clH">Coming up</h2><div class="card clLater">${later.slice(0,8).map(q=>{const c=clWho(q);return`<div class="clRow"><b>Week ${q.w}, ${q.y}</b><span>${esc(c?c.name:"?")}</span><span class="clMeta">sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h${q.design?"":" · needs a design"}</span>${q.design?"":`<button class="btn sm" data-dz="${q.id}">Design it</button>`}</div>`;}).join("")}${later.length>8?`<p class="hint">And ${later.length-8} more.</p>`:""}</div>`;
   $("clView").innerHTML=h;
   const v=$("clView");
   v.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
-    if(b.id==="clGoNext")return showTab("career");
+    if(b.id==="clGoNext"){showTab("career");crNext();return;}
     if(b.dataset.con)clStartConsult(b.dataset.con);else if(b.dataset.dz)clDesignFor(b.dataset.dz);else if(b.dataset.ses)clSession(b.dataset.ses);});}
 
 /* ---- the consult ---- */
