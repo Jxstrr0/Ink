@@ -80,21 +80,30 @@ h1,h2,h3{margin:0;font-weight:700}
 .btn:hover{border-color:var(--faint)}
 .btn.pri{background:var(--red);border-color:var(--red);color:#fff8ef}
 .btn.pri:hover{background:var(--red2)}
-.btn.sm{min-height:36px;padding:0 12px;font-size:13.5px}
+.btn.sm{min-height:44px;padding:0 14px;font-size:13.5px}
 .btn:disabled{opacity:.5;cursor:default}
 .btn:focus-visible,.seg button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.seg button{min-height:40px;padding:0 14px;border:0;background:transparent;color:var(--mute);font-weight:600;cursor:pointer}
+.seg button{min-height:44px;min-width:44px;padding:0 14px;border:0;background:transparent;color:var(--mute);font-weight:600;cursor:pointer}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 -3px 0 var(--red)}
 .empty{text-align:center;padding:36px 16px;color:var(--mute)}
+/* the next-step line at the top of each tab (app/nextstep.js); theme tokens only, so the light theme follows */
+.nx{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:var(--r);padding:10px 12px;margin:0 0 12px}
+.nx[hidden]{display:none}
+.nxK{flex:0 0 100%;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.nxT{flex:1 1 180px;margin:0;font-size:14.5px;line-height:1.35;color:var(--text)}
+.nxB{flex:0 0 auto;min-height:44px}
+.nxB svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.nx.quiet{border-left-color:var(--line);padding:8px 12px}
+.nx.quiet .nxT{color:var(--mute);font-size:13.5px}
 .empty svg{width:56px;height:56px;fill:none;stroke:var(--faint);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;margin-bottom:8px}
 .empty p{margin:6px auto;max-width:30ch}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
 .kv dt{color:var(--mute)}
 .kv dd{margin:0;font-variant-numeric:tabular-nums}
 label{display:inline-flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mute)}
-select{min-height:40px;padding:0 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:14px}
+select{min-height:44px;padding:0 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:14px}
 pre.raw{margin:0;padding:10px;border-radius:8px;background:var(--panel2);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto}
 
 /* ---- the studio view (3D placeholder until PR 6) ---- */
@@ -234,6 +243,12 @@ input[type=range]{min-height:44px;accent-color:var(--red);background:transparent
 .dzBar2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
 .dzBar2 .btn svg,.dzBar3 .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .dzIb{border:1px solid var(--line);background:var(--panel)}
+/* 0.1.16.0: toolbar buttons with a word under the icon */
+.dzTb{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:52px;min-height:48px;padding:3px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-size:11px;font-weight:600;line-height:1;cursor:pointer}
+.dzTb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dzTb:disabled{opacity:.35;cursor:default}
+.dzTb:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzTb.dzDel{color:var(--crit)}
 .dzIb:disabled{opacity:.35;cursor:default}
 .dzIb:focus-visible,.dzChip:focus-visible,.dzSpotBtn:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .dzChip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute);font-weight:600;font-size:13.5px;cursor:pointer}
@@ -266,7 +281,9 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzHdl{cursor:nwse-resize}
 .dzHdl .hit{fill:transparent}
 .dzHdl .dot{fill:#fffaf1;stroke:#2f7f77}
-.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round}
+.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round;stroke-linejoin:round}
+.dzRot{cursor:grab}
+.dzStalk{stroke:#2f7f77;stroke-dasharray:none}
 
 /* ---- the toolbar under the board ---- */
 .dzTools{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:0 0 10px}
@@ -277,6 +294,8 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzToolHd span{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
 .dzToolHd span.bad{color:var(--crit)}
 .dzToolHd em{font-style:normal}
+.dzToolHd .dzTb span{color:inherit;font-size:11px}
+.dzToolHd .dzTb{min-width:50px}
 .dzDel{color:var(--crit)}
 .dzToolRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .dzStep{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
@@ -310,7 +329,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzM .d.up{color:var(--dzUp)}
 .dzM .d.dn{color:var(--dzDn)}
 .dzM .d.nu{color:var(--dzNu)}
-.dzCapT{position:absolute;top:6px;right:6px;width:32px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzCapT{position:absolute;top:4px;right:0;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .dzCapT svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 .dzCap.shut .dzCapT svg{transform:rotate(180deg)}
 .dzCap.shut .dzAge{display:none}
@@ -376,7 +395,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 @media (max-width:420px){
   .dzBodyGrid{grid-template-columns:1fr 1fr;gap:8px}
   .dzToolRow{gap:4px}
-  .dzStep button{flex-basis:40px}
+  .dzStep button{flex-basis:44px}
   .dzM .l{font-size:9.5px;letter-spacing:.03em}
   .dzM b{font-size:15.5px}
   .dzM.money b{font-size:13.5px}
@@ -884,18 +903,23 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
   <main id="panel">
     <section class="tabpage on" id="tab-studio" aria-label="Studio">
       <div id="studioView"><canvas id="gl" aria-hidden="true"></canvas><span class="cap" id="studioCap">The back room at your mentor's shop</span></div>
+      <div class="nx" id="nx-studio" hidden></div>
       <div id="studioBody"></div>
     </section>
     <section class="tabpage" id="tab-design" aria-label="Design">
+      <div class="nx" id="nx-design" hidden></div>
       <div id="designBody"></div>
     </section>
     <section class="tabpage" id="tab-session" aria-label="Session">
+      <div class="nx" id="nx-session" hidden></div>
       <div id="sessionBody"></div>
     </section>
     <section class="tabpage" id="tab-clients" aria-label="Clients">
+      <div class="nx" id="nx-clients" hidden></div>
       <div id="clientsBody"></div>
     </section>
     <section class="tabpage" id="tab-career" aria-label="Career">
+      <div class="nx" id="nx-career" hidden></div>
       <div id="careerBody"></div>
     </section>
   </main>
@@ -7952,6 +7976,9 @@ function kpBuy(kind,id){
    colour}); dzToDesign() turns it into a design in the docs/SIM-CONTRACT.md shape (sizeMm = the piece's longest side, x/y/
    scale normalised to it, pos = where its centre sits) and that is what S.board.design saves: parameters, never pictures.
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
+   0.1.16.0: bigger handles (DZ_HANDLE): a corner dot to size (and turn), a turn dot on a stalk above the box, a wider grab
+   area round small elements, words under the toolbar icons, and a two-finger pinch with nothing selected picks the
+   element under the fingers.
    The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
    booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
    memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved.
@@ -8065,6 +8092,9 @@ function dzUndoRedo(back){
   dzRenderCap();dzRenderAging();dzSyncUndo();}
 function dzSyncUndo(){const u=$("dzUndo"),r=$("dzRedo");if(u)u.disabled=!DZ.undo.length;if(r)r.disabled=!DZ.redo.length;}
 
+/* 0.1.16.0, easier to handle: px on screen. hit = the smallest grab area round an element; corner = the scale handle's
+   dot and grab radius; rot = the turn handle's dot, grab radius and how far above the box it sits */
+const DZ_HANDLE={hit:56,corner:{dot:11,grab:26},rot:{dot:11,grab:26,stalk:30}};
 /* ---- drawing elements (board, minis) ---- */
 /* one element as an SVG group in mm. Colour sits on the fill and the lines stay black; with no fill (or in watercolour)
    the colour is the lines, the same way scoreDesign reads it */
@@ -8158,8 +8188,8 @@ function dzRenderBoardView(){
 <div class="dzBoardWrap" id="dzBoardWrap"><div class="board dzBoard" id="dzBoard"></div></div>
 <div class="dzBar2">
 <button class="btn pri" id="dzAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Element</button>
-<button class="ibtn dzIb" id="dzUndo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
-<button class="ibtn dzIb" id="dzRedo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+<button class="dzTb" id="dzUndo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>Undo</span></button>
+<button class="dzTb" id="dzRedo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span>Redo</span></button>
 <button class="dzChip${DZ.snap?" on":""}" id="dzSnap" aria-pressed="${DZ.snap}" title="Rotation snaps to the flow of the limb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3c-2 6 2 12 0 18M17 3c-2 6 2 12 0 18"/></svg>Snap to flow</button>
 <span class="sp"></span>${m.flash?`<span class="dzFlashTag" id="dzFlashTag" title="Flash: ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours">Flash −${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% h</span>`:""}</div>
 <div id="dzTools" class="dzTools"></div>
@@ -8226,20 +8256,25 @@ function dzRenderBoard(){
     h+=`<rect class="dzFoot" x="${dzR2(fx)}" y="${dzR2(fy)}" width="${dzR2(fw)}" height="${dzR2(fh)}"/><text class="dzFootT" x="${dzR2(fx+fw)}" y="${dzR2(fy-px(4))}" font-size="${px(10.5)}" text-anchor="end">${Math.round(fw)} × ${Math.round(fh)} mm</text>`;}
   else if(old)h+=oldLbl;
   else h+=`<text class="dzEmpty" x="${dzR2(W/2)}" y="${dzR2(L/2)}" font-size="${px(14)}" text-anchor="middle">Add an element</text><text class="dzEmpty sub" x="${dzR2(W/2)}" y="${dzR2(L/2+px(20))}" font-size="${px(11.5)}" text-anchor="middle">or start from the flash wall</text>`;
-  h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,44/sc)).join("")}</g>`;
+  h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,DZ_HANDLE.hit/sc)).join("")}</g>`;
   h+=`<g id="dzSelG"></g></svg>`;
   host.innerHTML=h;
   host.style.width=pw+"px";
   dzDrawSel();dzWireBoard();}
-/* the selection box and its scale/rotate handle (screen-sized, drawn in the element's own frame) */
+/* the selection box, its corner handle (drag to size, and turn) and the turn handle on a stalk above it (turn only);
+   screen-sized, drawn in the element's own frame */
 function dzDrawSel(){
   const g=$("dzSelG");if(!g)return;const e=DZ.m.els[DZ.sel];
   if(!e){g.innerHTML="";g.removeAttribute("transform");return;}
-  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),u=1/(DZ.pxmm*k),pad=4*u;
+  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),u=1/(DZ.pxmm*k),pad=4*u,H=DZ_HANDLE;
+  const cx=b.x+b.w+pad,cy=b.y+b.h+pad,rx=b.x+b.w/2,ry=b.y-pad-H.rot.stalk*u,ar=H.rot.dot*0.5*u;
   g.setAttribute("transform",dzTf(e));
   g.innerHTML=`<rect class="dzSelR" x="${dzR2(b.x-pad)}" y="${dzR2(b.y-pad)}" width="${dzR2(b.w+2*pad)}" height="${dzR2(b.h+2*pad)}" stroke-width="${dzR4(1.5*u)}" stroke-dasharray="${dzR4(5*u)} ${dzR4(4*u)}"/>
-<g class="dzHdl" data-h="1"><circle class="hit" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(22*u)}"/><circle class="dot" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(8*u)}" stroke-width="${dzR4(2*u)}"/>
-<path class="arr" d="M${dzR2(b.x+b.w+pad-4*u)} ${dzR2(b.y+b.h+pad)}h${dzR2(8*u)}M${dzR2(b.x+b.w+pad)} ${dzR2(b.y+b.h+pad-4*u)}v${dzR2(8*u)}" stroke-width="${dzR4(1.6*u)}"/></g>`;}
+<line class="dzStalk" x1="${dzR2(rx)}" y1="${dzR2(b.y-pad)}" x2="${dzR2(rx)}" y2="${dzR2(ry+H.rot.dot*u)}" stroke-width="${dzR4(1.5*u)}"/>
+<g class="dzHdl dzRot" data-h="rot" role="img" aria-label="Turn handle"><circle class="hit" cx="${dzR2(rx)}" cy="${dzR2(ry)}" r="${dzR2(H.rot.grab*u)}"/><circle class="dot" cx="${dzR2(rx)}" cy="${dzR2(ry)}" r="${dzR2(H.rot.dot*u)}" stroke-width="${dzR4(2*u)}"/>
+<path class="arr" d="M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}A${dzR2(ar)} ${dzR2(ar)} 0 1 1 ${dzR2(rx+ar*0.2)} ${dzR2(ry+ar)}M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}l${dzR2(-ar*0.1)} ${dzR2(-ar*0.9)}M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}l${dzR2(ar*0.9)} ${dzR2(-ar*0.1)}" stroke-width="${dzR4(1.6*u)}" fill="none"/></g>
+<g class="dzHdl" data-h="1" role="img" aria-label="Size handle"><circle class="hit" cx="${dzR2(cx)}" cy="${dzR2(cy)}" r="${dzR2(H.corner.grab*u)}"/><circle class="dot" cx="${dzR2(cx)}" cy="${dzR2(cy)}" r="${dzR2(H.corner.dot*u)}" stroke-width="${dzR4(2*u)}"/>
+<path class="arr" d="M${dzR2(cx-5*u)} ${dzR2(cy-5*u)}L${dzR2(cx+5*u)} ${dzR2(cy+5*u)}M${dzR2(cx-5*u)} ${dzR2(cy-1*u)}V${dzR2(cy-5*u)}H${dzR2(cx-1*u)}M${dzR2(cx+5*u)} ${dzR2(cy+1*u)}V${dzR2(cy+5*u)}H${dzR2(cx+1*u)}" stroke-width="${dzR4(1.6*u)}" fill="none"/></g>`;}
 /* move the selected element's group without redrawing the board */
 function dzMoveEl(i){const e=DZ.m.els[i],g=document.querySelector(`#dzEls .dzEl[data-i="${i}"]`);if(g&&e)g.setAttribute("transform",dzTf(e));if(i===DZ.sel)dzDrawSel();}
 function dzSelect(i){if(DZ.sel===i)return;DZ.sel=i;
@@ -8261,13 +8296,19 @@ function dzPDown(ev){
   const svg=$("dzSvg");const pt=dzSvgPt(ev);
   DZ.ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
   try{svg.setPointerCapture(ev.pointerId);}catch(_){}
+  if(DZ.ptrs.size===2&&DZ.sel<0&&DZ.m.els.length){const i=dzPinchPick();if(i>=0){dzSelect(i);}}
   if(DZ.ptrs.size===2&&DZ.sel>=0){dzPinchStart();ev.preventDefault();return;}
   if(DZ.ptrs.size>1)return;
   const hdl=ev.target.closest(".dzHdl"),g=ev.target.closest(".dzEl");
+  if(hdl&&DZ.sel>=0&&hdl.dataset.h==="rot"){const e=DZ.m.els[DZ.sel];dzBegin();DZ.g={kind:"rot",e,a0:Math.atan2(pt.y-e.my,pt.x-e.mx),rot0:e.rot};ev.preventDefault();return;}
   if(hdl&&DZ.sel>=0){const e=DZ.m.els[DZ.sel];dzBegin();DZ.g={kind:"hdl",e,d0:Math.hypot(pt.x-e.mx,pt.y-e.my)||1,a0:Math.atan2(pt.y-e.my,pt.x-e.mx),mm0:e.mm,rot0:e.rot};ev.preventDefault();return;}
   if(g){const i=+g.dataset.i;dzSelect(i);const e=DZ.m.els[i];dzBegin();DZ.g={kind:"drag",e,ox:pt.x-e.mx,oy:pt.y-e.my,moved:false,x0:ev.clientX,y0:ev.clientY};ev.preventDefault();return;}
   if(DZ.sel>=0&&ev.pointerType!=="touch")dzSelect(-1);
   else if(DZ.sel>=0)DZ.g={kind:"tap",x0:ev.clientX,y0:ev.clientY};}
+/* two fingers with nothing selected: the element nearest the middle of the fingers (the only one, if there's one) */
+function dzPinchPick(){const els=DZ.m.els;if(els.length===1)return 0;const [a,b]=[...DZ.ptrs.values()],svg=$("dzSvg");if(!svg)return-1;
+  const r=svg.getBoundingClientRect(),x=DZ.vb.x+((a.x+b.x)/2-r.left)/DZ.pxmm,y=DZ.vb.y+((a.y+b.y)/2-r.top)/DZ.pxmm;
+  let best=-1,bd=1e9;els.forEach((e,i)=>{const d=Math.hypot(e.mx-x,e.my-y)-e.mm/2;if(d<bd){bd=d;best=i;}});return bd<30?best:-1;}
 function dzPinchStart(){const [a,b]=[...DZ.ptrs.values()],e=DZ.m.els[DZ.sel];if(!e)return;
   if(!DZ.g||DZ.g.kind!=="pinch"){if(DZ.snap0==null)dzBegin();}
   DZ.g={kind:"pinch",e,d0:Math.hypot(b.x-a.x,b.y-a.y)||1,a0:Math.atan2(b.y-a.y,b.x-a.x),mm0:e.mm,rot0:e.rot,mx0:e.mx,my0:e.my,cx0:(a.x+b.x)/2,cy0:(a.y+b.y)/2};}
@@ -8283,7 +8324,8 @@ function dzPMove(ev){
   if(G.kind==="drag"){if(!G.moved&&Math.hypot(ev.clientX-G.x0,ev.clientY-G.y0)<3)return;G.moved=true;
     e.mx=clamp(pt.x-G.ox,vb.x,vb.x+vb.w);e.my=clamp(pt.y-G.oy,vb.y,vb.y+vb.h);dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}
   else if(G.kind==="hdl"){e.mm=clamp(G.mm0*(Math.hypot(pt.x-e.mx,pt.y-e.my)||1)/G.d0,4,lim*1.5);
-    e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}}
+    e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}
+  else if(G.kind==="rot"){e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}}
 function dzPUp(ev){
   if(!DZ.ptrs.has(ev.pointerId))return;DZ.ptrs.delete(ev.pointerId);
   const G=DZ.g;
@@ -8297,16 +8339,16 @@ function dzPUp(ev){
 /* ---- the selected element's toolbar ---- */
 function dzRenderTools(){
   const host=$("dzTools");if(!host)return;const e=DZ.m.els[DZ.sel];
-  if(!e){host.innerHTML=`<p class="dzToolHint">${DZ.m.els.length?"Tap an element to move, size or colour it. Two fingers on the board pinch and turn it.":"Add elements from the drawer. Lettering, motifs, frames and fills all score differently."}</p>`;return;}
+  if(!e){host.innerHTML=`<p class="dzToolHint">${DZ.m.els.length?"Tap an element to select it. Drag it to move, the corner dot to size it, the top dot to turn it. Two fingers pinch and turn.":"Add elements from the drawer. Lettering, motifs, frames and fills all score differently."}</p>`;return;}
   const d=dzDef(e.id),st=INK_SIM.STYLES[DZ.m.style],tone=dzClient().skinTone,LW=INK_SIM.LINE_WEIGHTS;
   const pal=["black"].concat((st&&st.palette||[]).filter(c=>c!=="black"));
   const tooSmall=e.mm<d.minSizeMm;
   const sw=pal.map(c=>{const r=INK_SIM.inkReads(c,tone),bad=r<0.2?"won't read":r<0.45?"faint":"",cur=(e.colour||"black")===c;
     return`<button type="button" class="dzSw${cur?" on":""}${bad?" weak":""}" data-c="${c}" aria-pressed="${cur}" aria-label="${esc(INK_SIM.COLOURS[c].name)}${bad?", "+bad+" on this skin":""}" title="${esc(INK_SIM.COLOURS[c].name)}${bad?": "+bad+" on this skin tone":""}"><i style="background:${dzColHex(c)}"></i>${bad?`<small>${bad}</small>`:""}</button>`;}).join("");
   host.innerHTML=`<div class="dzToolHd"><b>${esc(d.name)}</b><span class="${tooSmall?"bad":""}">${Math.round(e.mm)} mm${tooSmall?` <em>(needs ${d.minSizeMm})</em>`:""}</span><span class="sp"></span>
-<button class="ibtn dzIb" data-a="dup" aria-label="Duplicate" title="Duplicate"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg></button>
-<button class="ibtn dzIb" data-a="fwd" aria-label="Bring forward" title="Bring forward"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="11" height="11" rx="2"/><rect x="9" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".25"/></svg></button>
-<button class="ibtn dzIb dzDel" data-a="del" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+<button class="dzTb" data-a="dup" title="Duplicate"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button>
+<button class="dzTb" data-a="fwd" title="Bring forward"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="11" height="11" rx="2"/><rect x="9" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".25"/></svg><span>Forward</span></button>
+<button class="dzTb dzDel" data-a="del" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Delete</span></button></div>
 <div class="dzToolRow">
 <div class="dzStep" role="group" aria-label="Size"><button data-a="s-" aria-label="Smaller">−</button><span>Size</span><button data-a="s+" aria-label="Bigger">+</button></div>
 <div class="dzStep" role="group" aria-label="Rotate"><button data-a="r-" aria-label="Rotate left"><svg viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 16"/></svg></button><span>${Math.round(e.rot)}°</span><button data-a="r+" aria-label="Rotate right"><svg viewBox="0 0 24 24"><path d="M20 4v6h-6"/><path d="M19.5 10A8 8 0 1 0 18 16"/></svg></button></div>
@@ -8317,7 +8359,7 @@ ${d.colourable?`<div class="dzSws" role="group" aria-label="Colour (${esc(st?st.
   host.querySelectorAll(".dzSw").forEach(b=>b.addEventListener("click",()=>{const c=b.dataset.c;
     dzChange(()=>{const x=DZ.m.els[DZ.sel];x.colour=c==="black"?null:c;});}));
   const f=$("dzFill");if(f){f.addEventListener("input",()=>{if(DZ.snap0==null)dzBegin();DZ.m.els[DZ.sel].fill=+f.value;$("dzFillV").textContent=Math.round(f.value*100)+"%";
-      const x=DZ.m.els[DZ.sel],g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.outerHTML=dzElSvg(x,DZ.m.style,` class="dzEl on" data-i="${DZ.sel}" tabindex="0" role="button" aria-label="${esc(d.name)}"`,44/DZ.pxmm);dzQueue();});
+      const x=DZ.m.els[DZ.sel],g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.outerHTML=dzElSvg(x,DZ.m.style,` class="dzEl on" data-i="${DZ.sel}" tabindex="0" role="button" aria-label="${esc(d.name)}"`,DZ_HANDLE.hit/DZ.pxmm);dzQueue();});
     f.addEventListener("change",()=>{dzEnd();dzRenderBoard();});}}
 function dzTool(a){
   const i=DZ.sel,e=DZ.m.els[i];if(!e)return;const LW=INK_SIM.LINE_WEIGHTS,box=dzBox();
@@ -9197,12 +9239,12 @@ function clRenderWeek(){
   const sec=(t,items)=>items.length?`<h2 class="clH">${t} <span class="dzTag">${items.length}</span></h2><div class="clQs">${items.map(clCard).join("")}</div>`:"";
   let h=`<div class="card clSum"><dl class="kv"><dt>Week</dt><dd>${S.week}, ${S.year}</dd><dt>Chair this week</dt><dd>${+used.toFixed(1)} of ${cap} h booked</dd><dt>Waiting list</dt><dd>${wait<0.5?"none":`about ${Math.ceil(wait)} week${Math.ceil(wait)===1?"":"s"}`}</dd></dl></div>`;
   h+=sec("At the door",door)+sec("Booked consults",cons)+sec("In the chair",chair);
-  if(!door.length&&!cons.length&&!chair.length)h+=`<div class="card empty"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><circle cx="15" cy="12" r="1"/></svg><p><b>Nobody at the door this week.</b></p><p>Practise, draw flash, then press Next on the Career tab.</p><div class="row" style="justify-content:center"><button class="btn pri" id="clGoNext">Go to Next</button></div></div>`;
+  if(!door.length&&!cons.length&&!chair.length)h+=`<div class="card empty"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20"/><circle cx="15" cy="12" r="1"/></svg><p><b>Nobody at the door this week.</b></p><p>Practise, draw flash, or move the clock on to the next week.</p><div class="row" style="justify-content:center"><button class="btn pri" id="clGoNext">Next week</button></div></div>`;
   if(later.length)h+=`<h2 class="clH">Coming up</h2><div class="card clLater">${later.slice(0,8).map(q=>{const c=clWho(q);return`<div class="clRow"><b>Week ${q.w}, ${q.y}</b><span>${esc(c?c.name:"?")}</span><span class="clMeta">sitting ${q.sessionNo||1} of ${q.sessions||1} · ${+(q.hours||0).toFixed(1)} h${q.design?"":" · needs a design"}</span>${q.design?"":`<button class="btn sm" data-dz="${q.id}">Design it</button>`}</div>`;}).join("")}${later.length>8?`<p class="hint">And ${later.length-8} more.</p>`:""}</div>`;
   $("clView").innerHTML=h;
   const v=$("clView");
   v.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
-    if(b.id==="clGoNext")return showTab("career");
+    if(b.id==="clGoNext"){showTab("career");crNext();return;}
     if(b.dataset.con)clStartConsult(b.dataset.con);else if(b.dataset.dz)clDesignFor(b.dataset.dz);else if(b.dataset.ses)clSession(b.dataset.ses);});}
 
 /* ---- the consult ---- */
@@ -9485,8 +9527,7 @@ function caActWire(st){
   const C=S.career,on=(id,f)=>{const e=$(id);if(e)e.addEventListener("click",f);};
   const card=document.querySelector(".caAct");if(!card)return;
   card.querySelectorAll("[data-chore]").forEach(b=>b.addEventListener("click",()=>caChore(b.dataset.chore)));
-  on("caFriend",()=>{const it=INK_SIM.friendBooking(S);if(!it){toast("Not now");return;}const c=INK_SIM.findClient(S,it.client);
-    CR.say=INK_SIM.mentorLine(S,"friend");save();toast(`${c?c.first:"Your friend"} is in this week. Design it, then tattoo it.`);if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
+  on("caFriend",caDoFriend);
   on("caFriendGo",()=>{if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
   on("caGoTab",()=>{const g=INK_SIM.apprenticeGoal(S);if(!g)return;if(g.tab==="clients"&&typeof CL!=="undefined")CL.view="week";showTab(g.tab);});
   on("caChair",()=>{const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
@@ -9506,6 +9547,9 @@ function caActWire(st){
     const r=INK_SIM.legacyAct(S,id);if(!r.ok){toast(r.why==="flash"?`You need ${r.need} sheets of your own flash`:r.why==="cash"?"Not enough cash":"Not now");return;}
     save();renderHeader();toast(`${o.name}: done`,"milestone");renderCareer();}));}
 /* a chore: a week passes (people waiting this week have to be seen or skipped with Next first) */
+/* book the friend's free piece for this week and go to Clients (the Act 1 card and the next-step line) */
+function caDoFriend(){const it=INK_SIM.friendBooking(S);if(!it){toast("Not now");return;}const c=INK_SIM.findClient(S,it.client);
+  CR.say=INK_SIM.mentorLine(S,"friend");save();toast(`${c?c.first:"Your friend"} is in this week. Design it, then tattoo it.`);if(typeof CL!=="undefined")CL.view="week";showTab("clients");}
 function caChore(id){
   if(crWaiting().n){toast("Someone's waiting this week. See them, or press Next to let them go.");return;}
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");return;}}
@@ -10343,6 +10387,93 @@ function shLegacyCard(){return shRun(async()=>{
     L.most&&L.most.n>1?`One client wears ${L.most.n} pieces`:"",L.apprentices.length?`${L.apprentices.length} apprentice${L.apprentices.length===1?"":"s"} trained`:""].filter(Boolean);
   x.font=shFont("ui",30,500);for(const ln of shWrap(x,lines.join(" · "),W-2*P).slice(0,2)){shText(x,ln,P,Y,shFont("ui",30,500));Y+=40;}
   await shSave(c,`ink-legacy-${S.year}.png`,"Ink: Legacy");});}
+/* ===================== app/nextstep.js: the "what to do now" line at the top of every tab (0.1.16.0) =====================
+   One short line and (usually) one button above each tab's content, in its own slot (#nx-studio ... #nx-career in
+   html/body.html), so a tab redraw never wipes it. nxStep() works out the one thing to do next from what's already in
+   the save, most urgent first: a sitting left half done, the end of the thirty years, a consult left open, a healed piece
+   to look at, a choice card, someone due in the chair (with or without a design), someone at the door, a sample piece
+   with sittings left, Act 1's goal, and otherwise the next week. The words are in NX_COPY; {name} and {n} are filled in.
+   A step is "quiet" (the line, no button) on the tab where its control is already on screen, and the bar hides itself
+   in the chair (the session needs the room) and in a consult. Every render function is wrapped once at the bottom of
+   this file so the line follows any redraw, and renderHeader (called after every clock tick and purchase) refreshes it. */
+const NX_COPY={
+  live:{t:"You left someone in the chair with the stencil on.",b:"Back to the chair"},
+  over:{t:"Thirty years at the needle. Look back at the work.",b:"See your Legacy"},
+  consult:{t:"{name} is still waiting in the middle of a consult.",b:"Back to the consult"},
+  reveal:{t:"A piece has healed. See how it came out.",b:"See the heal"},
+  choice:{t:"{n} to decide on the Career tab.",b:"Decide"},
+  sitting:{t:"{name} is in the chair this week and the design is ready.",b:"Start the sitting"},
+  design:{t:"{name}'s sitting needs a design.",b:"Design it"},
+  designing:{t:"Designing for {name}. Press Save to booking when it's ready, then start the sitting."},
+  door:{t:"{name} is at the door. Talk to them before the week is out.",b:"Talk to them"},
+  sample:{t:"The sample walk-in's piece has sittings left.",b:"Next sitting"},
+  chore:{t:"Start where everyone starts: a chore for Arkady.",b:"Sweep up"},
+  practice:{t:"Practise a line on fake skin. No client, no pain.",b:"Practise now"},
+  flash:{t:"Draw a flash sheet: put elements on the board, then Save to my flash.",b:"Open the board"},
+  flashHere:{t:"Put elements on the board, then press Save to my flash."},
+  friend:{t:"Tattoo a friend, free. Your first piece on real skin.",b:"Do a friend"},
+  walkin:{t:"Your first paying walk-in comes with the week. Press Next.",b:"Next week"},
+  next:{t:"Nothing waiting. Move the clock on to the next client or heal.",b:"Next week"},
+  nextHere:{t:"Nothing waiting. Press Next to move the clock on."}};
+const NX_TABS=["studio","design","session","clients","career"];
+const NX_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
+const NX={busy:false};
+
+/* the one step: {id, tab (where its control lives), name, n, go()} */
+function nxStep(){
+  const first=c=>c?(c.first||String(c.name||"").split(" ")[0]||"Someone"):"Someone";
+  if(typeof seLive==="function"&&seLive())return{id:"live",tab:"session",go:()=>showTab("session")};
+  if(INK_SIM.careerOver&&INK_SIM.careerOver(S))return{id:"over",tab:"career",go:()=>{if(typeof lgOpen==="function")lgOpen();}};
+  if(typeof CL!=="undefined"&&CL.consult&&CL.consult.stage!=="done")return{id:"consult",tab:"clients",name:first(CL.consult.client),go:()=>showTab("clients")};
+  if(typeof rvPending==="function"&&rvPending())return{id:"reveal",tab:"career",go:()=>{showTab("career");$("panel").scrollTop=0;}};
+  const pend=typeof evOn==="function"&&evOn()&&S.world&&Array.isArray(S.world.pending)?S.world.pending.length:0;
+  if(pend)return{id:"choice",tab:"career",n:pend===1?"One thing":pend+" things",go:()=>{showTab("career");$("panel").scrollTop=0;}};
+  const due=typeof clDue==="function"?S.queue.filter(clDue):[];
+  const ses=due.filter(q=>q.kind==="session").sort((a,b)=>INK_SIM.weekIndex(a.w,a.y)-INK_SIM.weekIndex(b.w,b.y));
+  const ready=ses.find(q=>q.design&&q.design.elements&&q.design.elements.length);
+  if(ready)return{id:"sitting",tab:"",name:first(clWho(ready)),go:()=>sessionStartBooked(ready)};
+  const need=ses[0];
+  if(need){const nm=first(clWho(need));
+    if(S.board.item===need.id)return{id:"designing",tab:"design",name:nm};
+    return{id:"design",tab:"",name:nm,go:()=>clDesignFor(need.id)};}
+  const door=due.find(q=>q.kind==="walkin"||q.kind==="consult");
+  if(door)return{id:"door",tab:"",name:first(clWho(door)),go:()=>{clStartConsult(door.id);if(curTab!=="clients")showTab("clients");}};
+  if(S.session&&S.session.next)return{id:"sample",tab:"",go:()=>seContinueSample()};
+  const stage=(S.studio&&S.studio.stage)||"apprentice";
+  if(stage==="apprentice"&&S.career&&INK_SIM.apprenticeGoal){const g=INK_SIM.apprenticeGoal(S);
+    if(g&&g.id==="chore")return{id:"chore",tab:"career",go:()=>caChore(INK_SIM.CHORES[0].id)};
+    if(g&&g.id==="practice")return{id:"practice",tab:"",go:()=>seStartPractice(SE.pick||"fl_moon")};
+    if(g&&g.id==="flash"){if(curTab==="design"&&typeof DZ!=="undefined"&&DZ.view==="board")return{id:"flashHere",tab:"design"};
+      return{id:"flash",tab:"",go:()=>{if(typeof DZ!=="undefined")DZ.view="board";showTab("design");}};}
+    if(g&&g.id==="friend"&&typeof caDoFriend==="function"&&!S.queue.some(q=>q.friend))return{id:"friend",tab:"",go:caDoFriend};
+    if(g&&g.id==="walkin")return{id:"walkin",tab:"career",go:nxNext};}
+  if(curTab==="career")return{id:"nextHere",tab:"career"};
+  return{id:"next",tab:"",go:nxNext};}
+function nxNext(){if(curTab!=="career")showTab("career");crNext();$("panel").scrollTop=0;}
+
+/* draw the line for one tab (the current one if none given) */
+function nxRender(t){
+  t=t||curTab;const host=$("nx-"+t);if(!host||NX.busy)return;
+  if(!S||!Array.isArray(S.queue)){host.hidden=true;return;}
+  if(t==="session"&&typeof seLive==="function"&&seLive()||t==="clients"&&typeof CL!=="undefined"&&CL.consult){host.hidden=true;host.innerHTML="";return;}
+  let st;try{st=nxStep();}catch(e){host.hidden=true;return;}
+  const C=NX_COPY[st.id];if(!C){host.hidden=true;return;}
+  const txt=C.t.replace("{name}",st.name||"Someone").replace("{n}",st.n||""),quiet=!C.b||!st.go||st.tab===t;
+  const key=t+"|"+st.id+"|"+txt+"|"+quiet;
+  if(host._k===key&&!host.hidden)return;host._k=key;
+  host.hidden=false;host.className="nx"+(quiet?" quiet":"");
+  host.innerHTML=`<span class="nxK">Next</span><p class="nxT">${esc(txt)}</p>${quiet?"":`<button type="button" class="btn pri nxB" id="nxGo-${t}">${esc(C.b)}${NX_ICON}</button>`}`;
+  const b=$("nxGo-"+t);if(b)b.addEventListener("click",()=>{const s=nxStep();if(s.id!==st.id||!s.go)return nxRender(t);INK_SOUND.tick();s.go();nxRender();});}
+
+/* follow every redraw: wrap each tab's render function, and renderHeader for the current tab */
+(function(){
+  renderStudio=(f=>function(){const r=f.apply(this,arguments);nxRender("studio");return r;})(renderStudio);
+  renderDesign=(f=>function(){const r=f.apply(this,arguments);nxRender("design");return r;})(renderDesign);
+  renderSession=(f=>function(){const r=f.apply(this,arguments);nxRender("session");return r;})(renderSession);
+  renderClients=(f=>function(){const r=f.apply(this,arguments);nxRender("clients");return r;})(renderClients);
+  renderCareer=(f=>function(){const r=f.apply(this,arguments);nxRender("career");return r;})(renderCareer);
+  renderHeader=(f=>function(){const r=f.apply(this,arguments);if(typeof curTab!=="undefined")nxRender(curTab);return r;})(renderHeader);
+})();
 /* ===================== app/help.js: help overlays on the apprenticeship (PR 9). Last app file: closes the script. =====================
    There is no separate tutorial: Act 1 (sim/career.js) is the tutorial, one goal at a time on the Career tab. These tips sit
    on top of it, Prairie Engine Works' help.js pattern: a dimmed page with a spotlight on the real control and a short card.

@@ -333,4 +333,5 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 - [x] PR 8: Conventions, trends, social, rivals, reckonings, inspections, goals
 - [x] PR 9: Help overlays, piece and Legacy cards, settings, polish
 - [x] PR 10 (part): code and free assets (0.1.10.0: the loader and slots, Poly Haven textures, Kenney UI sounds, the CC0 base mesh, `docs/BLENDER.md`, `tools/pack-model.py`); Blender batch pending
+- [x] 0.1.16.0 (Kelbo's ease-of-use ask, not a plan PR): the machine held with the needle above the finger, the close-up camera, 44 px targets, the next-step line on every tab, a simpler design board
 - [x] PR 10 (rest): the Blender batch (0.1.11.0: the mannequin and twelve props made by script in `tools/blender/`, every `ASSETS` entry on, the mannequin swap on Full/Ultra); hand-made replacements from Kelbo can follow under the same file names

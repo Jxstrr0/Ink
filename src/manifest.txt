@@ -49,5 +49,6 @@ app/slots.js
 app/gallery.js
 app/bodymap.js
 app/share.js
+app/nextstep.js
 app/help.js
 html/tail.html
