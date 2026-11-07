@@ -79,7 +79,9 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.15.1, November 2026)
+## Current status (0.1.16.0, November 2026)
+
+- 0.1.16.0 built (Kelbo's "step up the ease of use"): in the chair you hold the machine (`SE_PEN`, `SE_MACHINE`, `#sePen` in `app/session.js`): its needle tip sits above and to the side of your finger, leaning to your free hand, and the sim only hears the tip; Settings › Session › Needle under finger turns it off. The chair zooms onto the current line or zone (`SE_ZOOM`, `#seCam`, `seRefit`), with a Whole / Close up button and pinch; the laid ink is replayed through every move. Every control is at least 44 px. The new `app/nextstep.js` puts one "what to do now" line with a button at the top of every tab (`NX_COPY`, `nxStep`, slots `#nx-<tab>` in `html/body.html`); `caDoFriend()` came out of `app/career.js` for it. The design board has bigger handles, a turn handle on a stalk (`DZ_HANDLE`), labelled toolbar buttons and a pinch that picks the element. New S field: `settings.needle` (`"offset"`/`"direct"`, hydrated, checked by `buSaveOk` and `check-savecode.js`). No new keys.
 
 - 0.1.15.1: Kelbo's answer on the soft fail: `softFail` sets `S.career.split` from Arkady's goodwill, like `rentChair` does ("mentor" at `MENTOR.splitAt` or above, so the chair stage is Arkady's front room; "standard" otherwise). The closing scene's line comes from `MENTOR.lines.broke.sedov` or `.low`, and `lgBrokeHtml` names the room. There is a new sim-test check. No new S fields, no new keys.
 

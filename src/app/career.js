@@ -149,8 +149,7 @@ function caActWire(st){
   const C=S.career,on=(id,f)=>{const e=$(id);if(e)e.addEventListener("click",f);};
   const card=document.querySelector(".caAct");if(!card)return;
   card.querySelectorAll("[data-chore]").forEach(b=>b.addEventListener("click",()=>caChore(b.dataset.chore)));
-  on("caFriend",()=>{const it=INK_SIM.friendBooking(S);if(!it){toast("Not now");return;}const c=INK_SIM.findClient(S,it.client);
-    CR.say=INK_SIM.mentorLine(S,"friend");save();toast(`${c?c.first:"Your friend"} is in this week. Design it, then tattoo it.`);if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
+  on("caFriend",caDoFriend);
   on("caFriendGo",()=>{if(typeof CL!=="undefined")CL.view="week";showTab("clients");});
   on("caGoTab",()=>{const g=INK_SIM.apprenticeGoal(S);if(!g)return;if(g.tab==="clients"&&typeof CL!=="undefined")CL.view="week";showTab(g.tab);});
   on("caChair",()=>{const early=S.year<2000+INK_SIM.ACTS.apprentice.years[1];
@@ -170,6 +169,9 @@ function caActWire(st){
     const r=INK_SIM.legacyAct(S,id);if(!r.ok){toast(r.why==="flash"?`You need ${r.need} sheets of your own flash`:r.why==="cash"?"Not enough cash":"Not now");return;}
     save();renderHeader();toast(`${o.name}: done`,"milestone");renderCareer();}));}
 /* a chore: a week passes (people waiting this week have to be seen or skipped with Next first) */
+/* book the friend's free piece for this week and go to Clients (the Act 1 card and the next-step line) */
+function caDoFriend(){const it=INK_SIM.friendBooking(S);if(!it){toast("Not now");return;}const c=INK_SIM.findClient(S,it.client);
+  CR.say=INK_SIM.mentorLine(S,"friend");save();toast(`${c?c.first:"Your friend"} is in this week. Design it, then tattoo it.`);if(typeof CL!=="undefined")CL.view="week";showTab("clients");}
 function caChore(id){
   if(crWaiting().n){toast("Someone's waiting this week. See them, or press Next to let them go.");return;}
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");return;}}

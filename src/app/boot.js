@@ -37,9 +37,10 @@ ${setRow("Effects",segHtml("setReduced",[["0","On"],["1","Reduced"]],st.reduced?
 ${setRow("Auto-adjust",segHtml("setGfxAuto",[["1","On"],["0","Off"]],st.gfxAuto===false?0:1),"Steps down a tier if the studio stutters")}
 <p class="hint">Lite is the phone default.</p></section>
 <section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"The machine buzz and taps")}</section>
-<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side")}
+<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side, and the machine leans that way")}
 ${setRow("Assist",segHtml("setAssist",[["0","Off"],["1","On"]],st.assist?1:0),"A slower marker and a wider steady band, from the next sitting")}
-${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}</section>
+${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}
+${setRow("Needle under finger",segHtml("setNeedle",[["0","Off"],["1","On"]],st.needle==="direct"?1:0),"Off: hold the machine and the needle sits above your finger, so you can see the line. On: the needle is right under your fingertip")}</section>
 <section class="setS"><h3>Help</h3>${setRow("Tips",segHtml("setTips",[["1","On"],["0","Off"]],st.tips===false?0:1),"Short notes the first time you meet something in Act 1")}
 <div class="row"><button class="btn" id="setTipsAgain">Show tips again</button></div></section>
 <section class="setS"><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
@@ -56,10 +57,11 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
   seg("setReduced",v=>{st.reduced=v==="1";applySettings();});
   seg("setGfx",v=>{st.gfx=v||null;PERF.manual=true;perfReset(true);applyGfx();});
   seg("setGfxAuto",v=>{st.gfxAuto=v==="1";PERF.dropped=PERF.manual=false;perfReset(true);});
-  seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
+  seg("setHand",v=>{st.handed=v==="left"?"left":"right";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   seg("setFlat",v=>{st.flatStencil=v==="1";});
+  seg("setNeedle",v=>{st.needle=v==="1"?"direct":"offset";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setTips",v=>{st.tips=v==="1";if(!st.tips&&typeof helpOff==="function")helpOff();});
   $("setTipsAgain").addEventListener("click",()=>{if(typeof helpReset==="function")helpReset();$("setTips").querySelectorAll("button").forEach(x=>{const on=x.dataset.v==="1";x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});toast("Tips will show again as you meet each thing");});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);

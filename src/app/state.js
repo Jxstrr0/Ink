@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.15.1";
+const VERSION="0.1.16.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -54,7 +54,8 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9)
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true,needle:"offset"},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9);
+                     // needle (0.1.16.0): "offset" holds the machine with its needle above your finger, "direct" puts the needle under it
   help:{},           // help overlays already seen (PR 9, app/help.js HELP_TIPS): tip id -> {w, y}; a new career starts with none
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
@@ -91,6 +92,7 @@ function hydrate(o){
   S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  if(S.settings.needle!=="direct")S.settings.needle="offset";   // 0.1.16.0: older saves (and anything odd) hold the machine offset
   if(!S.help||typeof S.help!=="object"||Array.isArray(S.help))S.help={};   // PR 9
   S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
   if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
