@@ -1,6 +1,8 @@
 /* ===== vis/api.js: the INK_VIS public object, IIFE close (PR 6) =====
    vsBuild() assembles the scene for the current tier (room, mannequin, skin texture, stencil overlay); a tier change that
-   needs other materials, shadows or texture size rebuilds it. The API (all calls cheap when nothing changed; each one
+   needs other materials, shadows or texture size rebuilds it. 0.1.17.0: every skin material gets the decal shader patch
+   (vsSkinPatch -> dcPatch in vis/decals.js: the detail tiles, the pigment mix and the fresh-ink sheen), checked before
+   each draw so the mannequin's cloned material gets it too. The API (all calls cheap when nothing changed; each one
    renders once at most, or starts a short frame loop for a move):
      init(canvas, tier) -> bool    ready()    setTier(t)    resize()    redraw()    fps() -> number while moving, else null
      mount(el)                     moves the one WebGL canvas into el (the Studio view, the Session tab's placement step)
@@ -26,8 +28,9 @@ function vsBuild(){
   s.background=vsCol("#0f0c09");s.fog=null;
   V.renderer.shadowMap.enabled=T.shadows;V.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   V.room=vsRoom();s.add(V.room.grp);
-  const tex=dcInit(T.tex,T.aniso,T.minPx);DC.sig="";DC.ov.size=T.ov;DC.ov.sig="";
+  const tex=dcInit(T,V.renderer.capabilities.isWebGL2);DC.sig="";DC.ov.size=T.ov;DC.ov.sig="";
   const skin=T.std?new THREE.MeshStandardMaterial({color:vsCol(V.skin),map:tex,roughness:0.62,metalness:0}):new THREE.MeshLambertMaterial({color:vsCol(V.skin),map:tex});
+  dcPatch(skin);   // 0.1.17.0: the detail tiles and the gloss (vis/decals.js)
   V.mats={skin,top:vsMat(BD_CLOTH.top,{r:0.95,side:THREE.DoubleSide}),shorts:vsMat(BD_CLOTH.shorts,{r:0.95,side:THREE.DoubleSide})};
   const B=bdMeshes(V.mats);V.body={grp:B.grp,parts:B.parts,head:B.grp.children.find(m=>m.userData.part==="head")};
   /* the stencil overlay: a second copy of each skin part over the same geometry, drawn only where the overlay has lines */
@@ -41,6 +44,9 @@ function vsBuild(){
   dcCompose(V.tattoos,V.shape);vsStencilApply();
   vsView(V.view,Object.assign({},V.viewOpt,{instant:true}));V.dirty=true;draw();
   vaLoad(V.room);}   // PR 10: photo textures and Blender props on Full / Ultra (vis/assets.js); nothing on Lite
+/* 0.1.17.0: every skin material carries the decal patch; Material.clone() drops it (the mannequin's skinM is a clone), so
+   draw() runs this before each render: a no-op once patched */
+function vsSkinPatch(){const M=V.mats;if(M.skin)dcPatch(M.skin);if(M.skinM)dcPatch(M.skinM);}
 function vsApplyShape(w){V.shapeW=w;if(V.body){bdApplyShape(V.body.parts,w);vaBodyShape(w);}vsArmrests(w);V.dirty=true;}
 function vsAfterShape(){if(V.view!=="consult")vsView(V.view,V.viewOpt);}
 function vsStencilApply(){
@@ -98,7 +104,7 @@ window.INK_VIS={
   stats(){const tri=o=>{let n=0;o.traverseVisible(m=>{if(m.isMesh&&m.visible!==false&&!(m.material&&m.material.visible===false)){const g=m.geometry;n+=(g.index?g.index.count:g.attributes.position.count)/3;}});return n;};
     return V.renderer?{tier:V.tier,body:V.body?(V.body.glb?V.body.glb.tris:bdTriangles(V.body.parts.concat([V.body.head]))):0,bodyModel:!!(V.body&&V.body.glb),room:V.room?tri(V.room.grp):0,triangles:tri(V.scene),calls:V.renderer.info.render.calls}:null;},
   /* for tests only: the texture as a data URL, the zone and island tables, and what a screen point hits (island, box pos) */
-  _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,
+  _state:Object.assign(V,{dc:()=>DC.canvas&&DC.canvas.toDataURL(),dcDetail:()=>DC.dt.canvas&&DC.dt.canvas.toDataURL(),dcGloss:()=>DC.gl.canvas&&DC.gl.canvas.toDataURL(),DC,zone:bdZone,islands:()=>BD.islands,assets:vaStatus,ASSETS,VA,
     hit:(cx,cy,pl)=>{const q=vsHit({clientX:cx,clientY:cy}),z=bdZone(pl);return q&&z&&q.isl===z.isl?bdZonePos(z,q.x,q.y):null;}})
 };
 })();

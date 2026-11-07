@@ -2,6 +2,17 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.17.0: tattoos that look like tattoos
+
+How a piece looks on the 3D body (`vis/decals.js`, tuning in `DC_LOOK`, per-tier sizes in `TIER` in `vis/core.js`). Only the picture changed: the sim's scores, heals and aging numbers are the same, and the design board, the flash wall, the gallery, the share cards and the chair's laid ink are untouched.
+
+- **Bolder linework.** Lines are drawn at the sim's line width times 1.3 with a soft bleed of their own ink under them, so they read at real size and the edges are crisp but not hairline. Aging still widens and softens them (`INK_SIM.age`).
+- **Packed colour and shading.** A fill reads nearly solid (a fill of 0.7 shows at about 93%), with soft black shading inside it along its outline; watercolour fills get a soft edge instead. Colour only goes where the design has it (the element's own fill), so the body matches the board and the session's colour zones. Ink now shows a share of its own colour over the skin, so a blue or green still reads on warm or dark skin; pale colours still sink into dark skin.
+- **Fresh and healed.** A piece that hasn't healed yet has a faint red halo round the ink and a wet sheen; both settle when it heals (two weeks), a little sheen lingers to about ten weeks, and an infected or blown-out heal keeps some redness for a while. Old black drifts blue-grey as it fades.
+- **Sharper up close.** The skin texture only gives an arm about 0.75 pixels per millimetre on Lite (1.5 on Full and Ultra), and its layout can't change because the mannequin shares it. So each piece also gets its own tile in a second texture at up to 7 px/mm on Lite, 10 on Full and 12 on Ultra, and the skin shader reads the tile wherever the piece is. The close-up, reveal and placement views are now sharp. Up to 8 tiles on Lite and 16 on Full and Ultra; more pieces share the space at a lower density, and anything left over still shows from the main texture.
+- **Memory.** Lite: skin 1024 + tiles 1024 + gloss 512, about 12 MB of GPU memory (5 MB before). Full and Ultra: 2048 + 2048 + 1024, about 48 MB (21 MB before). No 4096 textures: one would cost about 85 MB on a phone.
+- Repaints still happen only when a client's pieces, shape or age change, never per frame. No new S fields, no new localStorage keys.
+
 ## 0.1.16.0: hold the machine, see the line, know what's next
 
 - **The machine in your hand.** In the chair you now hold the machine: touch anywhere on the skin and it appears, drawn to match your kit (the coil, the rotary or the wireless pen), with its needle tip about 70 px above and a little to the side of your finger, leaning towards your free hand (Settings › Session › Your hand). Your finger never covers the line. Bring the tip onto the start dot and the line starts; everything the sim hears (steady, on the line, pace, depth, joins, blowouts, zones) is the needle tip, not your finger. A ring and a glow show when the tip is near the dot. Lift and the machine goes away. Two fingers on the skin pinch the view; a palm resting on the screen is ignored.
