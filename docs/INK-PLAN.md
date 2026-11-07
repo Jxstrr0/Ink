@@ -311,6 +311,12 @@ The kit is read by the session for its bands and by `aging.js` for ink quality. 
 18. ~~**(0.1.13.0)** Share cards~~ **Answered: a piece card shows the client's first name ("Olga's forearm") and keeps the credit line.**
 19. ~~**(0.1.13.0)** Tips with Skip the broom~~ **Answered: a career started with Skip the broom starts with tips off; Settings › Help turns them on. A full start keeps them on.**
 20. ~~**(0.1.13.0)** The toast chime~~ **Answered: only important toasts chime (the `TOAST_CHIME` kinds in `app/state.js`); the rest are silent.**
+21. ~~**(0.1.20.0)** Pricing: rates outran what clients would pay (17–21% of quotes accepted in the audit)~~ **Answered: halve the per-point rise, `RATE_BY_REP.perRep` walk-ins 1, collectors 3, peers 1.5; the act bases stay.**
+22. ~~**(0.1.20.0)** Drawbridge Prize and convention difficulty (won about 95% of the time)~~ **Answered: `REP_EVENTS.award.places` [0.78, 0.72, 0.66] and `CONV_JUDGE.places` [0.9, 0.84, 0.78].**
+23. ~~**(0.1.20.0)** Act gates~~ **Answered: the early lease needs a reputation sum of 200 (`LEASE.need.repSum`); Act 4's collectors shortcut is its own number, `LEGACY_NEED.collectors` 90 (the waiting_list event stays 60; the 2018 date stays). Not now: a collectors floor on the 2018 date, a TV offer gate.**
+24. ~~**(0.1.20.0)** Arkady's goodwill for leaving early~~ **Answered: `MENTOR.goodwill.earlyPerYear` -0.30.**
+25. ~~**(0.1.20.0)** Inspections: one fail counted for the rest of the career~~ **Answered: a passed inspection clears one fail.**
+26. ~~**(0.1.20.0)** The busier careers push the year-30 save over the 2 MB / 1.2 MB checks~~ **Answered: pack old pieces harder (`AR_V2` strings in `sim/archive.js`), keep the limits, drop nothing, old saves still load.** Not now: fade-aware cover-ups, trend arrows from a table.
 
 ---
 
@@ -334,4 +340,5 @@ Freehand drawing, any nudity or placements outside the listed zones, real artist
 - [x] PR 9: Help overlays, piece and Legacy cards, settings, polish
 - [x] PR 10 (part): code and free assets (0.1.10.0: the loader and slots, Poly Haven textures, Kenney UI sounds, the CC0 base mesh, `docs/BLENDER.md`, `tools/pack-model.py`); Blender batch pending
 - [x] 0.1.16.0 (Kelbo's ease-of-use ask, not a plan PR): the machine held with the needle above the finger, the close-up camera, 44 px targets, the next-step line on every tab, a simpler design board
+- [x] 0.1.20.0 (Kelbo's difficulty package, not a plan PR): prices, prize and convention places, act gates, goodwill, inspections, harder save packing
 - [x] PR 10 (rest): the Blender batch (0.1.11.0: the mannequin and twelve props made by script in `tools/blender/`, every `ASSETS` entry on, the mannequin swap on Full/Ultra); hand-made replacements from Kelbo can follow under the same file names

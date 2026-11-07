@@ -14,7 +14,13 @@
                         newest ARCHIVE.pieceFull become short arrays (numbers to 3 decimals, names and labels dropped when the
                         sim can rebuild them). Anything a tuple can't carry stays a plain object, so packing never loses a
                         field: every packed piece is unpacked and compared once (and cached per piece).
-     unpackSave(o)      the reverse, in place (app/state.js hydrate). Plain objects pass through, so older saves load.
+                        0.1.20.0 packs those pieces harder: each tuple is then written as one comma-separated string
+                        (AR_V2: the id and week as steps from the piece before, usual values as "0", the heal grade as a
+                        digit). It is the same tuple, losslessly (whole numbers only), and each string is unpacked and
+                        checked against the piece as a tuple is; a piece that won't go into a string stays a tuple. Nothing
+                        is rounded further, so an old piece renders and ages exactly as before.
+     unpackSave(o)      the reverse, in place (app/state.js hydrate). Plain objects pass through, and tuples (the 0.1.19.0
+                        form) still unpack, so older saves load.
    Private helpers start with ar. ===== */
 const CLIENT_CAP=200;
 const HISTORY_CAP=30;
@@ -68,7 +74,8 @@ function expandClient(S,c){
 
 /* ---- packing ---- */
 const arI=v=>Math.round(v*1000),arF=v=>v/1000,arH=v=>Math.round(v*100),arHf=v=>v/100;
-function arNum(id,pre){const m=new RegExp("^"+pre+"(\\d+)$").exec(id||"");return m?+m[1]:id;}
+const AR_NUM_RE={};
+function arNum(id,pre){const re=AR_NUM_RE[pre]||(AR_NUM_RE[pre]=new RegExp("^"+pre+"(\\d+)$"));const m=re.exec(id||"");return m?+m[1]:id;}
 function arId(v,pre){return typeof v==="number"?pre+v:v;}
 const AR_EL=["id","x","y","scale","rot","lineWeight","fill","colour"];
 function arElsPack(els){
@@ -139,8 +146,11 @@ function arSame(a,b){
   if(typeof a==="number"&&typeof b==="number")return Math.abs(a-b)<=0.0006+0.0006*Math.abs(b);
   if(a===b)return true;if(a==null||b==null)return false;
   if(typeof a!=="object"||typeof b!=="object"||Array.isArray(a)!==Array.isArray(b))return false;
-  const ka=Object.keys(a).filter(k=>a[k]!==undefined),kb=Object.keys(b).filter(k=>b[k]!==undefined);
-  if(ka.length!==kb.length)return false;for(const k of kb)if(!arSame(a[k],b[k]))return false;return true;}
+  let na=0,nb=0;
+  if(Array.isArray(a)){for(let i=0;i<a.length;i++)if(a[i]!==undefined)na++;
+    for(let i=0;i<b.length;i++){if(b[i]===undefined)continue;nb++;if(!arSame(a[i],b[i]))return false;}return na===nb;}
+  for(const k in a)if(a[k]!==undefined)na++;
+  for(const k in b){if(b[k]===undefined)continue;nb++;if(!arSame(a[k],b[k]))return false;}return na===nb;}
 const arCache=new WeakMap();
 function arPieceSig(p){return(p.heal||"")+"|"+(p.healW||"")+"|"+(p.portfolio?1:0)+"|"+(p.review?1:0)+"|"+(p.price||0)+"|"+p.client+"|"+(p.name||"");}
 function arPieceSaved(p,byId){
@@ -148,6 +158,69 @@ function arPieceSaved(p,byId){
   let t=arPiecePack(p,byId);
   if(t){let ok=false;try{ok=arSame(arPieceUnpack(JSON.parse(JSON.stringify(t)),byId),p);}catch(e){ok=false;}if(!ok)t=p;}else t=p;
   arCache.set(p,{sig,t});return t;}
+/* ---- 0.1.20.0: a packed piece's tuple as one string (AR_V2) ----
+   Fields are split by "," and an empty field is "0"; lists inside a field (outputs, offset, guest, an element's parts)
+   use " ", elements ";". The backup code's LZW learns its dictionary from the start of the save (the archived clients,
+   plain JSON numbers), so a string of numbers and commas squeezes far better than one with new separators.
+   fields, in order:  0 id step from the piece before, less 1  1 client number  2 week step from the piece before
+     3 placement  4 size in mm  5 style  6 elements (x/y 500, scale 1000 and turn 0 left empty)  7 outputs
+     8 heal grade (AR_V2.heal index + 1)  9 healed week, steps after the piece less 2 ("n" = not healed yet)  10 stage
+     11 price / 100  12 placement offset  13 flash  14 "1" when the design had no flash field  15 kit + 1  16 by
+     17 guest  18 return ("rule piece-number")  19 anything else, as JSON (last, so it may hold ",")
+   "0" fields at the end are dropped. "The piece before" is the previous entry of S.pieces, whatever form it is saved in. */
+const AR_V2={sep:",",sub:" ",fields:19,heal:["crisp","soft","patchy","blownout","infected"],el:{1:"500",2:"500",3:"1000",4:"0"}};
+function arBase(p){if(!p||typeof p!=="object")return[0,0];const n=arNum(p.id,"p");
+  return[typeof n==="number"?n:0,typeof p.w==="number"&&typeof p.y==="number"?weekIndex(p.w,p.y):0];}
+const arOkS=v=>typeof v==="string"&&v!==""&&v!=="0"&&!/[, ;]/.test(v);
+const arNumS=v=>typeof v==="number"&&isFinite(v);
+const arC=v=>String(v/100),arCf=s=>Math.round(+s*100);
+function arElsV2(s,pack){if(!s)return s;return s.split(";").map(e=>{const a=e.split(pack?":":AR_V2.sub);
+  for(const i in AR_V2.el){if(pack&&a[i]===AR_V2.el[i])a[i]="";else if(!pack&&a[i]==="")a[i]=AR_V2.el[i];}return a.join(pack?AR_V2.sub:":");}).join(";");}
+/* arV2Pack(t, base) -> the string, or null when this tuple won't go into one */
+function arV2Pack(t,base){
+  if(!Array.isArray(t)||t.length!==10)return null;
+  const [id,cl,wi,d,o,heal,hw,st,price,x0]=t,S_=AR_V2.sub;
+  const I=Number.isInteger;
+  if(!I(id)||!I(cl)||!I(wi)||!I(hw)||!I(price)||!Array.isArray(d)||(d.length!==7&&d.length!==8))return null;
+  const [pl,sz,sty,pos,fl,els,dx,f7]=d;
+  if(!arOkS(pl)||!I(sz)||!arOkS(sty)||typeof els!=="string"||/[, ]/.test(els)||dx!==0||(d.length===8&&f7!==1))return null;
+  if(pos!==0&&!(Array.isArray(pos)&&pos.length===2&&arNumS(pos[0])&&arNumS(pos[1])))return null;
+  if(fl!==0&&!arOkS(fl))return null;
+  if(o!==0&&!(Array.isArray(o)&&o.length>1&&o.every(v=>v===""||arNumS(v))))return null;
+  if(heal!==0&&AR_V2.heal.indexOf(heal)<0)return null;
+  if(st!==0&&!arOkS(st))return null;
+  if(x0!==0&&(!x0||typeof x0!=="object"||Array.isArray(x0)))return null;
+  const x=Object.assign({},x0||{});let kit="0",by="0",g="0",ret="0";
+  if(arNumS(x["~k"])&&x["~k"]>=0){kit=String(x["~k"]+1);delete x["~k"];}
+  if(arOkS(x.by)){by=x.by;delete x.by;}
+  if(typeof x["~g"]==="string"&&!/[, ]/.test(x["~g"])&&x["~g"]!=="0"){g=x["~g"].split("|").join(S_);delete x["~g"];}
+  const R=x.ret;if(R&&typeof R==="object"&&Object.keys(R).join()==="rule,piece"&&arOkS(R.rule)&&(R.piece===null||/^p\d+$/.test(R.piece))){
+    ret=R.rule+(R.piece===null?"":S_+R.piece.slice(1));delete x.ret;}
+  const f=[String(id-base[0]-1),String(cl),String(wi-base[1]),pl,arC(sz),sty,arElsV2(els,true),o?o.join(S_):"0",
+    heal?String(AR_V2.heal.indexOf(heal)+1):"0",hw===-1?"n":String(hw-wi-2),st||"0",arC(price),pos?pos.join(S_):"0",fl||"0",d.length===8?"1":"0",kit,by,g,ret];
+  if(Object.keys(x).length)f.push(JSON.stringify(x));else while(f.length>7&&f[f.length-1]==="0")f.pop();
+  return f.join(AR_V2.sep);}
+/* arV2Unpack(s, base) -> the tuple */
+function arV2Unpack(s,base){
+  const f=[],S_=AR_V2.sub;let i=0;
+  while(f.length<AR_V2.fields){const j=s.indexOf(AR_V2.sep,i);if(j<0){f.push(s.slice(i));i=-1;break;}f.push(s.slice(i,j));i=j+1;}
+  const rest=i>=0&&f.length===AR_V2.fields?s.slice(i):"";while(f.length<AR_V2.fields)f.push("0");
+  const wi=base[1]+(+f[2]),d=[f[3],arCf(f[4]),f[5],f[12]==="0"?0:f[12].split(S_).map(Number),f[13]==="0"?0:f[13],arElsV2(f[6],false),0];
+  if(f[14]==="1")d.push(1);
+  const x=rest?JSON.parse(rest):{};
+  if(f[15]!=="0")x["~k"]=f[15]-1;if(f[16]!=="0")x.by=f[16];if(f[17]!=="0")x["~g"]=f[17].split(S_).join("|");
+  if(f[18]!=="0"){const k=f[18].indexOf(S_);x.ret=k<0?{rule:f[18],piece:null}:{rule:f[18].slice(0,k),piece:"p"+f[18].slice(k+1)};}
+  return[base[0]+1+(+f[0]),+f[1],wi,d,f[7]==="0"?0:f[7].split(S_).map(v=>v===""?"":+v),f[8]==="0"?0:AR_V2.heal[f[8]-1],
+    f[9]==="n"?-1:wi+2+(+f[9]),f[10]==="0"?0:f[10],arCf(f[11]),Object.keys(x).length?x:0];}
+/* the saved form of an older piece: its string when the piece goes into one and unpacks from it to the same piece
+   (arSame, as for a tuple), else what arPieceSaved gives (a checked tuple, or the record). Cached per piece */
+const arCache2=new WeakMap();
+function arPieceSavedV2(p,byId,prev){
+  const sig=arPieceSig(p)+(prev&&typeof prev==="object"?"|"+prev.id+","+prev.w+","+prev.y:"|"),hit=arCache2.get(p);if(hit&&hit.sig===sig)return hit.s;
+  const base=arBase(prev);let s=null;
+  try{const t=arPiecePack(p,byId);s=t&&arV2Pack(t,base);if(s!=null&&!arSame(arPieceUnpack(arV2Unpack(s,base),byId),p))s=null;}catch(e){s=null;}
+  if(s==null)s=arPieceSaved(p,byId);
+  arCache2.set(p,{sig,s});return s;}
 function arClientPack(c){
   const x={};for(const k in c)if(AR_KEEP.indexOf(k)<0||k==="age")x[k]=c[k];delete x.age;
   const first=String(c.name||"").split(" ")[0],tr=c.traits||{};
@@ -164,23 +237,26 @@ function arClientUnpack(t,year){
   c.visits=t[11];c.pieces=[];c.referredBy=t[12]?arId(t[12],"c"):null;c.src=typeof t[13]==="number"?AR_SRC[t[13]]:t[13];
   if(t[14])Object.assign(c,t[14]);c.compact=true;
   return c;}
-/* packSave(S) -> the object that is saved. Shares S's objects for whatever isn't packed; JSON.stringify it right away */
-function packSave(S){
+/* packSave(S, opt) -> the object that is saved. Shares S's objects for whatever isn't packed; JSON.stringify it right away.
+   opt.tuples writes older pieces in the 0.1.19.0 form (tuples, no strings): tools/sim-test.js checks such saves still load */
+function packSave(S,opt){
   const cl=S.clients||[],ps=S.pieces||[],byId=new Map();for(const c of cl)byId.set(c.id,c);
   const clients=cl.map(c=>c.compact?arClientPack(c):c);
-  const cut=ps.length-ARCHIVE.pieceFull,pieces=ps.map((p,i)=>i<cut&&p&&typeof p==="object"?arPieceSaved(p,byId):p);
+  const cut=ps.length-ARCHIVE.pieceFull,pieces=ps.map((p,i)=>i<cut&&p&&typeof p==="object"?(opt&&opt.tuples?arPieceSaved(p,byId):arPieceSavedV2(p,byId,ps[i-1])):p);
   return Object.assign({},S,{clients,pieces});}
 /* unpackSave(o): arrays back into records, in place; compacted clients get their pieces lists back. -> o */
 function unpackSave(o){
   if(!o||typeof o!=="object")return o;
   let any=false;
   if(Array.isArray(o.clients))o.clients=o.clients.map(c=>{if(Array.isArray(c)){any=true;return arClientUnpack(c,o.year);}return c;});
-  if(Array.isArray(o.pieces)&&o.pieces.some(Array.isArray)){
+  /* pieces: a string (0.1.20.0, decoded against the piece before it, already unpacked) or a tuple (0.1.19.0 and before) */
+  if(Array.isArray(o.pieces)&&o.pieces.some(p=>Array.isArray(p)||typeof p==="string")){
     any=true;const byId=new Map();for(const c of o.clients||[])if(c&&c.id)byId.set(c.id,c);
-    o.pieces=o.pieces.map(p=>Array.isArray(p)?arPieceUnpack(p,byId):p);}
+    const L=o.pieces;for(let i=0;i<L.length;i++){const p=L[i];
+      if(typeof p==="string")L[i]=arPieceUnpack(arV2Unpack(p,arBase(i?L[i-1]:null)),byId);else if(Array.isArray(p))L[i]=arPieceUnpack(p,byId);}}
   if(any){const byId=new Map();for(const c of o.clients||[])if(c&&c.compact){c.pieces=[];byId.set(c.id,c);}
     for(const p of o.pieces||[]){const c=p&&byId.get(p.client);if(c)c.pieces.push(p.id);}}
   return o;}
 
 SIM.CLIENT_CAP=CLIENT_CAP;SIM.HISTORY_CAP=HISTORY_CAP;SIM.ARCHIVE=ARCHIVE;SIM.compactClients=compactClients;SIM.clientCompact=clientCompact;
-SIM.expandClient=expandClient;SIM.packSave=packSave;SIM.unpackSave=unpackSave;
+SIM.expandClient=expandClient;SIM.packSave=packSave;SIM.unpackSave=unpackSave;SIM.AR_V2=AR_V2;

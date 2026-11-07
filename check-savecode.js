@@ -280,7 +280,7 @@ check("PR 7: with the sim, a packed career round trips through a code and hydrat
       const p = INK_SIM.addPiece(S0, { client: c.id, design: INK_SIM.proxyDesign(c.ask), out: { lineQuality: 0.81, depthQuality: 0.77, saturation: 0.8, trauma: 0.31 } }); p.heal = "crisp"; }
     return 1; })()`, a);
   const before = plain(a.__get()), packed = JSON.parse(a.saveJson());
-  assert(packed.pieces.filter(Array.isArray).length >= 60, "older pieces are packed");
+  assert(packed.pieces.filter(p => typeof p === "string").length >= 60, "older pieces are packed (0.1.20.0: one string each)");
   const r = load(true).buRead(a.buCode());
   const b = load(true); assert(b.hydrate(r.data.save));
   const after = plain(b.__get());
@@ -288,6 +288,13 @@ check("PR 7: with the sim, a packed career round trips through a code and hydrat
   assert(after.pieces.every((p, i) => !Array.isArray(p) && p.id === before.pieces[i].id && p.name === before.pieces[i].name && p.design.placement === before.pieces[i].design.placement && Math.abs(p.out.trauma - 0.31) < 1e-6), "every piece comes back as a record");
   assert.strictEqual(after.studio.stage, "chair"); assert(after.career && !after.career.old);
   assert(b.hydrate({ week: 5, year: 2004 })); assert.strictEqual(plain(b.__get()).career.old, true, "a save from before PR 7 counts the tutorial as done");
+  /* 0.1.20.0: a code written by 0.1.19.0 (older pieces as tuples, not strings) still restores, piece for piece */
+  const oldSave = JSON.parse(vm.runInContext("JSON.stringify(INK_SIM.packSave(S, { tuples: true }))", a));
+  assert(oldSave.pieces.filter(Array.isArray).length >= 60 && !oldSave.pieces.some(p => typeof p === "string"), "the 0.1.19.0 form is tuples");
+  const ob = a.buZip(new TextEncoder().encode(JSON.stringify({ v: 1, at: 0, ver: "0.1.19.0", save: oldSave, slots: [null, null, null] })));
+  const r2 = load(true).buRead("INK1:" + ob + a.buSum(ob)), c = load(true); assert(r2.ok !== false && c.hydrate(r2.data.save));
+  assert.deepStrictEqual(plain(c.__get()).pieces, after.pieces, "a 0.1.19.0 code restores the same pieces as a 0.1.20.0 one");
+  assert(JSON.parse(c.saveJson()).pieces.filter(p => typeof p === "string").length >= 60, "and saves them again in the 0.1.20.0 form");
 });
 check("PR 8: the world, goals, rivals and a closed shop are checked", () => {
   const a = load();
