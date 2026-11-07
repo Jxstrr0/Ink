@@ -57,6 +57,12 @@ input[type=range]{min-height:44px;accent-color:var(--red);background:transparent
 .dzBar2{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
 .dzBar2 .btn svg,.dzBar3 .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .dzIb{border:1px solid var(--line);background:var(--panel)}
+/* 0.1.16.0: toolbar buttons with a word under the icon */
+.dzTb{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:52px;min-height:48px;padding:3px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-size:11px;font-weight:600;line-height:1;cursor:pointer}
+.dzTb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dzTb:disabled{opacity:.35;cursor:default}
+.dzTb:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.dzTb.dzDel{color:var(--crit)}
 .dzIb:disabled{opacity:.35;cursor:default}
 .dzIb:focus-visible,.dzChip:focus-visible,.dzSpotBtn:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .dzChip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute);font-weight:600;font-size:13.5px;cursor:pointer}
@@ -89,7 +95,9 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzHdl{cursor:nwse-resize}
 .dzHdl .hit{fill:transparent}
 .dzHdl .dot{fill:#fffaf1;stroke:#2f7f77}
-.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round}
+.dzHdl .arr{stroke:#2f7f77;stroke-linecap:round;stroke-linejoin:round}
+.dzRot{cursor:grab}
+.dzStalk{stroke:#2f7f77;stroke-dasharray:none}
 
 /* ---- the toolbar under the board ---- */
 .dzTools{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:0 0 10px}
@@ -100,6 +108,8 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzToolHd span{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
 .dzToolHd span.bad{color:var(--crit)}
 .dzToolHd em{font-style:normal}
+.dzToolHd .dzTb span{color:inherit;font-size:11px}
+.dzToolHd .dzTb{min-width:50px}
 .dzDel{color:var(--crit)}
 .dzToolRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .dzStep{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--panel2);overflow:hidden}
@@ -133,7 +143,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .dzM .d.up{color:var(--dzUp)}
 .dzM .d.dn{color:var(--dzDn)}
 .dzM .d.nu{color:var(--dzNu)}
-.dzCapT{position:absolute;top:6px;right:6px;width:32px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dzCapT{position:absolute;top:4px;right:0;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
 .dzCapT svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 .dzCap.shut .dzCapT svg{transform:rotate(180deg)}
 .dzCap.shut .dzAge{display:none}
@@ -199,7 +209,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 @media (max-width:420px){
   .dzBodyGrid{grid-template-columns:1fr 1fr;gap:8px}
   .dzToolRow{gap:4px}
-  .dzStep button{flex-basis:40px}
+  .dzStep button{flex-basis:44px}
   .dzM .l{font-size:9.5px;letter-spacing:.03em}
   .dzM b{font-size:15.5px}
   .dzM.money b{font-size:13.5px}

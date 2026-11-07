@@ -2,6 +2,16 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.16.0: hold the machine, see the line, know what's next
+
+- **The machine in your hand.** In the chair you now hold the machine: touch anywhere on the skin and it appears, drawn to match your kit (the coil, the rotary or the wireless pen), with its needle tip about 70 px above and a little to the side of your finger, leaning towards your free hand (Settings › Session › Your hand). Your finger never covers the line. Bring the tip onto the start dot and the line starts; everything the sim hears (steady, on the line, pace, depth, joins, blowouts, zones) is the needle tip, not your finger. A ring and a glow show when the tip is near the dot. Lift and the machine goes away. Two fingers on the skin pinch the view; a palm resting on the screen is ignored.
+- **Needle under finger** (Settings › Session) turns the offset off and puts the needle back under your fingertip, as before.
+- **Close up.** The chair zooms onto the part you're working on: each line, shading zone or colour zone is framed big in the view (up to three times), and the camera glides to the next part when one is done. The **Whole** button (top corner, on your free hand's side) shows the whole piece; **Close up** goes back. The ink you've laid stays put through every move. Reduced motion skips the glide.
+- **Bigger targets.** Every button, chip, tab and toggle is at least 44 by 44 px; the session rail and the liner chips are bigger; nothing scrolls sideways at 360 px.
+- **What to do now.** Every tab has one line at the top saying the one thing to do next, with a button that does it: back to a sitting you left, see your Legacy, back to a consult, see a heal, a choice card to decide, start a sitting whose design is ready, design a booked sitting, talk to someone at the door, the sample piece's next sitting, Act 1's step (a chore, practice, a flash sheet, a friend's free piece, your first walk-in), and otherwise Next week. Where the control is already on screen it is just the line. It hides in the chair and in a consult. The Clients tab's "Nobody at the door" card now has a **Next week** button that moves the clock on.
+- **An easier design board.** Selecting an element shows a bigger corner dot (drag to size and turn, as before) and a separate turn dot on a stalk above it; each element has a larger grab area. Undo, Redo, Copy, Forward and Delete have words under their icons. Two fingers with nothing selected pick the element between them and pinch it. Snap to flow, undo and redo work as before.
+- No new localStorage keys. New S field: `settings.needle` (`"offset"` or `"direct"`).
+
 ## 0.1.15.1: a closed studio can send you back to Sedov's
 
 - **The soft fail follows Arkady too.** When your studio closes (`softFail` in `sim/career.js`), you go back to Arkady's front room at his friend's split if his goodwill is still at `MENTOR.splitAt` (0.55) or above. Otherwise you go to the shop across town, as before. His line on the closing scene says his old chair is free, and the scene's last line names where you land. A goodwill high enough for his loan (`MENTOR.loanAt`) still saves the studio once first.

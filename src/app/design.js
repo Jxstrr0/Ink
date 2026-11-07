@@ -10,6 +10,9 @@
    colour}); dzToDesign() turns it into a design in the docs/SIM-CONTRACT.md shape (sizeMm = the piece's longest side, x/y/
    scale normalised to it, pos = where its centre sits) and that is what S.board.design saves: parameters, never pictures.
    Rescoring is once per animation frame at most (dzQueue); a drag only moves one <g> and the selection box.
+   0.1.16.0: bigger handles (DZ_HANDLE): a corner dot to size (and turn), a turn dot on a stalk above the box, a wider grab
+   area round small elements, words under the toolbar icons, and a two-finger pinch with nothing selected picks the
+   element under the fingers.
    The board scores against the client it's designing for (S.board.client, a real client from PR 3, with the Save to
    booking bar from app/clients.js), or else a sample walk-in (DZ_SAMPLE_CLIENTS). Undo/redo keeps DZ_UNDO_CAP snapshots in
    memory. The "Show all (sandbox)" switch (DZ.sandbox) unlocks every element for testers and is not saved.
@@ -123,6 +126,9 @@ function dzUndoRedo(back){
   dzRenderCap();dzRenderAging();dzSyncUndo();}
 function dzSyncUndo(){const u=$("dzUndo"),r=$("dzRedo");if(u)u.disabled=!DZ.undo.length;if(r)r.disabled=!DZ.redo.length;}
 
+/* 0.1.16.0, easier to handle: px on screen. hit = the smallest grab area round an element; corner = the scale handle's
+   dot and grab radius; rot = the turn handle's dot, grab radius and how far above the box it sits */
+const DZ_HANDLE={hit:56,corner:{dot:11,grab:26},rot:{dot:11,grab:26,stalk:30}};
 /* ---- drawing elements (board, minis) ---- */
 /* one element as an SVG group in mm. Colour sits on the fill and the lines stay black; with no fill (or in watercolour)
    the colour is the lines, the same way scoreDesign reads it */
@@ -216,8 +222,8 @@ function dzRenderBoardView(){
 <div class="dzBoardWrap" id="dzBoardWrap"><div class="board dzBoard" id="dzBoard"></div></div>
 <div class="dzBar2">
 <button class="btn pri" id="dzAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Element</button>
-<button class="ibtn dzIb" id="dzUndo" aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
-<button class="ibtn dzIb" id="dzRedo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+<button class="dzTb" id="dzUndo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span>Undo</span></button>
+<button class="dzTb" id="dzRedo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span>Redo</span></button>
 <button class="dzChip${DZ.snap?" on":""}" id="dzSnap" aria-pressed="${DZ.snap}" title="Rotation snaps to the flow of the limb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3c-2 6 2 12 0 18M17 3c-2 6 2 12 0 18"/></svg>Snap to flow</button>
 <span class="sp"></span>${m.flash?`<span class="dzFlashTag" id="dzFlashTag" title="Flash: ${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% fewer hours">Flash −${Math.round((1-INK_SIM.FLASH_DISCOUNT.hours)*100)}% h</span>`:""}</div>
 <div id="dzTools" class="dzTools"></div>
@@ -284,20 +290,25 @@ function dzRenderBoard(){
     h+=`<rect class="dzFoot" x="${dzR2(fx)}" y="${dzR2(fy)}" width="${dzR2(fw)}" height="${dzR2(fh)}"/><text class="dzFootT" x="${dzR2(fx+fw)}" y="${dzR2(fy-px(4))}" font-size="${px(10.5)}" text-anchor="end">${Math.round(fw)} × ${Math.round(fh)} mm</text>`;}
   else if(old)h+=oldLbl;
   else h+=`<text class="dzEmpty" x="${dzR2(W/2)}" y="${dzR2(L/2)}" font-size="${px(14)}" text-anchor="middle">Add an element</text><text class="dzEmpty sub" x="${dzR2(W/2)}" y="${dzR2(L/2+px(20))}" font-size="${px(11.5)}" text-anchor="middle">or start from the flash wall</text>`;
-  h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,44/sc)).join("")}</g>`;
+  h+=`<g id="dzEls">${m.els.map((e,i)=>dzElSvg(e,m.style,` class="dzEl${i===DZ.sel?" on":""}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(dzDef(e.id).name)}, ${Math.round(e.mm)} millimetres"`,DZ_HANDLE.hit/sc)).join("")}</g>`;
   h+=`<g id="dzSelG"></g></svg>`;
   host.innerHTML=h;
   host.style.width=pw+"px";
   dzDrawSel();dzWireBoard();}
-/* the selection box and its scale/rotate handle (screen-sized, drawn in the element's own frame) */
+/* the selection box, its corner handle (drag to size, and turn) and the turn handle on a stalk above it (turn only);
+   screen-sized, drawn in the element's own frame */
 function dzDrawSel(){
   const g=$("dzSelG");if(!g)return;const e=DZ.m.els[DZ.sel];
   if(!e){g.innerHTML="";g.removeAttribute("transform");return;}
-  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),u=1/(DZ.pxmm*k),pad=4*u;
+  const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6),u=1/(DZ.pxmm*k),pad=4*u,H=DZ_HANDLE;
+  const cx=b.x+b.w+pad,cy=b.y+b.h+pad,rx=b.x+b.w/2,ry=b.y-pad-H.rot.stalk*u,ar=H.rot.dot*0.5*u;
   g.setAttribute("transform",dzTf(e));
   g.innerHTML=`<rect class="dzSelR" x="${dzR2(b.x-pad)}" y="${dzR2(b.y-pad)}" width="${dzR2(b.w+2*pad)}" height="${dzR2(b.h+2*pad)}" stroke-width="${dzR4(1.5*u)}" stroke-dasharray="${dzR4(5*u)} ${dzR4(4*u)}"/>
-<g class="dzHdl" data-h="1"><circle class="hit" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(22*u)}"/><circle class="dot" cx="${dzR2(b.x+b.w+pad)}" cy="${dzR2(b.y+b.h+pad)}" r="${dzR2(8*u)}" stroke-width="${dzR4(2*u)}"/>
-<path class="arr" d="M${dzR2(b.x+b.w+pad-4*u)} ${dzR2(b.y+b.h+pad)}h${dzR2(8*u)}M${dzR2(b.x+b.w+pad)} ${dzR2(b.y+b.h+pad-4*u)}v${dzR2(8*u)}" stroke-width="${dzR4(1.6*u)}"/></g>`;}
+<line class="dzStalk" x1="${dzR2(rx)}" y1="${dzR2(b.y-pad)}" x2="${dzR2(rx)}" y2="${dzR2(ry+H.rot.dot*u)}" stroke-width="${dzR4(1.5*u)}"/>
+<g class="dzHdl dzRot" data-h="rot" role="img" aria-label="Turn handle"><circle class="hit" cx="${dzR2(rx)}" cy="${dzR2(ry)}" r="${dzR2(H.rot.grab*u)}"/><circle class="dot" cx="${dzR2(rx)}" cy="${dzR2(ry)}" r="${dzR2(H.rot.dot*u)}" stroke-width="${dzR4(2*u)}"/>
+<path class="arr" d="M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}A${dzR2(ar)} ${dzR2(ar)} 0 1 1 ${dzR2(rx+ar*0.2)} ${dzR2(ry+ar)}M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}l${dzR2(-ar*0.1)} ${dzR2(-ar*0.9)}M${dzR2(rx-ar)} ${dzR2(ry+ar*0.4)}l${dzR2(ar*0.9)} ${dzR2(-ar*0.1)}" stroke-width="${dzR4(1.6*u)}" fill="none"/></g>
+<g class="dzHdl" data-h="1" role="img" aria-label="Size handle"><circle class="hit" cx="${dzR2(cx)}" cy="${dzR2(cy)}" r="${dzR2(H.corner.grab*u)}"/><circle class="dot" cx="${dzR2(cx)}" cy="${dzR2(cy)}" r="${dzR2(H.corner.dot*u)}" stroke-width="${dzR4(2*u)}"/>
+<path class="arr" d="M${dzR2(cx-5*u)} ${dzR2(cy-5*u)}L${dzR2(cx+5*u)} ${dzR2(cy+5*u)}M${dzR2(cx-5*u)} ${dzR2(cy-1*u)}V${dzR2(cy-5*u)}H${dzR2(cx-1*u)}M${dzR2(cx+5*u)} ${dzR2(cy+1*u)}V${dzR2(cy+5*u)}H${dzR2(cx+1*u)}" stroke-width="${dzR4(1.6*u)}" fill="none"/></g>`;}
 /* move the selected element's group without redrawing the board */
 function dzMoveEl(i){const e=DZ.m.els[i],g=document.querySelector(`#dzEls .dzEl[data-i="${i}"]`);if(g&&e)g.setAttribute("transform",dzTf(e));if(i===DZ.sel)dzDrawSel();}
 function dzSelect(i){if(DZ.sel===i)return;DZ.sel=i;
@@ -319,13 +330,19 @@ function dzPDown(ev){
   const svg=$("dzSvg");const pt=dzSvgPt(ev);
   DZ.ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
   try{svg.setPointerCapture(ev.pointerId);}catch(_){}
+  if(DZ.ptrs.size===2&&DZ.sel<0&&DZ.m.els.length){const i=dzPinchPick();if(i>=0){dzSelect(i);}}
   if(DZ.ptrs.size===2&&DZ.sel>=0){dzPinchStart();ev.preventDefault();return;}
   if(DZ.ptrs.size>1)return;
   const hdl=ev.target.closest(".dzHdl"),g=ev.target.closest(".dzEl");
+  if(hdl&&DZ.sel>=0&&hdl.dataset.h==="rot"){const e=DZ.m.els[DZ.sel];dzBegin();DZ.g={kind:"rot",e,a0:Math.atan2(pt.y-e.my,pt.x-e.mx),rot0:e.rot};ev.preventDefault();return;}
   if(hdl&&DZ.sel>=0){const e=DZ.m.els[DZ.sel];dzBegin();DZ.g={kind:"hdl",e,d0:Math.hypot(pt.x-e.mx,pt.y-e.my)||1,a0:Math.atan2(pt.y-e.my,pt.x-e.mx),mm0:e.mm,rot0:e.rot};ev.preventDefault();return;}
   if(g){const i=+g.dataset.i;dzSelect(i);const e=DZ.m.els[i];dzBegin();DZ.g={kind:"drag",e,ox:pt.x-e.mx,oy:pt.y-e.my,moved:false,x0:ev.clientX,y0:ev.clientY};ev.preventDefault();return;}
   if(DZ.sel>=0&&ev.pointerType!=="touch")dzSelect(-1);
   else if(DZ.sel>=0)DZ.g={kind:"tap",x0:ev.clientX,y0:ev.clientY};}
+/* two fingers with nothing selected: the element nearest the middle of the fingers (the only one, if there's one) */
+function dzPinchPick(){const els=DZ.m.els;if(els.length===1)return 0;const [a,b]=[...DZ.ptrs.values()],svg=$("dzSvg");if(!svg)return-1;
+  const r=svg.getBoundingClientRect(),x=DZ.vb.x+((a.x+b.x)/2-r.left)/DZ.pxmm,y=DZ.vb.y+((a.y+b.y)/2-r.top)/DZ.pxmm;
+  let best=-1,bd=1e9;els.forEach((e,i)=>{const d=Math.hypot(e.mx-x,e.my-y)-e.mm/2;if(d<bd){bd=d;best=i;}});return bd<30?best:-1;}
 function dzPinchStart(){const [a,b]=[...DZ.ptrs.values()],e=DZ.m.els[DZ.sel];if(!e)return;
   if(!DZ.g||DZ.g.kind!=="pinch"){if(DZ.snap0==null)dzBegin();}
   DZ.g={kind:"pinch",e,d0:Math.hypot(b.x-a.x,b.y-a.y)||1,a0:Math.atan2(b.y-a.y,b.x-a.x),mm0:e.mm,rot0:e.rot,mx0:e.mx,my0:e.my,cx0:(a.x+b.x)/2,cy0:(a.y+b.y)/2};}
@@ -341,7 +358,8 @@ function dzPMove(ev){
   if(G.kind==="drag"){if(!G.moved&&Math.hypot(ev.clientX-G.x0,ev.clientY-G.y0)<3)return;G.moved=true;
     e.mx=clamp(pt.x-G.ox,vb.x,vb.x+vb.w);e.my=clamp(pt.y-G.oy,vb.y,vb.y+vb.h);dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}
   else if(G.kind==="hdl"){e.mm=clamp(G.mm0*(Math.hypot(pt.x-e.mx,pt.y-e.my)||1)/G.d0,4,lim*1.5);
-    e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}}
+    e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}
+  else if(G.kind==="rot"){e.rot=G.rot0+(Math.atan2(pt.y-e.my,pt.x-e.mx)-G.a0)*180/Math.PI;dzMoveEl(DZ.sel);dzQueue();ev.preventDefault();}}
 function dzPUp(ev){
   if(!DZ.ptrs.has(ev.pointerId))return;DZ.ptrs.delete(ev.pointerId);
   const G=DZ.g;
@@ -355,16 +373,16 @@ function dzPUp(ev){
 /* ---- the selected element's toolbar ---- */
 function dzRenderTools(){
   const host=$("dzTools");if(!host)return;const e=DZ.m.els[DZ.sel];
-  if(!e){host.innerHTML=`<p class="dzToolHint">${DZ.m.els.length?"Tap an element to move, size or colour it. Two fingers on the board pinch and turn it.":"Add elements from the drawer. Lettering, motifs, frames and fills all score differently."}</p>`;return;}
+  if(!e){host.innerHTML=`<p class="dzToolHint">${DZ.m.els.length?"Tap an element to select it. Drag it to move, the corner dot to size it, the top dot to turn it. Two fingers pinch and turn.":"Add elements from the drawer. Lettering, motifs, frames and fills all score differently."}</p>`;return;}
   const d=dzDef(e.id),st=INK_SIM.STYLES[DZ.m.style],tone=dzClient().skinTone,LW=INK_SIM.LINE_WEIGHTS;
   const pal=["black"].concat((st&&st.palette||[]).filter(c=>c!=="black"));
   const tooSmall=e.mm<d.minSizeMm;
   const sw=pal.map(c=>{const r=INK_SIM.inkReads(c,tone),bad=r<0.2?"won't read":r<0.45?"faint":"",cur=(e.colour||"black")===c;
     return`<button type="button" class="dzSw${cur?" on":""}${bad?" weak":""}" data-c="${c}" aria-pressed="${cur}" aria-label="${esc(INK_SIM.COLOURS[c].name)}${bad?", "+bad+" on this skin":""}" title="${esc(INK_SIM.COLOURS[c].name)}${bad?": "+bad+" on this skin tone":""}"><i style="background:${dzColHex(c)}"></i>${bad?`<small>${bad}</small>`:""}</button>`;}).join("");
   host.innerHTML=`<div class="dzToolHd"><b>${esc(d.name)}</b><span class="${tooSmall?"bad":""}">${Math.round(e.mm)} mm${tooSmall?` <em>(needs ${d.minSizeMm})</em>`:""}</span><span class="sp"></span>
-<button class="ibtn dzIb" data-a="dup" aria-label="Duplicate" title="Duplicate"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg></button>
-<button class="ibtn dzIb" data-a="fwd" aria-label="Bring forward" title="Bring forward"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="11" height="11" rx="2"/><rect x="9" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".25"/></svg></button>
-<button class="ibtn dzIb dzDel" data-a="del" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+<button class="dzTb" data-a="dup" title="Duplicate"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button>
+<button class="dzTb" data-a="fwd" title="Bring forward"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="11" height="11" rx="2"/><rect x="9" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".25"/></svg><span>Forward</span></button>
+<button class="dzTb dzDel" data-a="del" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span>Delete</span></button></div>
 <div class="dzToolRow">
 <div class="dzStep" role="group" aria-label="Size"><button data-a="s-" aria-label="Smaller">−</button><span>Size</span><button data-a="s+" aria-label="Bigger">+</button></div>
 <div class="dzStep" role="group" aria-label="Rotate"><button data-a="r-" aria-label="Rotate left"><svg viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 16"/></svg></button><span>${Math.round(e.rot)}°</span><button data-a="r+" aria-label="Rotate right"><svg viewBox="0 0 24 24"><path d="M20 4v6h-6"/><path d="M19.5 10A8 8 0 1 0 18 16"/></svg></button></div>
@@ -375,7 +393,7 @@ ${d.colourable?`<div class="dzSws" role="group" aria-label="Colour (${esc(st?st.
   host.querySelectorAll(".dzSw").forEach(b=>b.addEventListener("click",()=>{const c=b.dataset.c;
     dzChange(()=>{const x=DZ.m.els[DZ.sel];x.colour=c==="black"?null:c;});}));
   const f=$("dzFill");if(f){f.addEventListener("input",()=>{if(DZ.snap0==null)dzBegin();DZ.m.els[DZ.sel].fill=+f.value;$("dzFillV").textContent=Math.round(f.value*100)+"%";
-      const x=DZ.m.els[DZ.sel],g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.outerHTML=dzElSvg(x,DZ.m.style,` class="dzEl on" data-i="${DZ.sel}" tabindex="0" role="button" aria-label="${esc(d.name)}"`,44/DZ.pxmm);dzQueue();});
+      const x=DZ.m.els[DZ.sel],g=document.querySelector(`#dzEls .dzEl[data-i="${DZ.sel}"]`);if(g)g.outerHTML=dzElSvg(x,DZ.m.style,` class="dzEl on" data-i="${DZ.sel}" tabindex="0" role="button" aria-label="${esc(d.name)}"`,DZ_HANDLE.hit/DZ.pxmm);dzQueue();});
     f.addEventListener("change",()=>{dzEnd();dzRenderBoard();});}}
 function dzTool(a){
   const i=DZ.sel,e=DZ.m.els[i];if(!e)return;const LW=INK_SIM.LINE_WEIGHTS,box=dzBox();
