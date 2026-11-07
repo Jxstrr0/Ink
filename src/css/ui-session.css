@@ -59,6 +59,28 @@
 .sePen.on .cord{opacity:.35}
 .sePen.near .ring{stroke:#2f7f77;stroke-width:2.4}
 .sePen.rush .ring{stroke:#c0392f;stroke-width:2.6}
+/* 0.1.21.0: aiming against tattooing. Aiming: the machine (or, needle under finger, the #seAim reticle) is a hollow dashed
+   outline and a teal ring fills round the tip over --arm (SE_ARM); tattooing: the solid "on" pen, with a short pulse
+   (.go) at the switch. .still (reduced motion): the ring is a static dashed circle, no fill, no pulse */
+.seAim{position:absolute;left:0;top:0;width:0;height:0;z-index:2;pointer-events:none;will-change:transform}
+.seAim[hidden]{display:none}
+.seAim svg{position:absolute;overflow:visible}
+.seAim .ringW{fill:none;stroke:rgba(255,255,255,.85);stroke-width:4.5;stroke-linecap:round}
+.seAim .ring{fill:none;stroke:#16120e;stroke-width:1.8;stroke-linecap:round;stroke-dasharray:4 3}
+.seAim.near .ring{stroke:#1f6b64;stroke-width:2.4}
+.sePen .armT,.sePen .arm,.sePen .goR,.seAim .armT,.seAim .arm,.seAim .goR{fill:none;opacity:0}
+.sePen.aim .body{fill:none;stroke-dasharray:4 3}
+.sePen.aim .cord{opacity:.3}
+.sePen.aim .noz{fill:none}
+.sePen.aim .ring{stroke-dasharray:4 3}
+.sePen.aim .tip{fill:none;stroke:#16120e;stroke-width:1}
+.sePen.aim .armT,.seAim.aim .armT{opacity:1;stroke:rgba(255,255,255,.8);stroke-width:5.5}
+.sePen.aim .arm,.seAim.aim .arm{opacity:1;stroke:#2f7f77;stroke-width:3;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:seArmFill var(--arm,900ms) linear forwards}
+.sePen.aim.still .arm,.seAim.aim.still .arm{animation:none;stroke-dashoffset:0;stroke-dasharray:5 5;stroke-linecap:butt}
+.sePen.go .goR,.seAim.go .goR{stroke:#2f7f77;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:seGoPulse .32s ease-out forwards}
+.sePen.go .ring{stroke:#2f7f77;stroke-width:2.6}
+@keyframes seArmFill{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes seGoPulse{from{opacity:.95;transform:scale(1)}to{opacity:0;transform:scale(2.2)}}
 .seDot.near{border-color:#1f6b64;background:rgba(47,127,119,.45);box-shadow:0 0 0 3px rgba(255,255,255,.9)}
 #seOver{touch-action:none;cursor:crosshair}
 .seDot{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #2f7f77;background:rgba(47,127,119,.25);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
@@ -156,7 +178,7 @@
 #kpReset{margin-top:10px}
 
 @media (max-width:380px){.seMeters{grid-template-columns:1fr}.seRen{width:88px;height:88px}}
-@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}.seCam{transition:none!important}.sePen .body{transition:none}}
+@media (prefers-reduced-motion:reduce){.sePen.aim .arm,.seAim.aim .arm{animation:none;stroke-dashoffset:0;stroke-dasharray:5 5}.sePen.go .goR,.seAim.go .goR{animation:none;opacity:0}.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}.seCam{transition:none!important}.sePen .body{transition:none}}
 @media (prefers-reduced-transparency:reduce){.sePen .body,.sePen.on .body{fill:none;stroke-width:2}.seZoomB{background:#16120e}.sePen .cord{opacity:.8}}
 html[data-theme=light] .seZoomB{background:rgba(255,253,249,.92);color:#16120e;border-color:rgba(0,0,0,.3)}
 html[data-theme=light] .seZoomB[aria-pressed="true"]{background:#16120e;color:#fffdf9}
