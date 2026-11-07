@@ -59,9 +59,20 @@ def main():
 
     def read(ai):
         a = g["accessors"][ai]
-        bv = g["bufferViews"][a["bufferView"]]
         dt = np.dtype(CT[a["componentType"]])
         n, c = a["count"], NC[a["type"]]
+        if "bufferView" not in a:      # glTF: no view is all zeros, plus any sparse values (Blender writes morph targets so
+            v = np.zeros((n, c), dt)   # when many vertices stay still)
+            sp = a.get("sparse")
+            if sp:
+                def flat(vi, t, k, cnt):
+                    bv2 = g["bufferViews"][vi]
+                    return np.frombuffer(bins[bv2["buffer"]], np.dtype(t), count=k * cnt,
+                                         offset=bv2.get("byteOffset", 0)).reshape(cnt, k)
+                ix = flat(sp["indices"]["bufferView"], CT[sp["indices"]["componentType"]], 1, sp["count"])[:, 0]
+                v[ix.astype(np.int64)] = flat(sp["values"]["bufferView"], CT[a["componentType"]], c, sp["count"])
+            return v
+        bv = g["bufferViews"][a["bufferView"]]
         off = bv.get("byteOffset", 0) + a.get("byteOffset", 0)
         st = bv.get("byteStride", dt.itemsize * c)
         raw = np.frombuffer(bins[bv["buffer"]], np.uint8, count=st * (n - 1) + dt.itemsize * c, offset=off)
