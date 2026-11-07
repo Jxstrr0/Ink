@@ -1,12 +1,14 @@
-/* ===== vis/assets.js: optional asset files for Full and Ultra (PR 10) =====
+/* ===== vis/assets.js: optional asset files: the mannequin on every tier, the rest on Full and Ultra (PR 10, 0.1.18.0) =====
    ASSETS lists every file the shop can use beyond its coded stand-ins: photo textures (Poly Haven, CC0) for the floor,
    walls and dado, and Kelbo's Blender models (glb, packed with tools/pack-model.py) for the props vis/studio.js builds as
    named groups. Credits: models/CREDITS.md. How to make the models: docs/BLENDER.md.
-   Rules: Lite never loads any of it (vaLoad returns at once when the tier has no Standard materials, so a Lite phone makes
-   no request at all). An entry with on:false is never fetched: that is how a model that does not exist yet ships, so there
-   are no 404s. When a file is in, set its entry on:true in the same commit. A load that fails keeps the stand-in silently.
+   Rules: since 0.1.18.0 Lite loads the mannequin (ASSETS.body, about 0.4 MB, precached by the service worker so it works
+   offline) and nothing else: vaLoad skips the textures and the props when the tier has no Standard materials, so a Lite
+   phone makes exactly one request under models/ and keeps the coded shop. An entry with on:false is never fetched: that is
+   how a model that does not exist yet ships, so there are no 404s. When a file is in, set its entry on:true in the same
+   commit. A load that fails keeps the stand-in (or the coded body) silently.
    Textures go through THREE.TextureLoader (core three.js); models need THREE.GLTFLoader, which comes from window.__inkLibs()
-   (INK_LIBS in html/body.html) only when at least one model is on. Loaded textures and models are cached for the session,
+   (INK_LIBS in html/body.html) only when at least one model is on (on Lite, once, for the mannequin). Loaded textures and models are cached for the session,
    so a tier change (which rebuilds the room) re-applies the same objects without another fetch. Each one that lands renders the scene
    once (render on change still holds). The service worker caches everything under models/ as it is fetched.
    Models: metres, +Y up, the front facing +Z (Blender's -Y with the glTF exporter's +Y up), origin where `at` says
@@ -23,7 +25,8 @@
    the client's shape mix (vaBodyShape, called by vsApplyShape) and hides the coded meshes. The coded body stays built and
    keeps its shapes: the stencil drag raycasts it and the camera presets and armrests read it, and its surface is the one the
    model was made on, so both agree to a millimetre or two. glTF UVs run down from the top, the game's canvas UVs up, so the
-   loader flips v once per file. A file without those names or keys, or one that fails to load, leaves the coded body. ===== */
+   loader flips v once per file. A file without those names or keys, or one that fails to load, leaves the coded body.
+   0.1.18.0: the same swap on Lite (the skin is a Lambert material there; morph targets work the same, no shadows). ===== */
 const ASSETS={
   tex:{
     /* 0.1.14.0: a tint per room (null: that room keeps its coded floor or dado) */
@@ -119,11 +122,12 @@ function vaBodyApply(room){
 /* the shape mix {neutral, masc, femme} on the model's shape keys (Average is the basis) */
 function vaBodyShape(w){const G=V.body&&V.body.glb;if(!G)return;
   for(const m of G.morph){const d=m.morphTargetDictionary,f=m.morphTargetInfluences;f[d.masc]=w.masc||0;f[d.femme]=w.femme||0;}}
-/* called by vsBuild after a new room is up */
+/* called by vsBuild after a new room is up. Lite (no Standard materials): the mannequin only, no textures or props */
 function vaLoad(room){
-  if(!room||!TIER[V.tier].std||typeof THREE==="undefined")return;   // Lite: nothing, ever
-  for(const k in ASSETS.tex){const a=ASSETS.tex[k];if(a.on)vaTexApply(room,a);}
-  const want=Object.keys(ASSETS.props).filter(k=>ASSETS.props[k].on);if(!want.length&&!ASSETS.body.on)return;
+  if(!room||typeof THREE==="undefined")return;
+  const std=TIER[V.tier].std;
+  if(std)for(const k in ASSETS.tex){const a=ASSETS.tex[k];if(a.on)vaTexApply(room,a);}
+  const want=std?Object.keys(ASSETS.props).filter(k=>ASSETS.props[k].on):[];if(!want.length&&!ASSETS.body.on)return;
   const go=()=>{for(const k of want)vaPropApply(room,k,ASSETS.props[k]);if(ASSETS.body.on)vaBodyApply(room);};
   if(THREE.GLTFLoader)go();else if(window.__inkLibs)window.__inkLibs().then(ok=>{if(ok&&THREE.GLTFLoader&&V.room===room)go();});}
 /* for tests: what each entry is doing */

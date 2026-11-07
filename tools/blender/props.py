@@ -36,7 +36,6 @@ class Prop:
 
     def __init__(self, name):
         self.name, self.bm, self.mats = name, bmesh.new(), []
-        self.uv = self.bm.loops.layers.uv.new("UVMap")
 
     def mi(self, m):
         if m not in self.mats:
@@ -236,7 +235,7 @@ def wood(prop, surface="wood"):
 
 
 # the coded colours (src/vis/studio.js) and a warm tint for the photo wood (multiplies the texture, linear)
-C = dict(leather="#1f1a17", steel="#9a968e", dark="#151210", cream="#efe5d2", paper="#f4f1ea", brass="#b48a46",
+C = dict(leather="#231b17", steel="#9a968e", dark="#151210", cream="#efe5d2", paper="#f4f1ea", brass="#b48a46",
          shade="#2b2b2b", rug="#5c2a22", green="#3f6b45", pot="#8a4b2e", wood="#3a2618")
 WOOD_TINT = [1.0, 0.78, 0.6, 1.0]
 
@@ -246,15 +245,16 @@ def chair():
     """the tattoo chair: padded seat, seat pan, tilt block, hydraulic column with a collar, disc base, pump pedal.
     No armrests (the game's move per body shape) and no backrest (it would hide the back)"""
     P = Prop("chair")
-    lea, st, dk = M("chair", "leather", C["leather"], 0.45), M("chair", "steel", C["steel"], 0.3, 0.75), M("chair", "dark", C["dark"], 0.6)
-    P.add(box((0.50, 0.075, 0.46), (0, 0.4325, 0), bevel=0.03, seg=3), lea)          # the cushion, top at 0.47
+    lea, st, dk = M("chair", "leather", C["leather"], 0.52), M("chair", "steel", C["steel"], 0.3, 0.75), M("chair", "dark", C["dark"], 0.6)
+    P.add(box((0.50, 0.075, 0.46), (0, 0.4325, 0), bevel=0.032, seg=4), lea)         # the cushion, top at 0.47 (rounder since 0.1.18.0)
     P.add(box((0.48, 0.012, 0.44), (0, 0.392, 0), bevel=0.004), dk)                   # piping under the cushion
-    P.add(box((0.52, 0.022, 0.48), (0, 0.375, 0), bevel=0.006, seg=2), dk)            # seat pan
+    P.add(box((0.52, 0.022, 0.48), (0, 0.375, 0), bevel=0.008, seg=2), dk)            # seat pan
     P.add(box((0.20, 0.05, 0.22), (0, 0.34, -0.01), bevel=0.008, seg=1), dk)          # tilt block
     P.add(box((0.16, 0.012, 0.012), (0.16, 0.335, 0.08), bevel=0.003), st)            # the tilt lever
     P.add(lathe([(0.03, 0.31), (0.05, 0.31), (0.05, 0.30), (0.045, 0.29), (0.045, 0.11), (0.052, 0.10), (0.052, 0.075),
-                 (0.06, 0.065), (0.06, 0.04)], 16, cap_top=True), st)                 # column with its collar and boot
-    P.add(lathe([(0.0, 0.0), (0.28, 0.0), (0.30, 0.008), (0.30, 0.022), (0.27, 0.04), (0.06, 0.045)], 28, cap_top=True), M("chair", "base", "#2a2826", 0.45, 0.6))  # disc base
+                 (0.06, 0.065), (0.06, 0.04)], 20, cap_top=True), st)                 # column with its collar and boot
+    P.add(lathe([(0.0, 0.0), (0.28, 0.0), (0.297, 0.004), (0.30, 0.012), (0.299, 0.022), (0.29, 0.032), (0.27, 0.04), (0.08, 0.046),
+                 (0.06, 0.05)], 32, cap_top=True), M("chair", "base", "#2a2826", 0.4, 0.65))  # disc base, its rim rounded
     P.add(box((0.05, 0.016, 0.12), (0.0, 0.025, 0.31), bevel=0.004, rot=("x", -0.25)), dk)     # pump pedal
     P.add(box((0.02, 0.02, 0.06), (0.0, 0.03, 0.26)), st)
     return P
@@ -404,7 +404,7 @@ def lamp():
 def stool():
     """your rolling stool: round padded seat, gas column, a five-star base on castors, a foot ring"""
     P = Prop("stool")
-    lea, st, dk = M("stool", "leather", C["leather"], 0.45), M("stool", "steel", C["steel"], 0.3, 0.75), M("stool", "rubber", "#1a1714", 0.7)
+    lea, st, dk = M("stool", "leather", C["leather"], 0.52), M("stool", "steel", C["steel"], 0.3, 0.75), M("stool", "rubber", "#1a1714", 0.7)
     P.add(lathe([(0.0, 0.52), (0.165, 0.52), (0.18, 0.53), (0.185, 0.55), (0.16, 0.58), (0.0, 0.582)], 16), lea)
     P.add(cyl(0.12, 0.02, 14, (0, 0.5, 0)), dk)
     P.add(cyl(0.025, 0.44, 10, (0, 0.07, 0)), st)
@@ -455,8 +455,8 @@ def bench():
     P = Prop("bench")
     lea = M("bench", "leather", C["leather"], 0.5)
     w = wood("bench")
-    P.add(box((1.38, 0.07, 0.40), (0, 0.465, 0.01), bevel=0.025, seg=2), lea)          # seat cushion, top at 0.50
-    P.add(box((1.38, 0.36, 0.06), (0, 0.70, -0.20), bevel=0.022, seg=2, rot=("x", -0.08)), lea)   # back cushion, top at about 0.9
+    P.add(box((1.38, 0.07, 0.40), (0, 0.465, 0.01), bevel=0.027, seg=3), lea)          # seat cushion, top at 0.50
+    P.add(box((1.38, 0.36, 0.06), (0, 0.70, -0.20), bevel=0.024, seg=2, rot=("x", -0.08)), lea)   # back cushion, top at about 0.9
     for x in (-0.68, 0.68):
         P.add(box((0.05, 0.43, 0.05), (x, 0.215, 0.17), bevel=0.006), w, uv=0.9)         # front legs
         P.add(box((0.05, 0.88, 0.05), (x, 0.44, -0.2), bevel=0.006), w, uv=0.9)          # back legs, up the back
@@ -470,8 +470,9 @@ def bench():
 def flashframe():
     """an empty wooden frame for the flash wall, 2.1 x 1.09, origin at the centre of its back; the game draws the sheets"""
     P = Prop("flashframe")
-    P.add(frame(2.1, 1.09, [(0.0, 0.0), (0.0, 0.032), (0.006, 0.04), (0.02, 0.04), (0.028, 0.032), (0.034, 0.03),
-                              (0.042, 0.022), (0.05, 0.018), (0.05, 0.006)]), wood("flashframe"), uv=0.9)
+    P.add(frame(2.1, 1.09, [(0.0, 0.0), (0.0, 0.03), (0.002, 0.036), (0.007, 0.04), (0.014, 0.041), (0.02, 0.04),
+                              (0.025, 0.036), (0.028, 0.032), (0.034, 0.03), (0.038, 0.027), (0.042, 0.022), (0.046, 0.02),
+                              (0.05, 0.018), (0.05, 0.006)]), wood("flashframe"), uv=0.9, sharp=50)   # a rounder moulding (0.1.18.0)
     return P
 
 
@@ -482,8 +483,9 @@ def sign():
     board = M("sign", "board", "#1b120c", 0.6)
     brass = M("sign", "brass", "#c9a35e", 0.35, 0.8, double=True)
     glow = M("sign", "glow", "#f0c674", 0.5, emit="#f0c674", emit_strength=1.6)
-    P.add(box((0.98, 0.23, 0.022), (0, 0, 0.011), bevel=0.004), board)
-    P.add(frame(1.0, 0.25, [(0.0, 0.0), (0.0, 0.026), (0.004, 0.03), (0.01, 0.03), (0.014, 0.026), (0.014, 0.022)], back=False), brass)
+    P.add(box((0.98, 0.23, 0.022), (0, 0, 0.011), bevel=0.005, seg=2), board)
+    P.add(frame(1.0, 0.25, [(0.0, 0.0), (0.0, 0.024), (0.0015, 0.028), (0.004, 0.0305), (0.007, 0.031), (0.01, 0.0302),
+                            (0.0125, 0.028), (0.014, 0.025), (0.014, 0.022)], back=False), brass, sharp=50)
     P.add(frame(0.93, 0.18, [(0.0, 0.0225), (0.0, 0.0245), (0.004, 0.0245), (0.004, 0.0225)], back=False), brass)    # inner line
     t = text("ИГЛА", 0.17, 0.004, (0, -0.006, 0.0222), res=3, space=1.5)   # Inter has Cyrillic
     xform(t, scale=(0.86, 1.0, 1.0))                                   # condensed, like the coded sign's Oswald
@@ -520,7 +522,7 @@ def plant():
         side = Matrix.Rotation(tw, 3, out) @ side
         up = side.cross(out).normalized()
         bm = _bm()
-        n = 4
+        n = 5                                                    # (4 rows until 0.1.18.0: the leaves curve more smoothly)
         rows = []
         for i in range(n + 1):
             t = i / n
@@ -546,7 +548,8 @@ def photos():
     prints = [M("photos", "print%d" % i, c, 0.6) for i, c in enumerate(("#b8a58c", "#a99a86", "#c2b29b"))]
     for i in range(6):
         x, y = (i // 2 - 1) * 0.42, (i % 2 - 0.5) * 0.4
-        P.add(frame(0.24, 0.30, [(0.0, 0.0), (0.0, 0.026), (0.008, 0.03), (0.022, 0.03), (0.024, 0.022)], (x, y, 0)), w, uv=0.9)
+        P.add(frame(0.24, 0.30, [(0.0, 0.0), (0.0, 0.024), (0.003, 0.029), (0.008, 0.031), (0.016, 0.03), (0.021, 0.027),
+                                 (0.024, 0.022)], (x, y, 0)), w, uv=0.9, sharp=50)
         P.add(quad(0.198, 0.258, (x, y, 0.022)), mount)
         P.add(quad(0.12, 0.16, (x, y + 0.008, 0.0225)), prints[i % 3])
     return P
