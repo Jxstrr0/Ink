@@ -24,7 +24,10 @@ ELEMENTS = [ { id, name, family: "motif"|"lettering"|"frame"|"fill"|"texture",
                styles:[style ids], minSizeMm, detail (0..1), lineWeightDefault (a LINE_WEIGHTS value),
                colourable (bool), tags:[…], unlock: "start" | "style:<id>:<level>" | "rnd:<id>",
                path: SVG path data in a 0..100 viewBox (outline, stroked),
-               fill: optional SVG path data for solid/shaded areas,
+               fill: optional SVG path data for solid/shaded areas, read with the NONZERO rule everywhere (board, decals,
+                     flash wall, session zones). Since 0.1.19.0 traditional motifs fill their whole region; overlapping
+                     parts run the same way round, holes the other way. A fill stays inside the path's bounding box
+                     (elementBox and saved layouts don't move). Fineline, lettering, frames and textures stay line-only,
                src: "original" or a key into art/CREDITS.md } ]
 SIM.ELEMENTS, SIM.STYLES, SIM.COLOURS, SIM.elementById(id)
 ```
@@ -293,6 +296,9 @@ sess = SIM.sessionNew({design, client, skills, kit, settings:{assist}, bodyShape
                        itemId, part, partsTotal, progress, year, week})     numbers and short strings only: it saves as JSON
 SIM.sessionPlan(sess) -> {box, strokes, zones, items:[{k:"line"|"shade"|"colour", i, w (hours), cw}], hours, work, parts}  (cached)
 SIM.sessionBands(sess) -> kitBands + {paceMmS, accMm, view}
+A zone worth more than STENCIL.splitAt sittings' share (multi-sitting pieces only) is cut into bands across its longer
+side at equal shares of its area, each its own zone with `band`, `bands` (0.1.19.0: a koi's whole body on a back piece).
+SIM.zoneArea(polys) -> mm² of a zone under the nonzero rule (sum of the parts when none nests, else a STENCIL.areaGrid² sample count)
 SIM.stencilCheck(design, client, skills) -> {flow, issues: stress entries crease, crease_near, too_wide, too_long, against_flow, against_shape}
 SIM.sessionPlace(sess, {x, y})   SIM.sessionStart(sess)   SIM.sessionResume(sess)   SIM.sessionItem(sess) -> item + {stroke | zone} | null
 SIM.sessionRotate(sess, deg)   (PR 6) turn the stencil before the first line, about its footprint centre; element sizes in mm are kept (the box widens, sizeMm up, if it must); returns stencilCheck
