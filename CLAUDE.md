@@ -118,3 +118,12 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - PR 1 built: seeded rng, 135 design elements (105 original, 30 game-icons CC BY 3.0, credited in `art/CREDITS.md` and Settings › About), 9 styles, 26 placements, design scoring with skin contrast and the stress report, the aging model, ruble `PRICE_INDEX`, `tools/sim-test.js`. Data shapes: `docs/SIM-CONTRACT.md`. The Design tab shows the raw score object until PR 2.
 - PR 0 (scaffold) built: five tabs (Studio, Design, Session, Clients, Career), a placeholder 3D back room on the Studio tab, Settings (theme, reduced effects, graphics tier and auto-adjust, sound), Back up / Restore codes and backup files, PWA with the update bar.
 - What to test on a phone after any change: the loading bar finishes and the studio renders on Lite; every tab switches; Settings opens as a sheet; Back up and Restore round trip; light theme reads; portrait and landscape; no console errors on desktop.
+
+## Studio catalogue
+
+`LONGLIGHT-STUDIO.md` (repo root) covers every Longlight game: looks, names
+already taken, storage and cache prefixes on the shared origin, a reuse map and
+improvement ideas. Read it before pitching new ideas, names or looks, and
+before building a system another Longlight game may already have. This file
+wins where the two disagree. Don't edit the copy here: the master is
+`.github/LONGLIGHT-STUDIO.md` in Jxstrr0/Kelbo.Website; it gets recopied.
