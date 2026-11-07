@@ -52,8 +52,8 @@
 <input type="file" id="bkFileIn" accept=".txt,text/plain" hidden>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
-<script>/* three.js addons only Full and Ultra use (the glTF loader for the Blender props, PR 10). A Lite phone skips them at boot;
-   window.__inkLibs() loads them on demand and resolves true once they are in. build.js reads INK_LIBS so the service worker
+<script>/* three.js addons the page loads after boot (the glTF loader for the Blender props, PR 10, and since 0.1.18.0 the
+   mannequin on every tier). Nothing waits for them at boot; window.__inkLibs() loads them on demand and resolves true once they are in. build.js reads INK_LIBS so the service worker
    precaches every URL (same pattern as Prairie Engine Works' PEW_LIBS). */
 (function(){window.INK_LIBS=["https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"];
 var p=null,ready=function(){return typeof THREE!=="undefined"&&!!THREE.GLTFLoader;};

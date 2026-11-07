@@ -43,12 +43,16 @@ import inkbl as K  # noqa: E402
 
 SKIN = ["torso", "arm_l", "hand_l", "thumb_l", "leg_l", "foot_l", "arm_r", "hand_r", "thumb_r", "leg_r", "foot_r", "neck", "head"]
 CLOTH = {"top": "#5e6e6b", "shorts": "#3d4350"}      # BD_CLOTH in src/vis/body.js
-VOXEL = 0.003          # m
+VOXEL = 0.0025         # m (0.1.18.0: finer, from 3 mm, so the gaps between the fingers and the ear's rim survive)
 TAUBIN = 40            # smoothing passes
+FINE = {"hand": 0.22, "head": 1.0, "foot": 1.0, "toes": 1.0}   # smoothing strength on the rebuilt parts, against 1 elsewhere
+FINE_REACH = 0.006     # m: how far from a rebuilt part its weights fade back to the body's
+FREE = {"hand": 0.3, "head": 0.4, "foot": 0.5, "toes": 0.05}   # how readily the decimator takes their vertices (1 = the body's)
+DEC_FACTOR = 1.0       # the Decimate modifier's vertex group factor
 OFFSET = 0.0065        # clothes off the skin, m (the coded ones sit 6 to 7 mm out)
 HEM = 0.0055           # how far the hem turns back in towards the skin
-TARGET = {"body": 5450, "top": 140, "shorts": 560}   # triangles before the hems
-BUDGET = 7000
+TARGET = {"body": 6700, "top": 140, "shorts": 560}   # triangles before the hems (0.1.18.0: body 5450 -> 6700 for the
+BUDGET = 8000                                        # fingers, thumbs and the face; see docs/BLENDER.md)
 JOIN, SIGMA = 0.02, 0.004   # shape keys: how near a second part must be to count at a join, and the blend width (m)
 
 
@@ -111,12 +115,25 @@ def bm_arrays(bm):
     return v, t
 
 
-def decimate(v, t, target, name):
+def decimate(v, t, target, name, free=None):
+    """collapse-decimate to about `target` triangles, symmetric in x. free: per-vertex 0..1, how readily each vertex goes
+    (Blender decimates vertices weighted 1 in the group first; 0.1.18.0 keeps the face, hands and feet denser this way)"""
     ob = K.mesh_obj(name + "_dec", v, t, smooth=True)
     md = ob.modifiers.new("dec", "DECIMATE")
-    md.ratio = min(1.0, target / max(1, len(t)))
     md.use_collapse_triangulate = True
-    v2, t2 = K.mesh_arrays(ob)
+    md.use_symmetry, md.symmetry_axis = True, "X"
+    if free is not None:
+        vg = ob.vertex_groups.new(name="free")
+        for w in np.unique(np.round(free, 2)):
+            vg.add([int(i) for i in np.where(np.round(free, 2) == w)[0]], float(w), "REPLACE")
+        md.vertex_group, md.vertex_group_factor = "free", DEC_FACTOR
+    ratio = min(1.0, target / max(1, len(t)))
+    for _ in range(8):                 # weighted vertices resist, so the ratio is walked down until the count fits
+        md.ratio = ratio
+        v2, t2 = K.mesh_arrays(ob)
+        if len(t2) <= target * 1.01:
+            break
+        ratio *= target / len(t2)
     bpy.data.objects.remove(ob)
     return v2, t2
 
@@ -209,6 +226,209 @@ def hem(v, t, n):
     return np.array(v), np.array(T), np.array(parent)
 
 
+# ---- 0.1.18.0: the parts the coded body only hints at: hands with fingers and a thumb, a head with a face ----
+# The coded body has a mitten hand, a stub thumb and an egg for a head. These are rebuilt here as closed meshes (game
+# metres, left side; the right side is the mirror image) and go into the voxel union in their place. They stay inside the
+# coded hand's and head's footprint, so the hand island still maps (the back of the hand is where the mitten's back is)
+# and the head, which is all "blank" skin, can take any shape. A mannequin's face: a nose, a brow ridge, cheekbones, a jaw
+# and chin, ears and a hint of eye sockets (BRUSHES); no eyes, mouth or hair are drawn or painted, and it is no one.
+UNION = ["torso", "arm_l", "leg_l", "foot_l", "arm_r", "leg_r", "foot_r", "neck"]   # reference parts kept as they are
+PALM_RINGS = 6           # the coded hand's first rings (wrist to the knuckles, z 0.248..0.372) make the palm
+# fingers, left hand: knuckle x and z on the back of the hand, length knuckle to tip, radius at the knuckle and at the tip,
+# splay (radians; + is away from the thumb). The hand lies palm down on the armrest; the pad ends near z 0.39, so the
+# fingers curl gently down over its front edge (BENDS, degrees at the knuckle, the middle joint and the last joint)
+FINGERS = [("index", 0.2705, 0.361, 0.074, 0.0084, 0.0066, -0.07),
+           ("middle", 0.2895, 0.366, 0.083, 0.0088, 0.0069, -0.02),
+           ("ring", 0.3078, 0.363, 0.077, 0.0083, 0.0066, 0.035),
+           ("little", 0.3248, 0.353, 0.061, 0.0072, 0.0057, 0.09)]
+BENDS = (1.0, 24.0, 16.0)
+PHALANX = (0.46, 0.30, 0.24)       # share of the finger's length per bone
+FINGER_FLAT = (0.92, 1.06)         # cross-section: up and across, against the radius
+# the thumb, left hand: spine keys from the ball of the thumb (inside the palm) to the tip, radius at each key
+THUMB = [((0.277, 0.734, 0.266), 0.0145), ((0.257, 0.7365, 0.316), 0.0106), ((0.2465, 0.7365, 0.348), 0.0098),
+         ((0.2405, 0.7345, 0.372), 0.0084)]
+THUMB_UP = (-0.55, 0.83, 0.0)      # the thumbnail side faces up and in
+# the head: ellipsoids (centre, half sizes, turn in degrees about x, y, z) and the nose, smooth-joined by the voxel union.
+# The coded egg was centred at y 1.305 with half sizes 0.084 x 0.112 x 0.098; the top stays at about y 1.417
+HEAD = [("cranium", (0, 1.318, -0.006), (0.079, 0.099, 0.094), (0, 0, 0)),
+        ("face", (0, 1.270, 0.026), (0.068, 0.085, 0.076), (0, 0, 0)),
+        ("jaw", (0, 1.226, 0.018), (0.056, 0.042, 0.064), (0, 0, 0)),
+        ("nose tip", (0, 1.271, 0.111), (0.0100, 0.0095, 0.0095), (0, 0, 0)),
+        ("nose wing", (0.0110, 1.268, 0.101), (0.0074, 0.0064, 0.0076), (0, 0, 0)),
+        ("ear root", (0.073, 1.292, -0.006), (0.012, 0.022, 0.014), (0, 0, 0)),
+        ("ear", (0.081, 1.296, -0.012), (0.0075, 0.031, 0.019), (-12, -22, 0))]
+NOSE = [((0, 1.326, 0.087), 0.0062), ((0, 1.300, 0.100), 0.0072), ((0, 1.276, 0.112), 0.0092)]   # the bridge: spine, radius
+
+
+def cr_spline(keys, n=48):
+    """Catmull-Rom through the keys (as body.js bdSpline), densely sampled, with its cumulative length"""
+    keys = np.asarray(keys, dtype=np.float64)
+    P = np.vstack([2 * keys[0] - keys[1], keys, 2 * keys[-1] - keys[-2]])
+    pts = []
+    for i in range(1, len(keys)):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for k in range(n):
+            s = k / n
+            pts.append(0.5 * (2 * p1 + (-p0 + p2) * s + (2 * p0 - 5 * p1 + 4 * p2 - p3) * s * s + (-p0 + 3 * p1 - 3 * p2 + p3) * s ** 3))
+    pts.append(keys[-1])
+    pts = np.array(pts)
+    return pts, np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
+
+
+def ring_mesh(rings, tips):
+    """triangles joining rings of equal size (each an (n,3) array, closed round), fanned to a tip point at each end"""
+    n = len(rings[0])
+    V = [tips[0]] + [p for r in rings for p in r] + [tips[1]]
+    F, last = [], len(V) - 1
+    for j in range(n):
+        F.append([0, 1 + (j + 1) % n, 1 + j])
+    for i in range(len(rings) - 1):
+        a, b = 1 + i * n, 1 + (i + 1) * n
+        for j in range(n):
+            j2 = (j + 1) % n
+            F += [[a + j, a + j2, b + j], [b + j, a + j2, b + j2]]
+    a = 1 + (len(rings) - 1) * n
+    for j in range(n):
+        F.append([a + j, a + (j + 1) % n, last])
+    return np.array(V), np.array(F)
+
+
+def tube(keys, prof, up, segs=16, rings=20, cap=4):
+    """a closed tube along a spline (game axes): prof = [(u, radius)] with FINGER_FLAT-style (up, across) scales given as
+    prof entries (u, r_up, r_across); rounded caps of `cap` rings at both ends"""
+    pts, cum = cr_spline(keys)
+    L = cum[-1]
+    th = np.linspace(0, 2 * np.pi, segs, endpoint=False)
+    U = [q[0] for q in prof]
+    rows, N = [], None
+    for u in np.linspace(0, 1, rings):
+        s = u * L
+        i = min(int(np.searchsorted(cum, s, side="right")) - 1, len(pts) - 2)
+        f = (s - cum[i]) / max(cum[i + 1] - cum[i], 1e-12)
+        p = pts[i] + (pts[i + 1] - pts[i]) * f
+        T = pts[i + 1] - pts[i]
+        T /= np.linalg.norm(T)
+        base = np.asarray(up, dtype=np.float64) if N is None else N
+        N = base - T * (base @ T)
+        N /= np.linalg.norm(N)
+        B = np.cross(T, N)
+        a, b = np.interp(u, U, [q[1] for q in prof]), np.interp(u, U, [q[2] for q in prof])
+        rows.append((p, T, N, B, a, b))
+    ring = lambda p, N, B, a, b: np.array([p + N * a * np.cos(t) + B * b * np.sin(t) for t in th])
+    R = []
+    p, T, N, B, a, b = rows[0]
+    rc = min(a, b)
+    for k in range(cap - 1, 0, -1):
+        ph = np.pi / 2 * k / cap
+        R.append(ring(p - T * rc * np.sin(ph), N, B, a * np.cos(ph), b * np.cos(ph)))
+    tip0 = p - T * rc
+    R += [ring(*r[:1], *r[2:]) for r in rows]
+    p, T, N, B, a, b = rows[-1]
+    rc = min(a, b)
+    for k in range(1, cap):
+        ph = np.pi / 2 * k / cap
+        R.append(ring(p + T * rc * np.sin(ph), N, B, a * np.cos(ph), b * np.cos(ph)))
+    return ring_mesh(R, [tip0, p + T * rc])
+
+
+def rot_xyz(deg):
+    ax, ay, az = np.radians(deg)
+    Rx = np.array([[1, 0, 0], [0, np.cos(ax), -np.sin(ax)], [0, np.sin(ax), np.cos(ax)]])
+    Ry = np.array([[np.cos(ay), 0, np.sin(ay)], [0, 1, 0], [-np.sin(ay), 0, np.cos(ay)]])
+    Rz = np.array([[np.cos(az), -np.sin(az), 0], [np.sin(az), np.cos(az), 0], [0, 0, 1]])
+    return Rz @ Ry @ Rx
+
+
+def ellipsoid(c, r, deg=(0, 0, 0), segs=28, rings=16):
+    th = np.linspace(0, 2 * np.pi, segs, endpoint=False)
+    R = []
+    for k in range(1, rings):
+        ph = np.pi * k / rings - np.pi / 2
+        R.append(np.array([[np.cos(ph) * np.cos(t), np.sin(ph), np.cos(ph) * np.sin(t)] for t in th]))
+    V, F = ring_mesh(R, [np.array([0, -1.0, 0]), np.array([0, 1.0, 0])])
+    return (V * np.asarray(r)) @ rot_xyz(deg).T + np.asarray(c), F
+
+
+def mirror(v, f):
+    return v * np.array([-1.0, 1, 1]), f[:, ::-1]
+
+
+def bend(d, deg):
+    """turn a direction down (towards -y) by deg about its own sideways axis"""
+    lat = np.cross(d, [0, 1.0, 0])
+    lat /= np.linalg.norm(lat)
+    a = -np.radians(deg)
+    return d * np.cos(a) + np.cross(lat, d) * np.sin(a)
+
+
+def hand_parts(ref):
+    """{group: [(verts, faces)]} for the left hand in game axes: the palm (the coded hand's first rings, capped round),
+    four fingers and a thumb"""
+    G = K.b2g(ref.P["neutral"])
+    ids = np.unique(ref.parts["hand_l"])
+    rings = G[ids].reshape(-1, 13, 3)[:, :12]          # 12 segments + the seam's repeat
+    cen = rings.mean(1)
+    pr = [rings[i] for i in range(PALM_RINGS)]
+    d = cen[PALM_RINGS - 1] - cen[PALM_RINGS - 2]
+    d /= np.linalg.norm(d)
+    c5 = cen[PALM_RINGS - 1]
+    for off, k in ((0.008, (0.95, 0.88)), (0.014, (0.78, 0.66)), (0.018, (0.45, 0.4))):
+        q = rings[PALM_RINGS - 1] - c5
+        sideways = np.array([1.0, 0, 0])
+        q = c5 + d * off + (q @ sideways)[:, None] * sideways * k[0] + (q - (q @ sideways)[:, None] * sideways) * k[1]
+        pr.append(q)
+    out = {"palm": [ring_mesh(pr, [cen[0] - d * 0.002, c5 + d * 0.019])], "finger": [], "thumb": []}
+    # the top of the hand at a given z (the coded rings' top), for seating each finger flush with it
+    top_z, top_y = cen[:, 2], rings[:, :, 1].max(1)
+    hd = cen[5] - cen[2]
+    hd /= np.linalg.norm(hd)
+    for name, x, z, L, r0, r1, spl in FINGERS:
+        y = np.interp(z, top_z, top_y) - r0 * FINGER_FLAT[0] - 0.0004
+        Kn = np.array([x, y, z])
+        d0 = np.array([hd[0] * np.cos(spl) + hd[2] * np.sin(spl), hd[1], -hd[0] * np.sin(spl) + hd[2] * np.cos(spl)])
+        d0 /= np.linalg.norm(d0)
+        d1 = bend(d0, BENDS[0])
+        d2 = bend(d1, BENDS[1])
+        d3 = bend(d2, BENDS[2])
+        P1 = Kn + d1 * L * PHALANX[0]
+        P2 = P1 + d2 * L * PHALANX[1]
+        P3 = P2 + d3 * (L * PHALANX[2] - r1)
+        back = 0.018
+        keys = [Kn - d0 * back, Kn, P1, P2, P3]
+        tot = back + L - r1
+        uk, u1, u2 = back / tot, (back + L * PHALANX[0]) / tot, (back + L * (PHALANX[0] + PHALANX[1])) / tot
+        rr = [(0, r0 * 1.05), (uk, r0), (u1 - 0.02, r0 * 0.9 + r1 * 0.1), (u1, (r0 + r1) / 2 * 1.04), (u2, r1 * 1.03), (1, r1)]
+        prof = [(u, r * FINGER_FLAT[0], r * FINGER_FLAT[1]) for u, r in rr]
+        out["finger"].append(tube(keys, prof, up=(0, 1, 0), segs=14, rings=22))
+    keys = [np.array(k) for k, _ in THUMB]
+    tot = np.concatenate([[0], np.cumsum([np.linalg.norm(keys[i + 1] - keys[i]) for i in range(len(keys) - 1)])])
+    prof = [(s / tot[-1], r * FINGER_FLAT[0], r * FINGER_FLAT[1]) for s, (_, r) in zip(tot, THUMB)]
+    out["thumb"].append(tube(keys, prof, up=THUMB_UP, segs=14, rings=16))
+    return out
+
+
+def head_parts():
+    out = []
+    for name, c, r, deg in HEAD:
+        out.append(ellipsoid(c, r, deg))
+        if c[0] > 0:
+            out.append(mirror(*out[-1]))
+    keys = [np.array(k) for k, _ in NOSE]
+    tot = np.concatenate([[0], np.cumsum([np.linalg.norm(keys[i + 1] - keys[i]) for i in range(len(keys) - 1)])])
+    out.append(tube(keys, [(s / tot[-1], r * 0.95, r) for s, (_, r) in zip(tot, NOSE)], up=(0, 0, 1), segs=14, rings=12))
+    return out
+
+
+def extra_parts(ref):
+    """every rebuilt part, both sides, in game axes, by group: palm, finger, thumb, head"""
+    H = hand_parts(ref)
+    out = {}
+    for g, lst in H.items():
+        out[g] = lst + [mirror(v, f) for v, f in lst]
+    out["head"] = head_parts()
+    return out
+
+
 # ---- the sculpt pass: gentle anatomy on the smooth skin, as Gaussian pushes along the surface normal ----
 # (game metres; s = 1 is the figure's left, +x). kind "pt" = a point, "seg" = a line; amp in m (+ out, - in); sigma in m;
 # dir = the way the skin must face to be pushed (so a bump on the front of the knee leaves the back alone). Each centre is
@@ -216,7 +436,7 @@ def hem(v, t, n):
 # 9 mm) and kept the rest at 2 to 5 mm; still smooth, faceless and neutral, and the islands still cover the reference.
 BRUSHES = [
     ("trapezius", "seg", [(0.05, 1.15, -0.02), (0.15, 1.10, -0.02)], 0.006, 0.018, (0, 1, -0.3)),
-    ("collarbone", "seg", [(0.025, 1.11, 0.06), (0.14, 1.095, 0.05)], 0.003, 0.007, (0, 0.3, 1)),
+    ("collarbone", "seg", [(0.025, 1.11, 0.06), (0.14, 1.095, 0.05)], 0.004, 0.0075, (0, 0.3, 1)),
     ("chest", "pt", [(0.085, 1.0, 0.13)], 0.005, 0.04, (0, 0, 1)),
     ("sternum", "seg", [(0.0, 1.08, 0.12), (0.0, 0.96, 0.13)], -0.002, 0.008, (0, 0, 1)),
     ("shoulder blade", "pt", [(0.085, 1.0, -0.12)], 0.005, 0.035, (0, 0, -1)),
@@ -234,6 +454,23 @@ BRUSHES = [
     ("ankle out", "pt", [(0.148, 0.10, 0.45)], 0.003, 0.009, (1, 0, 0)),
     ("ankle in", "pt", [(0.082, 0.105, 0.45)], 0.003, 0.009, (-1, 0, 0)),
     ("neck muscle", "seg", [(0.03, 1.235, -0.015), (0.014, 1.15, 0.04)], 0.0025, 0.008, (0, 0, 1)),
+    # 0.1.18.0: the arms and the trunk read less like tubes: biceps, triceps, the forearm's muscle by the elbow, the lats
+    ("biceps", "seg", [(0.255, 0.98, 0.035), (0.275, 0.86, 0.03)], 0.004, 0.02, (0, 0, 1)),
+    ("triceps", "seg", [(0.26, 0.98, -0.04), (0.285, 0.86, -0.045)], 0.003, 0.02, (0, 0, -1)),
+    ("forearm", "pt", [(0.305, 0.79, 0.06)], 0.004, 0.022, (0.5, 1, 0)),
+    ("lats", "pt", [(0.13, 0.93, -0.04)], 0.004, 0.03, (1, 0, -0.4)),
+    ("midline", "seg", [(0.0, 0.83, 0.1), (0.0, 0.72, 0.1)], -0.0015, 0.006, (0, 0, 1)),
+    # and a hint of eye sockets under the brow, and toes: four shallow grooves on the top front of each foot
+    ("brow", "seg", [(0.010, 1.337, 0.092), (0.046, 1.331, 0.078)], 0.0035, 0.0075, (0, 0.2, 1)),
+    ("eye socket", "pt", [(0.030, 1.313, 0.090)], -0.0045, 0.011, (0, 0, 1)),
+    ("cheekbone", "pt", [(0.047, 1.287, 0.072)], 0.003, 0.012, (0.6, 0, 1)),
+    ("cheek", "pt", [(0.047, 1.256, 0.068)], -0.002, 0.012, (0.6, 0, 1)),
+    ("chin", "pt", [(0.0, 1.207, 0.080)], 0.0045, 0.012, (0, -0.3, 1)),
+    ("jawline", "seg", [(0.052, 1.238, 0.010), (0.022, 1.200, 0.060)], 0.002, 0.008, (1, -1, 0.3)),
+    ("toe 1|2", "seg", [(0.101, 0.030, 0.668), (0.100, 0.050, 0.606)], -0.0055, 0.0030, (0, 1, 1)),
+    ("toe 2|3", "seg", [(0.118, 0.030, 0.664), (0.118, 0.048, 0.610)], -0.0050, 0.0028, (0, 1, 1)),
+    ("toe 3|4", "seg", [(0.134, 0.030, 0.658), (0.135, 0.047, 0.608)], -0.0050, 0.0028, (0, 1, 1)),
+    ("toe 4|5", "seg", [(0.149, 0.030, 0.650), (0.150, 0.045, 0.604)], -0.0045, 0.0026, (0, 1, 1)),
 ]
 
 
@@ -258,6 +495,29 @@ def sculpt(v, t):
             face = np.clip(n @ dirv, 0, 1)
             disp += amp * np.exp(-(dist / sig) ** 2 / 2) * face
     return v + n * disp[:, None]
+
+
+def part_near(v, trees, ref):
+    """per vertex, 0..1: how near it is to the rebuilt hands, head and the feet (1 on them, fading to 0 by FINE_REACH)"""
+    out = {}
+    for g, names in (("hand", ("palm", "finger", "thumb")), ("head", ("head",))):
+        d = np.full(len(v), 1e9)
+        for nm in names:
+            d = np.minimum(d, [trees[nm].find_nearest(Vector(p))[3] for p in v])
+        out[g] = np.clip(1 - np.asarray(d) / FINE_REACH, 0, 1)
+    # the feet: below the ankle (game y < 0.09)
+    gy = K.b2g(v)[:, 1]
+    out["foot"] = np.clip((0.09 - gy) / 0.02, 0, 1)
+    out["toes"] = out["foot"] * np.clip((K.b2g(v)[:, 2] - 0.585) / 0.01, 0, 1)
+    return out
+
+
+def face_on(v, t, trees, part, others):
+    """faces whose centre is nearer the `part` tube than any of `others` and within 4 mm of it"""
+    cen = v[t].mean(1)
+    dp = np.array([trees[part].find_nearest(Vector(p))[3] for p in cen])
+    do = np.min([[trees[o].find_nearest(Vector(p))[3] for p in cen] for o in others], axis=0)
+    return (dp < do) & (dp < 0.004)
 
 
 class Ref:
@@ -331,8 +591,9 @@ class Ref:
         return b @ (self.P[shape][ids] - self.P["neutral"][ids])
 
 
-def uv_faces(v, t, ref):
-    """per-loop UVs for triangles: (T,3,2) and the island index of each face"""
+def uv_faces(v, t, ref, blank_faces=None):
+    """per-loop UVs for triangles: (T,3,2) and the island index of each face. blank_faces: faces forced onto the blank
+    island (the thumbs, which the coded body leaves blank too)"""
     blank = ref.names.index("blank")
     cache = {}
 
@@ -347,7 +608,7 @@ def uv_faces(v, t, ref):
     for f, tri in enumerate(t):
         cen = v[tri].mean(0)
         ti, b = ref.nearest(cen)
-        k = int(ref.isl[ti])
+        k = blank if blank_faces is not None and blank_faces[f] else int(ref.isl[ti])
         fis[f] = k
         r = ref.islands[ref.names[k]]
         if k == blank:
@@ -401,9 +662,9 @@ def main():
     t0 = time.time()
     K.reset()
     ref = Ref()
-    # ---- 1. one closed skin from the reference parts ----
+    # ---- 1. one closed skin from the reference parts and the rebuilt hands and head ----
     bm = bmesh.new()
-    for p in SKIN:
+    for p in UNION:
         F = ref.parts[p]
         pb = bm_from(ref.P["neutral"], [])
         ids = np.unique(F)
@@ -420,6 +681,21 @@ def main():
         pb.to_mesh(me)
         pb.free()
         bm.from_mesh(me)
+    extra = extra_parts(ref)
+    trees = {}
+    for g, lst in extra.items():
+        allv, allf, o = [], [], 0
+        for gv, gf in lst:
+            bv = K.g2b(gv)
+            pb = bm_from(bv, gf)
+            me = bpy.data.meshes.new(g)
+            pb.to_mesh(me)
+            pb.free()
+            bm.from_mesh(me)
+            allv.append(bv)
+            allf.append(gf + o)
+            o += len(bv)
+        trees[g] = BVHTree.FromPolygons([tuple(x) for x in np.vstack(allv)], np.vstack(allf).tolist())
     # (0.1.12.0: the coded shin now runs on into the top of the foot, so the ankle bridges this used to add are gone)
     me = bpy.data.meshes.new("union")
     bm.to_mesh(me)
@@ -432,11 +708,16 @@ def main():
     bpy.data.objects.remove(ob)
     v, t = keep_component(v, t, K.g2b([0, 1.0, 0.12]))
     print("skin: voxel remesh %d triangles (%.1f s)" % (len(t), time.time() - t0))
-    # ---- 2. Taubin smoothing, then the sculpt pass ----
+    # ---- 2. Taubin smoothing (lighter on the fingers and the face), then the sculpt pass ----
+    near = part_near(v, trees, ref)
+    sw = np.ones(len(v))
+    for g, w in FINE.items():
+        sw = np.minimum(sw, 1 - (1 - w) * near[g])
+    sw = sw[:, None]
     lap = laplacian(len(v), edges_of(t))
     for _ in range(TAUBIN):
-        v = v + 0.5 * lap(v)
-        v = v - 0.53 * lap(v)
+        v = v + 0.5 * sw * lap(v)
+        v = v - 0.53 * sw * lap(v)
     v = sculpt(v, t)
     # ---- 3. the clothes, cut from the smooth skin ----
     G = K.g2b
@@ -470,10 +751,15 @@ def main():
         cloth[name] = (cv, ct, parent)
         print("%s: %d triangles with the hem" % (name, len(ct)))
     # ---- 4. the skin to its budget ----
-    v, t = decimate(v, t, TARGET["body"], "body")
+    near = part_near(v, trees, ref)
+    free = np.ones(len(v))
+    for g, w in FREE.items():
+        free = np.minimum(free, 1 - (1 - w) * near[g])
+    v, t = decimate(v, t, TARGET["body"], "body", free=free)
     print("body: %d triangles" % len(t))
     # ---- 5. UVs, 6. shape keys ----
-    uvs, fis, straddle = uv_faces(v, t, ref)
+    thumb = face_on(v, t, trees, "thumb", ("palm", "finger"))
+    uvs, fis, straddle = uv_faces(v, t, ref, blank_faces=thumb)
     print("uv: %d faces across a wrap seam use their own map" % straddle)
     D = shape_deltas(v, ref)
     objs = []

@@ -6,7 +6,7 @@ Reads the packed file the way the game does (KHR_mesh_quantization undone, node 
 models/base-mesh/reference/ (ink-body.json and the three OBJs):
   - names: meshes body, cloth_top, cloth_shorts; materials skin, cloth_top, cloth_shorts; shape keys masc and femme, both
     at weight 0 by default
-  - triangles: under 7,000 (target), never over 8,000 (ceiling)
+  - triangles: under 8,000 (target; 7,000 until 0.1.18.0 added the fingers, thumbs and face), never over 8,500 (ceiling)
   - placement: metres, feet on the floor, the head top near y 1.42, facing +Z; clothes inside their stated heights
   - UVs: every body face lies inside ONE atlas rectangle (no face crosses islands), every island is used, the islands
     are in true millimetres (3D area against UV area at the island's px-per-mm) and cover what the reference covers
@@ -126,9 +126,9 @@ def main():
         need(m["names"] == ["masc", "femme"], "%s's shape keys are %s, not masc, femme" % (n, m["names"]))
         need(not m["weights"] or not any(m["weights"]), "%s's default shape key weights are %s, not 0" % (n, m["weights"]))
     tris = sum(len(p["idx"]) for m in M.values() for p in m["prims"])
-    need(tris <= 8000, "%d triangles: over the 8,000 ceiling" % tris)
-    if tris > 7000:
-        notes.append("%d triangles: over the 7,000 target" % tris)
+    need(tris <= 8500, "%d triangles: over the 8,500 ceiling" % tris)
+    if tris > 8000:
+        notes.append("%d triangles: over the 8,000 target" % tris)
     B = M["body"]["prims"][0]
     P, T, UV = B["pos"], B["idx"], B["uv"]
     # ---- placement ----
