@@ -8,6 +8,10 @@
      ELEMENTS       ~130 elements. path = SVG path data in a 0..100 box, drawn to be STROKED as linework (round caps and
                     joins; stipple and dot textures are tiny segments that a round cap turns into dots). fill = optional path
                     for solid or shaded areas (nonzero fill rule): how dark it goes is the design element's own fill 0..1.
+                    Since 0.1.19.0 the traditional motifs fill their whole region (petals, wings, blade, body), so a
+                    coloured piece comes out packed; fineline motifs, lettering, frames and textures stay line-only.
+                    A fill keeps inside the path's own box (old layouts keep their sizes); overlapping parts run the
+                    same way round, and a hole (a highlight, an eyespot, a ring) runs the other way (rev(), symF()).
                     src = "original" (drawn by Claude Code for Ink / Longlight Interactive) or a key into art/CREDITS.md.
                     unlock = "start" | "style:<style id>:<skill level 1..10>" | "rnd:<research id>".
      SIM.elementById(id) -> element or null (a Map built once).
@@ -67,6 +71,22 @@ const ELEMENTS=(function(){
   const mir=d=>xf(d,(x,y)=>[100-x,y]), sym=d=>d+mir(d);
   const rot=(d,a,cx,cy)=>{cx=cx==null?50:cx;cy=cy==null?50:cy;const c=Math.cos(a*R),s=Math.sin(a*R);return xf(d,(x,y)=>[cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c]);};
   const around=(d,n,cx,cy)=>{let o="";for(let i=0;i<n;i++)o+=rot(d,i*360/n,cx,cy);return o;};
+  /* fills (0.1.19.0): the same path drawn the other way round (absolute M L C Q A Z only), so a hole inside an outline
+     cuts out under the nonzero rule; symF = a half-outline plus its mirror drawn the same way round, so the two halves
+     add instead of cancelling where they meet */
+  const rev=d=>{const tk=d.match(/[MLCQAZ]|-?\d*\.?\d+/g),A={M:2,L:2,C:6,Q:4,A:7,Z:0};let o="",i=0,sub=null;const subs=[];
+    while(i<tk.length){const c=tk[i++];if(c==="M"){sub={p0:tk.slice(i,i+2).map(Number),segs:[],z:false};subs.push(sub);i+=2;continue;}
+      if(c==="Z"){sub.z=true;continue;}const a=tk.slice(i,i+A[c]).map(Number);i+=A[c];sub.segs.push({c,a});}
+    for(const s of subs){const P=[s.p0];for(const g of s.segs)P.push(g.a.slice(-2));
+      const e=P[P.length-1];if(s.z&&(e[0]!==s.p0[0]||e[1]!==s.p0[1])){s.segs.push({c:"L",a:s.p0.slice()});P.push(s.p0);}
+      o+="M"+pt(...P[P.length-1]);
+      for(let k=s.segs.length-1;k>=0;k--){const g=s.segs[k],a=g.a,to=pt(...P[k]);
+        o+=g.c==="L"?"L"+to:g.c==="C"?"C"+pt(a[2],a[3])+" "+pt(a[0],a[1])+" "+to:g.c==="Q"?"Q"+pt(a[0],a[1])+" "+to:"A"+N(a[0])+" "+N(a[1])+" "+a[2]+" "+a[3]+" "+(1-a[4])+" "+to;}
+      if(s.z)o+="Z";}
+    return o;};
+  const symF=d=>d+rev(mir(d));
+  /* a half outline from the centre line round to the centre line (M L C Q, no Z), joined to its mirror into one closed shape */
+  const half=d=>d+rev(mir(d)).replace(/^M[^LCQ]*/,"")+"Z";
   /* a leaf from (x,y) pointing at angle a: length l, half width w */
   const leaf=(x,y,a,l,w)=>{const t=pol(x,y,l,a),m1=pol(x,y,l*0.45,a),p=pol(0,0,w*1.3,a+90);
     return "M"+pt(x,y)+"Q"+pt(m1[0]+p[0],m1[1]+p[1])+" "+pt(t[0],t[1])+"Q"+pt(m1[0]-p[0],m1[1]-p[1])+" "+pt(x,y);};
@@ -134,7 +154,7 @@ const GI={
     sc+="M"+pt(...at(0.14,1,W(0.14)*0.85))+"Q"+pt(...at(0.14,0,0,5))+" "+pt(...at(0.14,-1,W(0.14)*0.85));
     const barb=s=>"M"+pt(...at(0.02,s,3))+"Q"+pt(...at(0.02,s,9,-1))+" "+pt(...at(0.02,s,10,6));
     G.koi=body+fin(1)+fin(-1)+sc+dot(...at(0.07,1,6))+dot(...at(0.07,-1,6))+barb(1)+barb(-1);
-    G.koiFill=circ(...at(0.17,1,2),6)+circ(...at(0.5,-1,2),5)+circ(...at(0.66,1,1),3.5);
+    G.koiFill=body+fin(1)+"Z"+fin(-1)+"Z";
   })();
   /* fern frond */
   (function(){const p0=[46,96],p1=[36,50],p2=[62,6];let d=qpath(p0,p1,p2);
@@ -155,15 +175,15 @@ const GI={
       if(i<10){const tan=a+s*90;d+=leaf(p[0],p[1],tan-s*28,13,3.2)+leaf(p[0],p[1],tan+s*30,12,3);}else d+=leaf(p[0],p[1],a+s*90,12,3);}d+=st;}
     G.laurel=d+"M46 92Q50 88 54 92M50 90L44 98M50 90L56 98";})();
   /* chrysanthemum: two rings of narrow petals */
-  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);})();
+  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);let f=rev(circ(50,50,17));for(let i=0;i<20;i++)f+=petal(50,50,17,47,i*18,5)+"Z";G.chrysFill=f;})();
   /* peony: scalloped layers and a few curled centre petals */
   (function(){G.peony=scallop(7,50,52,38,50,10)+scallop(6,50,52,25,33,40)+"M42 52Q44 40 52 42Q60 46 56 54Q50 60 44 56M48 50Q50 46 53 49"+
-    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill="M42 52Q44 40 52 42Q60 46 56 54Q50 60 44 56Q46 50 50 50Q46 48 42 52Z";})();
+    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill=scallop(7,50,52,38,50,10);})();
   /* cherry blossom: five notched petals and stamens */
   (function(){let d="";for(let i=0;i<5;i++){const a=i*72,p=pol(50,50,5,a-20),q=pol(50,50,5,a+20);
       d+="M"+pt(...p)+"C"+pt(...pol(50,50,30,a-40))+" "+pt(...pol(50,50,44,a-22))+" "+pt(...pol(50,50,43,a-9))+"L"+pt(...pol(50,50,36,a))+"L"+pt(...pol(50,50,43,a+9))+"C"+pt(...pol(50,50,44,a+22))+" "+pt(...pol(50,50,30,a+40))+" "+pt(...q);}
     for(let i=0;i<10;i++){const a=i*36+18,e=pol(50,50,i%2?14:18,a);d+="M"+pt(...pol(50,50,4,a))+"L"+pt(...e)+dot(...pol(50,50,(i%2?14:18)+1.5,a));}
-    G.sakura=d+circ(50,50,3.5);})();
+    G.sakura=d+circ(50,50,3.5);G.sakuraFill=d.split("M").filter((x,i)=>i>0&&i<=5).map(x=>"M"+x+"Z").join("")+circ(50,50,3.5);})();
   /* mandala ring and full mandala */
   (function(){let d=circ(50,50,30)+circ(50,50,26);for(let i=0;i<16;i++)d+=petal(50,50,30,46,i*22.5,8);
     for(let i=0;i<16;i++)d+=dot(...pol(50,50,22,i*22.5+11.25));G.mring=d;
@@ -178,7 +198,7 @@ const GI={
     for(let i=0;i<5;i++)f+="M50 52L"+pt(...s[i*2])+"L"+pt(...s[i*2+1])+"Z";G.nstar=d;G.nstarFill=f;})();
   /* ship wheel */
   (function(){let d=circ(50,50,28)+circ(50,50,22)+circ(50,50,7);for(let i=0;i<8;i++){const a=i*45;d+="M"+pt(...pol(50,50,7,a))+"L"+pt(...pol(50,50,22,a))+"M"+pt(...pol(50,50,28,a))+"L"+pt(...pol(50,50,40,a));
-      const k=pol(50,50,43,a);d+=ell(k[0],k[1],2.8,2.8);}G.wheel=d;G.wheelFill=circ(50,50,4);})();
+      const k=pol(50,50,43,a);d+=ell(k[0],k[1],2.8,2.8);}G.wheel=d;let f=circ(50,50,28)+rev(circ(50,50,22))+circ(50,50,7);for(let i=0;i<8;i++){const k=pol(50,50,43,i*45);f+=ell(k[0],k[1],2.8,2.8);}G.wheelFill=f;})();
   /* sun: disc with alternating rays */
   (function(){let d=circ(50,50,17);for(let i=0;i<16;i++){const a=i*22.5;d+="M"+pt(...pol(50,50,23,a))+"L"+pt(...pol(50,50,i%2?33:44,a));}G.sun=d;})();
   /* seed of life, hexagon, cube, triangle grid, snowflake */
@@ -261,18 +281,20 @@ const GI={
   /* traditional flash */
   add("rose_trad","Rose","motif","traditional neotrad",35,0.45,9,1,"botanical flower love","start",
     "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16ZM30 40C32 30 42 26 50 30C58 26 68 30 70 40M50 30C42 32 40 42 46 46C52 50 58 44 54 39C51 36 47 39 49 42M24 48C32 58 44 60 50 52C56 60 68 58 76 48M34 66C40 62 46 60 50 56C54 60 60 62 66 66"+sym("M24 66C14 66 6 76 4 88C16 88 26 80 28 70M24 68L10 82"),
-    sym("M24 68L10 82C8 84 6 86 4 88C6 76 14 66 24 66Z")+"M30 40C32 44 40 46 46 46C40 42 42 34 50 30C42 26 32 30 30 40Z");
+    "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16Z"+
+    symF(rev("M24 66C14 66 6 76 4 88C16 88 26 80 28 70L31 64Z")));
   add("swallow","Swallow","motif","traditional neotrad",30,0.4,9,1,"bird animal travel nautical","start",
     sym("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80M10 24C20 28 30 34 42 41M22 22C30 25 37 30 44 36"),
-    sym("M46 32C36 22 20 16 2 20C16 21 30 28 45 38ZM50 10C46 10 44 14 44 18C46 20 50 20 50 20Z"));
+    half("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80"));
   add("dagger","Dagger","motif","traditional blackwork",35,0.35,9,1,"blade courage flash","style:traditional:1",
     "M44 40L44 80L50 96L56 80L56 40ZM50 44L50 86M30 36C36 40 64 40 70 36C70 33 66 32 64 34C58 36 42 36 36 34C34 32 30 33 30 36ZM45 34L45 15L55 15L55 34M45 19L55 23M45 25L55 29M45 31L55 34"+circ(50,10,5),
-    "M50 42L56 42L56 80L50 93Z");
+    "M50 40L56 40L56 80L50 96ZM30 36C36 40 64 40 70 36C70 33 66 32 64 34C58 36 42 36 36 34C34 32 30 33 30 36ZM45 15L55 15L55 35.2L45 35.2Z"+circ(50,10,5));
   add("heart_trad","Heart","motif","traditional neotrad",25,0.2,9,1,"love heart","start",
     "M50 88C30 72 8 56 8 34C8 20 18 12 30 12C40 12 46 18 50 26C54 18 60 12 70 12C82 12 92 20 92 34C92 56 70 72 50 88ZM20 26C18 30 18 36 20 40M23 21L25 20",
-    "M50 88C70 72 92 56 92 34C89 52 72 66 50 80Z");
+    "M50 88C30 72 8 56 8 34C8 20 18 12 30 12C40 12 46 18 50 26C54 18 60 12 70 12C82 12 92 20 92 34C92 56 70 72 50 88Z");
   add("anchor","Anchor","motif","traditional blackwork",30,0.3,9,1,"nautical sea steady","start",
-    circ(50,12,6)+"M46 18H54V84H46ZM28 26H72V33H28ZM14 62C16 80 32 92 50 92C68 92 84 80 86 62M22 64C26 76 38 84 50 84C62 84 74 76 78 64M6 68L14 54L24 64M94 68L86 54L76 64","M46 33H54V84H46Z");
+    circ(50,12,6)+"M46 18H54V84H46ZM28 26H72V33H28ZM14 62C16 80 32 92 50 92C68 92 84 80 86 62M22 64C26 76 38 84 50 84C62 84 74 76 78 64M6 68L14 54L24 64M94 68L86 54L76 64",
+    "M46 18L54 18L54 26L72 26L72 33L54 33L54 83.7C64.6 82.2 74.4 74.7 78 64L86 62C84 80 68 92 50 92C32 92 16 80 14 62L22 64C25.6 74.7 35.4 82.2 46 83.7L46 33L28 33L28 26L46 26ZM76 64L86 54L94 68ZM6 68L14 54L24 64Z");
   add("ship_wheel","Ship's wheel","motif","traditional blackwork",35,0.55,7,1,"nautical sea travel","style:traditional:2",G.wheel,G.wheelFill);
   add("compass_rose","Compass rose","motif","traditional geometric blackwork",35,0.5,7,1,"travel nautical direction","start",G.compass,G.compassFill);
   add("nautical_star","Nautical star","motif","traditional blackwork",20,0.25,9,1,"star nautical guidance","start",G.nstar,G.nstarFill);
@@ -280,45 +302,50 @@ const GI={
     "M50 8C28 8 14 24 14 44C14 56 20 64 28 68L28 80C28 84 32 86 36 86L64 86C68 86 72 84 72 80L72 68C80 64 86 56 86 44C86 24 72 8 50 8ZM34 74H66M38 74V86M44 74V86M50 74V86M56 74V86M62 74V86M22 34C24 26 30 20 38 18"+ell(36,46,9,8)+ell(64,46,9,8)+"M50 55L45 66L50 64L55 66Z",
     ell(36,46,9,8)+ell(64,46,9,8)+"M50 55L45 66L50 64L55 66Z");
   add("horseshoe","Horseshoe","motif","traditional",25,0.25,9,1,"luck flash","start",
-    "M22 18C14 40 14 66 28 82C36 90 64 90 72 82C86 66 86 40 78 18L66 20C72 40 72 62 64 72C58 78 42 78 36 72C28 62 28 40 34 20Z"+dot(24,30)+dot(22,44)+dot(24,58)+dot(30,70)+dot(76,30)+dot(78,44)+dot(76,58)+dot(70,70),null);
+    "M22 18C14 40 14 66 28 82C36 90 64 90 72 82C86 66 86 40 78 18L66 20C72 40 72 62 64 72C58 78 42 78 36 72C28 62 28 40 34 20Z"+dot(24,30)+dot(22,44)+dot(24,58)+dot(30,70)+dot(76,30)+dot(78,44)+dot(76,58)+dot(70,70),
+    "M22 18C14 40 14 66 28 82C36 90 64 90 72 82C86 66 86 40 78 18L66 20C72 40 72 62 64 72C58 78 42 78 36 72C28 62 28 40 34 20Z");
   add("cherries","Cherries","motif","traditional neotrad",25,0.25,9,1,"fruit flash sweet","style:traditional:1",
     "M34 58C36 40 44 24 58 14M63 63C62 44 62 30 58 14M58 14C66 6 80 8 86 16C76 22 64 20 58 14ZM60 14L84 16"+circ(32,71,14)+circ(64,76,13),circ(32,71,14)+circ(64,76,13));
   add("diamond_gem","Diamond","motif","traditional neotrad",25,0.35,7,1,"gem luck value","start",
-    "M20 34L34 16H66L80 34L50 88ZM20 34H80M34 16L42 34L50 16L58 34L66 16M42 34L50 88L58 34","M20 34L42 34L50 88ZM34 16L42 34L50 16Z");
+    "M20 34L34 16H66L80 34L50 88ZM20 34H80M34 16L42 34L50 16L58 34L66 16M42 34L50 88L58 34","M20 34L34 16L66 16L80 34L50 88ZM42 34L58 34L50 16Z");
   add("flame","Flame","motif","traditional neotrad japanese",30,0.3,9,1,"fire passion flash","style:traditional:1",
     "M50 94C30 94 18 80 20 62C22 48 32 42 30 28C40 34 44 42 44 50C48 40 46 22 56 8C58 24 70 30 74 46C76 54 76 62 74 68C78 64 80 58 80 54C86 66 84 82 74 90C68 94 58 94 50 94ZM50 88C40 86 36 76 40 68C44 72 46 74 48 72C46 64 50 56 54 52C56 62 64 66 62 76C60 84 56 88 50 88Z",
-    "M50 88C40 86 36 76 40 68C44 72 46 74 48 72C46 64 50 56 54 52C56 62 64 66 62 76C60 84 56 88 50 88Z");
+    "M50 94C30 94 18 80 20 62C22 48 32 42 30 28C40 34 44 42 44 50C48 40 46 22 56 8C58 24 70 30 74 46C76 54 76 62 74 68C78 64 80 58 80 54C86 66 84 82 74 90C68 94 58 94 50 94Z");
   add("pocket_watch","Pocket watch","motif","traditional realism neotrad",40,0.55,7,1,"time memorial","style:realism:1",
-    (function(){let d=circ(50,58,36)+circ(50,58,31)+circ(50,10,6)+"M45 22V16H55V22M50 58L50 38M50 58L62 66";for(let i=0;i<12;i++)d+="M"+pt(...pol(50,58,26,i*30))+"L"+pt(...pol(50,58,i%3?28.5:30,i*30));return d;})(),circ(50,58,2.5));
+    (function(){let d=circ(50,58,36)+circ(50,58,31)+circ(50,10,6)+"M45 22V16H55V22M50 58L50 38M50 58L62 66";for(let i=0;i<12;i++)d+="M"+pt(...pol(50,58,26,i*30))+"L"+pt(...pol(50,58,i%3?28.5:30,i*30));return d;})(),
+    circ(50,58,36)+rev(circ(50,58,31))+circ(50,10,6)+"M45 16L55 16L55 22L45 22Z"+circ(50,58,2.5));
   add("candle","Candle","motif","traditional neotrad realism",30,0.35,7,1,"light memorial hope","style:neotrad:1",
-    ell(50,48,14,3)+"M36 48V92H64V48M40 50.5V60C40 63 44 63 44 60V51M56 51V56C56 59 60 59 60 56V50.5M50 40C43 34 45 24 50 12C55 24 57 34 50 40ZM50 40V45","M50 37C47 34 48 29 50 24C52 29 53 34 50 37Z");
+    ell(50,48,14,3)+"M36 48V92H64V48M40 50.5V60C40 63 44 63 44 60V51M56 51V56C56 59 60 59 60 56V50.5M50 40C43 34 45 24 50 12C55 24 57 34 50 40ZM50 40V45","M36 48L36 92L64 92L64 48A14 3 0 0 0 36 48ZM50 37C47 34 48 29 50 24C52 29 53 34 50 37Z");
   add("hourglass","Hourglass","motif","traditional neotrad blackwork realism",35,0.4,7,1,"time memento","style:neotrad:1",
     "M24 8H76V16H24ZM24 84H76V92H24ZM28 16V84M72 16V84M34 16C34 34 46 42 46 50C46 58 34 66 34 84M66 16C66 34 54 42 54 50C54 58 66 66 66 84M50 46V66",
     "M38 30C44 38 48 42 50 46C52 42 56 38 62 30ZM36 82C38 72 46 68 50 66C54 68 62 72 64 82ZM24 8H76V16H24ZM24 84H76V92H24Z");
   add("skeleton_key","Skeleton key","motif","traditional neotrad fineline",35,0.35,7,1,"key secret home","start",
-    circ(50,20,14)+circ(50,20,6)+"M46.5 34V90H53.5V34M44 38H56M44 42H56M53.5 66H64V72H59V78H53.5M53.5 82H62V88H53.5",null);
+    circ(50,20,14)+circ(50,20,6)+"M46.5 34V90H53.5V34M44 38H56M44 42H56M53.5 66H64V72H59V78H53.5M53.5 82H62V88H53.5",
+    circ(50,20,14)+rev(circ(50,20,6))+"M46.5 34L53.5 34L53.5 66L64 66L64 72L59 72L59 78L53.5 78L53.5 82L62 82L62 88L53.5 88L53.5 90L46.5 90Z");
   add("padlock","Padlock","motif","traditional neotrad",30,0.3,9,1,"love lock secret","style:traditional:1",
     "M22 48Q22 44 26 44H74Q78 44 78 48V88Q78 92 74 92H26Q22 92 22 88ZM32 44V30C32 6 68 6 68 30V44M39 44V31C39 16 61 16 61 31V44"+circ(50,62,5)+"M47.5 66L45.5 78H54.5L52.5 66",
-    circ(50,62,5)+"M47.5 65L45.5 78H54.5L52.5 65Z");
+    "M22 48Q22 44 26 44L74 44Q78 44 78 48L78 88Q78 92 74 92L26 92Q22 92 22 88ZM47 66L45.5 78L54.5 78L53 66A5 5 0 1 0 47 66Z"+
+    "M32 44L32 30C32 6 68 6 68 30L68 44L61 44L61 31C61 16 39 16 39 31L39 44Z");
   add("eye_trad","Eye","motif","traditional neotrad blackwork realism",30,0.35,9,1,"eye watch flash","style:traditional:3",
     "M6 50C24 26 76 26 94 50C76 74 24 74 6 50Z"+circ(50,50,16)+"M20 38L15 30M34 32L31 23M50 30V20M66 32L69 23M80 38L85 30M44 44C45 42 47 41 49 41",
-    circ(50,50,7)+"M6 50C24 26 76 26 94 50C76 32 24 32 6 50Z");
+    circ(50,50,16));
   add("bow_ribbon","Ribbon bow","motif","traditional neotrad",30,0.3,9,1,"bow gift sweet","style:neotrad:1",
     "M44 44C36 30 16 24 12 36C8 48 28 56 44 50M56 44C64 30 84 24 88 36C92 48 72 56 56 50M44 42H56V54H44ZM46 54L36 84L43 80L47 88L49 54M54 54L64 84L57 80L53 88L51 54M20 36C24 38 30 42 36 46M80 36C76 38 70 42 64 46",
-    "M44 42H56V54H44Z");
+    symF("M44 44C36 30 16 24 12 36C8 48 28 56 44 50ZM46 54L36 84L43 80L47 88L49 54Z")+"M44 42L56 42L56 54L44 54Z");
   /* botanical and nature */
   add("peony","Peony","motif","japanese neotrad",50,0.6,7,1,"botanical flower japanese wealth","style:japanese:1",G.peony,G.peonyFill);
-  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,circ(50,50,5));
-  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,circ(50,50,3.5));
+  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,G.chrysFill);
+  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,G.sakuraFill);
   add("lotus_line","Lotus","motif","fineline geometric watercolour",30,0.35,3,1,"botanical flower calm","start",
     "M50 20C40 36 40 60 50 76C60 60 60 36 50 20Z"+sym("M50 76C36 70 26 52 28 34C38 40 46 56 50 76M50 78C32 78 16 66 10 50C24 50 40 60 50 78")+"M18 86C30 82 40 88 50 84C60 88 70 82 82 86",null);
   add("fern","Fern","motif","fineline realism",45,0.7,3,1,"botanical nature leaf","start",G.fern,null);
   add("olive_branch","Olive branch","motif","fineline realism watercolour",40,0.6,3,1,"botanical peace leaf","style:fineline:1",G.olive,G.oliveFill);
   add("wheat","Wheat","motif","fineline traditional",40,0.55,3,1,"botanical harvest home","style:fineline:2",G.wheat,null);
   add("oak_leaf","Oak leaf","motif","fineline traditional realism",30,0.45,5,1,"botanical leaf strength","start",
-    sym("M50 94L50 86C44 86 40 82 42 76C34 78 30 72 34 66C26 66 24 58 30 54C22 52 22 44 30 42C24 36 28 28 36 30C34 22 40 16 46 20C46 14 48 10 50 8M50 76L41 71M50 60L33 55M50 44L32 39M50 30L40 24")+"M50 96V12",null);
+    sym("M50 94L50 86C44 86 40 82 42 76C34 78 30 72 34 66C26 66 24 58 30 54C22 52 22 44 30 42C24 36 28 28 36 30C34 22 40 16 46 20C46 14 48 10 50 8M50 76L41 71M50 60L33 55M50 44L32 39M50 30L40 24")+"M50 96V12",
+    half("M50 86C44 86 40 82 42 76C34 78 30 72 34 66C26 66 24 58 30 54C22 52 22 44 30 42C24 36 28 28 36 30C34 22 40 16 46 20C46 14 48 10 50 8"));
   add("pine_tree","Pine tree","motif","fineline geometric blackwork",25,0.3,5,1,"nature forest","start",
-    "M50 6L34 32H42L26 56H36L18 82H82L64 56H74L58 32H66ZM46 82V94H54V82",null);
+    "M50 6L34 32H42L26 56H36L18 82H82L64 56H74L58 32H66ZM46 82V94H54V82","M50 6L34 32L42 32L26 56L36 56L18 82L82 82L64 56L74 56L58 32L66 32ZM46 82L46 94L54 94L54 82Z");
   add("mountains","Mountains","motif","fineline geometric",30,0.3,3,0,"nature travel outdoors","start",
     "M4 82L30 38L44 58L62 22L96 82ZM4 82H96M24 48L28 46L32 50L36 48M54 36L58 33L62 38L66 33L70 36",
     "M24 48L30 38L36 48L32 50L28 46ZM54 36L62 22L70 36L66 33L62 38L58 33Z");
@@ -326,9 +353,10 @@ const GI={
     "M4 30C20 20 30 40 46 34C62 28 70 48 96 42M4 46C20 36 30 56 46 50C62 44 70 64 96 58M4 62C20 52 30 72 46 66C62 60 70 80 96 74",null);
   add("wave_curl","Wave","motif","japanese fineline traditional",35,0.4,7,1,"ocean water japanese","start",
     "M6 80C10 56 30 36 56 34C76 32 90 46 88 60C86 70 76 74 70 68C64 62 70 54 76 56M18 80C22 64 36 50 54 48C66 48 74 56 72 62M6 80H94M56 34C52 28 54 22 60 22M66 35C64 29 68 25 72 27M75 39C75 34 80 32 83 35",
-    "M6 80C10 56 30 36 56 34C40 40 26 56 18 80Z");
+    "M6 80C10 56 30 36 56 34C76 32 90 46 88 60C86 70 76 74 70 68L72 62C74 56 66 48 54 48C36 50 22 64 18 80Z");
   add("cloud_jp","Cloud","motif","japanese",40,0.4,7,1,"japanese sky background","style:japanese:1",
-    "M8 72H74C84 72 90 66 88 58C86 52 78 52 76 58C75 62 79 64 81 61M14 72C8 66 10 56 18 54C20 46 28 42 36 46C40 36 54 32 60 42C68 38 78 44 76 56M18 54C24 54 26 60 22 62C19 63 18 60 20 59M36 46C42 48 42 56 37 56C34 56 34 52 37 52M60 42C64 46 62 52 57 51C54 50 55 47 57 47M8 72C4 72 2 68 5 66",null);
+    "M8 72H74C84 72 90 66 88 58C86 52 78 52 76 58C75 62 79 64 81 61M14 72C8 66 10 56 18 54C20 46 28 42 36 46C40 36 54 32 60 42C68 38 78 44 76 56M18 54C24 54 26 60 22 62C19 63 18 60 20 59M36 46C42 48 42 56 37 56C34 56 34 52 37 52M60 42C64 46 62 52 57 51C54 50 55 47 57 47M8 72C4 72 2 68 5 66",
+    "M14 72C8 66 10 56 18 54C20 46 28 42 36 46C40 36 54 32 60 42C68 38 78 44 76 56L76 58C78 52 86 52 88 58C90 66 84 72 74 72Z");
   add("koi","Koi","motif","japanese neotrad watercolour",55,0.7,7,1,"fish japanese water luck","style:japanese:2",G.koi,G.koiFill);
   add("crane","Crane","motif","japanese fineline",50,0.6,5,1,"bird japanese luck","style:japanese:3",
     "M30 60C40 52 60 50 70 54C64 60 50 64 30 60ZM68 54C76 50 84 46 89 44M89 44C91 42 94 43 94 44M92 42L99 44L92 46M30 60L20 63M32 61L4 70M34 61L6 74M44 55C38 42 30 26 18 10C28 14 34 20 38 28Q40 34 42 36Q42 42 46 46M48 53C46 36 52 16 64 4C66 14 64 22 62 30Q60 34 62 38Q58 42 60 46Q56 50 56 53",
@@ -336,7 +364,7 @@ const GI={
   add("moon_crescent","Crescent moon","motif","fineline geometric blackwork",20,0.15,3,0,"moon night sky","start",
     "M62 8C40 10 22 28 22 50C22 72 40 90 62 92C46 82 38 66 38 50C38 34 46 18 62 8ZM78 26L80 32L86 34L80 36L78 42L76 36L70 34L76 32Z",
     "M62 8C40 10 22 28 22 50C22 72 40 90 62 92C46 82 38 66 38 50C38 34 46 18 62 8Z");
-  add("sun","Sun","motif","fineline geometric traditional",25,0.3,5,1,"sun sky light","start",G.sun,null);
+  add("sun","Sun","motif","fineline geometric traditional",25,0.3,5,1,"sun sky light","start",G.sun,circ(50,50,17));
   add("sparkle","Sparkle","motif","fineline",15,0.1,3,1,"star sky small","start",
     "M42 14C44 40 50 46 76 48C50 50 44 56 42 82C40 56 34 50 8 48C34 46 40 40 42 14ZM80 12C81 20 82 21 90 22C82 23 81 24 80 32C79 24 78 23 70 22C78 21 79 20 80 12Z",null);
   add("paper_plane","Paper plane","motif","fineline",20,0.15,3,0,"travel freedom","start","M6 46L94 14L62 86L46 58ZM46 58L94 14M46 58L50 76L62 86",null);
@@ -357,7 +385,7 @@ const GI={
     "M50 30C48.5 36 48.5 66 50 74C51.5 66 51.5 36 50 30Z");
   add("moth","Moth","motif","neotrad blackwork",40,0.55,7,1,"insect night change","style:neotrad:2",
     sym("M50 32C40 22 18 14 6 22C2 34 16 46 47 48M47 52C32 54 20 64 24 78C32 88 44 74 49 58M49 28C46 20 40 14 34 13M44 20L41 17M40 16L37 15M10 26C20 30 30 36 44 44")+circ(24,32,4)+circ(76,32,4)+"M50 26C46 26 46 34 47 40C46 50 47 64 50 72C53 64 54 50 53 40C54 34 54 26 50 26Z",
-    sym("M24 78C32 88 44 74 49 58C40 66 30 74 24 78Z")+circ(24,32,4)+circ(76,32,4)+"M50 26C46 26 46 34 47 40C46 50 47 64 50 72C53 64 54 50 53 40C54 34 54 26 50 26Z");
+    symF("M50 32C40 22 18 14 6 22C2 34 16 46 47 48ZM47 52C32 54 20 64 24 78C32 88 44 74 49 58Z")+rev(circ(24,32,4))+rev(circ(76,32,4))+"M50 26C46 26 46 34 47 40C46 50 47 64 50 72C53 64 54 50 53 40C54 34 54 26 50 26Z");
   /* geometric and blackwork */
   add("mandala","Mandala","motif","geometric blackwork",55,0.8,3,0,"geometric balance","style:geometric:2",G.mandala,G.mringFill);
   add("mandala_ring","Mandala ring","motif","geometric blackwork",50,0.65,3,0,"geometric balance frame","style:geometric:1",G.mring,G.mringFill);
@@ -428,16 +456,18 @@ const GI={
   add("roman_year","Roman numeral year","lettering","lettering fineline blackwork",25,0.3,5,0,"date numerals","style:lettering:1",roman("MMXX"),null);
   add("banner_scroll","Banner","lettering","traditional lettering neotrad",40,0.3,9,1,"banner script flash","start",
     "M22 34C40 28 60 40 78 34V58C60 64 40 52 22 58ZM22 42H6L14 52L6 64H26L22 58M78 42H94L86 52L94 64H74L78 58M26 64L22 58M74 64L78 58",
-    "M26 64L22 58V64ZM74 64L78 58V64Z");
+    "M22 34C40 28 60 40 78 34L78 58C60 64 40 52 22 58ZM22 42L6 42L14 52L6 64L26 64L22 58ZM78 42L94 42L86 52L94 64L74 64L78 58Z");
   add("banner_ribbon","Flowing ribbon","lettering","lettering neotrad fineline",40,0.3,5,1,"banner script","style:lettering:1",
-    "M8 40C24 28 36 30 50 40C64 50 76 52 92 40V56C76 68 64 66 50 56C36 46 24 44 8 56ZM8 40L2 48L8 56M92 40L98 48L92 56",null);
+    "M8 40C24 28 36 30 50 40C64 50 76 52 92 40V56C76 68 64 66 50 56C36 46 24 44 8 56ZM8 40L2 48L8 56M92 40L98 48L92 56",
+    "M8 40C24 28 36 30 50 40C64 50 76 52 92 40L92 56C76 68 64 66 50 56C36 46 24 44 8 56ZM8 40L2 48L8 56ZM92 56L98 48L92 40Z");
   add("flourish","Script flourish","lettering","lettering fineline traditional",30,0.3,3,0,"script ornament divider","start",
     "M8 56C22 40 40 64 56 52C68 42 80 40 90 46C96 50 92 58 86 56C80 54 82 48 86 48M30 60C40 66 60 66 76 58M50 50C46 44 50 38 56 40",null);
   /* frames */
   add("frame_circle","Circle frame","frame","geometric fineline traditional",30,0.1,5,0,"frame circle","start",circ(50,50,46)+circ(50,50,41),null);
   add("frame_oval","Oval frame","frame","traditional neotrad realism",35,0.1,7,0,"frame portrait","start",ell(50,50,34,46)+ell(50,50,30,42),null);
   add("frame_shield","Shield","frame","traditional blackwork",35,0.15,9,1,"frame shield courage","style:traditional:1",
-    "M15 12H85V45C85 70 68 84 50 92C32 84 15 70 15 45ZM21 18H79V45C79 66 64 78 50 85C36 78 21 66 21 45Z",null);
+    "M15 12H85V45C85 70 68 84 50 92C32 84 15 70 15 45ZM21 18H79V45C79 66 64 78 50 85C36 78 21 66 21 45Z",
+    "M15 12L85 12L85 45C85 70 68 84 50 92C32 84 15 70 15 45Z"+rev("M21 18L79 18L79 45C79 66 64 78 50 85C36 78 21 66 21 45Z"));
   add("frame_diamond","Diamond frame","frame","geometric fineline",30,0.1,3,0,"frame geometric","start",poly([[50,4],[96,50],[50,96],[4,50]],true)+poly([[50,12],[88,50],[50,88],[12,50]],true),null);
   add("frame_arch","Arch frame","frame","fineline neotrad geometric",35,0.1,3,0,"frame window","style:fineline:1",
     "M15 95V45A35 35 0 0 1 85 45V95ZM21 95V46A29 29 0 0 1 79 46V95",null);
