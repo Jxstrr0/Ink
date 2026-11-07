@@ -1,6 +1,6 @@
 # Model and texture credits
 
-Everything in `models/` is for the shop on **Full and Ultra** graphics only (`ASSETS` in `src/vis/assets.js`). Lite never loads any of it and keeps the coded shop from `src/vis/studio.js`.
+Everything in `models/` is for the shop on **Full and Ultra** graphics (`ASSETS` in `src/vis/assets.js`), except the mannequin: since 0.1.18.0 Lite loads `ink-mannequin.glb` too (and the service worker precaches it). Lite never loads the props or textures and keeps the coded shop from `src/vis/studio.js`.
 Ink only uses CC0 or CC-BY assets: never NC or ND, nothing traced from a real tattoo artist's work, no real brands. Keep this file in step with the folder: every file listed with what it is, who made it, the licence and where it came from. Kelbo's own Blender work is listed as original. How the models are made and packed: `docs/BLENDER.md`.
 
 ## Textures (`models/textures/`)

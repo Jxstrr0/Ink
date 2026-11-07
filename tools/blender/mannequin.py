@@ -7,17 +7,24 @@ models/base-mesh/reference/) is a set of separate tubes and an egg that pass thr
 neck and wrists. Its UVs are the game's contract: every tattoo is painted into those atlas rectangles at true millimetres,
 and the Session tab's stencil drag reads them back. So this script keeps the reference's surface, pose and UVs, and makes
 the body one smooth skin:
-  1. the 13 skin parts of ink-body-neutral.obj (torso, arms, hands, thumbs, legs, feet, neck, head) are welded and capped,
-     joined and voxel-remeshed into one closed surface (3 mm voxels), so the shoulders, armpits, hips, neck and wrists
-     become real joins instead of tubes poking through each other;
-  2. a Taubin smooth (no shrinking) rounds the joins and the coded body's ring facets;
+  1. the skin parts of ink-body-neutral.obj in UNION (torso, arms, legs, feet, neck) are welded and capped; the coded
+     mitten hands, stub thumbs and egg head are left out and rebuilt here instead (0.1.18.0, extra_parts): four fingers
+     per hand curled over the armrest's front edge plus a thumb (FINGERS, BENDS, PHALANX, THUMB), and a head of cranium,
+     face and jaw with a nose and ears (HEAD, NOSE). All of it is joined and voxel-remeshed into one closed surface
+     (VOXEL, 2.5 mm), so the shoulders, armpits, hips, neck, wrists and fingers become real joins;
+  2. a Taubin smooth (no shrinking) rounds the joins and the coded body's ring facets, lighter on the fingers (FINE, faded
+     out over FINE_REACH); then the sculpt pass (BRUSHES: collarbone, shoulders, arms, waist, knees, calves, ankles, toe
+     grooves, and on the face a brow, eye sockets, cheekbones, chin and jawline). A sculpt only: no painted eyes, no
+     mouth, no hair, nobody's likeness;
   3. the clothes are cut from that skin, not modelled apart: the bandeau is the front of the chest between y 0.835 and
      0.952 within 66 degrees of the centre line, the shorts everything below the waistband (y 0.70) down to the coded
      shorts' hem ring on each thigh; each is pushed 6.5 mm off the skin and gets a turned-in hem, so they fit exactly;
-  4. each mesh is decimated to its budget (about 5.5k triangles of skin, 6.4k in all);
+  4. each mesh is decimated to its budget (TARGET: about 6.7k triangles of skin, 7.7k in all), the decimator told to
+     spare the fingers, face and toes through a vertex group (FREE);
   5. UVs: every face takes the island of the reference face nearest its centre, and each corner the reference UV at its
      nearest point on that island (faces that straddle a tube's wrap seam use one reference face's map), so every face
-     lies inside one atlas rectangle and a point on the skin has the UV the coded body has there;
+     lies inside one atlas rectangle and a point on the skin has the UV the coded body has there; the thumbs go to the
+     blank island, as the coded body's do;
   6. shape keys "masc" (Broad) and "femme" (Slight): each vertex moves as the reference surface under it moves between
      the three OBJs (same topology, so the move is exact), smoothed across the joins; the clothes follow the skin;
   7. names and materials as docs/BLENDER.md asks (body/skin, cloth_top, cloth_shorts), exported as glb and packed with
