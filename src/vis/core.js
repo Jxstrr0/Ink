@@ -15,9 +15,9 @@ const V={renderer:null,scene:null,camera:null,canvas:null,tier:"lite",dirty:true
   shape:"neutral",shapeW:{neutral:1,masc:0,femme:0},shapeTw:null,tone:0.3,skin:"#dba57c",clientOn:false,
   tattoos:[],stencil:null,stage:"apprentice",shop:null,machine:"coil",spare:null,flash:[],flashSig:"",view:"consult",viewOpt:{},ray:null};
 const TIER={
-  lite:{pr:1.5,aa:false,fpsCap:30,tex:1024,ov:512,std:false,shadows:false,shadowMap:0,aniso:1,minPx:1.15,orbit:[0.55,0.22]},
-  full:{pr:1.5,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:1024,aniso:4,minPx:1,orbit:[1.1,0.4]},
-  ultra:{pr:2,aa:true,fpsCap:60,tex:2048,ov:1024,std:true,shadows:true,shadowMap:2048,aniso:8,minPx:1,orbit:[1.5,0.5]}};
+  lite:{pr:1.5,aa:false,fpsCap:30,tex:1024,dt:1024,dtPpm:7,tiles:8,gl:512,ov:512,std:false,shadows:false,shadowMap:0,aniso:1,minPx:1.15,orbit:[0.55,0.22]},
+  full:{pr:1.5,aa:true,fpsCap:60,tex:2048,dt:2048,dtPpm:10,tiles:16,gl:1024,ov:1024,std:true,shadows:true,shadowMap:1024,aniso:4,minPx:1,orbit:[1.1,0.4]},
+  ultra:{pr:2,aa:true,fpsCap:60,tex:2048,dt:2048,dtPpm:12,tiles:16,gl:1024,ov:1024,std:true,shadows:true,shadowMap:2048,aniso:8,minPx:1,orbit:[1.5,0.5]}};
 const ROOM={x:[-2.62,2.62],y:[0.14,2.6],z:[-2.22,2.42]};   // where the camera may go (inside the walls); vsStage sets it per room (0.1.14.0)
 function hasGL(){return typeof THREE!=="undefined";}
 function vsCol(hex){return new THREE.Color(hex).convertSRGBToLinear();}
@@ -50,7 +50,7 @@ function resize(){if(!V.renderer||!V.canvas)return;const w=V.canvas.clientWidth|
 function setTier(t){if(!TIER[t]||!V.renderer)return;const was=TIER[V.tier];V.tier=t;V.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,TIER[t].pr));
   const T=TIER[t];if(was.std!==T.std||was.shadows!==T.shadows||was.tex!==T.tex||was.shadowMap!==T.shadowMap){V.built="";vsBuild();}resize();}
 /* render once if something changed */
-function draw(){if(!V.renderer||!V.dirty||V.lost)return;V.dirty=false;V.renderer.render(V.scene,V.camera);}
+function draw(){if(!V.renderer||!V.dirty||V.lost)return;V.dirty=false;if(V.mats)vsSkinPatch();V.renderer.render(V.scene,V.camera);}
 function vsKick(){V.lastInput=performance.now();if(V.raf||!V.renderer)return;V._t0=0;V._last=0;V.raf=requestAnimationFrame(vsLoop);}
 function vsLoop(now){
   V.raf=0;
