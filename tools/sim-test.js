@@ -555,6 +555,28 @@ const PR8 = {};
     !!V && C.until > now && open0 === false && q && SIM.weekIndex(q.w, q.y) >= C.until && reopened && !V.career.closed && V.career.inspLast && V.career.inspLast.pass === false,
     JSON.stringify({ found: !!V, closed: C, q: q && [q.w, q.y], reopened }));
 }
+{ /* 0.1.20.0: a passed inspection clears one fail from the record (C.inspFails), a failed one still adds one */
+  let V = null, seed = 0;
+  for (; seed < 40 && !V; seed++) {
+    const T = clone(LONG); SIM.unpackSave(T); SIM.worldEnsure(T); T.seed = SEED + seed * 7919;
+    T.studio.build.steril = 3; T.studio.rep = 100; T.kit.ink = "pro"; T.career.closed = null; T.career.inspFails = 2;
+    const now = SIM.weekIndex(T.week, T.year); for (const p of T.pieces) if (now - SIM.weekIndex(p.w, p.y) <= 30 && p.heal === "infected") p.heal = "crisp";
+    T.career.insp = now + 1; SIM.advanceWeek(T);
+    if (T.career.inspLast && T.career.inspLast.pass && SIM.weekIndex(T.career.inspLast.w, T.career.inspLast.y) > now) V = T;
+  }
+  check("inspection (0.1.20.0): a pass clears one fail from the record", !!V && V.career.inspFails === 1, JSON.stringify(V && { fails: V.career.inspFails, last: V.career.inspLast }));
+  const Z = clone(LONG); SIM.unpackSave(Z); SIM.worldEnsure(Z); Z.career.inspFails = 0; Z.career.closed = null;
+  for (let s = 0; s < 40; s++) { Z.seed = SEED + s; Z.career.insp = SIM.weekIndex(Z.week, Z.year) + 1; SIM.advanceWeek(Z); if (Z.career.inspFails) break; }
+  check("inspection (0.1.20.0): a pass never takes the record below zero", Z.career.inspFails >= 0 && Number.isFinite(Z.career.inspFails), String(Z.career.inspFails));
+}
+{ /* 0.1.20.0: Act 4's collectors shortcut is its own number (LEGACY_NEED), not the waiting_list event's 60 */
+  const L = S0({ seed: 12 }); L.career = SIM.careerFresh(); L.studio.stage = "studio"; L.year = 2012; L.week = 1;
+  const at = c => { L.rep.collectors = c; return SIM.legacyNeed(L).when; };
+  const n = SIM.LEGACY_NEED.collectors, wl = SIM.REP_TRACKS.collectors.events.waiting_list;
+  const own = (() => { SIM.LEGACY_NEED.collectors = 70; const r = at(75) === true && at(65) === false; SIM.LEGACY_NEED.collectors = n; return r; })();
+  check("Act 4 (0.1.20.0): the collectors shortcut reads LEGACY_NEED (90), not the waiting_list event (still 60)",
+    n === 90 && wl === 60 && at(wl) === false && at(n - 1) === false && at(n) === true && own && (L.year = 2018, at(0) === true), JSON.stringify({ n, wl }));
+}
 { /* goals */
   const G = Object.keys(LONG.goals);
   check("goals: the 30-year run reaches the shop goals", ["first_heal", "first_custom", "first_return", "studio", "hire", "five_pieces", "survive_rival", "twenty_reads"].every(g => G.indexOf(g) >= 0), G.join(" "));
@@ -675,6 +697,31 @@ const PK = JSON.stringify(SIM.packSave(LONG)), UN = SIM.unpackSave(JSON.parse(PK
 check("packed save: every piece comes back (ids, names, placements, heals, artists)", UN.pieces.length === LONG.pieces.length && UN.pieces.every((p, i) => { const q = LONG.pieces[i]; return p.id === q.id && p.client === q.client && p.name === q.name && p.design.placement === q.design.placement && p.heal === q.heal && p.by === q.by && Math.abs(p.out.lineQuality - q.out.lineQuality) < 0.001; }));
 check("packed save: compacted clients come back with their pieces lists", UN.clients.length === LONG.clients.length && UN.clients.every((c, i) => c.id === LONG.clients[i].id && (c.pieces || []).length === (LONG.clients[i].pieces || []).length));
 check("packed save: packing the unpacked save gives the same JSON", JSON.stringify(SIM.packSave(UN)) === PK);
+/* 0.1.20.0: older pieces are saved as one string each (AR_V2), the same tuple losslessly; 0.1.19.0 tuples still load */
+{ const util = require("util"), PKo = SIM.packSave(LONG), cut = LONG.pieces.length - SIM.ARCHIVE.pieceFull;
+  const T1 = JSON.stringify(SIM.packSave(LONG, { tuples: true })), U1 = SIM.unpackSave(JSON.parse(T1));
+  const strs = PKo.pieces.filter(p => typeof p === "string").length;
+  check("packed save (0.1.20.0): every older piece is a string, the newest stay records", strs === cut && PKo.pieces.slice(cut).every(p => p && typeof p === "object" && !Array.isArray(p)), strs + " of " + cut);
+  check("packed save (0.1.20.0): the strings unpack to exactly what the 0.1.19.0 tuples do", util.isDeepStrictEqual(clone(U1.pieces), clone(UN.pieces)) && util.isDeepStrictEqual(clone(U1.clients), clone(UN.clients)));   // clones: the sim's objects come from its own vm realm
+  check("packed save (0.1.20.0): a 0.1.19.0 save, loaded and saved again, writes the 0.1.20.0 form", JSON.stringify(SIM.packSave(U1)) === PK);
+  /* an old piece renders and ages the same: the oldest pieces' aging at 20 years, and their design and outputs */
+  const sameAge = UN.pieces.slice(0, 300).every((p, i) => { const q = LONG.pieces[i], c = LONG.clients.find(x => x.id === q.client) || {};
+    const a = SIM.age({ design: p.design, out: p.out, heal: p.heal, skinTone: c.skinTone, sun: (c.traits || {}).sun }, 20), b = SIM.age({ design: q.design, out: q.out, heal: q.heal, skinTone: c.skinTone, sun: (c.traits || {}).sun }, 20);
+    return Object.keys(b).every(k => typeof b[k] !== "number" || Math.abs(a[k] - b[k]) < 1e-3) && p.design.elements.length === q.design.elements.length && p.design.elements.every((e, j) => e.id === q.design.elements[j].id && Math.abs(e.x - q.design.elements[j].x) < 1e-3 && Math.abs(e.scale - q.design.elements[j].scale) < 1e-3) && p.w === q.w && p.y === q.y && p.healW === q.healW && p.price === q.price && p.design.sizeMm === q.design.sizeMm; });
+  check("packed save (0.1.20.0): the oldest pieces come back drawing and aging as before", sameAge);
+  { const a = JSON.stringify(PKo.pieces.slice(0, cut)).length, b = JSON.stringify(JSON.parse(T1).pieces.slice(0, cut)).length;
+    check("packed save (0.1.20.0): older pieces take at most 70% of the room they did as tuples", a < b * 0.7, a + " / " + b); }
+  /* a hand-written 0.1.19.0 fragment: a walk-in's crisp pine tree and a staff piece with a guest, kit and sittings */
+  const OLD = { year: 2010, clients: [[87, "Anton Volkov", 0, 1, 1980, 2, 21, [52, 51, 56, 28, 23, 42, 42], 64, 22, 261, 3, 0, 0, 0]],
+    pieces: [[101, 87, 151, ["shin_r", 2900, "fineline", 0, 0, "pine_tree:500:500:1000:0:1:500:", 0, 1], [800, 800, 800, 400], "crisp", 153, "a", 400, 0],
+      [102, -1, 152, ["forearm_l", 4000, "traditional", [520, 480], 0, "rose:500:500:1000:1250:5:1000:red", 0, 1], [815, 915, 667, 189, 1, 0, 0], "soft", -1, "s", 9700, { by: "s14", "~g": "Dilyara|17|62|16", "~k": 0, ret: { rule: "touchup", piece: "p90" } }]] };
+  const O = SIM.unpackSave(clone(OLD)), a = O.pieces[0], b = O.pieces[1], K0 = Object.keys(SIM.INKS)[0], M0 = Object.keys(SIM.MACHINES)[0];
+  check("packed save (0.1.20.0): a 0.1.19.0 tuple still unpacks, field for field",
+    a.id === "p101" && a.client === "c87" && a.design.placement === "shin_r" && a.design.sizeMm === 29 && a.design.style === "fineline" && !("flash" in a.design) && a.design.elements[0].id === "pine_tree" && a.design.elements[0].x === 0.5 && a.design.elements[0].lineWeight === 1 &&
+    a.out.lineQuality === 0.8 && a.out.trauma === 0.4 && a.heal === "crisp" && a.stage === "apprentice" && a.price === 400 && SIM.weekIndex(a.healW, a.healY) === 153 && SIM.weekIndex(a.w, a.y) === 151 && /^the .+ on Anton's /.test(a.name) && O.clients[0].pieces.join() === "p101" &&
+    b.id === "p102" && b.client === "x102" && b.by === "s14" && b.guest.n === "Dilyara" && b.guest.a === 0.62 && b.ink === K0 && b.machine === M0 && b.sessionsUsed === undefined && b.out.sessionsUsed === 1 && b.design.pos.x === 0.52 && b.design.elements[0].rot === 12.5 && b.design.elements[0].colour === "red" &&
+    b.healW === undefined && b.ret.piece === "p90" && b.heal === "soft" && /Dilyara's/.test(b.name), JSON.stringify([a, b]));
+}
 const SZ = AUTO_SIZES[30];
 check("save size: ink-save JSON at year 30 under 2 MB, the backup code under 1.2 MB", SZ.json < 2e6 && SZ.code < 1.2e6, JSON.stringify(SZ));
 check("save size: packing at year 30 takes under 150 ms", SZ.packMs < 150, SZ.packMs.toFixed(1) + " ms");
@@ -713,7 +760,7 @@ if (!QUIET) {
 }
 if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(LONG));   // DUMP=file: the year-30 state, for poking at
 if (process.env.DUMPEV) fs.writeFileSync(process.env.DUMPEV, JSON.stringify(LONG_EV));
-console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; "));
+console.log("save size by year (ink-save JSON / INK1 backup code): " + Object.keys(AUTO_SIZES).map(y => y + ": " + Math.round(AUTO_SIZES[y].json / 1024) + " KB / " + Math.round(AUTO_SIZES[y].code / 1024) + " KB (" + AUTO_SIZES[y].pieces + " pieces, " + AUTO_SIZES[y].staffPieces + " by staff, " + AUTO_SIZES[y].clients + " clients)").join("; ") + "; packing at year 30: " + AUTO_SIZES[30].packMs.toFixed(1) + " ms");
 console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post " + JSON.stringify({ reach: PR8.post.reach, gained: PR8.post.gained, q: PR8.post.q }) + "; cover " + JSON.stringify(PR8.cover) + "; reckoning reads " + JSON.stringify(PR8.reckonReads) +
   "; 30 years: " + LONG.world.social.followers + " followers, " + LONG.world.social.booked + " far bookings, rivals " + LONG.career.rivals.map(r => r.id + ":" + r.status).join(" ") + ", fired " + Object.keys(LONG.world.fired).join(" ") + ", goals " + Object.keys(LONG.goals).length + "/" + SIM.GOALS.length);
 console.log("0.1.13.0 rep events: " + REV.f13 + " Friday 13th cards in 30 years; flash day " + JSON.stringify(REV.flash) + "; Kontur " + JSON.stringify(REV.mag) + "; Drawbridge Prize " + JSON.stringify(REV.award));

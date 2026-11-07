@@ -128,7 +128,7 @@ ${later?`<p class="hint caLater">${esc(later)}</p>`:""}
 <dl class="kv"><dt>Stations</dt><dd>${b.stations||0}, ${S.studio.staff.length} artist${S.studio.staff.length===1?"":"s"}</dd><dt>Shop's reputation</dt><dd>${Math.round(S.studio.rep||0)} / 100</dd><dt>Your rate</dt><dd>${fmtMoney(S.rate)} an hour</dd>${C.broke?`<dt>Under the floor</dt><dd class="crit">${C.broke} of ${INK_SIM.BROKE.weeks} weeks</dd>`:""}</dl>
 ${caAppHtml(tr)}
 <div class="row" style="margin-top:10px"><button class="btn" id="caShop">Run the shop (Studio tab)</button>${ln.when?`<button class="btn pri" id="caLegacy">Open a waiting list (Act 4)</button>`:""}</div>
-${ln.when?"":`<p class="hint">Act 4 opens from ${2000+INK_SIM.ACTS.legacy.years[0]-2}, or sooner with collectors at 60.</p>`}</div>`;
+${ln.when?"":`<p class="hint">Act 4 opens from ${2000+INK_SIM.ACTS.legacy.years[0]-2}, or sooner with collectors at ${INK_SIM.LEGACY_NEED.collectors}.</p>`}</div>`;
   /* legacy */
   const O=INK_SIM.LEGACY_OFFERS;
   return`<div class="card caAct"><span class="clK">Act 4 · Legacy</span>

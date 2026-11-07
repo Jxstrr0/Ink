@@ -35,7 +35,7 @@ const ACTS={
    screen reads the same until the clock moves */
 const MENTOR={
   name:"Arkady Sedov",first:"Arkady",addr:"Arkady Lvovich",shop:"Sedov's on Kanatnaya Street",style:"traditional",
-  goodwill:{start:0.5,chore:0.015,practice:0.01,friend:0.03,walkin:0.04,crisp:0.02,bad:-0.02,onTime:0.08,early:-0.12,earlyPerYear:-0.18,max:1},
+  goodwill:{start:0.5,chore:0.015,practice:0.01,friend:0.03,walkin:0.04,crisp:0.02,bad:-0.02,onTime:0.08,early:-0.12,earlyPerYear:-0.30,max:1},
   splitAt:0.55,          // goodwill at or above this: his chair at CHAIR_SPLIT.mentor when you leave
   loanAt:0.6,            // goodwill at or above this: he covers you once when the studio is about to close (BROKE.loan)
   lines:{
@@ -82,10 +82,13 @@ const FRIENDS={max:3,sizes:["tiny","small"],loyalty:0.55,
 /* the share of your takings (sittings and deposits) the shop keeps: Arkady's cut while you apprentice, a chair's split after */
 const CHAIR_SPLIT={apprentice:0.65,mentor:0.3,standard:0.4};
 /* your hourly rate in 2000 rubles: base by act + per point of each reputation track, x (1 + sig x signature strength) */
-const RATE_BY_REP={base:{apprentice:0,chair:700,studio:850,legacy:1100},perRep:{walkins:2,collectors:6,peers:3},sig:0.15,lighting:0.03,round:50};
+const RATE_BY_REP={base:{apprentice:0,chair:700,studio:850,legacy:1100},perRep:{walkins:1,collectors:3,peers:1.5},sig:0.15,lighting:0.03,round:50};
 const SUPPLIES={perHour:110,shopPerHour:90};   // gloves, film, needles, ink: per booked chair hour (yours; staff hours in the shop)
 const LEASE={deposit:60000,rentWeek:2600,utilities:500,salvage:2000,
-  need:{year:2006,repSum:90}};                 // lease from 2006, or earlier with walk-ins + collectors + peers >= repSum
+  need:{year:2006,repSum:200}};                // lease from 2006, or earlier with walk-ins + collectors + peers >= repSum
+/* Act 4 (legacyNeed): from two years before ACTS.legacy, or sooner once collectors reach this. Its own number since
+   0.1.20.0 (it used to read REP_TRACKS.collectors.events.waiting_list, 60, which made the shortcut too easy) */
+const LEGACY_NEED={collectors:90};
 const MARKETING=[{name:"Word of mouth",cost:0,walkins:0},{name:"Posters and the local paper",cost:700,walkins:0.1},
   {name:"Radio and magazines",cost:2200,walkins:0.22},{name:"Everything going",cost:5200,walkins:0.34}];
 /* the build-out: each part has levels; cost[i] buys level i+1 */
@@ -311,7 +314,7 @@ function leaseStudio(S){
   cashOut(S,n.cost,"lease");S.studio.stage="studio";S.studio.lease={w:S.week,y:S.year};caReach(S,"studio");
   S.career.insp=weekIndex(S.week,S.year)+rng(S.seed).fork("insp:first").int(INSPECTION.first[0],INSPECTION.first[1]);
   S.rate=rateFor(S);return{ok:true,cost:n.cost};}
-function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=REP_TRACKS.collectors.events.waiting_list};}
+function legacyNeed(S){return{stage:caStage(S)==="studio",when:S.year>=2000+ACTS.legacy.years[0]-2||((S.rep&&S.rep.collectors)||0)>=LEGACY_NEED.collectors};}
 function goLegacy(S){careerEnsure(S);const n=legacyNeed(S);if(!(n.stage&&n.when))return{ok:false,need:n};
   S.studio.stage="legacy";caReach(S,"legacy");S.rate=rateFor(S);return{ok:true};}
 /* skipBroom(S): a new career that starts at Act 2 (plan Q3): week 1 of 2003, a rented chair, basic skills */
@@ -593,7 +596,7 @@ function caInspect(S,ctx){
   const pass=clamp(I.base+STUDIO_STAGES.steril.inspect*ck.steril+I.shopRep*(S.studio.rep||0)+I.recentInfect*inf
     +(ck.supplies?0:K.supplies)+(ck.ink==="budget"?K.budgetInk:0)+(ck.debt?K.debt:0)+(ck.stations?0:K.stations),I.min,I.max);
   const ok=r.chance(pass);C.inspLast=Object.assign({w:S.week,y:S.year,pass:ok,chance:caR3(pass)},ck);
-  if(ok){S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.",{insp:"pass"});return;}
+  if(ok){C.inspFails=Math.max(0,(C.inspFails||0)-1);S.studio.rep=Math.min(100,(S.studio.rep||0)+I.passRep);caLog(ctx,"event","A health inspector goes over the shop. Everything passes.",{insp:"pass"});return;}
   const f=caRub(S,I.fine);cashOut(S,f,"fine");S.studio.rep=Math.max(0,(S.studio.rep||0)+I.failRep);
   const why=inf?"infections on the record":!ck.steril?"no proper sterilisation room":!ck.supplies?"running short of clean supplies":ck.ink==="budget"?"cheap unlabelled ink":"the paperwork";
   C.inspFails=(C.inspFails||0)+1;C.inspLast.why=why;
@@ -628,7 +631,7 @@ function legacySummary(S){
 
 WEEK_HOOKS.costs=careerWeek;
 SIM.ACTS=ACTS;SIM.MENTOR=MENTOR;SIM.APPRENTICE_STEPS=APPRENTICE_STEPS;SIM.CHORES=CHORES;SIM.FRIENDS=FRIENDS;SIM.CHAIR_SPLIT=CHAIR_SPLIT;
-SIM.RATE_BY_REP=RATE_BY_REP;SIM.SUPPLIES=SUPPLIES;SIM.LEASE=LEASE;SIM.MARKETING=MARKETING;SIM.STUDIO_STAGES=STUDIO_STAGES;SIM.VIBES=VIBES;
+SIM.RATE_BY_REP=RATE_BY_REP;SIM.SUPPLIES=SUPPLIES;SIM.LEASE=LEASE;SIM.LEGACY_NEED=LEGACY_NEED;SIM.MARKETING=MARKETING;SIM.STUDIO_STAGES=STUDIO_STAGES;SIM.VIBES=VIBES;
 SIM.STAFF=STAFF;SIM.NOSHOW=NOSHOW;SIM.INSPECTION=INSPECTION;SIM.BROKE=BROKE;SIM.SIGNATURE=SIGNATURE;SIM.SKILLS=SKILLS;
 SIM.CONVENTIONS=CONVENTIONS;SIM.CONV_SCORE=CONV_SCORE;SIM.GUEST_SPOTS=GUEST_SPOTS;SIM.GUEST=GUEST;SIM.LEGACY_OFFERS=LEGACY_OFFERS;
 SIM.APPRENTICES=APPRENTICES;SIM.LEGACY=LEGACY;

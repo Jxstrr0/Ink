@@ -132,7 +132,7 @@ const CONV_JUDGE={
   fresh:{design:0.5,outputs:0.3,skill:0.1,sig:0.1},
   healed:{reads:0.45,heal:0.25,years:0.15,sig:0.15},
   heal:{crisp:1,soft:0.7,patchy:0.3,blownout:0.1,infected:0},
-  sd:0.06,places:[0.72,0.62,0.52],prizeShare:0.6,
+  sd:0.06,places:[0.9,0.84,0.78],prizeShare:0.6,
   booth:{perSheet:120,min:3,attendance:{mostograd_fair:1,capital_expo:1.8,baltic_show:1.3}},
   collector:{chance:0.35,perPlace:0.15}
 };
@@ -206,7 +206,7 @@ const REP_EVENTS={
       no:"You tell them you'd rather the work did the talking. A few artists hear about it and approve."},
     met:"I read about you in Kontur. I've kept the page."},
   award:{track:"peers",head:"The Drawbridge Prize",name:"the Drawbridge Prize",by:"the Mostograd Tattoo Guild",week:48,pieces:3,minPieces:2,wait:2,
-    score:{healed:1,sig:0.1},sd:0.05,places:[0.66,0.58,0.5],prize:[30000,15000,7000],
+    score:{healed:1,sig:0.1},sd:0.05,places:[0.78,0.72,0.66],prize:[30000,15000,7000],
     rep:{peers:[3,2,1,0.3],collectors:[2.5,1.5,0.8,0]},
     text:"The Mostograd Tattoo Guild has put you up for the Drawbridge Prize. The judges look at healed work only: three pieces, a year old or more.",
     choices:[["enter","Send your best healed pieces"],["pass","Not this year"]],dflt:"enter",
