@@ -369,7 +369,7 @@ Referrals still skip patchy, blown-out and infected heals (`calendar.js`).
 - `SIM.repWeek(S)`: every track loses `REP.decayWeek` (0.15%) of itself each week (the heals hook calls it after the heals), so a reputation has to be kept up.
 - `SIM.setPortfolio(S, piece, on)`: healed pieces only; sets or removes `piece.portfolio` and moves collectors by `REP.portfolio.collectors` with no soft cap, so taking it out gives back exactly what putting it in gave.
 - `SIM.repUnlocked(S, track, id)` (a segment or event id), `SIM.repNext(S, track) -> {id, kind:"segment"|"event", at}` or null.
-- 0.1.13.0: every event is in the game. `waiting_list` is 60, the number Act 4 checks (`legacyNeed` reads it from this table); `guest_spot` and `convention` are PR 7's invitations; `flash_day`, `friday_13`, `magazine` and `award` are `REP_EVENTS` (below).
+- 0.1.13.0: every event is in the game. `waiting_list` is 60, the number Act 4 checks (`legacyNeed` reads it from this table; since 0.1.20.0 Act 4 has its own number, `LEGACY_NEED.collectors` 90, and the event stays 60); `guest_spot` and `convention` are PR 7's invitations; `flash_day`, `friday_13`, `magazine` and `award` are `REP_EVENTS` (below).
 
 ### Reputation events (0.1.13.0, `sim/events.js`)
 
@@ -412,7 +412,7 @@ Files: `sim/career.js` (after `kit.js`; sets `WEEK_HOOKS.costs`) and `sim/archiv
 
 - `rentChair(S)` -> `{ok, early, goodwill, split, line}`. Before week 1 of 2003 it is leaving early: `MENTOR.goodwill.early` plus `earlyPerYear` x years left. Goodwill at or over `MENTOR.splitAt` gets Arkady's own chair at `CHAIR_SPLIT.mentor`, else `standard`.
 - `leaseStudio(S)` -> `{ok, cost}` or `{ok:false, need: leaseNeed(S)}`: a chair, from `LEASE.need.year` (or rep sum `LEASE.need.repSum`), and the deposit in cash.
-- `goLegacy(S)`: a studio, from 2018 or collectors at 60.
+- `goLegacy(S)`: a studio, from 2018 or collectors at `LEGACY_NEED.collectors` (90 since 0.1.20.0; was the waiting_list event's 60).
 - `skipBroom(S)`: a new career straight into week 1 of 2003 in a chair, the tutorial marked done, `SKILL_XP.skip` skills, rep 10/5/8.
 - `softFail(S, ctx)`: the studio closes (below).
 
@@ -470,7 +470,7 @@ Each week, in order: the signature counts; `S.rate = rateFor(S)` (`RATE_BY_REP` 
 
 - `compactClients(S)` keeps `CLIENT_CAP` (200) full client records, scored by recency, loyalty and pieces, and never compacts a client who is booked, on the board, in the chair, a friend, an apprentice's shared client or has a piece healing. A walk-out with no pieces compacts after `ARCHIVE.walkoutWeeks`. A compacted client keeps `AR_KEEP` (id, name, pronouns, born, body shape, skin tone, traits, loyalty, since, last seen, visits, referred by, src, pieces) and `compact: true`. History is trimmed to `HISTORY_CAP` (30) entries.
 - `expandClient(S, c)`: a returning compacted client (`scheduleReturns`) gets a fresh brief, wants and job from a fork of their id and the week, a note that older notes are archived, and stays the same person.
-- `packSave(S)` -> a shallow copy for JSON: every piece but the newest `ARCHIVE.pieceFull` (50) becomes a short array (ids as numbers, dates as week indexes, outputs x1000, element strings, the name and label left out when they can be rebuilt, the kit as one number, a staff piece's guest as one string); every compacted client too. A piece is packed only if unpacking it gives the same piece back (`arSame`, 3 decimals); others stay objects. `unpackSave(o)` turns them back, in place, and rebuilds compacted clients' piece lists. Packing twice gives the same JSON.
+- `packSave(S)` -> a shallow copy for JSON: every piece but the newest `ARCHIVE.pieceFull` (50) becomes a short array (ids as numbers, dates as week indexes, outputs x1000, element strings, the name and label left out when they can be rebuilt, the kit as one number, a staff piece's guest as one string); every compacted client too. A piece is packed only if unpacking it gives the same piece back (`arSame`, 3 decimals); others stay objects. 0.1.20.0 writes each packed piece's tuple as one string (`AR_V2`): fields split by ",", an empty field "0", lists inside a field split by spaces, the id and week as steps from the piece before, sizes and prices / 100, the heal grade as a digit; a tuple whose string doesn't decode back to it exactly stays a tuple. `packSave(S, {tuples:true})` writes the 0.1.19.0 form. `unpackSave(o)` turns strings and tuples back, in place, and rebuilds compacted clients' piece lists. Packing twice gives the same JSON.
 - **Pieces are never dropped.** Sizes from `tools/sim-test.js` (the auto career with two artists from year 8):
 
 | year | pieces (by staff) | clients | ink-save JSON | INK1 backup code |
@@ -480,11 +480,22 @@ Each week, in order: the signature counts; `S.rate = rateFor(S)` (`RATE_BY_REP` 
 | 20 | 3,396 (1,007) | 4,016 | 1,251 KB | 698 KB |
 | 30 | 4,475 (2,008) | 5,073 | 1,518 KB | 905 KB |
 
+0.1.20.0 (cheaper prices, so the auto career books more; older pieces as `AR_V2` strings):
+
+| year | pieces (by staff) | clients | ink-save JSON | INK1 backup code |
+|---|---|---|---|---|
+| 5 | 388 (0) | 354 | 403 KB | 135 KB |
+| 10 | 1,707 (120) | 1,366 | 690 KB | 323 KB |
+| 20 | 5,532 (965) | 4,460 | 1,258 KB | 790 KB |
+| 30 | 7,329 (1,954) | 5,891 | 1,618 KB | 1,032 KB |
+
+As 0.1.19.0 tuples the same year-30 save would be about 2,020 KB / 1,250 KB, over the checks' 2 MB / 1.2 MB. The backup code's LZW dictionary is frozen once full and learns from the start of the save (the archived clients), which is why the strings use commas and digits rather than new separators.
+
 The plan's ~8 KB target can't hold 4,000+ pieces (each is at least a design, its outputs and a date: about 110 bytes packed). The year-30 save is about a third of its unpacked size (4.6 MB) and well inside a browser's ~5 MB.
 
 ## Tables added in PR 7
 
-`career.js`: `ACTS`, `MENTOR`, `APPRENTICE_STEPS`, `CHORES`, `FRIENDS`, `CHAIR_SPLIT`, `RATE_BY_REP`, `SUPPLIES`, `LEASE`, `MARKETING`, `STUDIO_STAGES`, `VIBES`, `STAFF`, `NOSHOW`, `INSPECTION`, `BROKE`, `SIGNATURE`, `SKILLS`, `CONVENTIONS`, `CONV_SCORE`, `GUEST_SPOTS`, `GUEST`, `LEGACY_OFFERS`, `APPRENTICES`, `LEGACY`, `CAREER_COMPACT_EVERY`; `SKILL_XP.consult`, `.convention`, `.skip`. `archive.js`: `CLIENT_CAP`, `HISTORY_CAP`, `ARCHIVE`. All on `SIM`.
+`career.js`: `ACTS`, `MENTOR`, `APPRENTICE_STEPS`, `CHORES`, `FRIENDS`, `CHAIR_SPLIT`, `RATE_BY_REP`, `SUPPLIES`, `LEASE`, `LEGACY_NEED`, `MARKETING`, `STUDIO_STAGES`, `VIBES`, `STAFF`, `NOSHOW`, `INSPECTION`, `BROKE`, `SIGNATURE`, `SKILLS`, `CONVENTIONS`, `CONV_SCORE`, `GUEST_SPOTS`, `GUEST`, `LEGACY_OFFERS`, `APPRENTICES`, `LEGACY`, `CAREER_COMPACT_EVERY`; `SKILL_XP.consult`, `.convention`, `.skip`. `archive.js`: `CLIENT_CAP`, `HISTORY_CAP`, `ARCHIVE`, `AR_V2` (0.1.20.0). All on `SIM`.
 
 ## Tests
 
