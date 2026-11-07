@@ -502,8 +502,8 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 /* the stage: rail on the free hand's side */
 .seStage{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
 .se[data-hand="left"] .seStage{flex-direction:row-reverse}
-.seRail{flex:0 0 52px;display:flex;flex-direction:column;gap:6px}
-.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:58px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:600;cursor:pointer}
+.seRail{flex:0 0 60px;display:flex;flex-direction:column;gap:8px}
+.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer}
 .seAct svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .seAct em{font-style:normal;font-size:9.5px;color:var(--mute);font-weight:500}
 .seAct:hover{border-color:var(--faint)}
@@ -511,6 +511,30 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 #seStop{margin-top:auto;color:var(--red2)}
 .seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none}
 .seWrap canvas{position:absolute;left:0;top:0;display:block}
+/* 0.1.16.0: the camera round the canvases (moved by a CSS transform between lines), the view button and the machine */
+.seCam{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:0 0}
+.seZoomB{position:absolute;top:6px;right:6px;z-index:3;display:flex;align-items:center;gap:5px;min-height:44px;min-width:44px;padding:0 12px;border-radius:22px;border:1px solid rgba(0,0,0,.25);background:rgba(20,16,12,.72);color:#f3ece2;font:600 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+.se[data-hand="left"] .seZoomB{right:auto;left:6px}
+.seZoomB svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.seZoomB[aria-pressed="true"]{background:#f3ece2;color:#16120e}
+.seZoomB:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.sePen{position:absolute;left:0;top:0;width:0;height:0;z-index:2;pointer-events:none;will-change:transform}
+.sePen[hidden]{display:none}
+.sePen svg{position:absolute;overflow:visible}
+.sePen svg.lh .kind{transform:scaleX(-1)}
+.sePen .body{fill:rgba(28,24,22,.5);stroke:#16120e;stroke-width:1.6;stroke-linejoin:round;transition:fill .15s}
+.sePen .line{fill:none;stroke:rgba(243,236,226,.7);stroke-width:1.2}
+.sePen .cord{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round;opacity:.6}
+.sePen .noz{fill:#9aa1a6;stroke:#16120e;stroke-width:1.2;stroke-linejoin:round}
+.sePen .ndl{stroke:#16120e;stroke-width:1.4;stroke-linecap:round}
+.sePen .ringW{fill:none;stroke:rgba(255,255,255,.85);stroke-width:4.5}
+.sePen .ring{fill:none;stroke:#16120e;stroke-width:1.8;stroke-linecap:round}
+.sePen .tip{fill:#16120e}
+.sePen.on .body{fill:rgba(28,24,22,.22)}
+.sePen.on .cord{opacity:.35}
+.sePen.near .ring{stroke:#2f7f77;stroke-width:2.4}
+.sePen.rush .ring{stroke:#c0392f;stroke-width:2.6}
+.seDot.near{border-color:#1f6b64;background:rgba(47,127,119,.45);box-shadow:0 0 0 3px rgba(255,255,255,.9)}
 #seOver{touch-action:none;cursor:crosshair}
 .seDot{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #2f7f77;background:rgba(47,127,119,.25);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .seDot::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(47,127,119,.6);animation:sePulse 1.4s ease-out infinite}
@@ -537,7 +561,7 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 .seStatus{margin:0;min-height:1.4em;font-size:13.5px;color:var(--text)}
 .seTools .row{gap:10px}
 .seLiners{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
-.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:44px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:52px;min-width:72px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
 .seChipL svg{grid-row:1/3;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .seChipL b{font-size:13.5px}
 .seChipL span{font-size:11px;color:var(--mute)}
@@ -607,7 +631,10 @@ html[data-theme=light] .dzBoard{box-shadow:inset 0 0 0 1px rgba(80,60,30,.08),0 
 #kpReset{margin-top:10px}
 
 @media (max-width:380px){.seMeters{grid-template-columns:1fr}.seRen{width:88px;height:88px}}
-@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}}
+@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}.seCam{transition:none!important}.sePen .body{transition:none}}
+@media (prefers-reduced-transparency:reduce){.sePen .body,.sePen.on .body{fill:none;stroke-width:2}.seZoomB{background:#16120e}.sePen .cord{opacity:.8}}
+html[data-theme=light] .seZoomB{background:rgba(255,253,249,.92);color:#16120e;border-color:rgba(0,0,0,.3)}
+html[data-theme=light] .seZoomB[aria-pressed="true"]{background:#16120e;color:#fffdf9}
 html[data-theme=light] .seMB s{opacity:.9}
 html[data-theme=light] .seGT .band{background:rgba(47,138,82,.18)}
 html[data-theme=light] .seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.5) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
@@ -7252,7 +7279,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.15.1";
+const VERSION="0.1.16.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -7301,7 +7328,8 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9)
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true,needle:"offset"},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9);
+                     // needle (0.1.16.0): "offset" holds the machine with its needle above your finger, "direct" puts the needle under it
   help:{},           // help overlays already seen (PR 9, app/help.js HELP_TIPS): tip id -> {w, y}; a new career starts with none
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
@@ -7338,6 +7366,7 @@ function hydrate(o){
   S=Object.assign(f,o,{settings:Object.assign(f.settings,o.settings||{}),board:Object.assign(f.board,ob),
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
+  if(S.settings.needle!=="direct")S.settings.needle="offset";   // 0.1.16.0: older saves (and anything odd) hold the machine offset
   if(!S.help||typeof S.help!=="object"||Array.isArray(S.help))S.help={};   // PR 9
   S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
   if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
@@ -7485,6 +7514,7 @@ function buSaveOk(o){
   if("settings" in o&&!buObj(o.settings))return false;
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
   if(buObj(o.settings)&&"tips" in o.settings&&typeof o.settings.tips!=="boolean")return false;   // PR 9
+  if(buObj(o.settings)&&"needle" in o.settings&&o.settings.needle!=="offset"&&o.settings.needle!=="direct")return false;   // 0.1.16.0
   if("help" in o&&o.help!=null&&!buObj(o.help))return false;   // PR 9: tip id -> {w, y}
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;
@@ -7662,9 +7692,10 @@ ${setRow("Effects",segHtml("setReduced",[["0","On"],["1","Reduced"]],st.reduced?
 ${setRow("Auto-adjust",segHtml("setGfxAuto",[["1","On"],["0","Off"]],st.gfxAuto===false?0:1),"Steps down a tier if the studio stutters")}
 <p class="hint">Lite is the phone default.</p></section>
 <section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"The machine buzz and taps")}</section>
-<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side")}
+<section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side, and the machine leans that way")}
 ${setRow("Assist",segHtml("setAssist",[["0","Off"],["1","On"]],st.assist?1:0),"A slower marker and a wider steady band, from the next sitting")}
-${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}</section>
+${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}
+${setRow("Needle under finger",segHtml("setNeedle",[["0","Off"],["1","On"]],st.needle==="direct"?1:0),"Off: hold the machine and the needle sits above your finger, so you can see the line. On: the needle is right under your fingertip")}</section>
 <section class="setS"><h3>Help</h3>${setRow("Tips",segHtml("setTips",[["1","On"],["0","Off"]],st.tips===false?0:1),"Short notes the first time you meet something in Act 1")}
 <div class="row"><button class="btn" id="setTipsAgain">Show tips again</button></div></section>
 <section class="setS"><h3>Save</h3><p class="hint" style="margin-top:0">Your game saves itself on this device. A backup code or file moves it to another phone.</p>
@@ -7681,10 +7712,11 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
   seg("setReduced",v=>{st.reduced=v==="1";applySettings();});
   seg("setGfx",v=>{st.gfx=v||null;PERF.manual=true;perfReset(true);applyGfx();});
   seg("setGfxAuto",v=>{st.gfxAuto=v==="1";PERF.dropped=PERF.manual=false;perfReset(true);});
-  seg("setHand",v=>{st.handed=v==="left"?"left":"right";});
+  seg("setHand",v=>{st.handed=v==="left"?"left":"right";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setAssist",v=>{st.assist=v==="1";});
   seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
   seg("setFlat",v=>{st.flatStencil=v==="1";});
+  seg("setNeedle",v=>{st.needle=v==="1"?"direct":"offset";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setTips",v=>{st.tips=v==="1";if(!st.tips&&typeof helpOff==="function")helpOff();});
   $("setTipsAgain").addEventListener("click",()=>{if(typeof helpReset==="function")helpReset();$("setTips").querySelectorAll("button").forEach(x=>{const on=x.dataset.v==="1";x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});toast("Tips will show again as you meet each thing");});
   $("bkCode").addEventListener("click",buBackupOpen);$("bkRestore").addEventListener("click",buRestoreOpen);
@@ -8453,6 +8485,21 @@ function dzKeysOnce(){
      sample       "Tattoo this" on the Design tab with a sample walk-in: a one-off test. Pays SE_PAY.sample of the price per
                   sitting; the next sitting can start straight away (S.session.next) since sample clients aren't on the calendar.
      practice     fake skin: no pain, no fatigue, no money, no piece, only XP (SKILL_XP.practice).
+   0.1.16.0, the offset machine and the close-up view:
+     holding      by default (S.settings.needle "offset") a touch on the skin puts a drawn machine in your hand (#sePen, a
+                  DOM svg moved with a transform, shaped like the kit's coil, rotary or pen) with its needle SE_PEN.dy px
+                  above your finger and a little to the side away from your drawing hand, a ring and crosshair on the tip.
+                  Everything the sim hears (penDown/penMove/penUp) is the TIP's position, never the finger's. A line starts
+                  when you slide the tip onto the dot (penDown is tried at every move until it lands inside the sim's start
+                  tolerance), so a touch beside the dot is not a miss. "Needle under finger" in Settings › Session
+                  ("direct") is the old way: the needle is the fingertip and a touch off the dot is a nudge.
+     close-up     the canvases sit in a camera (#seCam): the view fits the current line or zone into the part of the skin
+                  the tip can reach (SE.R, seFrameTarget, SE_ZOOM; up to SE_ZOOM.max times the whole-sitting fit) and
+                  re-centres between lines, never while the needle is down, so the sim's millimetres never move under your
+                  finger. The re-centre is a short CSS move of the camera then one redraw at the new scale (a jump with
+                  reduced motion). The Whole / Close up button, or a two-finger pinch while no line is being drawn,
+                  switches views. The ink laid on the current line is kept as segments (SE.laid) so a redraw keeps its
+                  rushed and blown-out marks.
    S.session = {live: the sitting in progress (the sim's object: numbers and short strings, saved at every finger lift and
    every action, so a reload resumes it), next: a sample piece waiting for its next sitting}. A finished piece gets heal:null
    and healDue {w, y} SE_HEAL_WEEKS on (PR 5 shows the heal). window.__inkSessFps() reports the loop's frame rate. */
@@ -8464,6 +8511,13 @@ const SE_SKIN=[[0,[243,217,192]],[0.35,[217,169,130]],[0.65,[168,113,74]],[1,[91
 const SE_FAKE=[236,214,186];         // practice skin: a pale rubber pad
 const SE_STENCIL={light:"#6a3fc8",dark:"#cbb6ff",w:1.1,cur:2.4,alpha:0.7};
 const SE_LAYOUT={rail:56,minH:240,maxH:620,chrome:310,ahead:0.8};   // px; ahead = seconds of line the reduced-motion highlight shows
+/* the offset machine (0.1.16.0), CSS px: the needle tip sits dy above the finger and dx to the side away from the drawing
+   hand; pad keeps the work that far inside the skin the tip can reach; near = how many start tolerances away the dot lights up */
+const SE_PEN={dy:68,dx:24,pad:10,near:3};
+/* the close-up view: at most max times the whole-sitting fit; a line or zone is framed with padMm round it and at least
+   minMm (or minShare of the sitting's size) across; anim = ms for the re-centre; top = px kept clear for the view button
+   in direct mode; pinch = the spread (or squeeze) ratio that switches views */
+const SE_ZOOM={max:3,minMm:16,minShare:0.3,padMm:4,anim:260,top:52,pinch:1.25};
 const SE_CHAT=["They tell you the bridges went up before they could get home last night. Two hours on the wrong bank.",
   "Talk turns to the canal ice. Nobody on the embankment trusts it before January.",
   "They ask how long you've been at this. Long enough to stop shaking, you say.",
@@ -8477,13 +8531,28 @@ const SE_ICON={
   numb:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M7 13h10"/></svg>',
   chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>',
-  needle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>'};
+  needle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>',
+  zoomOut:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  zoomIn:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M11 8v6M8 11h6"/></svg>'};
+/* the machine in your hand, drawn with its needle tip at (0,0) and the body running down +y towards the finger (about
+   y 68). Shared: the tip ring and crosshair, the needle and the nozzle; the body per kind. Mirrored for the left hand */
+const SE_MACHINE={
+  coil:'<path class="body" d="M-6 30h12l1 56h-14z"/><path class="body" d="M7 38h8v58h-8"/><rect class="body" x="10" y="48" width="12" height="16" rx="3"/><rect class="body" x="10" y="68" width="12" height="16" rx="3"/><path class="cord" d="M0 86c0 22 6 34 18 52"/>',
+  rotary:'<path class="body" d="M-6 30h12l2 46h-16z"/><rect class="body" x="-10" y="76" width="20" height="52" rx="9"/><path class="line" d="M-10 92h20"/><path class="cord" d="M0 128c0 10 4 18 12 26"/>',
+  pen:'<rect class="body" x="-5.5" y="30" width="11" height="104" rx="5.5"/><path class="line" d="M-5.5 100h11M-5.5 104h11"/>'};
+function seMachineKind(sess){const k=sess&&sess.kit,m=k&&INK_SIM.MACHINES[k.machine];return m&&SE_MACHINE[m.kind]?m.kind:"coil";}
+function seMachineSvg(kind,left){
+  return`<svg viewBox="-34 -22 68 182" width="68" height="182" style="left:-34px;top:-22px"${left?' class="lh"':""} aria-hidden="true"><g class="kind">${SE_MACHINE[kind]||SE_MACHINE.coil}</g>
+<path class="noz" d="M-3 15h6l3 15h-12z"/><path class="ndl" d="M0 3v12"/>
+<circle class="ringW" r="11"/><circle class="ring" r="11"/><path class="ring" d="M0-14v-6M-14 0h-6M14 0h6"/><circle class="tip" r="1.6"/></svg>`;}
 const SE={sess:null,result:null,pick:"",place:null,c:null,v:null,s:1,ox:0,oy:0,dpr:1,down:null,q:[],fillDirty:false,baseDirty:false,
-  raf:0,lastF:0,frames:0,fpsT:0,fpsN:0,dirty:[],r:0,rushed:false,live:null,stopArm:0,stopT:0,status:"",ro:null};
+  raf:0,lastF:0,frames:0,fpsT:0,fpsN:0,dirty:[],r:0,rushed:false,live:null,stopArm:0,stopT:0,status:"",ro:null,
+  hold:null,laid:null,zoomOut:false,anim:null,R:null,tox:0,toy:0,ptrs:new Map(),pinch:null};
 
 /* ---- small helpers ---- */
 function seSlot(){if(!S.session||typeof S.session!=="object")S.session={live:null,next:null};return S.session;}
 function seLive(){return S.session&&S.session.live||null;}
+function seOffset(){return S.settings.needle!=="direct";}
 function seReduced(){return!!S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);}
 function seRgb(c){return`rgb(${c.map(Math.round).join(",")})`;}
 function seSkinRgb(t,practice){if(practice)return SE_FAKE;t=clamp(t==null?0.3:t,0,1);
@@ -8681,27 +8750,74 @@ function seRenderChair(){
 <button class="seAct" id="seStop" aria-label="End the sitting">${SE_ICON.stop}<span>End</span></button>`;
   host.innerHTML=`<div class="se" data-hand="${hand}">${seTopHtml(sess)}
 <div class="seStage"><div class="seRail" role="group" aria-label="Client care">${rail}</div>
-<div class="seWrap" id="seWrap"><canvas id="seBase"></canvas><canvas id="seFill"></canvas><canvas id="seInk"></canvas><canvas id="seOver" aria-label="Skin: trace the stencil" role="img"></canvas>
-<div class="seDot" id="seDot" aria-hidden="true"></div></div></div>
+<div class="seWrap" id="seWrap" data-needle="${seOffset()?"offset":"direct"}"><div class="seCam" id="seCam"><canvas id="seBase"></canvas><canvas id="seFill"></canvas><canvas id="seInk"></canvas><canvas id="seOver" aria-label="${seOffset()?"Skin: hold the machine and bring the needle onto the dot":"Skin: trace the stencil"}" role="img"></canvas>
+<div class="seDot" id="seDot" aria-hidden="true"></div></div>
+<button type="button" class="seZoomB" id="seZoom" aria-pressed="${SE.zoomOut}">${seZoomLbl()}</button>
+<div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div></div></div>
 <div class="seUnder"><div id="seGauge"></div><p class="seStatus" id="seStatus" role="status" aria-live="polite"></p><div class="seTools" id="seTools"></div></div></div>`;
   const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
   on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);
+  on("seZoom",()=>seZoomToggle());SE.ptrs.clear();SE.pinch=null;SE.hold=null;
   seLayout();seRenderUnder();seWireCanvas();
   const wrap=$("seWrap");
   if(window.ResizeObserver){if(SE.ro)SE.ro.disconnect();let w0=wrap.clientWidth;SE.ro=new ResizeObserver(()=>{if(Math.abs(wrap.clientWidth-w0)>2&&$("seWrap")===wrap){w0=wrap.clientWidth;seLayout();}});SE.ro.observe(wrap);}
   if(sess.stop)setTimeout(()=>{if(SE.sess===sess&&!SE.down)seEnd();},400);}
-/* canvas sizes and the mm -> px mapping, then a full redraw */
+/* canvas sizes, the part of the skin the needle tip can reach (SE.R), then the camera (SE.s, SE.ox, SE.oy) and a full redraw.
+   In offset mode the tip rides SE_PEN.dy above the finger, so the skin is taller by about that and nothing is framed in
+   the bottom band the tip can't reach; in direct mode the top strip stays clear for the view button */
 function seLayout(){
   const sess=SE.sess,wrap=$("seWrap");if(!sess||!wrap)return;
-  const v=sess.view,cw=Math.max(160,wrap.clientWidth);
-  const ch=Math.round(clamp(Math.min(innerHeight-SE_LAYOUT.chrome,cw*v.h/v.w*1.05+8),SE_LAYOUT.minH,SE_LAYOUT.maxH));
+  seAnimDone(true);
+  const v=sess.view,cw=Math.max(160,wrap.clientWidth),off=seOffset(),P=SE_PEN;
+  const tox=off?(S.settings.handed==="left"?1:-1)*P.dx:0,toy=off?-P.dy:0,top=off?0:SE_ZOOM.top,extra=off?P.dy:top;
+  const fitW=cw-Math.abs(tox)-2*P.pad;
+  const ch=Math.round(clamp(Math.min(innerHeight-SE_LAYOUT.chrome+extra*0.5,fitW*v.h/v.w*1.05+8+extra),SE_LAYOUT.minH+extra*0.5,SE_LAYOUT.maxH));
   wrap.style.height=ch+"px";
   const tier=perfTier(),dpr=Math.min(window.devicePixelRatio||1,SE_DPR[tier]||1.5);
-  SE.dpr=dpr;SE.v=v;SE.s=Math.min(cw/v.w,ch/v.h);SE.ox=(cw-v.w*SE.s)/2;SE.oy=(ch-v.h*SE.s)/2;SE.cw=cw;SE.ch=ch;
+  SE.dpr=dpr;SE.v=v;SE.cw=cw;SE.ch=ch;SE.tox=tox;SE.toy=toy;
+  const x0=Math.max(0,tox),x1=Math.min(cw,cw+tox),y0=Math.max(top,toy),y1=Math.min(ch,ch+toy);
+  SE.R={x:x0+P.pad,y:y0+P.pad,w:Math.max(40,x1-x0-2*P.pad),h:Math.max(40,y1-y0-2*P.pad)};
   SE.c={};for(const k of ["Base","Fill","Ink","Over"]){const c=$("se"+k);c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);c.style.width=cw+"px";c.style.height=ch+"px";
     const x=c.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);SE.c[k.toLowerCase()]=x;}
   SE.dirty=[];SE.minDt=1000/(SE_FPS[tier]||30)-2;
-  seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
+  const f=seFrameTarget();SE.s=f.s;SE.ox=f.ox;SE.oy=f.oy;
+  seDrawAll();seZoomSync();}
+function seDrawAll(){const c=SE.c&&SE.c.over;if(!c)return;c.clearRect(0,0,SE.cw,SE.ch);SE.dirty=[];seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
+/* the camera: the current line or zone (or, zoomed out, the whole sitting) fitted into the reachable part of the skin */
+function seItemBox(sess){
+  const it=INK_SIM.sessionItem(sess);if(!it)return null;
+  if(it.k==="line"){const p=it.stroke.pts;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(let j=0;j<p.length;j+=2){x0=Math.min(x0,p[j]);x1=Math.max(x1,p[j]);y0=Math.min(y0,p[j+1]);y1=Math.max(y1,p[j+1]);}return[x0,y0,x1,y1];}
+  return it.zone.box.slice();}
+function seFrameTarget(){
+  const v=SE.v,R=SE.R,sFit=Math.min(R.w/v.w,R.h/v.h);
+  const ib=SE.zoomOut?null:seItemBox(SE.sess),bx=ib||[v.x0,v.y0,v.x0+v.w,v.y0+v.h];
+  let bw=bx[2]-bx[0],bh=bx[3]-bx[1];
+  if(ib){const m=Math.max(SE_ZOOM.minMm,v.size*SE_ZOOM.minShare);bw=Math.max(bw+2*SE_ZOOM.padMm,m);bh=Math.max(bh+2*SE_ZOOM.padMm,m);}
+  const sc=clamp(Math.min(R.w/bw,R.h/bh),sFit,sFit*SE_ZOOM.max),cx=(bx[0]+bx[2])/2,cy=(bx[1]+bx[3])/2;
+  return{s:sc,ox:R.x+R.w/2-(cx-v.x0)*sc,oy:R.y+R.h/2-(cy-v.y0)*sc,z:sc/sFit};}
+/* move the camera to its target: a short CSS move of the canvases, then one redraw at the new scale. Never while the
+   needle is down (seAfterItem and the view button call it between lines) */
+function seRefit(anim){
+  if(!SE.R||!$("seCam"))return;
+  const t=seFrameTarget(),cam=$("seCam");seAnimDone(true);
+  const same=Math.abs(t.s-SE.s)<1e-3&&Math.abs(t.ox-SE.ox)<0.5&&Math.abs(t.oy-SE.oy)<0.5;
+  if(same||!anim||seReduced()){SE.s=t.s;SE.ox=t.ox;SE.oy=t.oy;seDrawAll();seZoomSync();return;}
+  seDrawBase();seDrawInkAll();seDrawFills();   // the new current item and the finished line, at the old scale, then the move
+  const k=t.s/SE.s,tx=t.ox-k*SE.ox,ty=t.oy-k*SE.oy;
+  const d=$("seDot");if(d)d.hidden=true;
+  cam.style.transition="none";cam.style.transform="none";void cam.offsetWidth;
+  cam.style.transition=`transform ${SE_ZOOM.anim}ms cubic-bezier(.3,.7,.3,1)`;cam.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
+  SE.anim={t,timer:setTimeout(()=>seAnimDone(false),SE_ZOOM.anim+20)};seZoomSync();}
+function seAnimDone(skip){
+  const a=SE.anim;if(!a)return;clearTimeout(a.timer);SE.anim=null;
+  const cam=$("seCam");if(cam){cam.style.transition="none";cam.style.transform="none";}
+  SE.s=a.t.s;SE.ox=a.t.ox;SE.oy=a.t.oy;if(!skip)seDrawAll();}
+function seZoomLbl(){return SE.zoomOut?`${SE_ICON.zoomIn}<span>Close up</span>`:`${SE_ICON.zoomOut}<span>Whole</span>`;}
+function seZoomSync(){const b=$("seZoom");if(!b)return;const html=seZoomLbl();if(b._h!==html){b._h=html;b.innerHTML=html;}b.setAttribute("aria-pressed",SE.zoomOut);
+  b.setAttribute("aria-label",SE.zoomOut?"Close up on the current line":"See the whole design");}
+function seZoomToggle(out){if(SE.down||!SE.sess)return;SE.zoomOut=out==null?!SE.zoomOut:!!out;INK_SOUND.tick();seRefit(true);}
+/* Settings › Needle under finger (or the drawing hand) changed: redraw the chair if it's up */
+function seNeedleChanged(){if(SE.sess&&$("seWrap")&&!SE.down)seRenderChair();}
 const seX=x=>SE.ox+(x-SE.v.x0)*SE.s,seY=y=>SE.oy+(y-SE.v.y0)*SE.s;
 function sePath(c,p,close){c.beginPath();c.moveTo(seX(p[0]),seY(p[1]));for(let i=2;i<p.length;i+=2)c.lineTo(seX(p[i]),seY(p[i+1]));if(close)c.closePath();}
 function seLinerMm(sess){const n=INK_SIM.NEEDLES[sess.liner];return INK_SIM.lineMm(n&&n.rl?n.rl:7);}
@@ -8739,12 +8855,13 @@ function seDrawInkAll(){
   for(let i=0;i<Math.min(sess.next,plan.items.length);i++){const it=plan.items[i];if(it.k!=="line")continue;const st=plan.strokes[it.i];
     c.strokeStyle=st.colour?seColHex(st.colour):DZ_INK;c.lineWidth=Math.max(1.2,INK_SIM.lineMm(st.lw)*SE.s);sePath(c,st.pts,false);c.stroke();}
   const it=INK_SIM.sessionItem(sess);
+  if(it&&it.k==="line"&&SE.laid&&SE.laid.item===sess.next&&SE.laid.segs.length){seInkSegs(c,SE.laid.segs,it.stroke);return;}
   if(it&&it.k==="line"&&sess.cur&&sess.cur.u>0){const st=it.stroke,pts=[];for(let u=0;u<sess.cur.u;u+=1){const p=INK_SIM.pointAt(st,u);pts.push(p[0],p[1]);}
     const e=INK_SIM.pointAt(st,sess.cur.u);pts.push(e[0],e[1]);c.strokeStyle=st.colour?seColHex(st.colour):DZ_INK;c.lineWidth=lw;sePath(c,pts,false);c.stroke();}}
 /* the dot to start (or carry on) a line: a DOM element so its pulse is CSS (none with reduced motion) and costs no frames */
 function seDot(){
   const sess=SE.sess,d=$("seDot");if(!d)return;const it=INK_SIM.sessionItem(sess);
-  if(!it||it.k!=="line"||SE.down||sess.stop){d.hidden=true;return;}
+  if(!it||it.k!=="line"||SE.down||sess.stop||SE.anim){d.hidden=true;return;}
   const p=INK_SIM.pointAt(it.stroke,sess.cur?sess.cur.u:0);d.hidden=false;d.style.transform=`translate(${(seX(p[0])).toFixed(1)}px,${(seY(p[1])).toFixed(1)}px)`;
   d.classList.toggle("still",seReduced());}
 /* overlay: clear only what was drawn last frame, then the marker (or the static highlight) and the finger */
@@ -8760,7 +8877,7 @@ function seDrawOver(now){
       let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(let i=0;i<pts.length;i+=2){x0=Math.min(x0,seX(pts[i]));x1=Math.max(x1,seX(pts[i]));y0=Math.min(y0,seY(pts[i+1]));y1=Math.max(y1,seY(pts[i+1]));}mark(x0,y0,x1,y1,8);}}
     else{const um=Math.min(st.len,d.u0+b.paceMmS*Math.max(0,now-d.t0)/1000),p=INK_SIM.pointAt(st,um),x=seX(p[0]),y=seY(p[1]);
       c.beginPath();c.arc(x,y,9,0,Math.PI*2);c.strokeStyle="#2f7f77";c.lineWidth=3;c.stroke();c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fillStyle="#2f7f77";c.fill();mark(x,y,x,y,14);}}
-  if(d.x!=null){const x=seX(d.x),y=seY(d.y),rad=it.k==="line"?5:Math.max(8,Math.sqrt(it.zone.area)*0.12*SE.s);
+  if(d.x!=null&&!(seOffset()&&it.k==="line")){const x=seX(d.x),y=seY(d.y),rad=it.k==="line"?5:Math.max(8,Math.sqrt(it.zone.area)*0.12*SE.s);
     c.beginPath();c.arc(x,y,rad,0,Math.PI*2);c.strokeStyle=SE.rushed?"#c0392f":"rgba(22,18,14,.75)";c.lineWidth=SE.rushed?3:1.5;c.stroke();mark(x,y,x,y,rad+4);}}
 /* the loop: only while a finger is down, at most SE_FPS */
 function seKick(){if(!SE.raf)SE.raf=requestAnimationFrame(seLoop);}
@@ -8775,14 +8892,17 @@ function seLoop(now){
   seDrawOver(now);seUpdateLive();
   if(SE.down||SE.q.length)SE.raf=requestAnimationFrame(seLoop);else SE.lastF=0;}
 window.__inkSessFps=()=>({fps:SE.fpsT>0?Math.round(SE.fpsN/(SE.fpsT/1000)*10)/10:null,frames:SE.frames,cap:SE_FPS[perfTier()]||30,tier:perfTier()});
-/* ink laid since the last frame, straight from the finger */
+/* ink laid since the last frame, straight from the needle; kept in SE.laid so a redraw (the camera moving) keeps it */
 function seFlushInk(){
   if(!SE.q.length)return;const c=SE.c.ink,sess=SE.sess,it=INK_SIM.sessionItem(sess);
-  const st=it&&it.stroke,lw=Math.max(1.2,seLinerMm(sess)*SE.s);c.lineCap="round";c.lineJoin="round";
-  for(const s of SE.q){c.strokeStyle=st&&st.colour?seColHex(st.colour):DZ_INK;
-    if(s[4]==="blow"){c.globalAlpha=0.28;c.lineWidth=lw*3.2;c.beginPath();c.moveTo(seX(s[0]),seY(s[1]));c.lineTo(seX(s[2]),seY(s[3]));c.stroke();}
-    c.globalAlpha=s[4]==="rush"?0.7:1;c.lineWidth=lw;c.beginPath();c.moveTo(seX(s[0]),seY(s[1]));c.lineTo(seX(s[2]),seY(s[3]));c.stroke();}
-  c.globalAlpha=1;SE.q.length=0;}
+  if(it&&it.k==="line"){if(!SE.laid||SE.laid.item!==sess.next)SE.laid={item:sess.next,segs:[]};for(const q of SE.q)SE.laid.segs.push(q);}
+  seInkSegs(c,SE.q,it&&it.stroke);SE.q.length=0;}
+function seInkSegs(c,segs,st){
+  const lw=Math.max(1.2,seLinerMm(SE.sess)*SE.s);c.lineCap="round";c.lineJoin="round";c.strokeStyle=st&&st.colour?seColHex(st.colour):DZ_INK;
+  for(const g of segs){
+    if(g[4]==="blow"){c.globalAlpha=0.28;c.lineWidth=lw*3.2;c.beginPath();c.moveTo(seX(g[0]),seY(g[1]));c.lineTo(seX(g[2]),seY(g[3]));c.stroke();}
+    c.globalAlpha=g[4]==="rush"?0.7:1;c.lineWidth=lw;c.beginPath();c.moveTo(seX(g[0]),seY(g[1]));c.lineTo(seX(g[2]),seY(g[3]));c.stroke();}
+  c.globalAlpha=1;}
 /* meters, the steady-hand needle and the zone meter, from the last live result */
 function seUpdateLive(){
   const sess=SE.sess;if(!sess)return;
@@ -8806,7 +8926,7 @@ function seRenderUnder(){
     tools.innerHTML=`<div class="seLiners" role="group" aria-label="Liner">${L.liners.map(l=>`<button class="seChipL${l.id===sess.liner?" on":""}${alt===l.id?" hint":""}" data-li="${l.id}" aria-pressed="${l.id===sess.liner}">${SE_ICON.needle}<b>${l.id}</b><span>lays ${l.lo}–${l.hi}RL</span></button>`).join("")}</div>
 <p class="seLw ${fits?"ok":"bad"}"><span aria-hidden="true">${fits?"✓":"▲"}</span> This line wants ${lw}RL${fits?"":`: ${alt?`switch to ${alt}`:"nothing on the tray lays it cleanly (add one in Studio)"}`}</p>`;
     tools.querySelectorAll("[data-li]").forEach(bt=>bt.addEventListener("click",()=>{if(INK_SIM.sessionSetLiner(sess,bt.dataset.li)){INK_SOUND.tick();save();seRenderUnder();seDrawInkAll();}}));
-    if(!SE.status)seStatus(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace.");}
+    if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Hold anywhere on the skin, slide the needle onto the dot, follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace."));}
   else{
     const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
     g.innerHTML=`<div class="seZone"><span class="seGL">${col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
@@ -8818,28 +8938,72 @@ function seRenderUnder(){
 function seStatus(t){SE.status=t;const e=$("seStatus");if(e&&e.textContent!==t)e.textContent=t;}
 function seAfterItem(){
   const sess=SE.sess;
-  seDrawBase();seDrawInkAll();seDrawFills();seDot();SE.status="";
+  SE.laid=null;seRefit(true);SE.status="";
   const p=$("seProg");if(p){const cnt=seItemCounts(sess);p.textContent=seProgText(sess,INK_SIM.sessionItem(sess),sess.next-sess.start,sess.end-sess.start,cnt);}
   seRenderUnder();
   if(sess.stop)seEnd();}
-/* pointer input -> the sim, in mm on the placement box, with the event's own timestamps */
+/* pointer input -> the sim, in mm on the placement box, with the event's own timestamps. In offset mode every position
+   is the needle tip's (the finger plus SE.tox, SE.toy); a line starts the moment the tip reaches the dot */
+function sePx(ev){const w=$("seWrap"),r=w.getBoundingClientRect();return[ev.clientX-r.left-w.clientLeft,ev.clientY-r.top-w.clientTop];}
+function seTipPx(f){return[f[0]+SE.tox,f[1]+SE.toy];}
+function seMm(p){return[(p[0]-SE.ox)/SE.s+SE.v.x0,(p[1]-SE.oy)/SE.s+SE.v.y0];}
+function sePenAt(f){const pen=$("sePen");if(!pen)return;const t=seTipPx(f),a=Math.atan2(-(f[0]-t[0]),f[1]-t[1])*180/Math.PI;
+  pen.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px) rotate(${a.toFixed(1)}deg)`;}
+function sePenShow(on){const pen=$("sePen");if(!pen)return;pen.hidden=!on;if(!on)pen.classList.remove("on","rush","near");}
+/* the stroke starts: the sim accepted penDown at (x, y) */
+function seStrokeStart(sess,it,id,t,live,x,y){
+  SE.down={id,t0:t,u0:live.u||0,x,y,item:it.idx};SE.r=0;SE.rushed=false;
+  const pen=$("sePen");if(pen){pen.classList.add("on");pen.classList.remove("near");}
+  const dt=$("seDot");if(dt)dt.classList.remove("near");
+  if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
+  if(it.k==="line")INK_SOUND.buzzStart(INK_SIM.sessionBands(sess).buzz);else INK_SOUND.buzzStart(Object.assign({},INK_SIM.sessionBands(sess).buzz,{hz:INK_SIM.sessionBands(sess).buzz.hz*0.9}));
+  seDot();seKick();}
+/* the tip on its way to the dot: light the dot (and the ring) up when it's close */
+function seNear(sess,it,x,y){
+  const d=$("seDot"),pen=$("sePen");if(!d||it.k!=="line")return;
+  const b=INK_SIM.sessionBands(sess),at=INK_SIM.pointAt(it.stroke,sess.cur?sess.cur.u:0),slop=Math.max(b.accMm*INK_SIM.PACE.startSlop,b.view*0.05);
+  const near=Math.hypot(x-at[0],y-at[1])<slop*SE_PEN.near;d.classList.toggle("near",near);if(pen)pen.classList.toggle("near",near);}
 function seWireCanvas(){
   const over=$("seOver"),sess=SE.sess;
-  const mm=ev=>{const r=over.getBoundingClientRect();return[(ev.clientX-r.left-SE.ox)/SE.s+SE.v.x0,(ev.clientY-r.top-SE.oy)/SE.s+SE.v.y0];};
+  const tipMm=ev=>{const f=sePx(ev);return seMm(seOffset()?seTipPx(f):f);};
+  const curK=()=>{const it=INK_SIM.sessionItem(sess);return it?it.k:"";};
+  /* two fingers while no line is being drawn: spread for the close-up, squeeze for the whole design */
+  const pinchStart=()=>{const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1];SE.pinch={d0:Math.hypot(b[0]-a[0],b[1]-a[1])||1,done:false};
+    if(SE.hold){SE.hold=null;sePenShow(false);}
+    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}};
   over.addEventListener("pointerdown",ev=>{
-    if(SE.down||sess.stop||sess.phase!=="work")return;ev.preventDefault();
+    if(sess.stop||sess.phase!=="work")return;ev.preventDefault();
+    const f=sePx(ev);SE.ptrs.set(ev.pointerId,f);
+    if(SE.ptrs.size===2){
+      /* a second finger mid-line is a resting palm: ignore it. A zone touched a moment ago gives way to the pinch */
+      if(!SE.down||(curK()!=="line"&&ev.timeStamp-SE.down.t0<150))pinchStart();
+      return;}
+    if(SE.ptrs.size>2||SE.down||SE.hold||SE.pinch)return;
     const it=INK_SIM.sessionItem(sess);if(!it)return;
-    const [x,y]=mm(ev),t=ev.timeStamp||performance.now(),live=INK_SIM.penDown(sess,t,x,y);
-    if(!live.ok){if(live.why==="start"){seStatus("Start on the dot.");const d=$("seDot");if(d){d.classList.remove("nudge");void d.offsetWidth;d.classList.add("nudge");}}return;}
+    if(SE.anim)seAnimDone(false);
     try{over.setPointerCapture(ev.pointerId);}catch(e){}
-    SE.down={id:ev.pointerId,t0:t,u0:live.u||0,x,y,item:it.idx};SE.r=0;SE.rushed=false;
-    if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
-    if(it.k==="line")INK_SOUND.buzzStart(INK_SIM.sessionBands(sess).buzz);else INK_SOUND.buzzStart(Object.assign({},INK_SIM.sessionBands(sess).buzz,{hz:INK_SIM.sessionBands(sess).buzz.hz*0.9}));
-    seDot();seKick();});
+    const [x,y]=tipMm(ev),t=ev.timeStamp||performance.now(),off=seOffset();
+    if(off){SE.hold={id:ev.pointerId};sePenAt(f);sePenShow(true);}
+    const live=INK_SIM.penDown(sess,t,x,y);
+    if(live.ok){seStrokeStart(sess,it,ev.pointerId,t,live,x,y);return;}
+    if(live.why!=="start"){if(off){SE.hold=null;sePenShow(false);}return;}
+    if(off){seStatus(sess.cur&&sess.cur.u>0?"Bring the needle back onto the dot to carry on.":"Bring the needle onto the dot to start the line.");seNear(sess,it,x,y);return;}
+    seStatus("Start on the dot.");const d=$("seDot");if(d){d.classList.remove("nudge");void d.offsetWidth;d.classList.add("nudge");}});
   over.addEventListener("pointermove",ev=>{
-    const d=SE.down;if(!d||ev.pointerId!==d.id)return;ev.preventDefault();
+    if(SE.ptrs.has(ev.pointerId))SE.ptrs.set(ev.pointerId,sePx(ev));
+    if(SE.pinch){if(SE.ptrs.size>=2&&!SE.pinch.done){const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1],r=Math.hypot(b[0]-a[0],b[1]-a[1])/SE.pinch.d0;
+        if(r>SE_ZOOM.pinch||r<1/SE_ZOOM.pinch){SE.pinch.done=true;seZoomToggle(r<1);}}ev.preventDefault();return;}
+    const h=SE.hold,holding=!!(h&&ev.pointerId===h.id);
+    if(holding)sePenAt(sePx(ev));
+    if(SE.down?ev.pointerId!==SE.down.id:!holding)return;
+    ev.preventDefault();
     const evs=ev.getCoalescedEvents?ev.getCoalescedEvents():[];
-    for(const e of (evs.length?evs:[ev])){const [x,y]=mm(e),t=e.timeStamp||performance.now();
+    for(const e of (evs.length?evs:[ev])){const [x,y]=tipMm(e),t=e.timeStamp||performance.now();
+      if(!SE.down){const it=INK_SIM.sessionItem(sess);if(!it)return;
+        const live=INK_SIM.penDown(sess,t,x,y);
+        if(live.ok)seStrokeStart(sess,it,ev.pointerId,t,live,x,y);else seNear(sess,it,x,y);
+        continue;}
+      const d=SE.down;
       const live=INK_SIM.penMove(sess,t,x,y);if(!live.ok)continue;
       if(live.r!=null){SE.r=live.r;SE.rushed=!!live.rushed;}
       if(live.sat!=null){SE.fillDirty=true;SE.rushed=false;if(live.over&&!SE.overTold){SE.overTold=true;seStatus("Overworking the skin: move on.");}}
@@ -8847,16 +9011,22 @@ function seWireCanvas(){
       if(live.blow)seStatus("Blowout: ink spread under the skin. Ease off.");
       else if(live.join)seStatus("A join: keep the line moving.");
       d.x=x;d.y=y;}
-    INK_SOUND.buzzSet(SE.r,SE.rushed);seKick();},{passive:false});
+    if(SE.down){const pen=$("sePen");if(pen)pen.classList.toggle("rush",!!SE.rushed);INK_SOUND.buzzSet(SE.r,SE.rushed);seKick();}},{passive:false});
   const up=ev=>{
-    const d=SE.down;if(!d||ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
+    SE.ptrs.delete(ev.pointerId);
+    if(SE.pinch){if(!SE.ptrs.size)SE.pinch=null;return;}
+    const h=SE.hold,mine=!!(h&&ev.pointerId===h.id);
+    if(mine){SE.hold=null;sePenShow(false);const dt=$("seDot");if(dt)dt.classList.remove("near");}
+    const d=SE.down;
+    if(!d){if(mine&&curK()==="line")seStatus("The line starts when the needle reaches the dot.");return;}
+    if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
     seFlushInk();SE.down=null;
     const live=INK_SIM.penUp(sess,ev.timeStamp||performance.now());
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
     saveSoon();
     if(live.lineDone){const ls=sess.lastStroke;SE.status="";seAfterItem();
       if(ls&&!sess.stop)seStatus(`Line done: ${Math.round(ls.q*100)}% clean${ls.blowouts?`, ${ls.blowouts} blowout${ls.blowouts>1?"s":""}`:""}${ls.joins?`, ${ls.joins} join${ls.joins>1?"s":""}`:""}.`);}
-    else{seDot();if(sess.stop)seEnd();else if(INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line")seStatus("Lifted. Carry on from the dot.");}};
+    else{seDot();if(sess.stop)seEnd();else if(curK()==="line")seStatus(seOffset()?"Lifted. Bring the needle back onto the dot.":"Lifted. Carry on from the dot.");}};
   over.addEventListener("pointerup",up);over.addEventListener("pointercancel",up);}
 /* Break, Numb, Chat */
 function seAction(k){

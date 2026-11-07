@@ -152,6 +152,7 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
   const a = load(); seed(a.localStorage); const before = a.localStorage.dump();
   const bad = [
     { v: 1, save: game({ settings: "dark" }), slots: [] },                          // settings not an object
+    { v: 1, save: game({ settings: { needle: "sideways" } }), slots: [] },         // 0.1.16.0: needle not offset or direct
     { v: 1, save: game(), slots: [null, null, null, null] },                         // too many slots
     { v: 1, save: game(), slots: ["slot"] },                                         // slot not an object
     { v: 1, save: game({ cash: "lots" }), slots: [] },                               // cash not a number
@@ -217,6 +218,9 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   assert.strictEqual(t.kit.machine, "coil_used"); assert.deepStrictEqual(t.kit.needles, ["3RL", "7RL", "7M1"]); assert.strictEqual(t.session, null);
   assert.strictEqual(t.settings.handed, "right"); assert.strictEqual(t.settings.assist, false); assert.strictEqual(t.settings.flatStencil, false);
   assert.strictEqual(t.settings.tips, true); assert.deepStrictEqual(t.help, {}, "PR 9: tips on and none seen");
+  assert.strictEqual(t.settings.needle, "offset", "0.1.16.0: an older save holds the machine offset");
+  assert(a.hydrate({ week: 6, settings: { needle: "direct" } })); assert.strictEqual(plain(a.__get()).settings.needle, "direct", "direct mode is kept");
+  assert(a.hydrate({ week: 6, settings: { needle: 3 } })); assert.strictEqual(plain(a.__get()).settings.needle, "offset", "an odd needle setting goes back to offset");
   assert(a.hydrate({ week: 6, help: [1], settings: { tips: false } })); const h = plain(a.__get());
   assert.deepStrictEqual(h.help, {}, "a help field that isn't an object is dropped"); assert.strictEqual(h.settings.tips, false);
   assert(a.hydrate({ week: 7, kit: {} }), "an older save's kit:{} becomes the starter kit");

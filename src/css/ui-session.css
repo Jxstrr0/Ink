@@ -27,8 +27,8 @@
 /* the stage: rail on the free hand's side */
 .seStage{display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
 .se[data-hand="left"] .seStage{flex-direction:row-reverse}
-.seRail{flex:0 0 52px;display:flex;flex-direction:column;gap:6px}
-.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:58px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:600;cursor:pointer}
+.seRail{flex:0 0 60px;display:flex;flex-direction:column;gap:8px}
+.seAct{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:4px 2px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer}
 .seAct svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .seAct em{font-style:normal;font-size:9.5px;color:var(--mute);font-weight:500}
 .seAct:hover{border-color:var(--faint)}
@@ -36,6 +36,30 @@
 #seStop{margin-top:auto;color:var(--red2)}
 .seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none}
 .seWrap canvas{position:absolute;left:0;top:0;display:block}
+/* 0.1.16.0: the camera round the canvases (moved by a CSS transform between lines), the view button and the machine */
+.seCam{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:0 0}
+.seZoomB{position:absolute;top:6px;right:6px;z-index:3;display:flex;align-items:center;gap:5px;min-height:44px;min-width:44px;padding:0 12px;border-radius:22px;border:1px solid rgba(0,0,0,.25);background:rgba(20,16,12,.72);color:#f3ece2;font:600 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+.se[data-hand="left"] .seZoomB{right:auto;left:6px}
+.seZoomB svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.seZoomB[aria-pressed="true"]{background:#f3ece2;color:#16120e}
+.seZoomB:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.sePen{position:absolute;left:0;top:0;width:0;height:0;z-index:2;pointer-events:none;will-change:transform}
+.sePen[hidden]{display:none}
+.sePen svg{position:absolute;overflow:visible}
+.sePen svg.lh .kind{transform:scaleX(-1)}
+.sePen .body{fill:rgba(28,24,22,.5);stroke:#16120e;stroke-width:1.6;stroke-linejoin:round;transition:fill .15s}
+.sePen .line{fill:none;stroke:rgba(243,236,226,.7);stroke-width:1.2}
+.sePen .cord{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round;opacity:.6}
+.sePen .noz{fill:#9aa1a6;stroke:#16120e;stroke-width:1.2;stroke-linejoin:round}
+.sePen .ndl{stroke:#16120e;stroke-width:1.4;stroke-linecap:round}
+.sePen .ringW{fill:none;stroke:rgba(255,255,255,.85);stroke-width:4.5}
+.sePen .ring{fill:none;stroke:#16120e;stroke-width:1.8;stroke-linecap:round}
+.sePen .tip{fill:#16120e}
+.sePen.on .body{fill:rgba(28,24,22,.22)}
+.sePen.on .cord{opacity:.35}
+.sePen.near .ring{stroke:#2f7f77;stroke-width:2.4}
+.sePen.rush .ring{stroke:#c0392f;stroke-width:2.6}
+.seDot.near{border-color:#1f6b64;background:rgba(47,127,119,.45);box-shadow:0 0 0 3px rgba(255,255,255,.9)}
 #seOver{touch-action:none;cursor:crosshair}
 .seDot{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;border:3px solid #2f7f77;background:rgba(47,127,119,.25);pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .seDot::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid rgba(47,127,119,.6);animation:sePulse 1.4s ease-out infinite}
@@ -62,7 +86,7 @@
 .seStatus{margin:0;min-height:1.4em;font-size:13.5px;color:var(--text)}
 .seTools .row{gap:10px}
 .seLiners{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
-.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:44px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
+.seChipL{flex:0 0 auto;display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-height:52px;min-width:72px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;text-align:left}
 .seChipL svg{grid-row:1/3;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .seChipL b{font-size:13.5px}
 .seChipL span{font-size:11px;color:var(--mute)}
@@ -132,7 +156,10 @@
 #kpReset{margin-top:10px}
 
 @media (max-width:380px){.seMeters{grid-template-columns:1fr}.seRen{width:88px;height:88px}}
-@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}}
+@media (prefers-reduced-motion:reduce){.seDot::after{animation:none;border-style:dashed}.seGT i,.seMB i{transition:none}.seCam{transition:none!important}.sePen .body{transition:none}}
+@media (prefers-reduced-transparency:reduce){.sePen .body,.sePen.on .body{fill:none;stroke-width:2}.seZoomB{background:#16120e}.sePen .cord{opacity:.8}}
+html[data-theme=light] .seZoomB{background:rgba(255,253,249,.92);color:#16120e;border-color:rgba(0,0,0,.3)}
+html[data-theme=light] .seZoomB[aria-pressed="true"]{background:#16120e;color:#fffdf9}
 html[data-theme=light] .seMB s{opacity:.9}
 html[data-theme=light] .seGT .band{background:rgba(47,138,82,.18)}
 html[data-theme=light] .seMeter.fatigue .seMB i{background:radial-gradient(circle,rgba(255,255,255,.5) 1.2px,transparent 1.6px) 0 0/6px 6px,var(--teal)}
