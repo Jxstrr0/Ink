@@ -373,7 +373,7 @@ function seDrawBase(){
     c.globalAlpha=cur?0.95:SE_STENCIL.alpha;
     if(it.k==="line"){c.setLineDash([]);c.lineWidth=cur?SE_STENCIL.cur:SE_STENCIL.w;sePath(c,plan.strokes[it.i].pts,false);c.stroke();}
     else{const z=plan.zones[it.i];c.setLineDash(cur?[]:[4,4]);c.lineWidth=cur?SE_STENCIL.cur:SE_STENCIL.w;for(const p of z.polys){sePath(c,p,true);c.stroke();}
-      if(cur){c.globalAlpha=0.12;c.fillStyle=col;for(const p of z.polys){sePath(c,p,true);c.fill("evenodd");}}}}
+      if(cur){c.globalAlpha=0.12;c.fillStyle=col;c.beginPath();for(const p of z.polys){c.moveTo(seX(p[0]),seY(p[1]));for(let j=2;j<p.length;j+=2)c.lineTo(seX(p[j]),seY(p[j+1]));c.closePath();}c.fill();}}}
   c.setLineDash([]);c.globalAlpha=1;SE.baseDirty=false;}
 /* fill: every zone at its saturation; overworked skin goes angry red */
 function seDrawFills(clip){
@@ -381,9 +381,9 @@ function seDrawFills(clip){
   c.save();if(clip){c.beginPath();c.rect(clip[0],clip[1],clip[2],clip[3]);c.clip();c.clearRect(clip[0],clip[1],clip[2],clip[3]);}else c.clearRect(0,0,SE.cw,SE.ch);
   plan.zones.forEach((z,i)=>{const s=sess.zsat[i]||0;if(s<=0)return;
     c.globalAlpha=clamp(s,0,1)*0.92;c.fillStyle=seColHex(z.colour);
-    c.beginPath();for(const p of z.polys){c.moveTo(seX(p[0]),seY(p[1]));for(let j=2;j<p.length;j+=2)c.lineTo(seX(p[j]),seY(p[j+1]));c.closePath();}c.fill("evenodd");
+    c.beginPath();for(const p of z.polys){c.moveTo(seX(p[0]),seY(p[1]));for(let j=2;j<p.length;j+=2)c.lineTo(seX(p[j]),seY(p[j+1]));c.closePath();}c.fill();
     const over=s-(z.target+INK_SIM.ZONE.slack);
-    if(over>0){c.globalAlpha=clamp(over*1.5,0,0.5);c.fillStyle="#c0392f";c.fill("evenodd");}});
+    if(over>0){c.globalAlpha=clamp(over*1.5,0,0.5);c.fillStyle="#c0392f";c.fill();}});
   c.restore();SE.fillDirty=false;}
 /* ink: lines finished before (drawn clean along the stencil) and the part of the current line already laid */
 function seDrawInkAll(){

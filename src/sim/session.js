@@ -6,11 +6,12 @@
    The stencil. sessionPlan turns a design into what you tattoo: every element's SVG path is flattened (M L H V C S Q T A Z,
    absolute and relative), moved into placement millimetres exactly the way the board draws it (app/design.js dzTf: the
    piece's pos on the box, the element's x/y in the footprint, its scale and rot) and resampled every STENCIL.stepMm into a
-   stroke. Strokes are split into STENCIL.segMm segments for scoring. Elements with fill > 0 give a zone from their fill path:
+   stroke. Strokes are split into STENCIL.segMm segments for scoring. Elements with fill > 0 give a zone from their fill path
+   (nonzero rule like every renderer, so overlapping parts are one zone and a hole drawn the other way round stays bare):
    black or grey fills are shading zones, coloured fills are colour zones. The work list is every stroke, then every
    shading zone, then every colour zone; each item carries a share of the piece's hours (scoreDesign hours less setup) by its
    length or its area x fill. A piece of N sittings (scoreDesign sessions, or the booking's) splits that list at 1/N, 2/N...
-   of the hours, so the first sitting is mostly linework. A sitting that ends early leaves the rest to the next one.
+   of the hours, so the first sitting is mostly linework; a zone worth more than a sitting is cut into bands (ssSplitZone). A sitting that ends early leaves the rest to the next one.
 
    Linework (plan Q4: trace-and-rhythm). The player starts on the dot and follows the stroke while a pacing marker runs at the
    target pace (PACE.frac of the view per second x the kit's pace). Each sample is projected onto the stroke (forward only, and never further than the finger moved, so loops, crossings
@@ -36,7 +37,7 @@
      SIM.sessionNew(o) -> sess        o = {design, client (or null), skills, kit, settings:{assist}, bodyShape, skinTone,
                                        kind: "practice"|"sample"|"booked", itemId, part, partsTotal, progress, year, week}
      SIM.sessionPlan(sess) -> plan    {box, strokes:[{el, lw, colour, pts:[x0,y0,x1,...], cum, len, segs}], zones:[{el, kind,
-                                       colour, target, polys:[[x,y,...]], area, box}], items:[{k:"line"|"shade"|"colour", i, w}],
+                                       colour, target, polys:[[x,y,...]], area, box, band?, bands?}], items:[{k:"line"|"shade"|"colour", i, w}],
                                        hours, parts, dots}  (cached; never saved)
      SIM.sessionBands(sess)           the kit bands plus paceMmS, accMm, view (mm)
      SIM.sessionPlace(sess, pos)      move the stencil before the first line (pos 0..1 in the box); returns stencilCheck
@@ -53,7 +54,7 @@
    Private helpers start with ss. ===== */
 
 /* the stencil */
-const STENCIL={curveStep:2.5,stepMm:1,minStrokeMm:2.5,segMm:8,minZoneMm2:8,lineW:1,zoneW:0.12,colourW:1.2,viewPad:0.06,minView:24};
+const STENCIL={curveStep:2.5,stepMm:1,minStrokeMm:2.5,segMm:8,minZoneMm2:8,areaGrid:48,splitAt:1,lineW:1,zoneW:0.12,colourW:1.2,viewPad:0.06,minView:24};
 /* pace: target = view size x frac per second x the kit's pace. A ratio over 1 + band x rush is rushing */
 const PACE={frac:0.11,speedMs:120,smoothMs:60,warmMs:160,stop:0.15,go:0.45,stopMs:350,rush:1.25,blowMs:110,fall:0.38,backMm:3,aheadMm:0.6,aheadK:1.4,
   startSlop:3.2,endSlop:1.6,doneShare:0.94};
@@ -149,10 +150,50 @@ function ssNear(polys,x,y,slop){if(ssInside(polys,x,y))return true;if(!(slop>0))
   for(const p of polys)for(let i=0,n=p.length,j=n-2;i<n;j=i,i+=2){const ax=p[j],ay=p[j+1],dx=p[i]-ax,dy=p[i+1]-ay,l2=dx*dx+dy*dy||1e-9;
     const t=clamp(((x-ax)*dx+(y-ay)*dy)/l2,0,1),qx=ax+t*dx-x,qy=ay+t*dy-y;if(qx*qx+qy*qy<=s2)return true;}
   return false;}
-function ssInside(polys,x,y){let c=false;
-  for(const p of polys)for(let i=0,n=p.length,j=n-2;i<n;j=i,i+=2){const yi=p[i+1],yj=p[j+1];
-    if((yi>y)!==(yj>y)&&x<(p[j]-p[i])*(y-yi)/(yj-yi)+p[i])c=!c;}
-  return c;}
+/* inside by the nonzero rule, the rule the board, the flash wall and the body draw fills with (0.1.19.0; was even-odd):
+   a hole is a subpath drawn the other way round inside its outline */
+function ssWinding(polys,x,y){let w=0;
+  for(const p of polys)for(let i=0,n=p.length,j=n-2;i<n;j=i,i+=2){const xi=p[i],yi=p[i+1],xj=p[j],yj=p[j+1],c=(xi-xj)*(y-yj)-(x-xj)*(yi-yj);
+    if(yj<=y){if(yi>y&&c>0)w++;}else if(yi<=y&&c<0)w--;}
+  return w;}
+function ssInside(polys,x,y){return ssWinding(polys,x,y)!==0;}
+/* a zone's inked area in mm2 by the nonzero rule. Separate subpaths add whatever way round they are drawn (a mirrored half
+   runs the other way and no longer cancels its twin); when one subpath starts inside another (a hole, or an overlap) the
+   area is counted on a STENCIL.areaGrid x areaGrid grid over the zone's box instead */
+function ssZoneArea(polys){
+  const ps=polys.filter(p=>p.length>=6);let nest=false;
+  for(let i=0;i<ps.length&&!nest;i++)for(let j=0;j<ps.length;j++)if(i!==j&&ssWinding([ps[j]],ps[i][0],ps[i][1])!==0){nest=true;break;}
+  if(!nest)return ps.reduce((s,p)=>s+Math.abs(ssAreaOf(p)),0);
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of ps)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
+  const g=STENCIL.areaGrid,dx=(x1-x0)/g,dy=(y1-y0)/g;let n=0;
+  for(let a=0;a<g;a++)for(let b=0;b<g;b++)if(ssWinding(ps,x0+(a+0.5)*dx,y0+(b+0.5)*dy)!==0)n++;
+  return n*dx*dy;}
+
+/* A zone bigger than STENCIL.splitAt sittings' share of the work is cut into bands across its longer side, each about
+   one sitting's worth, so a big colour area (a koi's whole body on a back piece) spreads over the sittings like the
+   lines do instead of landing in one. Each subpath is clipped to the band (Sutherland-Hodgman on a convex slab keeps
+   the nonzero winding inside it); the cuts fall at equal shares of the zone's area. */
+function ssClipSlab(p,ax,a,b){
+  let pts=[];for(let i=0;i<p.length;i+=2)pts.push([p[i],p[i+1]]);
+  for(const [lim,keep] of [[a,1],[b,-1]]){
+    const o=[],n=pts.length;if(!n)break;
+    for(let i=0;i<n;i++){const P=pts[i],Q=pts[(i+1)%n],pin=(P[ax]-lim)*keep>=0,qin=(Q[ax]-lim)*keep>=0;
+      if(pin)o.push(P);
+      if(pin!==qin){const t=(lim-P[ax])/(Q[ax]-P[ax]);o.push([P[0]+(Q[0]-P[0])*t,P[1]+(Q[1]-P[1])*t]);}}
+    pts=o;}
+  const out=[];for(const q of pts)out.push(q[0],q[1]);return out;}
+function ssSplitZone(z,k){
+  const ax=z.box[2]-z.box[0]>=z.box[3]-z.box[1]?0:1,lo=z.box[ax],hi=z.box[ax+2],g=STENCIL.areaGrid*2,d=(hi-lo)/g;
+  const cum=[0];for(let a=0;a<g;a++){let n=0;const u=lo+(a+0.5)*d;
+    for(let c=0;c<g;c++){const v=z.box[1-ax]+(c+0.5)*(z.box[3-ax]-z.box[1-ax])/g;if(ssWinding(z.polys,ax?v:u,ax?u:v)!==0)n++;}
+    cum.push(cum[a]+n);}
+  const cuts=[lo];for(let j=1;j<k;j++){const want=cum[g]*j/k;let a=1;while(a<g&&cum[a]<want)a++;cuts.push(lo+a*d);}cuts.push(hi);
+  const out=[];
+  for(let j=0;j<k;j++){const polys=z.polys.map(p=>ssClipSlab(p,ax,cuts[j],cuts[j+1])).filter(p=>p.length>=6),area=ssZoneArea(polys);
+    if(area<STENCIL.minZoneMm2)continue;
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of polys)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
+    out.push(Object.assign({},z,{polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2,band:j,bands:k}));}
+  return out.length?out:[z];}
 
 /* ---- the plan: stencil strokes, zones and the work list for a design (cached by design + body shape) ---- */
 const ssPlanCache=new Map();
@@ -179,7 +220,7 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
     }
     if(def.fill&&el.fill>0){
       const polys=ssFlatten(def.fill).map(sp=>tf(sp.pts));
-      const area=Math.abs(polys.reduce((s,p)=>s+ssAreaOf(p),0))||Math.max(0,...polys.map(p=>Math.abs(ssAreaOf(p))));
+      const area=ssZoneArea(polys);
       if(area>=STENCIL.minZoneMm2){
         let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of polys)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
         const col=colour&&colour!=="black"&&colour!=="grey";
@@ -188,13 +229,20 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
     }
   });
   const sc=SIM.scoreDesign(design,client||null,skills||{});
+  const nParts=Math.max(1,parts||sc.sessions);
+  if(nParts>1){
+    const zw=z=>z.area*z.target*STENCIL.zoneW*(z.kind==="colour"?STENCIL.colourW:1);
+    const lineRaw=strokes.reduce((s,st)=>s+st.len*STENCIL.lineW*(0.8+0.4*st.detail),0),share=(lineRaw+zones.reduce((s,z)=>s+zw(z),0))/nParts;
+    const cut=[];for(const z of zones){const k=Math.ceil(zw(z)/(share*STENCIL.splitAt)-1e-9);if(k>1)cut.push(...ssSplitZone(z,k));else cut.push(z);}
+    zones.length=0;zones.push(...cut);
+  }
   const items=[];
   strokes.forEach((s,i)=>items.push({k:"line",i,raw:s.len*STENCIL.lineW*(0.8+0.4*s.detail)}));
   zones.forEach((z,i)=>{if(z.kind==="shade")items.push({k:"shade",i,raw:z.area*z.target*STENCIL.zoneW});});
   zones.forEach((z,i)=>{if(z.kind==="colour")items.push({k:"colour",i,raw:z.area*z.target*STENCIL.zoneW*STENCIL.colourW});});
   const work=Math.max(0.25,sc.hours-((SIM.HOURS&&SIM.HOURS.setup)||0.5)),tot=items.reduce((s,it)=>s+it.raw,0)||1;
   let cw=0;for(const it of items){it.w=it.raw/tot*work;cw+=it.w;it.cw=cw;delete it.raw;}
-  const plan={key,box,sizeMm:sz,strokes,zones,items,hours:sc.hours,work,parts:Math.max(1,parts||sc.sessions),price:sc.price,dots,
+  const plan={key,box,sizeMm:sz,strokes,zones,items,hours:sc.hours,work,parts:nParts,price:sc.price,dots,
     pain:P?P.pain:0.4,placement:design.placement};
   if(ssPlanCache.size>40)ssPlanCache.clear();
   ssPlanCache.set(key,plan);
@@ -564,4 +612,4 @@ SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.s
 SIM.stencilCheck=stencilCheck;SIM.sessionItem=sessionItem;SIM.sessionStart=sessionStart;SIM.sessionResume=sessionResume;
 SIM.penDown=penDown;SIM.penMove=penMove;SIM.penUp=penUp;SIM.sessionSetLiner=sessionSetLiner;SIM.sessionNextItem=sessionNextItem;
 SIM.sessionAction=sessionAction;SIM.sessionFinish=sessionFinish;SIM.sessionXp=sessionXp;SIM.sessionPainRate=sessionPainRate;
-SIM.sessionSynth=sessionSynth;SIM.sessionTrace=sessionTrace;SIM.pointAt=ssPointAt;SIM.insideZone=ssInside;
+SIM.sessionSynth=sessionSynth;SIM.sessionTrace=sessionTrace;SIM.pointAt=ssPointAt;SIM.insideZone=ssInside;SIM.zoneArea=ssZoneArea;
