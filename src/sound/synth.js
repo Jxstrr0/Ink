@@ -9,9 +9,11 @@
    PR 10: two short Kenney UI sounds (CC0, sounds/CREDITS.md): tick() plays sounds/tap.wav once it has loaded (the synth click
    until then, or if it fails), chime() plays sounds/toast.wav when a toast shows. They are fetched once, after the first tap
    has made the audio context (about 30 KB, every tier; the service worker caches sounds/). chime() never makes the context
-   itself, so a toast before any tap stays silent. The machine buzz stays synthesised. */
+   itself, so a toast before any tap stays silent. The machine buzz stays synthesised.
+   0.1.21.0: the buzz spins up. It starts at BUZZ.spinFrom of its pitch (the rattle too) and reaches it over about BUZZ.spin
+   seconds; buzzSet leaves the pitch alone until the spin-up is over. */
 const UI_SOUNDS={tap:{file:"sounds/tap.wav",vol:0.32},toast:{file:"sounds/toast.wav",vol:0.28}};
-const BUZZ={vol:0.06,pitchLo:0.8,pitchK:0.28,pitchMax:1.6,rattle:0.5,stutterHz:12,stutter:0.85,attack:0.02,release:0.04};
+const BUZZ={vol:0.06,pitchLo:0.8,pitchK:0.28,pitchMax:1.6,rattle:0.5,stutterHz:12,stutter:0.85,attack:0.02,release:0.04,spin:0.16,spinFrom:0.45};
 const INK_SOUND=(function(){
 let ctx=null,master=null,on=true;
 function init(){if(ctx)return true;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;ctx=new A();master=ctx.createGain();master.gain.value=.5;master.connect(ctx.destination);uiLoad();return true;}catch(e){ctx=null;return false;}}
@@ -34,14 +36,14 @@ let bz=null;
 function buzzStart(p){if(!on||!init())return;try{if(ctx.state==="suspended")ctx.resume();buzzStop();p=p||{};
   const t=ctx.currentTime,hz=p.hz||120,o=ctx.createOscillator(),f=ctx.createBiquadFilter(),am=ctx.createGain(),g=ctx.createGain();
   const lfo=ctx.createOscillator(),lg=ctx.createGain(),st=ctx.createOscillator(),sg=ctx.createGain();
-  o.type=p.wave||"sawtooth";o.frequency.value=hz*BUZZ.pitchLo;f.type="lowpass";f.frequency.value=p.cut||2400;f.Q.value=0.8;
-  lfo.type="square";lfo.frequency.value=hz/2;lg.gain.value=(p.rough||0)*BUZZ.rattle;am.gain.value=1;
+  o.type=p.wave||"sawtooth";o.frequency.setValueAtTime(hz*BUZZ.pitchLo*BUZZ.spinFrom,t);o.frequency.setTargetAtTime(hz*BUZZ.pitchLo,t,BUZZ.spin/3);f.type="lowpass";f.frequency.value=p.cut||2400;f.Q.value=0.8;
+  lfo.type="square";lfo.frequency.setValueAtTime(hz/2*BUZZ.spinFrom,t);lfo.frequency.setTargetAtTime(hz/2,t,BUZZ.spin/3);lg.gain.value=(p.rough||0)*BUZZ.rattle;am.gain.value=1;
   st.type="square";st.frequency.value=BUZZ.stutterHz;sg.gain.value=0;
   g.gain.setValueAtTime(0,t);g.gain.setTargetAtTime(BUZZ.vol,t,BUZZ.attack);
   o.connect(f);f.connect(am);am.connect(g);g.connect(master);lfo.connect(lg);lg.connect(am.gain);st.connect(sg);sg.connect(g.gain);
-  o.start(t);lfo.start(t);st.start(t);bz={o,f,g,lfo,st,sg,hz,rushed:false};}catch(e){bz=null;}}
+  o.start(t);lfo.start(t);st.start(t);bz={o,f,g,lfo,st,sg,hz,rushed:false,spun:t+BUZZ.spin};}catch(e){bz=null;}}
 function buzzSet(r,rushed){if(!bz)return;try{
-  bz.o.frequency.value=bz.hz*Math.min(BUZZ.pitchMax,BUZZ.pitchLo+BUZZ.pitchK*Math.max(0,r||0));
+  if(ctx.currentTime>=bz.spun)bz.o.frequency.value=bz.hz*Math.min(BUZZ.pitchMax,BUZZ.pitchLo+BUZZ.pitchK*Math.max(0,r||0));
   if(!!rushed!==bz.rushed){bz.rushed=!!rushed;bz.sg.gain.value=rushed?BUZZ.vol*BUZZ.stutter:0;}}catch(e){}}
 function buzzStop(){if(!bz)return;const b=bz;bz=null;try{const t=ctx.currentTime;b.sg.gain.value=0;b.g.gain.cancelScheduledValues(t);b.g.gain.setTargetAtTime(0,t,BUZZ.release);
   [b.o,b.lfo,b.st].forEach(x=>x.stop(t+BUZZ.release*6));}catch(e){}}

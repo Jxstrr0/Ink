@@ -2,6 +2,17 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.21.0: aim, then the machine starts
+
+Kelbo asked for a moment to see where you're starting before the needle goes in. App only: the sim, its scores and the session traces are unchanged.
+
+- **Aim first.** A finger on the skin now aims instead of inking. For about a second (`SE_ARM.ms` 900 ms in `app/session.js`) the machine follows your finger as a hollow dashed outline, its tip ring dashed, while a teal ring fills round the needle tip. Nothing is laid, the buzz is quiet and the line's pace marker waits; the start dot still lights up when the tip is near it, so you can line it up. With **Needle under finger** a dashed crosshair reticle at your fingertip does the same job.
+- **Then it starts.** When the ring is full the machine switches on: a short teal pulse, the solid pen, the buzz spinning up from a low hum (`BUZZ.spin`, about 0.16 s), and the line starts from where the tip is (if it's already on the dot) or the moment you slide it there, exactly as before. Zones start inking where you are.
+- **Carrying on is quicker.** Lift mid-line (or mid-zone) and touch again: the aim is half as long (`SE_ARM.rearm` 450 ms).
+- **A quick tap inks nothing.** Lift before the ring fills and nothing happens to the skin; the line under the canvas says "Hold still a moment: the machine starts after a beat." A two-finger pinch during the aim still switches the view and cancels the aim.
+- **Reduced motion.** The ring is a static dashed circle with no fill and no pulse; the wait is the same.
+- No new S fields, no new localStorage keys, no new setting.
+
 ## 0.1.20.0: a fairer climb
 
 Kelbo's difficulty package, from thirty-year careers played through the real sim (careful, average and Skip-the-broom players, 20 careers each). Before, prices climbed so fast with reputation that most clients walked away at the quote, the Drawbridge Prize and conventions were won almost every time, and the studio and Act 4 came very early.
