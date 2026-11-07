@@ -2,6 +2,18 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.20.0: a fairer climb
+
+Kelbo's difficulty package, from thirty-year careers played through the real sim (careful, average and Skip-the-broom players, 20 careers each). Before, prices climbed so fast with reputation that most clients walked away at the quote, the Drawbridge Prize and conventions were won almost every time, and the studio and Act 4 came very early.
+
+- **Prices.** Your hourly rate still starts from the same base for each act, but rises less per point of reputation (`RATE_BY_REP.perRep`: walk-ins 1 a point, was 2; collectors 3, was 6; peers 1.5, was 3). In the audit about 36% of quotes are accepted instead of 17–21%, and your chair, studio and legacy years are busier.
+- **Honours are harder.** The Drawbridge Prize places need a judged score of 0.78 / 0.72 / 0.66 (was 0.66 / 0.58 / 0.5): a careful player wins about one entry in four instead of nearly all of them. Conventions need 0.9 / 0.84 / 0.78 (was 0.72 / 0.62 / 0.52).
+- **The studio waits a little longer.** Leasing before 2006 needs walk-ins + collectors + peers of 200 (was 90); from 2006 it is open as before.
+- **Act 4 has its own gate.** The waiting list opens from 2018 as before, or sooner once collectors reach 90 (`LEGACY_NEED.collectors`; it used to borrow the waiting_list event's 60, which stays as it is).
+- **Leaving Arkady early** costs more of his goodwill for each year left before 2003 (`MENTOR.goodwill.earlyPerYear` -0.30, was -0.18).
+- **Inspections.** A passed inspection now clears one fail from your record, so one bad year doesn't hang over the shop forever.
+- **Smaller saves.** Older pieces are saved as one short line of numbers each (the same data, nothing rounded further), so a thirty-year save with these busier careers still fits: the test career's year-30 save is about 1.6 MB with a backup code of about 1.0 MB. Saves and codes from 0.1.19.0 load as they are and are written in the new form on the next save.
+
 ## 0.1.18.0: a better mannequin, on every phone
 
 Visual only: the sim's scores, heals and aging numbers are the same, and the tattoos map onto the same UV islands and zones.
