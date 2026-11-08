@@ -193,6 +193,30 @@ const rotW = mk(onSpot(flash("fl_moon"), "forearm_l")); traceAll(rotW, { speed: 
 const rw0 = JSON.stringify(rotW.design.elements); SIM.sessionRotate(rotW, 30);
 check("sessionRotate does nothing once the first line is down", JSON.stringify(rotW.design.elements) === rw0);
 
+/* ---- restart the sitting (0.1.22.0): back to sess.base, earlier sittings kept ---- */
+const noBase = s => { const o = J(s); delete o.base; delete o.pen; return JSON.stringify(o); };
+const rt = mk(onSpot(flash("fl_sailor_rose"), "forearm_l")), rt0 = noBase(rt);
+check("a sitting takes its restart copy when the work begins", !!rt.base && SIM.sessionCanRestart(rt) && SIM.sessionFresh(rt) && JSON.stringify(rt.base) === rt0);
+traceAll(rt, { speed: 1.4, noise: 0.6 }, 3); SIM.sessionAction(rt, "numb"); SIM.sessionAction(rt, "break"); SIM.sessionAction(rt, "chat");
+const half = SIM.sessionSynth(rt, { speed: 1 })[0]; SIM.penDown(rt, half[0][0], half[0][1], half[0][2]); for (let i = 1; i < half.length / 2; i++) SIM.penMove(rt, half[i][0], half[i][1], half[i][2]);
+check("restart is refused while the needle is down", !SIM.sessionCanRestart(rt) && SIM.sessionRestart(rt) === false && rt.next === 3);
+SIM.penUp(rt, half[Math.floor(half.length / 2)][0]);
+check("work, meters and care change the sitting", !SIM.sessionFresh(rt) && rt.next === 3 && rt.m.numbs === 1 && rt.m.breaks === 1 && rt.cur && rt.cur.u > 0 && rt.acc.lineLen > 0);
+check("restart puts the sitting back exactly as it began (ink, line progress, metert, clock, numbing)", SIM.sessionRestart(rt) && noBase(rt) === rt0 && SIM.sessionFresh(rt) && rt.lastStroke === undefined, rt.next + " " + rt.m.clock);
+const rtF = SIM.sessionFinish(traceAll(rt, { speed: 1 })), rtN = SIM.sessionFinish(traceAll(mk(onSpot(flash("fl_sailor_rose"), "forearm_l")), { speed: 1 }));
+check("a restarted sitting scores the same as a fresh one", JSON.stringify(rtF) === JSON.stringify(rtN));
+const rz = mk(onSpot(flash("fl_hummingbird"), "forearm_l")); while (SIM.sessionItem(rz) && SIM.sessionItem(rz).k === "line") SIM.sessionNextItem(rz);
+const zi = SIM.sessionItem(rz), zc = zi && zi.zone.box; SIM.penDown(rz, 0, (zc[0] + zc[2]) / 2, (zc[1] + zc[3]) / 2);
+for (let i = 1; i < 40; i++) SIM.penMove(rz, i * 30, (zc[0] + zc[2]) / 2 + Math.sin(i) * (zc[2] - zc[0]) * 0.2, (zc[1] + zc[3]) / 2); SIM.penUp(rz, 1200);
+const zsat = rz.zsat[zi.i]; SIM.sessionRestart(rz);
+check("restart empties the zones packed this sitting", zsat > 0 && rz.zsat.every(v => v === 0) && rz.next === 0, f3(zsat));
+const r2 = SIM.sessionStart(SIM.sessionNew({ design: J(big), client: CL, skills: SK, kit: SIM.kitDefault(), kind: "sample", part: 2, partsTotal: bs.partsTotal, progress: J(bf.progress) }));
+const r20 = noBase(r2); traceAll(r2, { speed: 1 }, 2); while (SIM.sessionItem(r2) && SIM.sessionItem(r2).k === "line") SIM.sessionNextItem(r2);
+SIM.sessionRestart(r2);
+check("restarting sitting 2 keeps sitting 1's work", noBase(r2) === r20 && r2.start === bs.end && r2.acc.sittings === 1 && r2.zsat.some((v, i) => v === bf.progress.zsat[i]));
+const old = mk(flash("fl_moon")); delete old.base;
+check("a sitting saved without a restart copy can't restart", !SIM.sessionCanRestart(old) && SIM.sessionRestart(old) === false);
+
 /* ---- outputs and XP ---- */
 const full = (() => { const s = mk(flash("fl_moon")); traceAll(s, { speed: 1 }); while (SIM.sessionItem(s)) SIM.sessionNextItem(s); return SIM.sessionFinish(s); })();
 check("outputs match aging.js tattoo.out (0..1) and feed SIM.age", ["lineQuality", "depthQuality", "saturation", "trauma"].every(k => full.out[k] >= 0 && full.out[k] <= 1) && full.done && full.sessionsUsed === 1 &&
