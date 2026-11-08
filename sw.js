@@ -3,10 +3,10 @@
    A new version installs in the background and waits: the page shows "New version ready" and sends SKIP_WAITING when tapped.
    Same-origin sounds/ and models/ are cached as they are fetched (the cache name hashes those listings), and the mannequin every tier
    loads is put there at install; three.js (CDN) and the Google fonts are cached cache-first in a long-lived cache. Only good (2xx, CORS-readable) responses are cached: an opaque or failed CDN reply must never stick.
-   Every cache name starts with "ink-": Prairie Engine Works lives on the same origin with "pew-" caches, and each worker only ever
-   deletes caches with its own prefix. A worker that finds an opaque three.js copy takes over at once instead of waiting. */
+   Every cache name starts with "ink-": the game has its own address now, but Prairie Engine Works shared the old jxstrr0.github.io
+   origin with "pew-" caches, so each worker only ever deletes caches with its own prefix. A worker that finds an opaque three.js copy takes over at once instead of waiting. */
 "use strict";
-const CACHE = "ink-shell-v0.1.25.0-09f95e691a", MEDIA = "ink-media-v1-dbe368cc", LIBS = "ink-libs-v1";
+const CACHE = "ink-shell-v0.1.25.1-de974420e1", MEDIA = "ink-media-v1-dbe368cc", LIBS = "ink-libs-v1";
 const PRECACHE = ["index.html","manifest.webmanifest","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg"], CDN = ["https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js","https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"], MEDIA_PRE = ["models/ink-mannequin.glb"];
 const LIB_HOSTS = ["cdnjs.cloudflare.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 const BASE = new URL("./", self.location).pathname;
