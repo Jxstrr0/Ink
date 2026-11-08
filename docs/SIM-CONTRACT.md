@@ -28,9 +28,24 @@ ELEMENTS = [ { id, name, family: "motif"|"lettering"|"frame"|"fill"|"texture",
                      flash wall, session zones). Since 0.1.19.0 traditional motifs fill their whole region; overlapping
                      parts run the same way round, holes the other way. A fill stays inside the path's bounding box
                      (elementBox and saved layouts don't move). Fineline, lettering, frames and textures stay line-only,
+               fill2: (0.1.25.0) null, or SVG path data for a second part (leaves, stems) that is not the player's colour;
+                     nonzero rule, every subpath closed, drawn the same way round as fill (so a black piece's fill + fill2
+                     is one shape with no gaps), inside elementBox (which does not read it), hardly overlapping fill
+                     (tools/element-sheet.js checks all of this). Only on colourable motifs.
+               colour2: (0.1.25.0) null, or the part's fixed COLOURS id (PART2: leaves -> "green"),
                src: "original" or a key into art/CREDITS.md } ]
 SIM.ELEMENTS, SIM.STYLES, SIM.COLOURS, SIM.elementById(id)
+SIM.fill2Colour(def, colour, style) -> the colour the second part is inked in: undefined (the element has no fill2),
+     null (black) or a COLOURS id. THE BLACK AND GREY RULE: colour null, "black" or "grey" gives the same ink back (a black
+     and grey rose has black leaves; never green). Otherwise colour2, unless the design style's palette has no such ink
+     (fine line, blackwork, lettering and geometric have no green): then null, black.
 ```
+Since 0.1.25.0 six motifs have a second part, all green leaves: rose_trad, cherries, peony, chrysanthemum, cherry_blossom,
+olive_branch. The sim counts it wherever the element's colour counts, at the part's share of the filled area (fill2 / (fill +
+fill2), nonzero): contrast on the skin (SKIN_CONTRAST) and the stress report's pale_on_dark, the palette check in coherence
+(never fires, by the rule above), a colour must-have (green leaves meet "green"), the colour share behind hours, price and
+colour appetite, COLOUR_FADE in aging, and its own session zone (below). The kit is unchanged: INKS are quality tiers, not
+colours, so no green ink is bought or needed.
 
 ## `sim/placements.js`
 
@@ -57,6 +72,9 @@ Allowed zones only: arms (forearm, upper arm, inner wrist area as part of forear
   flash: FLASH id, an own-flash id, or null (optional, PR 2: drawn from flash, so FLASH_DISCOUNT.hours applies),
   elements: [ { id: ELEMENTS id, x, y, scale, rot, lineWeight, fill (0..1 shading), colour: COLOURS id or null (= black) } ] }
 ```
+The element shape never carries the second part's colour: it follows from the element (colour2), its own colour and the
+design's style by SIM.fill2Colour, so designs and saves from before 0.1.25.0 load and score unchanged in shape. The leaves
+are drawn and inked at the element's own fill (0..1).
 
 ## A client (PR 3 generates them; PR 1 has `TEST_CLIENTS`)
 
@@ -101,7 +119,8 @@ longest side, x/y/scale are normalised to it and pos is the footprint centre ove
 SIM.age(tattoo, years) -> { blur (mm), fade (0..1 lost), spread (mm), readability (0..1 today) }
 tattoo = { design, out: { lineQuality, depthQuality, saturation, trauma } (0..1; quality defaults 0.75 if missing, trauma 0.25),
            heal: HEAL_GRADES id or null, ink: INKS tier id or null, skinTone, sun (client's sun-exposure trait) }
-Tables: COLOUR_FADE, PLACEMENT_WEAR, HEAL_GRADES (crisp, soft, patchy, blownout, infected). Ink tiers come from sim/kit.js
+Tables: COLOUR_FADE (0.1.25.0: an element's second part fades at its own colour's rate, blended by its share of the fill),
+PLACEMENT_WEAR, HEAL_GRADES (crisp, soft, patchy, blownout, infected). Ink tiers come from sim/kit.js
 INKS (read at call time; SIM.INK_TIERS is the same object); an unknown or missing ink counts as standard.
 ```
 

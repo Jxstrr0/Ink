@@ -224,5 +224,18 @@ check("outputs match aging.js tattoo.out (0..1) and feed SIM.age", ["lineQuality
 const xp = SIM.sessionXp(full, steady, SK);
 check("XP: practice and sitting give a little linework XP, less at a high level", xp.linework > 0 && xp.linework < 0.2 && SIM.sessionXp(full, steady, { linework: 9 }).linework < xp.linework);
 
+/* ---- 0.1.25.0: an element's second part (fill2, the leaves) ---- */
+{ const rose = c => ({ placement: "forearm_l", sizeMm: 80, style: "traditional", pos: { x: 0.5, y: 0.5 },
+    elements: [{ id: "rose_trad", x: 0.5, y: 0.5, scale: 0.9, rot: 0, lineWeight: 11, fill: 0.8, colour: c }] });
+  const pr = SIM.sessionPlan(mk(rose("red"))), pb = SIM.sessionPlan(mk(rose(null))), pf = SIM.sessionPlan(mk(Object.assign(rose("red"), { style: "fineline" })));
+  const zs = p => p.zones.map(z => (z.part ? "2:" : "") + z.colour + Math.round(z.area)).join(",");
+  if (!QUIET) console.log("rose zones: red traditional " + zs(pr) + "; black " + zs(pb) + "; red fine line " + zs(pf));
+  check("a coloured rose has a green zone of its own after its red one", pr.zones.length === 2 && pr.zones[0].colour === "red" && pr.zones[1].colour === "green" && pr.zones[1].part === 2 && pr.zones[1].kind === "colour", zs(pr));
+  check("a black rose has no green zone: its leaves join the one shading zone", pb.zones.length === 1 && pb.zones[0].kind === "shade" && !pb.zones.some(z => z.colour === "green"), zs(pb));
+  check("the black rose's zone is both parts (the leaves don't cancel the bloom)", Math.abs(pb.zones[0].area - pr.zones[0].area - pr.zones[1].area) < pb.zones[0].area * 0.03, zs(pb) + " vs " + zs(pr));
+  check("a red fine-line rose (no green in the palette) shades its leaves black", pf.zones.length === 2 && pf.zones[1].kind === "shade" && pf.zones[1].colour === "black", zs(pf));
+  check("the green zone is in the work list as a colour item", pr.items.some(it => it.k === "colour" && it.i === 1));
+}
+
 console.log(passes + " passed, " + fails + " failed (session and kit)");
 process.exit(fails ? 1 : 0);

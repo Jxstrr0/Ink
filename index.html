@@ -1027,6 +1027,9 @@ SIM.rng=rng;SIM.hash=hash;SIM.clamp=clamp;SIM.lerp=lerp;
                     coloured piece comes out packed; fineline motifs, lettering, frames and textures stay line-only.
                     A fill keeps inside the path's own box (old layouts keep their sizes); overlapping parts run the
                     same way round, and a hole (a highlight, an eyespot, a ring) runs the other way (rev(), symF()).
+                    fill2 / colour2 (0.1.25.0) = an optional second part (leaves, stems) in a fixed colour (PART2), the
+                    same rules as fill (closed, inside the box, same way round); SIM.fill2Colour(def, colour, style) gives
+                    its ink: the element's own on a black and grey piece, black where the style has no such colour.
                     src = "original" (drawn by Claude Code for Ink / Longlight Interactive) or a key into art/CREDITS.md.
                     unlock = "start" | "style:<style id>:<skill level 1..10>" | "rnd:<research id>".
      SIM.elementById(id) -> element or null (a Map built once).
@@ -1071,6 +1074,10 @@ const STYLES={
     blendsWith:["neotrad","fineline","lettering","geometric"],
     demandCurve:[[2000,0.2],[2008,0.4],[2011,0.9],[2013,1.6],[2015,1.9],[2017,1.3],[2020,0.8],[2030,0.6]],clientSegments:["creatives","students","fashion","first_timer"]}
 };
+/* 0.1.25.0: an element's second part (fill2: leaves, stems) has one fixed colour, not the player's: kind -> COLOURS id */
+const PART2={leaves:"green"};
+/* colours that keep a piece black and grey: an element in one of these (or null) has its second part in the same ink */
+const PART2_PLAIN={black:1,grey:1};
 const ELEMENTS=(function(){
   /* ---- helpers: coordinates are 0..100, y down; angles in degrees, 0 = up, clockwise ---- */
   const N=v=>String(Math.round(v*10)/10||0), pt=(x,y)=>N(x)+" "+N(y), R=Math.PI/180;
@@ -1176,9 +1183,10 @@ const GI={
     for(let i=0;i<13;i++){const t=0.1+i*0.068,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t),l=24*Math.pow(1-t,0.75)+3;d+=leaf(b[0],b[1],a-62,l,l*0.18)+leaf(b[0],b[1],a+62,l,l*0.18);}
     G.fern=d;})();
   /* olive branch with three olives */
-  (function(){const p0=[10,92],p1=[34,40],p2=[90,10];let d=qpath(p0,p1,p2),f="";
-    for(let i=0;i<7;i++){const t=0.14+i*0.12,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t);d+=leafV(b[0],b[1],a-48,17,3.6)+leafV(b[0],b[1],a+44,17,3.6);}
-    d+=leaf(90,10,qdir(p0,p1,p2,1),12,3);
+  (function(){const p0=[10,92],p1=[34,40],p2=[90,10];let d=qpath(p0,p1,p2),f="",l2="";
+    for(let i=0;i<7;i++){const t=0.14+i*0.12,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t);d+=leafV(b[0],b[1],a-48,17,3.6)+leafV(b[0],b[1],a+44,17,3.6);
+      l2+=leaf(b[0],b[1],a-48,17,3.6)+"Z"+leaf(b[0],b[1],a+44,17,3.6)+"Z";}
+    d+=leaf(90,10,qdir(p0,p1,p2,1),12,3);l2+=leaf(90,10,qdir(p0,p1,p2,1),12,3)+"Z";G.oliveLeaves=l2;
     for(const t of [0.3,0.55,0.78]){const b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t),o=pol(b[0],b[1],8,a+100);d+="M"+pt(...b)+"L"+pt(...o);const e=pol(o[0],o[1],4,a+100);const ov=ell(e[0],e[1],3.6,4.6);d+=ov;f+=ov;}
     G.olive=d;G.oliveFill=f;})();
   /* wheat ear */
@@ -1190,15 +1198,21 @@ const GI={
       if(i<10){const tan=a+s*90;d+=leaf(p[0],p[1],tan-s*28,13,3.2)+leaf(p[0],p[1],tan+s*30,12,3);}else d+=leaf(p[0],p[1],a+s*90,12,3);}d+=st;}
     G.laurel=d+"M46 92Q50 88 54 92M50 90L44 98M50 90L56 98";})();
   /* chrysanthemum: two rings of narrow petals */
-  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);let f=rev(circ(50,50,17));for(let i=0;i<20;i++)f+=petal(50,50,17,47,i*18,5)+"Z";G.chrysFill=f;})();
+  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);let f=rev(circ(50,50,17));for(let i=0;i<20;i++)f+=petal(50,50,17,47,i*18,5)+"Z";G.chrysFill=f;
+    /* 0.1.25.0: two leaves behind the petals in the lower corners (the green second part) */
+    let l="";for(const a of [225,135]){const b=pol(50,50,36,a);G.chrys+=leafV(b[0],b[1],a,20,5.4);l+=leaf(b[0],b[1],a,20,5.4)+"Z";}G.chrysLeaves=l;})();
   /* peony: scalloped layers and a few curled centre petals */
   (function(){G.peony=scallop(7,50,52,38,50,10)+scallop(6,50,52,25,33,40)+"M42 52Q44 40 52 42Q60 46 56 54Q50 60 44 56M48 50Q50 46 53 49"+
-    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill=scallop(7,50,52,38,50,10);})();
+    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill=scallop(7,50,52,38,50,10);
+    /* 0.1.25.0: two leaves under the lower petals (the green second part) */
+    let l="";for(const a of [222,138]){const b=pol(50,52,40,a);G.peony+=leafV(b[0],b[1],a,19,6);l+=rev(leaf(b[0],b[1],a,19,6)+"Z");}G.peonyLeaves=l;})();
   /* cherry blossom: five notched petals and stamens */
   (function(){let d="";for(let i=0;i<5;i++){const a=i*72,p=pol(50,50,5,a-20),q=pol(50,50,5,a+20);
       d+="M"+pt(...p)+"C"+pt(...pol(50,50,30,a-40))+" "+pt(...pol(50,50,44,a-22))+" "+pt(...pol(50,50,43,a-9))+"L"+pt(...pol(50,50,36,a))+"L"+pt(...pol(50,50,43,a+9))+"C"+pt(...pol(50,50,44,a+22))+" "+pt(...pol(50,50,30,a+40))+" "+pt(...q);}
     for(let i=0;i<10;i++){const a=i*36+18,e=pol(50,50,i%2?14:18,a);d+="M"+pt(...pol(50,50,4,a))+"L"+pt(...e)+dot(...pol(50,50,(i%2?14:18)+1.5,a));}
-    G.sakura=d+circ(50,50,3.5);G.sakuraFill=d.split("M").filter((x,i)=>i>0&&i<=5).map(x=>"M"+x+"Z").join("")+circ(50,50,3.5);})();
+    G.sakura=d+circ(50,50,3.5);G.sakuraFill=d.split("M").filter((x,i)=>i>0&&i<=5).map(x=>"M"+x+"Z").join("")+circ(50,50,3.5);
+    /* 0.1.25.0: a short stem and two leaves in the gap under the bottom petals (the green second part) */
+    G.sakura+="M50 71L50 78"+leafV(50,78,150,14,4)+leafV(50,78,210,14,4);G.sakuraLeaves=leaf(50,78,150,14,4)+"Z"+leaf(50,78,210,14,4)+"Z";})();
   /* mandala ring and full mandala */
   (function(){let d=circ(50,50,30)+circ(50,50,26);for(let i=0;i<16;i++)d+=petal(50,50,30,46,i*22.5,8);
     for(let i=0;i<16;i++)d+=dot(...pol(50,50,22,i*22.5+11.25));G.mring=d;
@@ -1291,13 +1305,15 @@ const GI={
   /* ---- the table: [id, name, family, styles, minSizeMm, detail, lineWeightDefault, colourable(1/0), tags, unlock, path, fill, src] ---- */
   const T=[];
   const add=(id,name,fam,sty,min,det,lw,col,tags,unl,path,fill,src)=>T.push({id,name,family:fam,styles:sty.split(" "),minSizeMm:min,detail:det,lineWeightDefault:lw,
-    colourable:!!col,tags:tags.split(" "),unlock:unl,path,fill:fill||null,src:src||"original"});
+    colourable:!!col,tags:tags.split(" "),unlock:unl,path,fill:fill||null,fill2:null,colour2:null,src:src||"original"});
+  /* 0.1.25.0: give the element just added a second part (its leaves or stems): fill2 path, fixed colour from PART2 */
+  const part2=(f,kind)=>{const e=T[T.length-1];e.fill2=f;e.colour2=PART2[kind||"leaves"];};
   const gi=(id,name,sty,min,det,lw,col,tags,unl,key)=>add(id,name,"motif",sty,min,det,lw,col,tags,unl,GI[key],GI[key],"gi_"+key);
   /* traditional flash */
   add("rose_trad","Rose","motif","traditional neotrad",35,0.45,9,1,"botanical flower love","start",
     "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16ZM30 40C32 30 42 26 50 30C58 26 68 30 70 40M50 30C42 32 40 42 46 46C52 50 58 44 54 39C51 36 47 39 49 42M24 48C32 58 44 60 50 52C56 60 68 58 76 48M34 66C40 62 46 60 50 56C54 60 60 62 66 66"+sym("M24 66C14 66 6 76 4 88C16 88 26 80 28 70M24 68L10 82"),
-    "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16Z"+
-    symF(rev("M24 66C14 66 6 76 4 88C16 88 26 80 28 70L31 64Z")));
+    "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16Z");
+  part2(symF(rev("M24 66C14 66 6 76 4 88C16 88 26 80 28 70L28 66Z")));
   add("swallow","Swallow","motif","traditional neotrad",30,0.4,9,1,"bird animal travel nautical","start",
     sym("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80M10 24C20 28 30 34 42 41M22 22C30 25 37 30 44 36"),
     half("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80"));
@@ -1321,6 +1337,7 @@ const GI={
     "M22 18C14 40 14 66 28 82C36 90 64 90 72 82C86 66 86 40 78 18L66 20C72 40 72 62 64 72C58 78 42 78 36 72C28 62 28 40 34 20Z");
   add("cherries","Cherries","motif","traditional neotrad",25,0.25,9,1,"fruit flash sweet","style:traditional:1",
     "M34 58C36 40 44 24 58 14M63 63C62 44 62 30 58 14M58 14C66 6 80 8 86 16C76 22 64 20 58 14ZM60 14L84 16"+circ(32,71,14)+circ(64,76,13),circ(32,71,14)+circ(64,76,13));
+  part2("M58 14C66 6 80 8 86 16C76 22 64 20 58 14Z");
   add("diamond_gem","Diamond","motif","traditional neotrad",25,0.35,7,1,"gem luck value","start",
     "M20 34L34 16H66L80 34L50 88ZM20 34H80M34 16L42 34L50 16L58 34L66 16M42 34L50 88L58 34","M20 34L34 16L66 16L80 34L50 88ZM42 34L58 34L50 16Z");
   add("flame","Flame","motif","traditional neotrad japanese",30,0.3,9,1,"fire passion flash","style:traditional:1",
@@ -1348,13 +1365,13 @@ const GI={
     "M44 44C36 30 16 24 12 36C8 48 28 56 44 50M56 44C64 30 84 24 88 36C92 48 72 56 56 50M44 42H56V54H44ZM46 54L36 84L43 80L47 88L49 54M54 54L64 84L57 80L53 88L51 54M20 36C24 38 30 42 36 46M80 36C76 38 70 42 64 46",
     symF("M44 44C36 30 16 24 12 36C8 48 28 56 44 50ZM46 54L36 84L43 80L47 88L49 54Z")+"M44 42L56 42L56 54L44 54Z");
   /* botanical and nature */
-  add("peony","Peony","motif","japanese neotrad",50,0.6,7,1,"botanical flower japanese wealth","style:japanese:1",G.peony,G.peonyFill);
-  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,G.chrysFill);
-  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,G.sakuraFill);
+  add("peony","Peony","motif","japanese neotrad",50,0.6,7,1,"botanical flower japanese wealth","style:japanese:1",G.peony,G.peonyFill);part2(G.peonyLeaves);
+  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,G.chrysFill);part2(G.chrysLeaves);
+  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,G.sakuraFill);part2(G.sakuraLeaves);
   add("lotus_line","Lotus","motif","fineline geometric watercolour",30,0.35,3,1,"botanical flower calm","start",
     "M50 20C40 36 40 60 50 76C60 60 60 36 50 20Z"+sym("M50 76C36 70 26 52 28 34C38 40 46 56 50 76M50 78C32 78 16 66 10 50C24 50 40 60 50 78")+"M18 86C30 82 40 88 50 84C60 88 70 82 82 86",null);
   add("fern","Fern","motif","fineline realism",45,0.7,3,1,"botanical nature leaf","start",G.fern,null);
-  add("olive_branch","Olive branch","motif","fineline realism watercolour",40,0.6,3,1,"botanical peace leaf","style:fineline:1",G.olive,G.oliveFill);
+  add("olive_branch","Olive branch","motif","fineline realism watercolour",40,0.6,3,1,"botanical peace leaf","style:fineline:1",G.olive,G.oliveFill);part2(G.oliveLeaves);
   add("wheat","Wheat","motif","fineline traditional",40,0.55,3,1,"botanical harvest home","style:fineline:2",G.wheat,null);
   add("oak_leaf","Oak leaf","motif","fineline traditional realism",30,0.45,5,1,"botanical leaf strength","start",
     sym("M50 94L50 86C44 86 40 82 42 76C34 78 30 72 34 66C26 66 24 58 30 54C22 52 22 44 30 42C24 36 28 28 36 30C34 22 40 16 46 20C46 14 48 10 50 8M50 76L41 71M50 60L33 55M50 44L32 39M50 30L40 24")+"M50 96V12",
@@ -1518,6 +1535,15 @@ const GI={
 const ELEMENT_INDEX=new Map(ELEMENTS.map(e=>[e.id,e]));
 SIM.LINE_WEIGHTS=LINE_WEIGHTS;SIM.COLOURS=COLOURS;SIM.STYLES=STYLES;SIM.ELEMENTS=ELEMENTS;
 SIM.elementById=id=>ELEMENT_INDEX.get(id)||null;
+/* 0.1.25.0: the ink of an element's second part (fill2) for its design colour and the design's style: COLOURS id, or null
+   for black (the design element's own convention). A black-and-grey element (colour null, black or grey) keeps the part in
+   its own ink, so a black piece stays all black; a coloured one gets the element's fixed colour2, unless the style's
+   palette has no such ink (fine line, blackwork, lettering, geometric have no green), where the part goes black.
+   undefined when the element has no second part */
+SIM.PART2=PART2;
+SIM.fill2Colour=(def,colour,style)=>{if(!def||!def.fill2)return undefined;
+  if(!colour||PART2_PLAIN[colour])return colour||null;
+  const st=STYLES[style];return st&&st.palette.indexOf(def.colour2)<0?null:def.colour2;};
 /* ===== sim/placements.js: PLACEMENTS (every allowed zone) and BODY_SHAPES (PR 1) =====
    Where a tattoo can go, and what each spot is like. Allowed zones only: arms (forearm incl. the inner wrist area, upper
    arm), shoulders, hands, legs (thigh, calf, shin), feet, back (upper, full), upper chest (left, right, sternum),
@@ -1655,6 +1681,8 @@ SIM.PLACEMENTS=PLACEMENTS;SIM.ISLANDS=ISLANDS;SIM.BODY_SHAPES=BODY_SHAPES;SIM.pl
    go round the limb, so the piece is not marked down for being wider than the wrap.
    An optional design.pos {x,y} (0..1 in the placement box) says where the piece's centre sits; default the middle.
    client.traits.pain is read as pain TOLERANCE (1 = sits like a rock, 0 = can't sit still).
+   0.1.25.0: an element's second part (fill2, the leaves, its colour by SIM.fill2Colour) counts at its share of the fill
+   (dzPart2Share): contrast, the palette check, colour must-haves, the colour share (hours, price) and pale_on_dark.
    Private helpers start with dz. Nothing here is random: the same design always scores the same. ===== */
 
 /* line width on skin (mm) for each liner grouping in LINE_WEIGHTS */
@@ -1818,6 +1846,26 @@ function dzShape(def){
   if(k!=null)dzShapeCache[k]=r;
   return r;
 }
+/* 0.1.25.0: an element's second part (fill2, its leaves) is this share of its filled area (fill2 / (fill + fill2), by the
+   nonzero rule through the session's own flattener), cached per element; 0 when it has none */
+const dzPart2Cache={};
+function dzPart2Share(def){
+  const k=def.id;if(k!=null&&dzPart2Cache[k]!==undefined)return dzPart2Cache[k];
+  let r=0;
+  if(def.fill&&def.fill2&&SIM.flattenPath&&SIM.zoneArea){try{
+    const A=d=>SIM.zoneArea(SIM.flattenPath(d).map(s=>s.pts)),a=A(def.fill),b=A(def.fill2);r=a+b>0?b/(a+b):0;}catch(x){r=0;}}
+  if(k!=null)dzPart2Cache[k]=r;
+  return r;
+}
+/* the second part as it is inked here: {id, col, light, p} when it is drawn in another colour from the element's own,
+   else null (no fill2, no fill, or a black and grey element whose leaves stay in its ink). SIM.fill2Colour has the rule. */
+function dzPart2(def,colour,style,fill){
+  if(!def.fill2||!(fill>0)||!SIM.fill2Colour)return null;
+  const c=SIM.fill2Colour(def,colour||null,style),id=c||"black";
+  if(id===(colour||"black"))return null;
+  const p=dzPart2Share(def);if(!(p>0))return null;
+  const col=dzColour(id);return{id,col,light:col.light!=null?col.light:0.5,p};
+}
 const DZ_UNKNOWN={name:"element",family:"motif",styles:[],minSizeMm:15,detail:0.5,lineWeightDefault:7,colourable:true,tags:[]};
 function dzDef(id){return(SIM.elementById&&SIM.elementById(id))||Object.assign({},DZ_UNKNOWN,{id,name:String(id)});}
 /* an element's name as it reads mid-sentence: "Rose" -> "rose", "Script: Family" -> '"Family" script' */
@@ -1866,8 +1914,10 @@ function dzElems(design){
     const fill=clamp(el.fill||0,0,1),lineMm=dzLineMm(rl),area=L*Sh*sh.ink;
     const styles=def.styles||[],best=dzBestStyle(styles,style,rl);
     const colShare=colourId==="black"||COLOUR_LINES[style]||fill<=0?1:fill/(fill+lineMm/1.7*0.6+0.15);
-    const lightMix=lerp(dzColour("black").light!=null?dzColour("black").light:0.06,light,colShare);
-    els.push({colShare,lightMix,el,def,id:el.id,name:dzName(def),fam,sh,x,y,scale,mm:scale*S0,rl,lineMm,colourId,col,light,fill,
+    /* the second part: its share of the fill takes its own colour; lightF is the fill's light over both parts */
+    const pt2=dzPart2(def,el.colour,style,fill),lightF=pt2?lerp(light,pt2.light,pt2.p):light;
+    const lightMix=lerp(dzColour("black").light!=null?dzColour("black").light:0.06,lightF,colShare);
+    els.push({colShare,lightMix,lightF,colourId2:pt2?pt2.id:null,col2:pt2?pt2.col:null,light2:pt2?pt2.light:null,p2:pt2?pt2.p:0,el,def,id:el.id,name:dzName(def),fam,sh,x,y,scale,mm:scale*S0,rl,lineMm,colourId,col,light,fill,
       detail:def.detail!=null?def.detail:0.5,minMm:def.minSizeMm||10,styles,best,tags,axis,elong:round?0.1:sh.elong,area,
       w:area*(fill+lineMm/1.7*0.6+0.15)*(1-0.75*lightMix)});
   }
@@ -1886,7 +1936,8 @@ function dzElemRead(e,tone,wear,tol){
   const ratio=e.mm/(e.minMm*(1-(tol||0)));
   const sizeF=ratio>=1?1:Math.pow(Math.max(0,ratio),READ.sizeExp);
   const gapF=Math.max(dzGap(e,sp,bl),e.fam==="lettering"?0:READ.shapeHold*Math.pow(1-clamp(e.detail,0,1),READ.shapeExp));
-  const con0=e.colShare>=1?dzContrast(e.light,tone):lerp(dzContrast(dzColour("black").light||0.06,tone),dzContrast(e.light,tone),e.colShare);
+  const lf=e.colourId2?lerp(dzContrast(e.light,tone),dzContrast(e.light2,tone),e.p2):dzContrast(e.light,tone);
+  const con0=e.colShare>=1?lf:lerp(dzContrast(dzColour("black").light||0.06,tone),lf,e.colShare);
   const con=con0*(1-READ.fadeHit*fd);
   let lineV=1;
   if(e.lineMm<READ.lineOk){
@@ -1988,6 +2039,7 @@ function dzCoherence(E,design,lvl){
     const imp=Math.sqrt(Math.max(1e-6,e.w));sw+=imp;s+=imp*m;
     lo=Math.min(lo,e.rl);hi=Math.max(hi,e.rl);
     if(st&&st.palette&&e.colourId!=="black"&&st.palette.indexOf(e.colourId)<0)pal*=COHERENCE.paletteHit;
+    if(st&&st.palette&&e.colourId2&&e.colourId2!=="black"&&st.palette.indexOf(e.colourId2)<0)pal*=COHERENCE.paletteHit;
   }
   if(!sw)return 0;
   const lwF=1-COHERENCE.lwHit*clamp((hi-lo-COHERENCE.lwGapFrom)/(COHERENCE.lwGapTo-COHERENCE.lwGapFrom),0,1);
@@ -2000,11 +2052,12 @@ function dzHas(E,design,m){
   if(m.kind==="tag")return E.els.some(e=>e.tags.indexOf(m.v)>=0);
   if(m.kind==="element")return E.els.some(e=>e.id===m.v);
   if(m.kind==="style")return design.style===m.v;
-  if(m.kind==="colour")return E.els.some(e=>e.colourId===m.v);
+  if(m.kind==="colour")return E.els.some(e=>e.colourId===m.v||e.colourId2===m.v);
   return false;
 }
 function dzColourShare(E){
-  let sw=0,c=0;for(const e of E.els){sw+=e.w+1e-6;if(e.colourId!=="black"&&e.colourId!=="grey")c+=e.w+1e-6;}
+  const isC=id=>id!=="black"&&id!=="grey";
+  let sw=0,c=0;for(const e of E.els){sw+=e.w+1e-6;const k=e.colourId2?(isC(e.colourId)?1-e.p2:0)+(isC(e.colourId2)?e.p2:0):isC(e.colourId)?1:0;c+=k*(e.w+1e-6);}
   return sw?c/sw:0;
 }
 /* how much a piece shows: the spot's visibility, less for a piece that is small next to the spot (a watch hides it) */
@@ -2076,7 +2129,7 @@ const COMBOS=[
   {id:"pale_on_dark",text:"{adj}{colour} {name} on this skin tone: {verdict}",
     test:ctx=>{
       const seen={},out=[];
-      for(const e of ctx.E.els){
+      for(const e0 of ctx.E.els)for(const e of e0.colourId2?[e0,{name:e0.name,light:e0.light2,colourId:e0.colourId2,col:e0.col2}]:[e0]){
         if(e.light<0.5||seen[e.colourId]||ctx.tone<0.45)continue;
         const c=dzContrast(e.light,ctx.tone);if(c>=0.45)continue;seen[e.colourId]=1;
         out.push({adj:e.light>=0.8?"pale ":"",colour:dzColName(e),name:e.name,verdict:c<0.2?"won't read at all":"will read faintly, outline it or go darker",sev:c<0.2?3:2});
@@ -2185,7 +2238,7 @@ SIM.HOURS=HOURS;SIM.SESSION_HOURS=SESSION_HOURS;SIM.RATE_DEFAULT=RATE_DEFAULT;SI
    the stencil already exist. The artist's own saved designs (S.flash, app/design.js) join the wall over time.
    Every element id must exist in ELEMENTS and every placement in PLACEMENTS (tools/sim-test.js checks). ===== */
 const FLASH=[
-  {id:"fl_sailor_rose",name:"Sailor's rose",note:"A red rose over a banner. The first thing on every wall.",placement:"forearm_l",style:"traditional",sizeMm:95,
+  {id:"fl_sailor_rose",name:"Sailor's rose",note:"A red rose with green leaves over a banner. The first thing on every wall.",placement:"forearm_l",style:"traditional",sizeMm:95,
     elements:[{id:"rose_trad",x:.5,y:.36,scale:.62,rot:0,lineWeight:9,fill:.75,colour:"red"},
               {id:"banner_scroll",x:.5,y:.8,scale:.95,rot:0,lineWeight:9,fill:.35,colour:"yellow"}]},
   {id:"fl_swallows",name:"Swallow pair",note:"Two swallows facing each other: home and back again.",placement:"chest_l",style:"traditional",sizeMm:120,
@@ -2231,7 +2284,8 @@ SIM.FLASH=FLASH;
    and pigment fades, lights first. What speeds it up:
      - placement (PLACEMENT_WEAR: hands and feet shed skin and rub, so they spread and fade far faster than a back),
      - sun (the client's sun trait x the placement's sun; darker skin shields a little),
-     - the colours (COLOUR_FADE: yellow and white go first, black last),
+     - the colours (COLOUR_FADE: yellow and white go first, black last; an element's second part, its green leaves,
+       fades at its own rate over its share of the fill, 0.1.25.0),
      - the session (depthQuality: too shallow falls out, too deep blows out; lineQuality: ragged edges start soft;
        saturation: badly packed colour starts faded). trauma feeds the heal grade in PR 5, not aging directly,
      - the heal (HEAL_GRADES: a patchy heal starts with spread already applied, a blowout with a big one),
@@ -2299,7 +2353,9 @@ function agWear(e,env,years){
   const y=Math.max(0,years||0);
   const spread=env.heal.spread0+AGING.spreadK*env.spreadM*Math.pow(y,AGING.spreadExp);
   const blur=env.heal.blur0+env.lineBlur+spread*AGING.blurFromSpread*(1+AGING.detailBlur*e.detail);
-  const cr=COLOUR_FADE[e.colourId]!=null?COLOUR_FADE[e.colourId]:COLOUR_FADE._default;
+  const cf=id=>COLOUR_FADE[id]!=null?COLOUR_FADE[id]:COLOUR_FADE._default;
+  /* 0.1.25.0: an element's second part (its leaves, e.colourId2 over share e.p2 of the fill) fades at its own colour's rate */
+  const cr=e.colourId2?lerp(cf(e.colourId),cf(e.colourId2),e.p2||0):cf(e.colourId);
   const rate=lerp(COLOUR_FADE.black,cr,e.colShare!=null?e.colShare:1)*env.fadeM;
   const col=1-Math.exp(-rate*y);
   const dil=AGING.dilution*Math.pow(spread/(e.lineMm+spread||1),AGING.dilutionExp)*(1-AGING.fillHold*e.fill);
@@ -3805,7 +3861,8 @@ SIM.healReaction=healReaction;SIM.healApology=healApology;SIM.pieceReview=pieceR
    piece's pos on the box, the element's x/y in the footprint, its scale and rot) and resampled every STENCIL.stepMm into a
    stroke. Strokes are split into STENCIL.segMm segments for scoring. Elements with fill > 0 give a zone from their fill path
    (nonzero rule like every renderer, so overlapping parts are one zone and a hole drawn the other way round stays bare):
-   black or grey fills are shading zones, coloured fills are colour zones. The work list is every stroke, then every
+   black or grey fills are shading zones, coloured fills are colour zones. An element's second part (fill2, its leaves, in
+   its fixed colour by SIM.fill2Colour) is a zone of its own (part:2), after every main zone; in the element's own ink it joins its zone. The work list is every stroke, then every
    shading zone, then every colour zone; each item carries a share of the piece's hours (scoreDesign hours less setup) by its
    length or its area x fill. A piece of N sittings (scoreDesign sessions, or the booking's) splits that list at 1/N, 2/N...
    of the hours, so the first sitting is mostly linework; a zone worth more than a sitting is cut into bands (ssSplitZone). A sitting that ends early leaves the rest to the next one.
@@ -4005,7 +4062,7 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
   const P=SIM.PLACEMENTS[design.placement]||null;
   const box=P?SIM.placementBox(design.placement,bodyShape):{wrapMm:120,lengthMm:240};
   const sz=design.sizeMm||50,pos=design.pos||{x:0.5,y:0.5},fp=SIM.footprintOf(design);
-  const strokes=[],zones=[];let dots=0;
+  const strokes=[],zones=[],zones2=[];let dots=0;
   (design.elements||[]).forEach((el,ei)=>{
     const def=SIM.elementById(el.id);if(!def)return;
     const b=SIM.elementBox(el.id),k=((el.scale!=null?el.scale:0.5)*sz)/Math.max(b.w,b.h,1e-6),bcx=b.x+b.w/2,bcy=b.y+b.h/2;
@@ -4021,15 +4078,22 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
       strokes.push({el:ei,lw,colour:lineCol,pts:r.pts,cum:r.cum,len:r.len,segs,closed:sp.closed,detail:def.detail||0.5});
     }
     if(def.fill&&el.fill>0){
-      const polys=ssFlatten(def.fill).map(sp=>tf(sp.pts));
-      const area=ssZoneArea(polys);
-      if(area>=STENCIL.minZoneMm2){
+      /* 0.1.25.0: the second part (fill2, the leaves) in its own colour (SIM.fill2Colour) is its own zone, kept in zones2 and
+         put after every main zone so the zone and item numbers of a piece in progress don't move; in the element's own ink
+         (a black and grey rose) it joins the main zone */
+      const c2=def.fill2?SIM.fill2Colour(def,colour,design.style):undefined,same=c2!==undefined&&(c2||"black")===(colour||"black");
+      const mk=(d,cc,list,part)=>{
+        const polys=ssFlatten(d).map(sp=>tf(sp.pts)),area=ssZoneArea(polys);
+        if(area<STENCIL.minZoneMm2)return;
         let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of polys)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
-        const col=colour&&colour!=="black"&&colour!=="grey";
-        zones.push({el:ei,kind:col?"colour":"shade",colour:colour||"black",target:clamp(el.fill,0.05,1),polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2});
-      }
+        const col=cc&&cc!=="black"&&cc!=="grey",z={el:ei,kind:col?"colour":"shade",colour:cc||"black",target:clamp(el.fill,0.05,1),polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2};
+        if(part)z.part=2;list.push(z);
+      };
+      mk(same?def.fill+def.fill2:def.fill,colour,zones,0);
+      if(c2!==undefined&&!same)mk(def.fill2,c2,zones2,2);
     }
   });
+  zones.push(...zones2);
   const sc=SIM.scoreDesign(design,client||null,skills||{});
   const nParts=Math.max(1,parts||sc.sessions);
   if(nParts>1){
@@ -6864,6 +6928,8 @@ function bdTriangles(parts){let t=0;for(const m of parts){const g=m.geometry;t+=
        soft view-space highlight from it (DC_LOOK.sheen; Lambert on Lite has no specular of its own).
      - pigment: the patch lets ink show a share of its own colour over the skin (DC_LOOK.pigment), so a blue or green
        still reads on warm or dark skin instead of turning muddy under the multiply.
+   0.1.25.0: an element's second part (fill2, the leaves) is filled, shaded and aged in its own colour (INK_SIM.fill2Colour)
+   under the main fill, or with it as one path (fu) in the same ink; the halo and gloss silhouette take both parts.
    Aging: INK_SIM.age(piece, years) gives blur, fade and spread (with the piece.heal grade from PR 5); spread widens the
    lines and the bleed, fade lowers the alpha, blur softens the offscreen copy (canvas filter where the browser has it,
    else a downscale).
@@ -6898,7 +6964,9 @@ const DC={canvas:null,ctx:null,tex:null,size:0,sig:"",paths:{},filter:null,tmp:n
 function dcPath(id){
   let c=DC.paths[id];if(c)return c;
   const d=INK_SIM.elementById(id);if(!d)return null;
-  try{c={d:new Path2D(d.path),f:d.fill?new Path2D(d.fill):null,b:INK_SIM.elementBox(id),def:d};}catch(e){return null;}
+  try{c={d:new Path2D(d.path),f:d.fill?new Path2D(d.fill):null,b:INK_SIM.elementBox(id),def:d,
+    /* 0.1.25.0: the second part (fill2, the leaves) alone, and fill + fill2 as one path (one ink, the silhouette) */
+    f2:d.fill&&d.fill2?new Path2D(d.fill2):null,fu:d.fill&&d.fill2?new Path2D(d.fill+d.fill2):null};}catch(e){return null;}
   return(DC.paths[id]=c);}
 function dcFilterOk(){
   if(DC.filter==null){try{const c=document.createElement("canvas").getContext("2d");c.filter="blur(2px)";DC.filter=c.filter==="blur(2px)";}catch(e){DC.filter=false;}}
@@ -7019,18 +7087,23 @@ function dcRender(M,ppx,mode,opts){
   let sil=null;
   if(fr.halo>0.01||fr.gloss>0.01){sil=dcCanvas(cw,ch);const s=sil.getContext("2d");s.lineCap="round";s.lineJoin="round";s.fillStyle=s.strokeStyle="#000";
     for(const e of els){const P=dcPath(e.id);if(!P)continue;const k=e.mm/Math.max(P.b.w,P.b.h,1e-6);dcElT(s,B,e,P,k);
-      if(P.f&&e.fill>0)s.fill(P.f);s.lineWidth=(lineOf(e)+L.glossMm*0.6)/k;s.stroke(P.d);}}
+      if(P.f&&e.fill>0)s.fill(P.fu||P.f);s.lineWidth=(lineOf(e)+L.glossMm*0.6)/k;s.stroke(P.d);}}
   if(sil&&fr.halo>0.01){c.save();c.setTransform(1,0,0,1,0,0);c.shadowColor=`rgba(${L.haloCol},${(L.haloA*fr.halo).toFixed(3)})`;
     c.shadowBlur=L.haloMm*ppx*2;c.shadowOffsetX=OFF;c.drawImage(sil,-OFF,0);c.restore();}
   const wc=d.style==="watercolour",oldT=ag.fade*L.oldK;
   for(const e of els){const P=dcPath(e.id);if(!P)continue;const k=e.mm/Math.max(P.b.w,P.b.h,1e-6);
     const fc=e.colour?dcHex(e.colour):DC_INK,lc0=e.colour&&(wc||!(e.fill>0))?fc:DC_INK,lc=lc0===DC_INK||e.colour==="black"?dcMix(lc0,L.oldInk,oldT):lc0;
     if(P.f&&e.fill>0){const fa=1-Math.pow(1-bdClamp(e.fill,0,1),L.fillGamma);
-      if(wc){c.save();dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(fc,fa);c.shadowBlur=L.washMm*ppx*2;c.shadowOffsetX=OFF;c.fillStyle="#000";c.fill(P.f);c.restore();}
-      else{dcElT(c,B,e,P,k);c.globalAlpha=fa;c.fillStyle=fc;c.fill(P.f);c.globalAlpha=1;
-        /* soft shading inside the fill along its outline (the lines' own shadow, clipped to the fill) */
-        c.save();c.clip(P.f);dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(DC_INK,L.shadeA*bdClamp(e.fill,0,1));c.shadowBlur=L.shadeMm*ppx*2;c.shadowOffsetX=OFF;
-        c.strokeStyle="#000";c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}}
+      const part=(F,col)=>{
+        if(wc){c.save();dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(col,fa);c.shadowBlur=L.washMm*ppx*2;c.shadowOffsetX=OFF;c.fillStyle="#000";c.fill(F);c.restore();}
+        else{dcElT(c,B,e,P,k);c.globalAlpha=fa;c.fillStyle=col;c.fill(F);c.globalAlpha=1;
+          /* soft shading inside the fill along its outline (the lines' own shadow, clipped to the fill) */
+          c.save();c.clip(F);dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(DC_INK,L.shadeA*bdClamp(e.fill,0,1));c.shadowBlur=L.shadeMm*ppx*2;c.shadowOffsetX=OFF;
+          c.strokeStyle="#000";c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}};
+      /* 0.1.25.0: the second part in its fixed colour (INK_SIM.fill2Colour) under the fill; in the element's own ink, one path */
+      const c2=P.f2?INK_SIM.fill2Colour(P.def,e.colour,d.style):undefined,h2=c2===undefined?null:c2?dcHex(c2):DC_INK;
+      if(h2&&h2!==fc)part(P.f2,h2);
+      part(h2===fc?P.fu:P.f,fc);}
     dcElT(c,B,e,P,k);c.save();c.shadowColor=dcRgba(lc,L.bleedA);c.shadowBlur=(L.bleedMm+ag.spread*0.6)*ppx*2;
     c.strokeStyle=lc;c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}
   /* aging blur */
@@ -7149,7 +7222,8 @@ function dcStencil(design,shape,tone){
    (INK_VIS.setStudio(stage, shop)); nothing here reads the save.
    Your flash on your walls (0.1.15.0): the studio's and the legacy studio's flash walls, and the sheets taped to the rented
    chair's partition, show your own flash sheets (INK_VIS.setFlash: S.flash, newest first, drawn from the curated element
-   library like every other sheet, with the name the Flash tab gives them). Frames past your last sheet get the shop's
+   library like every other sheet, with the name the Flash tab gives them; 0.1.25.0: an element's leaves in their own colour
+   by the sheet's style). Frames past your last sheet get the shop's
    generic flash. All of it is one shared canvas (vrOwnPaint: the wall's 5 x 2 sheets on the top half, the partition's
    3 sheets under it; 512 px square on Lite, 1024 on Full and Ultra), repainted only when the list changes. Arkady's rooms
    keep his old-school sheets.
@@ -7233,7 +7307,9 @@ function vrFlashPaint(g,x0,y0,w,h,o){
     if(f&&Array.isArray(f.elements)&&f.elements.length){const fp=INK_SIM.footprintOf(f),k=sh*0.62/Math.max(f.sizeMm,1);g.save();g.translate(0,sh*0.02);g.scale(k,k);
       for(const e of f.elements){const P=dcPath(e.id);if(!P)continue;const b=P.b,ek=(e.scale*f.sizeMm)/Math.max(b.w,b.h,1e-6);
         g.save();g.translate((e.x-fp.cx)*f.sizeMm,(e.y-fp.cy)*f.sizeMm);g.rotate((e.rot||0)*Math.PI/180);g.scale(ek,ek);g.translate(-(b.x+b.w/2),-(b.y+b.h/2));
-        if(P.f&&e.fill>0){g.globalAlpha=Math.min(1,e.fill);g.fillStyle=e.colour?dcHex(e.colour):DC_INK;g.fill(P.f);g.globalAlpha=1;}
+        if(P.f&&e.fill>0){const fc=e.colour?dcHex(e.colour):DC_INK,c2=P.f2?INK_SIM.fill2Colour(P.def,e.colour,f.style):undefined,h2=c2===undefined?null:c2?dcHex(c2):DC_INK;
+          g.globalAlpha=Math.min(1,e.fill);if(h2&&h2!==fc){g.fillStyle=h2;g.fill(P.f2);}   /* 0.1.25.0: the second part (the leaves) */
+          g.fillStyle=fc;g.fill(h2===fc?P.fu:P.f);g.globalAlpha=1;}
         g.strokeStyle=DC_INK;g.lineWidth=Math.max(1.2/k,INK_SIM.lineMm(e.lineWeight||7))/ek;g.lineCap=g.lineJoin="round";g.stroke(P.d);g.restore();}
       g.restore();
       /* the sheet's name, as the Flash tab shows it, shrunk to fit the paper */
@@ -7523,7 +7599,7 @@ function vsMachine(kind,spare){
    shared canvas only when the list changed; returns whether it did */
 function vsFlash(list){
   const L=(Array.isArray(list)?list:[]).filter(f=>f&&Array.isArray(f.elements)&&f.elements.length).slice(0,VR_OWN.wall.cols*VR_OWN.wall.rows)
-    .map(f=>({name:String(f.name||""),sizeMm:+f.sizeMm||60,elements:f.elements}));
+    .map(f=>({name:String(f.name||""),sizeMm:+f.sizeMm||60,style:f.style||null,elements:f.elements}));
   const sig=JSON.stringify(L);if(sig===V.flashSig)return false;V.flash=JSON.parse(sig);V.flashSig=sig;
   const R=V.room;if(R&&R.flash){const c=R.flash.image;vrOwnPaint(c.getContext("2d"),c.width,c.height,V.flash);R.flash.needsUpdate=true;V.dirty=true;}
   return true;}
@@ -7688,7 +7764,7 @@ function vaStatus(){
                                    "sedov" makes the chair stage the front room of Arkady's shop, null the shop across town
      setMachine(kind, spare)       coil | rotary | pen: the kit's machine goes up front on the tray (0.1.14.0), spare (0.1.15.0,
                                    another kind) at the back corner, the third put away
-     setFlash(list)                0.1.15.0: your flash sheets, newest first, [{name, sizeMm, elements}], for the flash walls
+     setFlash(list)                0.1.15.0: your flash sheets, newest first, [{name, sizeMm, style, elements}] (style picks the leaves colour, 0.1.25.0), for the flash walls
                                    of your studio and legacy studio and the rented chair's partition; repaints only on a change
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test
@@ -7790,7 +7866,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.24.0";
+const VERSION="0.1.25.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -8343,7 +8419,7 @@ function stMachine(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setMachine!
 function stShop(){return(S.studio&&S.studio.stage)==="chair"&&S.career&&S.career.split==="mentor"?"sedov":null;}
 /* 0.1.15.0: your flash for the 3D walls, newest first, as the curated elements the board saved */
 function stFlash(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setFlash!=="function")return;
-  try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,elements:f.design.elements})));}catch(e){}}
+  try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,style:f.design.style,elements:f.design.elements})));}catch(e){}}
 /* 0.1.23.0: the room's ambience (INK_SOUND AMB_ROOMS: the stage, or "sedov"), and the week for the rain. Cheap and
    idempotent, so renderHeader calls it after every load, Next and stage change */
 function stAmb(){if(typeof INK_SOUND==="undefined"||!INK_SOUND.room||!S)return;INK_SOUND.room(stShop()||(S.studio&&S.studio.stage)||"apprentice",S.week);}
@@ -8467,6 +8543,7 @@ function kpBuy(kind,id){
   renderHeader();kpDone(`Bought: ${it.name}${kind==="ink"?" ink":""} (${fmtMoney(price)})`,kind==="ink"?"ink":null);
   const c=$("studioBody").querySelector(".kv dd:last-child");if(c)c.textContent=fmtMoney(S.cash);}
 /* ===================== app/design.js: the Design tab, the design board (PR 2) =====================
+   0.1.25.0: an element's second part (fill2, the leaves) is drawn in its fixed colour by dzFillSvg (also the gallery's).
    Three views on a segmented control:
      Body   the body diagram (app/bodymap.js): pick the spot, the body shape and the skin tone, and the sample walk-in.
      Board  the cream board (both themes, Q10): the placement's box at its true aspect (wrap x length, in mm) with its flow
@@ -8606,9 +8683,14 @@ function dzElSvg(e,style,attrs,hit,spreadMm){
   const fc=e.colour?dzColHex(e.colour):DZ_INK,lc=e.colour&&(style==="watercolour"||!(e.fill>0))?fc:DZ_INK;
   let h=`<g${attrs||""} transform="${dzTf(e)}">`;
   if(hit){const mu=hit/k,w=Math.max(b.w,mu),hh=Math.max(b.h,mu);h+=`<rect class="hit" x="${dzR2(cx-w/2)}" y="${dzR2(cy-hh/2)}" width="${dzR2(w)}" height="${dzR2(hh)}"/>`;}
-  if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+  if(d.fill&&e.fill>0)h+=dzFillSvg(d,e,style,fc);
   h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((INK_SIM.lineMm(e.lineWeight)+(spreadMm||0))/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   return h+"</g>";}
+/* an element's fill as svg: 0.1.25.0 draws its second part (fill2, the leaves) in its fixed colour (INK_SIM.fill2Colour) under
+   the fill; when the part is in the element's own ink the two are one path (nonzero, so they never double up). The gallery uses it too. */
+function dzFillSvg(d,e,style,fc){
+  const op=dzR2(e.fill),c2=d.fill2?INK_SIM.fill2Colour(d,e.colour,style):undefined,h2=c2===undefined?null:c2?dzColHex(c2):DZ_INK;
+  return(h2&&h2!==fc?`<path d="${d.fill2}" fill="${h2}" fill-opacity="${op}"/>`:"")+`<path d="${h2===fc?d.fill+d.fill2:d.fill}" fill="${fc}" fill-opacity="${op}"/>`;}
 function dzTf(e){const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
   return`translate(${dzR2(e.mx)} ${dzR2(e.my)}) rotate(${dzR2(e.rot)}) scale(${dzR4(k)}) translate(${dzR2(-(b.x+b.w/2))} ${dzR2(-(b.y+b.h/2))})`;}
 /* the elements of a model (or a design) in a small square svg fitted to the piece */
@@ -8939,7 +9021,7 @@ function dzDrawerGrid(){
   const sw=lw=>(0.7+lw*0.22).toFixed(2);
   host.innerHTML=list.length?list.map(e=>{const un=dzUnlocked(e),b=dzEB(e.id),s=Math.max(b.w,b.h),vx=b.x+b.w/2-s/2-4,vy=b.y+b.h/2-s/2-4;
     return`<button type="button" class="dzTile${un?"":" lock"}" data-id="${e.id}" aria-label="${esc(e.name)}${un?"":", locked: "+esc(dzLockText(e))}">
-<svg viewBox="${dzR2(vx)} ${dzR2(vy)} ${dzR2(s+8)} ${dzR2(s+8)}" aria-hidden="true">${e.fill?`<path d="${e.fill}" fill="${DZ_INK}" fill-opacity="${e.fill===e.path?1:.35}"/>`:""}<path d="${e.path}" fill="none" stroke="${DZ_INK}" stroke-width="${dzR2(sw(e.lineWeightDefault)*s/100)}" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg viewBox="${dzR2(vx)} ${dzR2(vy)} ${dzR2(s+8)} ${dzR2(s+8)}" aria-hidden="true">${e.fill2?`<path d="${e.fill2}" fill="${dzColHex(e.colour2)}" fill-opacity=".6"/>`:""}${e.fill?`<path d="${e.fill}" fill="${DZ_INK}" fill-opacity="${e.fill===e.path?1:.35}"/>`:""}<path d="${e.path}" fill="none" stroke="${DZ_INK}" stroke-width="${dzR2(sw(e.lineWeightDefault)*s/100)}" stroke-linecap="round" stroke-linejoin="round"/></svg>
 <b>${esc(e.name)}</b><small>${un?esc(e.family)+" · "+e.minSizeMm+" mm+":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>${esc(dzLockText(e))}`}</small></button>`;}).join("")
     :`<p class="hint">Nothing matches those filters.</p>`;}
 function dzAddEl(d){
@@ -9310,7 +9392,7 @@ function seTopHtml(sess){
 ${practice?"":`<div class="seMeters">${seMeterHtml("pain","Pain",sess.m.pain)}${seMeterHtml("fatigue","Fatigue",sess.m.fatigue)}</div>`}</div>`;}
 function seProgText(sess,it,done,tot,cnt){
   if(!it)return`${tot} of ${tot} done`;
-  const k=it.k==="line"?"Line":it.k==="shade"?"Shading":"Colour";
+  const k=it.k==="line"?"Line":it.zone&&it.zone.part===2?"Leaves":it.k==="shade"?"Shading":"Colour";
   return`${k} · ${done+1} of ${tot} · ${(sess.m.clock).toFixed(1)} h`;}
 function seMeterHtml(k,label,v){v=clamp(v||0,0,1);
   return`<div class="seMeter ${k}${v>=0.75?" hi":""}" id="seM_${k}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}">
@@ -9507,7 +9589,7 @@ function seRenderUnder(){
     if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Hold anywhere on the skin, slide the needle onto the dot, follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace."));}
   else{
     const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
-    g.innerHTML=`<div class="seZone"><span class="seGL">${col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
+    g.innerHTML=`<div class="seZone"><span class="seGL">${z.part===2?"Leaves":col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
 <i id="seZoneBar" style="width:${(clamp(s/top,0,1)*100).toFixed(1)}%;background:${seColHex(z.colour)}"></i><b class="tgt" style="left:${(z.target/top*100).toFixed(1)}%"></b><b class="over" style="left:${((z.target+INK_SIM.ZONE.slack)/top*100).toFixed(1)}%"></b></div><span class="seGL" id="seZoneV">${Math.round(s/z.target*100)}%</span></div>`;
     const cnt=seItemCounts(sess),left=sess.end-sess.next;
     tools.innerHTML=`<div class="row"><button class="btn sm${s>=z.target?" pri":""}" id="seNextZ">${left>1?"Next zone":"Finish"}</button><span class="hint">${cnt.shade+cnt.colour>0?`${left} zone${left>1?"s":""} left`:""}</span></div>`;
@@ -10583,6 +10665,7 @@ function slStart(skip,first){
   toast(skip?"Week 1, 2003: your own chair":"Week 1, 2000: grab the broom");}
 /* ===================== app/gallery.js: the heal reveal and the body of work (PR 5) =====================
    Pictures of healed and aged pieces, all re-rendered from the sim (INK_SIM.age); nothing here is ever saved.
+   Fills go through app/design.js dzFillSvg, so an element's green leaves (0.1.25.0) show here and on the share cards.
      gvSvg(piece, {years, fresh, ghost, big})  one piece on the client's skin: the design with the aging model's spread,
                   blur and fade for that many years (heal grade included); a blown-out heal gets a halo, a patchy or infected
                   one a mottled mask, and the stencil can be laid over it as a faint purple ghost so drift and blowouts show.
@@ -10638,7 +10721,7 @@ function gvEl(e,style,spread,mode,extra){
   let h=`<g transform="${dzTf(e)}">`;
   if(mode==="ghost")h+=`<path d="${d.path}" fill="none" stroke="${GV_STENCIL}" stroke-width="${dzR4(0.42/k)}" stroke-dasharray="${dzR4(1.4/k)} ${dzR4(0.9/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(mode==="halo")h+=`<path d="${d.path}" fill="none" stroke="${GV_BLOW}" stroke-width="${dzR4((lw+extra)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  else{if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+  else{if(d.fill&&e.fill>0)h+=dzFillSvg(d,e,style,fc);
     h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((lw+spread)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
   return h+"</g>";}
 /* gvSvg(p, o) -> {svg, a, vb, box, skin}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls,

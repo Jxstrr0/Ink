@@ -12,6 +12,9 @@
                     coloured piece comes out packed; fineline motifs, lettering, frames and textures stay line-only.
                     A fill keeps inside the path's own box (old layouts keep their sizes); overlapping parts run the
                     same way round, and a hole (a highlight, an eyespot, a ring) runs the other way (rev(), symF()).
+                    fill2 / colour2 (0.1.25.0) = an optional second part (leaves, stems) in a fixed colour (PART2), the
+                    same rules as fill (closed, inside the box, same way round); SIM.fill2Colour(def, colour, style) gives
+                    its ink: the element's own on a black and grey piece, black where the style has no such colour.
                     src = "original" (drawn by Claude Code for Ink / Longlight Interactive) or a key into art/CREDITS.md.
                     unlock = "start" | "style:<style id>:<skill level 1..10>" | "rnd:<research id>".
      SIM.elementById(id) -> element or null (a Map built once).
@@ -56,6 +59,10 @@ const STYLES={
     blendsWith:["neotrad","fineline","lettering","geometric"],
     demandCurve:[[2000,0.2],[2008,0.4],[2011,0.9],[2013,1.6],[2015,1.9],[2017,1.3],[2020,0.8],[2030,0.6]],clientSegments:["creatives","students","fashion","first_timer"]}
 };
+/* 0.1.25.0: an element's second part (fill2: leaves, stems) has one fixed colour, not the player's: kind -> COLOURS id */
+const PART2={leaves:"green"};
+/* colours that keep a piece black and grey: an element in one of these (or null) has its second part in the same ink */
+const PART2_PLAIN={black:1,grey:1};
 const ELEMENTS=(function(){
   /* ---- helpers: coordinates are 0..100, y down; angles in degrees, 0 = up, clockwise ---- */
   const N=v=>String(Math.round(v*10)/10||0), pt=(x,y)=>N(x)+" "+N(y), R=Math.PI/180;
@@ -161,9 +168,10 @@ const GI={
     for(let i=0;i<13;i++){const t=0.1+i*0.068,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t),l=24*Math.pow(1-t,0.75)+3;d+=leaf(b[0],b[1],a-62,l,l*0.18)+leaf(b[0],b[1],a+62,l,l*0.18);}
     G.fern=d;})();
   /* olive branch with three olives */
-  (function(){const p0=[10,92],p1=[34,40],p2=[90,10];let d=qpath(p0,p1,p2),f="";
-    for(let i=0;i<7;i++){const t=0.14+i*0.12,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t);d+=leafV(b[0],b[1],a-48,17,3.6)+leafV(b[0],b[1],a+44,17,3.6);}
-    d+=leaf(90,10,qdir(p0,p1,p2,1),12,3);
+  (function(){const p0=[10,92],p1=[34,40],p2=[90,10];let d=qpath(p0,p1,p2),f="",l2="";
+    for(let i=0;i<7;i++){const t=0.14+i*0.12,b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t);d+=leafV(b[0],b[1],a-48,17,3.6)+leafV(b[0],b[1],a+44,17,3.6);
+      l2+=leaf(b[0],b[1],a-48,17,3.6)+"Z"+leaf(b[0],b[1],a+44,17,3.6)+"Z";}
+    d+=leaf(90,10,qdir(p0,p1,p2,1),12,3);l2+=leaf(90,10,qdir(p0,p1,p2,1),12,3)+"Z";G.oliveLeaves=l2;
     for(const t of [0.3,0.55,0.78]){const b=qb(p0,p1,p2,t),a=qdir(p0,p1,p2,t),o=pol(b[0],b[1],8,a+100);d+="M"+pt(...b)+"L"+pt(...o);const e=pol(o[0],o[1],4,a+100);const ov=ell(e[0],e[1],3.6,4.6);d+=ov;f+=ov;}
     G.olive=d;G.oliveFill=f;})();
   /* wheat ear */
@@ -175,15 +183,21 @@ const GI={
       if(i<10){const tan=a+s*90;d+=leaf(p[0],p[1],tan-s*28,13,3.2)+leaf(p[0],p[1],tan+s*30,12,3);}else d+=leaf(p[0],p[1],a+s*90,12,3);}d+=st;}
     G.laurel=d+"M46 92Q50 88 54 92M50 90L44 98M50 90L56 98";})();
   /* chrysanthemum: two rings of narrow petals */
-  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);let f=rev(circ(50,50,17));for(let i=0;i<20;i++)f+=petal(50,50,17,47,i*18,5)+"Z";G.chrysFill=f;})();
+  (function(){let d="";for(let i=0;i<20;i++)d+=petal(50,50,17,47,i*18,5);for(let i=0;i<12;i++)d+=petal(50,50,5,25,i*30+9,8);G.chrys=d+circ(50,50,5);let f=rev(circ(50,50,17));for(let i=0;i<20;i++)f+=petal(50,50,17,47,i*18,5)+"Z";G.chrysFill=f;
+    /* 0.1.25.0: two leaves behind the petals in the lower corners (the green second part) */
+    let l="";for(const a of [225,135]){const b=pol(50,50,36,a);G.chrys+=leafV(b[0],b[1],a,20,5.4);l+=leaf(b[0],b[1],a,20,5.4)+"Z";}G.chrysLeaves=l;})();
   /* peony: scalloped layers and a few curled centre petals */
   (function(){G.peony=scallop(7,50,52,38,50,10)+scallop(6,50,52,25,33,40)+"M42 52Q44 40 52 42Q60 46 56 54Q50 60 44 56M48 50Q50 46 53 49"+
-    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill=scallop(7,50,52,38,50,10);})();
+    "M30 30Q22 22 26 14M70 30Q78 22 74 14";G.peonyFill=scallop(7,50,52,38,50,10);
+    /* 0.1.25.0: two leaves under the lower petals (the green second part) */
+    let l="";for(const a of [222,138]){const b=pol(50,52,40,a);G.peony+=leafV(b[0],b[1],a,19,6);l+=rev(leaf(b[0],b[1],a,19,6)+"Z");}G.peonyLeaves=l;})();
   /* cherry blossom: five notched petals and stamens */
   (function(){let d="";for(let i=0;i<5;i++){const a=i*72,p=pol(50,50,5,a-20),q=pol(50,50,5,a+20);
       d+="M"+pt(...p)+"C"+pt(...pol(50,50,30,a-40))+" "+pt(...pol(50,50,44,a-22))+" "+pt(...pol(50,50,43,a-9))+"L"+pt(...pol(50,50,36,a))+"L"+pt(...pol(50,50,43,a+9))+"C"+pt(...pol(50,50,44,a+22))+" "+pt(...pol(50,50,30,a+40))+" "+pt(...q);}
     for(let i=0;i<10;i++){const a=i*36+18,e=pol(50,50,i%2?14:18,a);d+="M"+pt(...pol(50,50,4,a))+"L"+pt(...e)+dot(...pol(50,50,(i%2?14:18)+1.5,a));}
-    G.sakura=d+circ(50,50,3.5);G.sakuraFill=d.split("M").filter((x,i)=>i>0&&i<=5).map(x=>"M"+x+"Z").join("")+circ(50,50,3.5);})();
+    G.sakura=d+circ(50,50,3.5);G.sakuraFill=d.split("M").filter((x,i)=>i>0&&i<=5).map(x=>"M"+x+"Z").join("")+circ(50,50,3.5);
+    /* 0.1.25.0: a short stem and two leaves in the gap under the bottom petals (the green second part) */
+    G.sakura+="M50 71L50 78"+leafV(50,78,150,14,4)+leafV(50,78,210,14,4);G.sakuraLeaves=leaf(50,78,150,14,4)+"Z"+leaf(50,78,210,14,4)+"Z";})();
   /* mandala ring and full mandala */
   (function(){let d=circ(50,50,30)+circ(50,50,26);for(let i=0;i<16;i++)d+=petal(50,50,30,46,i*22.5,8);
     for(let i=0;i<16;i++)d+=dot(...pol(50,50,22,i*22.5+11.25));G.mring=d;
@@ -276,13 +290,15 @@ const GI={
   /* ---- the table: [id, name, family, styles, minSizeMm, detail, lineWeightDefault, colourable(1/0), tags, unlock, path, fill, src] ---- */
   const T=[];
   const add=(id,name,fam,sty,min,det,lw,col,tags,unl,path,fill,src)=>T.push({id,name,family:fam,styles:sty.split(" "),minSizeMm:min,detail:det,lineWeightDefault:lw,
-    colourable:!!col,tags:tags.split(" "),unlock:unl,path,fill:fill||null,src:src||"original"});
+    colourable:!!col,tags:tags.split(" "),unlock:unl,path,fill:fill||null,fill2:null,colour2:null,src:src||"original"});
+  /* 0.1.25.0: give the element just added a second part (its leaves or stems): fill2 path, fixed colour from PART2 */
+  const part2=(f,kind)=>{const e=T[T.length-1];e.fill2=f;e.colour2=PART2[kind||"leaves"];};
   const gi=(id,name,sty,min,det,lw,col,tags,unl,key)=>add(id,name,"motif",sty,min,det,lw,col,tags,unl,GI[key],GI[key],"gi_"+key);
   /* traditional flash */
   add("rose_trad","Rose","motif","traditional neotrad",35,0.45,9,1,"botanical flower love","start",
     "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16ZM30 40C32 30 42 26 50 30C58 26 68 30 70 40M50 30C42 32 40 42 46 46C52 50 58 44 54 39C51 36 47 39 49 42M24 48C32 58 44 60 50 52C56 60 68 58 76 48M34 66C40 62 46 60 50 56C54 60 60 62 66 66"+sym("M24 66C14 66 6 76 4 88C16 88 26 80 28 70M24 68L10 82"),
-    "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16Z"+
-    symF(rev("M24 66C14 66 6 76 4 88C16 88 26 80 28 70L31 64Z")));
+    "M50 16C58 12 70 16 74 24C82 26 84 36 80 44C84 52 80 62 72 66C66 72 56 74 50 72C44 74 34 72 28 66C20 62 16 52 20 44C16 36 18 26 26 24C30 16 42 12 50 16Z");
+  part2(symF(rev("M24 66C14 66 6 76 4 88C16 88 26 80 28 70L28 66Z")));
   add("swallow","Swallow","motif","traditional neotrad",30,0.4,9,1,"bird animal travel nautical","start",
     sym("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80M10 24C20 28 30 34 42 41M22 22C30 25 37 30 44 36"),
     half("M50 10C46 10 44 14 44 18C44 24 45 28 46 32C36 22 20 16 2 20C14 28 26 40 45 46C44 54 44 62 46 68L38 94L48 78L50 80"));
@@ -306,6 +322,7 @@ const GI={
     "M22 18C14 40 14 66 28 82C36 90 64 90 72 82C86 66 86 40 78 18L66 20C72 40 72 62 64 72C58 78 42 78 36 72C28 62 28 40 34 20Z");
   add("cherries","Cherries","motif","traditional neotrad",25,0.25,9,1,"fruit flash sweet","style:traditional:1",
     "M34 58C36 40 44 24 58 14M63 63C62 44 62 30 58 14M58 14C66 6 80 8 86 16C76 22 64 20 58 14ZM60 14L84 16"+circ(32,71,14)+circ(64,76,13),circ(32,71,14)+circ(64,76,13));
+  part2("M58 14C66 6 80 8 86 16C76 22 64 20 58 14Z");
   add("diamond_gem","Diamond","motif","traditional neotrad",25,0.35,7,1,"gem luck value","start",
     "M20 34L34 16H66L80 34L50 88ZM20 34H80M34 16L42 34L50 16L58 34L66 16M42 34L50 88L58 34","M20 34L34 16L66 16L80 34L50 88ZM42 34L58 34L50 16Z");
   add("flame","Flame","motif","traditional neotrad japanese",30,0.3,9,1,"fire passion flash","style:traditional:1",
@@ -333,13 +350,13 @@ const GI={
     "M44 44C36 30 16 24 12 36C8 48 28 56 44 50M56 44C64 30 84 24 88 36C92 48 72 56 56 50M44 42H56V54H44ZM46 54L36 84L43 80L47 88L49 54M54 54L64 84L57 80L53 88L51 54M20 36C24 38 30 42 36 46M80 36C76 38 70 42 64 46",
     symF("M44 44C36 30 16 24 12 36C8 48 28 56 44 50ZM46 54L36 84L43 80L47 88L49 54Z")+"M44 42L56 42L56 54L44 54Z");
   /* botanical and nature */
-  add("peony","Peony","motif","japanese neotrad",50,0.6,7,1,"botanical flower japanese wealth","style:japanese:1",G.peony,G.peonyFill);
-  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,G.chrysFill);
-  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,G.sakuraFill);
+  add("peony","Peony","motif","japanese neotrad",50,0.6,7,1,"botanical flower japanese wealth","style:japanese:1",G.peony,G.peonyFill);part2(G.peonyLeaves);
+  add("chrysanthemum","Chrysanthemum","motif","japanese neotrad",55,0.75,7,1,"botanical flower japanese","style:japanese:2",G.chrys,G.chrysFill);part2(G.chrysLeaves);
+  add("cherry_blossom","Cherry blossom","motif","japanese fineline watercolour",25,0.4,5,1,"botanical flower japanese spring","start",G.sakura,G.sakuraFill);part2(G.sakuraLeaves);
   add("lotus_line","Lotus","motif","fineline geometric watercolour",30,0.35,3,1,"botanical flower calm","start",
     "M50 20C40 36 40 60 50 76C60 60 60 36 50 20Z"+sym("M50 76C36 70 26 52 28 34C38 40 46 56 50 76M50 78C32 78 16 66 10 50C24 50 40 60 50 78")+"M18 86C30 82 40 88 50 84C60 88 70 82 82 86",null);
   add("fern","Fern","motif","fineline realism",45,0.7,3,1,"botanical nature leaf","start",G.fern,null);
-  add("olive_branch","Olive branch","motif","fineline realism watercolour",40,0.6,3,1,"botanical peace leaf","style:fineline:1",G.olive,G.oliveFill);
+  add("olive_branch","Olive branch","motif","fineline realism watercolour",40,0.6,3,1,"botanical peace leaf","style:fineline:1",G.olive,G.oliveFill);part2(G.oliveLeaves);
   add("wheat","Wheat","motif","fineline traditional",40,0.55,3,1,"botanical harvest home","style:fineline:2",G.wheat,null);
   add("oak_leaf","Oak leaf","motif","fineline traditional realism",30,0.45,5,1,"botanical leaf strength","start",
     sym("M50 94L50 86C44 86 40 82 42 76C34 78 30 72 34 66C26 66 24 58 30 54C22 52 22 44 30 42C24 36 28 28 36 30C34 22 40 16 46 20C46 14 48 10 50 8M50 76L41 71M50 60L33 55M50 44L32 39M50 30L40 24")+"M50 96V12",
@@ -503,3 +520,12 @@ const GI={
 const ELEMENT_INDEX=new Map(ELEMENTS.map(e=>[e.id,e]));
 SIM.LINE_WEIGHTS=LINE_WEIGHTS;SIM.COLOURS=COLOURS;SIM.STYLES=STYLES;SIM.ELEMENTS=ELEMENTS;
 SIM.elementById=id=>ELEMENT_INDEX.get(id)||null;
+/* 0.1.25.0: the ink of an element's second part (fill2) for its design colour and the design's style: COLOURS id, or null
+   for black (the design element's own convention). A black-and-grey element (colour null, black or grey) keeps the part in
+   its own ink, so a black piece stays all black; a coloured one gets the element's fixed colour2, unless the style's
+   palette has no such ink (fine line, blackwork, lettering, geometric have no green), where the part goes black.
+   undefined when the element has no second part */
+SIM.PART2=PART2;
+SIM.fill2Colour=(def,colour,style)=>{if(!def||!def.fill2)return undefined;
+  if(!colour||PART2_PLAIN[colour])return colour||null;
+  const st=STYLES[style];return st&&st.palette.indexOf(def.colour2)<0?null:def.colour2;};

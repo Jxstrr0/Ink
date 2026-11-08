@@ -1,4 +1,5 @@
 /* ===================== app/design.js: the Design tab, the design board (PR 2) =====================
+   0.1.25.0: an element's second part (fill2, the leaves) is drawn in its fixed colour by dzFillSvg (also the gallery's).
    Three views on a segmented control:
      Body   the body diagram (app/bodymap.js): pick the spot, the body shape and the skin tone, and the sample walk-in.
      Board  the cream board (both themes, Q10): the placement's box at its true aspect (wrap x length, in mm) with its flow
@@ -138,9 +139,14 @@ function dzElSvg(e,style,attrs,hit,spreadMm){
   const fc=e.colour?dzColHex(e.colour):DZ_INK,lc=e.colour&&(style==="watercolour"||!(e.fill>0))?fc:DZ_INK;
   let h=`<g${attrs||""} transform="${dzTf(e)}">`;
   if(hit){const mu=hit/k,w=Math.max(b.w,mu),hh=Math.max(b.h,mu);h+=`<rect class="hit" x="${dzR2(cx-w/2)}" y="${dzR2(cy-hh/2)}" width="${dzR2(w)}" height="${dzR2(hh)}"/>`;}
-  if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+  if(d.fill&&e.fill>0)h+=dzFillSvg(d,e,style,fc);
   h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((INK_SIM.lineMm(e.lineWeight)+(spreadMm||0))/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   return h+"</g>";}
+/* an element's fill as svg: 0.1.25.0 draws its second part (fill2, the leaves) in its fixed colour (INK_SIM.fill2Colour) under
+   the fill; when the part is in the element's own ink the two are one path (nonzero, so they never double up). The gallery uses it too. */
+function dzFillSvg(d,e,style,fc){
+  const op=dzR2(e.fill),c2=d.fill2?INK_SIM.fill2Colour(d,e.colour,style):undefined,h2=c2===undefined?null:c2?dzColHex(c2):DZ_INK;
+  return(h2&&h2!==fc?`<path d="${d.fill2}" fill="${h2}" fill-opacity="${op}"/>`:"")+`<path d="${h2===fc?d.fill+d.fill2:d.fill}" fill="${fc}" fill-opacity="${op}"/>`;}
 function dzTf(e){const b=dzEB(e.id),k=e.mm/Math.max(b.w,b.h,1e-6);
   return`translate(${dzR2(e.mx)} ${dzR2(e.my)}) rotate(${dzR2(e.rot)}) scale(${dzR4(k)}) translate(${dzR2(-(b.x+b.w/2))} ${dzR2(-(b.y+b.h/2))})`;}
 /* the elements of a model (or a design) in a small square svg fitted to the piece */
@@ -471,7 +477,7 @@ function dzDrawerGrid(){
   const sw=lw=>(0.7+lw*0.22).toFixed(2);
   host.innerHTML=list.length?list.map(e=>{const un=dzUnlocked(e),b=dzEB(e.id),s=Math.max(b.w,b.h),vx=b.x+b.w/2-s/2-4,vy=b.y+b.h/2-s/2-4;
     return`<button type="button" class="dzTile${un?"":" lock"}" data-id="${e.id}" aria-label="${esc(e.name)}${un?"":", locked: "+esc(dzLockText(e))}">
-<svg viewBox="${dzR2(vx)} ${dzR2(vy)} ${dzR2(s+8)} ${dzR2(s+8)}" aria-hidden="true">${e.fill?`<path d="${e.fill}" fill="${DZ_INK}" fill-opacity="${e.fill===e.path?1:.35}"/>`:""}<path d="${e.path}" fill="none" stroke="${DZ_INK}" stroke-width="${dzR2(sw(e.lineWeightDefault)*s/100)}" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg viewBox="${dzR2(vx)} ${dzR2(vy)} ${dzR2(s+8)} ${dzR2(s+8)}" aria-hidden="true">${e.fill2?`<path d="${e.fill2}" fill="${dzColHex(e.colour2)}" fill-opacity=".6"/>`:""}${e.fill?`<path d="${e.fill}" fill="${DZ_INK}" fill-opacity="${e.fill===e.path?1:.35}"/>`:""}<path d="${e.path}" fill="none" stroke="${DZ_INK}" stroke-width="${dzR2(sw(e.lineWeightDefault)*s/100)}" stroke-linecap="round" stroke-linejoin="round"/></svg>
 <b>${esc(e.name)}</b><small>${un?esc(e.family)+" · "+e.minSizeMm+" mm+":`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>${esc(dzLockText(e))}`}</small></button>`;}).join("")
     :`<p class="hint">Nothing matches those filters.</p>`;}
 function dzAddEl(d){

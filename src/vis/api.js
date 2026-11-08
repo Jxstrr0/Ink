@@ -15,7 +15,7 @@
                                    "sedov" makes the chair stage the front room of Arkady's shop, null the shop across town
      setMachine(kind, spare)       coil | rotary | pen: the kit's machine goes up front on the tray (0.1.14.0), spare (0.1.15.0,
                                    another kind) at the back corner, the third put away
-     setFlash(list)                0.1.15.0: your flash sheets, newest first, [{name, sizeMm, elements}], for the flash walls
+     setFlash(list)                0.1.15.0: your flash sheets, newest first, [{name, sizeMm, style, elements}] (style picks the leaves colour, 0.1.25.0), for the flash walls
                                    of your studio and legacy studio and the rented chair's partition; repaints only on a change
      setReduced(bool)              camera moves and shape changes become instant
      stats() -> {triangles, body, room, tier}   for the phone test

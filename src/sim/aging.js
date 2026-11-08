@@ -3,7 +3,8 @@
    and pigment fades, lights first. What speeds it up:
      - placement (PLACEMENT_WEAR: hands and feet shed skin and rub, so they spread and fade far faster than a back),
      - sun (the client's sun trait x the placement's sun; darker skin shields a little),
-     - the colours (COLOUR_FADE: yellow and white go first, black last),
+     - the colours (COLOUR_FADE: yellow and white go first, black last; an element's second part, its green leaves,
+       fades at its own rate over its share of the fill, 0.1.25.0),
      - the session (depthQuality: too shallow falls out, too deep blows out; lineQuality: ragged edges start soft;
        saturation: badly packed colour starts faded). trauma feeds the heal grade in PR 5, not aging directly,
      - the heal (HEAL_GRADES: a patchy heal starts with spread already applied, a blowout with a big one),
@@ -71,7 +72,9 @@ function agWear(e,env,years){
   const y=Math.max(0,years||0);
   const spread=env.heal.spread0+AGING.spreadK*env.spreadM*Math.pow(y,AGING.spreadExp);
   const blur=env.heal.blur0+env.lineBlur+spread*AGING.blurFromSpread*(1+AGING.detailBlur*e.detail);
-  const cr=COLOUR_FADE[e.colourId]!=null?COLOUR_FADE[e.colourId]:COLOUR_FADE._default;
+  const cf=id=>COLOUR_FADE[id]!=null?COLOUR_FADE[id]:COLOUR_FADE._default;
+  /* 0.1.25.0: an element's second part (its leaves, e.colourId2 over share e.p2 of the fill) fades at its own colour's rate */
+  const cr=e.colourId2?lerp(cf(e.colourId),cf(e.colourId2),e.p2||0):cf(e.colourId);
   const rate=lerp(COLOUR_FADE.black,cr,e.colShare!=null?e.colShare:1)*env.fadeM;
   const col=1-Math.exp(-rate*y);
   const dil=AGING.dilution*Math.pow(spread/(e.lineMm+spread||1),AGING.dilutionExp)*(1-AGING.fillHold*e.fill);
