@@ -2,6 +2,17 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.23.0: the shop sounds like a shop
+
+Ambience, sound effects and a shop radio, all made by Kelbo with ElevenLabs. The sim is unchanged.
+
+- **The room.** Each room has its own quiet bed of sound under everything (`AMB_ROOMS` in `sound/synth.js`): Arkady's back room (and his front room, for the chair at Sedov's) is room tone with a machine far off; the rented chair across town is a busy shop, several machines and murmur; your studio is quiet; the legacy studio is busier. When the room changes it crossfades over about a second and a half. In the wet weeks of the year (spring thaw, weeks 14 to 17, and autumn, weeks 37 to 46: `AMB.rain`) rain on the window is layered in quietly; the game has no weather, and the shop window always shows the canal at night. The room and the radio duck under the machine buzz while the needle is going.
+- **Sound effects** at the real moments (`SFX`): gloves snapped on when a sitting starts, the stencil paper peeled off when you start after placing it, a spray-and-wipe on a break, an ink cap when a colour zone opens or you use or buy an ink, the shop door when Next brings a walk-in, a return or a referral, the machine set down on the tray when a sitting ends and the till when it paid, a sheet of paper when you save flash, a whoosh into a guitar chord when a bandage comes off on the Career tab, and a short guitar sting instead of the chime when a goal is reached. Each one plays at most once every 300 ms; until a sound has loaded, the old tap plays instead.
+- **The radio.** Two instrumental tracks, laid-back surf rockabilly and late-night lo-fi, played in turn, quieter than the room. Off by default.
+- **Settings › Sound** has Sound (everything), Ambience (on by default) and Radio (off by default). Sound off silences all of it.
+- **Loading.** Nothing loads before your first tap. Then only the current room's 24-second loop (about 140 KB) is fetched; the effects (about 140 KB in all) load when the phone is idle; the radio streams through one audio element (no whole-track decode) and is only fetched once you turn it on. Nothing is added to the offline precache; the service worker keeps what it fetches. A hidden page goes quiet and comes back when shown.
+- Two new settings, `S.settings.ambience` and `S.settings.radio`. No new localStorage keys.
+
 ## 0.1.22.0: the machine keeps going, and Restart
 
 Kelbo: "the starting isn't working right when live tattooing, it's coming on for a second then stopping leaving dots". The sim's scoring is unchanged.
