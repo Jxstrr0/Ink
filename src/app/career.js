@@ -62,18 +62,32 @@ const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",stude
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
 /* the next thing a track opens. Segments all bring walk-ins; every REP_TRACKS event is in the game (0.1.13.0: flash days,
    Friday the 13th, Kontur and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
-const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list (Act 4, in your own studio)",
+const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list",
   magazine:"a feature in Kontur (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
+/* 0.1.24.0: the collectors bar also names Act 4's own shortcut (sim/career.js LEGACY_NEED.collectors, 90 since 0.1.20.0),
+   which is not the waiting_list event's number (60); it shows until the date gate (ACTS.legacy, 2018) or Act 4 itself.
+   crLegacyAt gives {at, year} or null, crLegacyTxt the words, both read from the tables */
+function crLegacyAt(){const L=INK_SIM.LEGACY_NEED,A=INK_SIM.ACTS&&INK_SIM.ACTS.legacy;if(!L||!A)return null;
+  const year=2000+A.years[0]-2;if(S.year>=year||(S.studio&&S.studio.stage)==="legacy")return null;return{at:L.collectors,year};}
+function crLegacyTxt(l){return`your own legacy studio (or wait for ${l.year})`;}
 function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
   const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
   for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
   for(const id in t.events||{})if(CR_LIVE[id])try1(id,t.events[id],"event");
+  const lg=k==="collectors"?crLegacyAt():null;if(lg)try1("legacy",lg.at,"legacy");
   return best;}
+/* the words under a bar: "At 25: collectors"; on the collectors bar the waiting list also names the legacy shortcut after it */
+function crRepNextTxt(k,n){if(!n)return"Everything open";
+  const lg=k==="collectors"?crLegacyAt():null;
+  if(n.kind==="legacy")return`At ${n.at}: ${crLegacyTxt(lg)}`;
+  let s=`At ${n.at}: ${n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," ")}`;
+  if(n.id==="waiting_list"&&lg&&lg.at>n.at)s+=`. At ${lg.at}: ${crLegacyTxt(lg)}`;
+  return s;}
 function crRep(){
   const T=INK_SIM.REP_TRACKS;if(!T)return"";
   return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=crRepNext(k);
     return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
-<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," "))}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
+<span class="clMeta crRepX">${esc(crRepNextTxt(k,n))}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}

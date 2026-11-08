@@ -78,7 +78,7 @@ const SE_PEN={dy:68,dx:24,pad:10,near:3};
    in direct mode; pinch = the spread (or squeeze) ratio that switches views */
 /* aim before the machine starts (0.1.21.0), ms: a touch aims for ms (rearm when the current line or zone is already under
    way, so lifting and carrying on is quicker), then the machine arms; go = how long the switch pulse shows */
-const SE_ARM={ms:900,rearm:450,go:320};
+const SE_ARM={ms:1200,rearm:600,go:320};   // 0.1.24.0: was 900 / 450
 const SE_RESTART={ms:2600};   // ms: the second tap that confirms Restart must come this soon after the first
 const SE_ZOOM={max:3,minMm:16,minShare:0.3,padMm:4,anim:260,top:52,pinch:1.25};
 const SE_CHAT=["They tell you the bridges went up before they could get home last night. Two hours on the wrong bank.",
@@ -199,7 +199,7 @@ function renderSession(){
   const L=seLive();
   if(L){if(SE.sess!==L){SE.sess=INK_SIM.sessionResume(L);SE.place=null;}
     return L.phase==="place"?seRenderPlace():seRenderChair();}
-  SE.sess=null;
+  if(SE.sess)seHalt();SE.sess=null;
   if(SE.result)return seRenderResult();
   seRenderLobby();}
 
@@ -353,7 +353,7 @@ function seLayout(){
   SE.dirty=[];SE.minDt=1000/(SE_FPS[tier]||30)-2;
   const f=seFrameTarget();SE.s=f.s;SE.ox=f.ox;SE.oy=f.oy;
   seDrawAll();seZoomSync();}
-function seDrawAll(){const c=SE.c&&SE.c.over;if(!c)return;c.clearRect(0,0,SE.cw,SE.ch);SE.dirty=[];seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
+function seDrawAll(){const c=SE.c&&SE.c.over;if(!c||!SE.sess)return;c.clearRect(0,0,SE.cw,SE.ch);SE.dirty=[];seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
 /* the camera: the current line or zone (or, zoomed out, the whole sitting) fitted into the reachable part of the skin */
 function seItemBox(sess){
   const it=INK_SIM.sessionItem(sess);if(!it)return null;
@@ -382,7 +382,7 @@ function seRefit(anim){
 function seAnimDone(skip){
   const a=SE.anim;if(!a)return;clearTimeout(a.timer);SE.anim=null;
   const cam=$("seCam");if(cam){cam.style.transition="none";cam.style.transform="none";}
-  SE.s=a.t.s;SE.ox=a.t.ox;SE.oy=a.t.oy;if(!skip)seDrawAll();}
+  SE.s=a.t.s;SE.ox=a.t.ox;SE.oy=a.t.oy;if(!skip&&SE.sess&&cam)seDrawAll();}
 function seZoomLbl(){return SE.zoomOut?`${SE_ICON.zoomIn}<span>Close up</span>`:`${SE_ICON.zoomOut}<span>Whole</span>`;}
 function seZoomSync(){const b=$("seZoom");if(!b)return;const html=seZoomLbl();if(b._h!==html){b._h=html;b.innerHTML=html;}b.setAttribute("aria-pressed",SE.zoomOut);
   b.setAttribute("aria-label",SE.zoomOut?"Close up on the current line":"See the whole design");}
@@ -696,9 +696,18 @@ function seRestartTap(){
   INK_SOUND.tick();save();
   toast(sess.kind==="practice"?"A clean pad. Start again.":refund>0?`Back to the start of the sitting. The numbing cream is refunded (${fmtMoney(refund)}).`:"Back to the start of the sitting.");
   seRenderChair();}
-function seCancelChair(){const sess=SE.sess;seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
+function seCancelChair(){const sess=SE.sess;seHalt();seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
 
 /* ---- the end of a sitting ---- */
+/* 0.1.24.0: the chair is going away (the results, the pad back on the shelf, the lobby): stop everything the sitting
+   scheduled so nothing runs after SE.sess is gone. The close-up camera's move (seRefit, SE.anim) used to redraw the skin
+   ~280 ms after the last line or zone, by which time seEnd had cleared the sitting ("reading 'design'" of null) */
+function seHalt(){
+  if(SE.anim){clearTimeout(SE.anim.timer);SE.anim=null;}
+  if(SE.aim){clearTimeout(SE.aim.timer);SE.aim=null;}
+  SE.hold=null;SE.resArm=0;clearTimeout(SE.resT);SE.stopArm=0;clearTimeout(SE.stopT);
+  seStopLoop();if(SE.ro){SE.ro.disconnect();SE.ro=null;}
+  for(const id of ["sePen","seAim"]){const e=$(id);if(e)clearTimeout(e._go);}}
 const SE_STOP_TEXT={pain:"They couldn't take any more today.",fatigue:"They're worn out. Time to stop.",artist:"You called it there.",done:""};
 function seEnd(){
   const sess=SE.sess;if(!sess||SE.down||SE.ending)return;SE.ending=true;
@@ -709,7 +718,7 @@ function seEnd(){
       bodyShape:sess.bodyShape,msg:SE_STOP_TEXT[res.stop]||"",part:sess.part,partsTotal:sess.partsTotal,item:null};
     if(sess.kind==="booked")seFinishBooked(sess,res,R);
     else if(sess.kind==="sample")seFinishSample(sess,res,R);
-    seSlot().live=null;SE.sess=null;SE.result=R;
+    seHalt();seSlot().live=null;SE.sess=null;SE.result=R;
     save();renderHeader();
     if(!INK_SOUND.sfx("tray"))INK_SOUND.tick();if(R.paid>0)setTimeout(()=>INK_SOUND.sfx("till"),450);   // 0.1.23.0: machine down, then the till
     renderSession();$("panel").scrollTop=0;
