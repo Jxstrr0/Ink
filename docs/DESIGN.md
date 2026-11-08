@@ -2,6 +2,15 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.22.0: the machine keeps going, and Restart
+
+Kelbo: "the starting isn't working right when live tattooing, it's coming on for a second then stopping leaving dots". The sim's scoring is unchanged.
+
+- **Why it stopped.** Since 0.1.21.0 you hold still for about a second before the machine starts. On a phone, a finger held still that long is a long press: Chrome on Android fires its context menu and drag after about half a second, and iOS Safari its callout, loupe or haptic touch. Nothing in the chair told the browser not to, so as soon as the finger moved after the machine came on, the phone took the touch over and sent the page a cancel. The game read that cancel as a lift: the line ended at a dot, the buzz stopped and the pen vanished.
+- **The fix.** The chair now cancels the browser's own touch handling on the canvas (touchstart and touchmove, so no long press, callout, loupe or text selection) and blocks the context menu, text selection and dragging over the chair, with `-webkit-touch-callout:none` on it. If the phone still takes a touch, the line under the canvas says so ("The phone took the touch. Carry on from the dot.") instead of pretending you lifted, and a pointer capture lost while the finger is still down is taken back. Touch times now come from the event only when they are on the same clock as the page (`seEvT`); a move that arrives from before the machine started is no longer drawn as ink the sim never scored; and a zone's aim message gives way to "Swipe back and forth inside the zone" once it starts.
+- **Restart.** A **Restart** button on the chair's side rail (practice: above End; with a client: between Chat and End) puts the sitting back to how it began: today's ink, the line and zone progress, pain, fatigue, the clock and any numbing cream bought this sitting (refunded). Earlier sittings of a big piece stay. It asks first the way End does: tap once and it turns red and says **Sure?** with a toast; tap again within a few seconds to wipe the sitting. It is greyed out while the needle is down or aiming, and until something has changed. It only exists before the results, so money, XP and results are counted once. The copy it restores is taken when the work starts (`base` inside the saved sitting), so it survives a reload; a sitting saved by an older version has no copy and no button.
+- No new localStorage keys. One new saved value: `S.session.live.base` (the restart copy).
+
 ## 0.1.21.0: aim, then the machine starts
 
 Kelbo asked for a moment to see where you're starting before the needle goes in. App only: the sim, its scores and the session traces are unchanged.
