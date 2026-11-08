@@ -1,5 +1,6 @@
 /* ===================== app/gallery.js: the heal reveal and the body of work (PR 5) =====================
    Pictures of healed and aged pieces, all re-rendered from the sim (INK_SIM.age); nothing here is ever saved.
+   Fills go through app/design.js dzFillSvg, so an element's green leaves (0.1.25.0) show here and on the share cards.
      gvSvg(piece, {years, fresh, ghost, big})  one piece on the client's skin: the design with the aging model's spread,
                   blur and fade for that many years (heal grade included); a blown-out heal gets a halo, a patchy or infected
                   one a mottled mask, and the stencil can be laid over it as a faint purple ghost so drift and blowouts show.
@@ -55,7 +56,7 @@ function gvEl(e,style,spread,mode,extra){
   let h=`<g transform="${dzTf(e)}">`;
   if(mode==="ghost")h+=`<path d="${d.path}" fill="none" stroke="${GV_STENCIL}" stroke-width="${dzR4(0.42/k)}" stroke-dasharray="${dzR4(1.4/k)} ${dzR4(0.9/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(mode==="halo")h+=`<path d="${d.path}" fill="none" stroke="${GV_BLOW}" stroke-width="${dzR4((lw+extra)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  else{if(d.fill&&e.fill>0)h+=`<path d="${d.fill}" fill="${fc}" fill-opacity="${dzR2(e.fill)}"/>`;
+  else{if(d.fill&&e.fill>0)h+=dzFillSvg(d,e,style,fc);
     h+=`<path d="${d.path}" fill="none" stroke="${lc}" stroke-width="${dzR4((lw+spread)/k)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
   return h+"</g>";}
 /* gvSvg(p, o) -> {svg, a, vb, box, skin}. o.years (default today), o.fresh (as drawn, no aging), o.ghost (stencil overlay), o.cls,

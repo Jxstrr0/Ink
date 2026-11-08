@@ -49,7 +49,7 @@ function stMachine(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setMachine!
 function stShop(){return(S.studio&&S.studio.stage)==="chair"&&S.career&&S.career.split==="mentor"?"sedov":null;}
 /* 0.1.15.0: your flash for the 3D walls, newest first, as the curated elements the board saved */
 function stFlash(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setFlash!=="function")return;
-  try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,elements:f.design.elements})));}catch(e){}}
+  try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,style:f.design.style,elements:f.design.elements})));}catch(e){}}
 /* 0.1.23.0: the room's ambience (INK_SOUND AMB_ROOMS: the stage, or "sedov"), and the week for the rain. Cheap and
    idempotent, so renderHeader calls it after every load, Next and stage change */
 function stAmb(){if(typeof INK_SOUND==="undefined"||!INK_SOUND.room||!S)return;INK_SOUND.room(stShop()||(S.studio&&S.studio.stage)||"apprentice",S.week);}

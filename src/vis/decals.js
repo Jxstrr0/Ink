@@ -27,6 +27,8 @@
        soft view-space highlight from it (DC_LOOK.sheen; Lambert on Lite has no specular of its own).
      - pigment: the patch lets ink show a share of its own colour over the skin (DC_LOOK.pigment), so a blue or green
        still reads on warm or dark skin instead of turning muddy under the multiply.
+   0.1.25.0: an element's second part (fill2, the leaves) is filled, shaded and aged in its own colour (INK_SIM.fill2Colour)
+   under the main fill, or with it as one path (fu) in the same ink; the halo and gloss silhouette take both parts.
    Aging: INK_SIM.age(piece, years) gives blur, fade and spread (with the piece.heal grade from PR 5); spread widens the
    lines and the bleed, fade lowers the alpha, blur softens the offscreen copy (canvas filter where the browser has it,
    else a downscale).
@@ -61,7 +63,9 @@ const DC={canvas:null,ctx:null,tex:null,size:0,sig:"",paths:{},filter:null,tmp:n
 function dcPath(id){
   let c=DC.paths[id];if(c)return c;
   const d=INK_SIM.elementById(id);if(!d)return null;
-  try{c={d:new Path2D(d.path),f:d.fill?new Path2D(d.fill):null,b:INK_SIM.elementBox(id),def:d};}catch(e){return null;}
+  try{c={d:new Path2D(d.path),f:d.fill?new Path2D(d.fill):null,b:INK_SIM.elementBox(id),def:d,
+    /* 0.1.25.0: the second part (fill2, the leaves) alone, and fill + fill2 as one path (one ink, the silhouette) */
+    f2:d.fill&&d.fill2?new Path2D(d.fill2):null,fu:d.fill&&d.fill2?new Path2D(d.fill+d.fill2):null};}catch(e){return null;}
   return(DC.paths[id]=c);}
 function dcFilterOk(){
   if(DC.filter==null){try{const c=document.createElement("canvas").getContext("2d");c.filter="blur(2px)";DC.filter=c.filter==="blur(2px)";}catch(e){DC.filter=false;}}
@@ -182,18 +186,23 @@ function dcRender(M,ppx,mode,opts){
   let sil=null;
   if(fr.halo>0.01||fr.gloss>0.01){sil=dcCanvas(cw,ch);const s=sil.getContext("2d");s.lineCap="round";s.lineJoin="round";s.fillStyle=s.strokeStyle="#000";
     for(const e of els){const P=dcPath(e.id);if(!P)continue;const k=e.mm/Math.max(P.b.w,P.b.h,1e-6);dcElT(s,B,e,P,k);
-      if(P.f&&e.fill>0)s.fill(P.f);s.lineWidth=(lineOf(e)+L.glossMm*0.6)/k;s.stroke(P.d);}}
+      if(P.f&&e.fill>0)s.fill(P.fu||P.f);s.lineWidth=(lineOf(e)+L.glossMm*0.6)/k;s.stroke(P.d);}}
   if(sil&&fr.halo>0.01){c.save();c.setTransform(1,0,0,1,0,0);c.shadowColor=`rgba(${L.haloCol},${(L.haloA*fr.halo).toFixed(3)})`;
     c.shadowBlur=L.haloMm*ppx*2;c.shadowOffsetX=OFF;c.drawImage(sil,-OFF,0);c.restore();}
   const wc=d.style==="watercolour",oldT=ag.fade*L.oldK;
   for(const e of els){const P=dcPath(e.id);if(!P)continue;const k=e.mm/Math.max(P.b.w,P.b.h,1e-6);
     const fc=e.colour?dcHex(e.colour):DC_INK,lc0=e.colour&&(wc||!(e.fill>0))?fc:DC_INK,lc=lc0===DC_INK||e.colour==="black"?dcMix(lc0,L.oldInk,oldT):lc0;
     if(P.f&&e.fill>0){const fa=1-Math.pow(1-bdClamp(e.fill,0,1),L.fillGamma);
-      if(wc){c.save();dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(fc,fa);c.shadowBlur=L.washMm*ppx*2;c.shadowOffsetX=OFF;c.fillStyle="#000";c.fill(P.f);c.restore();}
-      else{dcElT(c,B,e,P,k);c.globalAlpha=fa;c.fillStyle=fc;c.fill(P.f);c.globalAlpha=1;
-        /* soft shading inside the fill along its outline (the lines' own shadow, clipped to the fill) */
-        c.save();c.clip(P.f);dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(DC_INK,L.shadeA*bdClamp(e.fill,0,1));c.shadowBlur=L.shadeMm*ppx*2;c.shadowOffsetX=OFF;
-        c.strokeStyle="#000";c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}}
+      const part=(F,col)=>{
+        if(wc){c.save();dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(col,fa);c.shadowBlur=L.washMm*ppx*2;c.shadowOffsetX=OFF;c.fillStyle="#000";c.fill(F);c.restore();}
+        else{dcElT(c,B,e,P,k);c.globalAlpha=fa;c.fillStyle=col;c.fill(F);c.globalAlpha=1;
+          /* soft shading inside the fill along its outline (the lines' own shadow, clipped to the fill) */
+          c.save();c.clip(F);dcElT(c,B,e,P,k,-OFF);c.shadowColor=dcRgba(DC_INK,L.shadeA*bdClamp(e.fill,0,1));c.shadowBlur=L.shadeMm*ppx*2;c.shadowOffsetX=OFF;
+          c.strokeStyle="#000";c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}};
+      /* 0.1.25.0: the second part in its fixed colour (INK_SIM.fill2Colour) under the fill; in the element's own ink, one path */
+      const c2=P.f2?INK_SIM.fill2Colour(P.def,e.colour,d.style):undefined,h2=c2===undefined?null:c2?dcHex(c2):DC_INK;
+      if(h2&&h2!==fc)part(P.f2,h2);
+      part(h2===fc?P.fu:P.f,fc);}
     dcElT(c,B,e,P,k);c.save();c.shadowColor=dcRgba(lc,L.bleedA);c.shadowBlur=(L.bleedMm+ag.spread*0.6)*ppx*2;
     c.strokeStyle=lc;c.lineWidth=lineOf(e)/k;c.stroke(P.d);c.restore();}
   /* aging blur */

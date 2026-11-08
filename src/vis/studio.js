@@ -20,7 +20,8 @@
    (INK_VIS.setStudio(stage, shop)); nothing here reads the save.
    Your flash on your walls (0.1.15.0): the studio's and the legacy studio's flash walls, and the sheets taped to the rented
    chair's partition, show your own flash sheets (INK_VIS.setFlash: S.flash, newest first, drawn from the curated element
-   library like every other sheet, with the name the Flash tab gives them). Frames past your last sheet get the shop's
+   library like every other sheet, with the name the Flash tab gives them; 0.1.25.0: an element's leaves in their own colour
+   by the sheet's style). Frames past your last sheet get the shop's
    generic flash. All of it is one shared canvas (vrOwnPaint: the wall's 5 x 2 sheets on the top half, the partition's
    3 sheets under it; 512 px square on Lite, 1024 on Full and Ultra), repainted only when the list changes. Arkady's rooms
    keep his old-school sheets.
@@ -104,7 +105,9 @@ function vrFlashPaint(g,x0,y0,w,h,o){
     if(f&&Array.isArray(f.elements)&&f.elements.length){const fp=INK_SIM.footprintOf(f),k=sh*0.62/Math.max(f.sizeMm,1);g.save();g.translate(0,sh*0.02);g.scale(k,k);
       for(const e of f.elements){const P=dcPath(e.id);if(!P)continue;const b=P.b,ek=(e.scale*f.sizeMm)/Math.max(b.w,b.h,1e-6);
         g.save();g.translate((e.x-fp.cx)*f.sizeMm,(e.y-fp.cy)*f.sizeMm);g.rotate((e.rot||0)*Math.PI/180);g.scale(ek,ek);g.translate(-(b.x+b.w/2),-(b.y+b.h/2));
-        if(P.f&&e.fill>0){g.globalAlpha=Math.min(1,e.fill);g.fillStyle=e.colour?dcHex(e.colour):DC_INK;g.fill(P.f);g.globalAlpha=1;}
+        if(P.f&&e.fill>0){const fc=e.colour?dcHex(e.colour):DC_INK,c2=P.f2?INK_SIM.fill2Colour(P.def,e.colour,f.style):undefined,h2=c2===undefined?null:c2?dcHex(c2):DC_INK;
+          g.globalAlpha=Math.min(1,e.fill);if(h2&&h2!==fc){g.fillStyle=h2;g.fill(P.f2);}   /* 0.1.25.0: the second part (the leaves) */
+          g.fillStyle=fc;g.fill(h2===fc?P.fu:P.f);g.globalAlpha=1;}
         g.strokeStyle=DC_INK;g.lineWidth=Math.max(1.2/k,INK_SIM.lineMm(e.lineWeight||7))/ek;g.lineCap=g.lineJoin="round";g.stroke(P.d);g.restore();}
       g.restore();
       /* the sheet's name, as the Flash tab shows it, shrunk to fit the paper */
@@ -394,7 +397,7 @@ function vsMachine(kind,spare){
    shared canvas only when the list changed; returns whether it did */
 function vsFlash(list){
   const L=(Array.isArray(list)?list:[]).filter(f=>f&&Array.isArray(f.elements)&&f.elements.length).slice(0,VR_OWN.wall.cols*VR_OWN.wall.rows)
-    .map(f=>({name:String(f.name||""),sizeMm:+f.sizeMm||60,elements:f.elements}));
+    .map(f=>({name:String(f.name||""),sizeMm:+f.sizeMm||60,style:f.style||null,elements:f.elements}));
   const sig=JSON.stringify(L);if(sig===V.flashSig)return false;V.flash=JSON.parse(sig);V.flashSig=sig;
   const R=V.room;if(R&&R.flash){const c=R.flash.image;vrOwnPaint(c.getContext("2d"),c.width,c.height,V.flash);R.flash.needsUpdate=true;V.dirty=true;}
   return true;}

@@ -2,6 +2,16 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.25.0: green leaves
+
+Kelbo's ask: leaves in their own colour. An element can now have a second part (`fill2`) with a fixed colour (`colour2`) that the player doesn't pick.
+
+- **Which motifs.** The traditional rose, cherries, peony, chrysanthemum, cherry blossom and olive branch have green leaves (the rose's leaves are split out of its fill; the chrysanthemum and peony gain two leaves each, the cherry blossom a stem and two leaves; the olive branch's leaves are its second part and the olives stay its main fill). Every element's box is unchanged, so old layouts don't move. The oak leaf, fern, wheat, pine and the game-icons silhouettes (bold rose, daisy, bold lotus, mushroom) have no clean split and stay as they were.
+- **The black and grey rule.** The leaves are green only on a coloured element. A black or grey element (no colour, black or grey) keeps its leaves in the same ink. A style with no green in its palette (fine line, blackwork, lettering, geometric) inks the leaves black (`SIM.fill2Colour`).
+- **The sim counts them** at their share of the filled area: contrast on the skin and the pale-colour stress line, a "green" must-have, the colour share behind hours and price, green's fade rate as the piece ages. In the chair the leaves are their own zone, labelled "Leaves", after the main zones; on a black rose they are part of the one shading zone. The sailor's rose flash is now a red zone of 1271 mm², the banner's 1981 and the leaves' 251 (was red 1529 and banner 1981). Kit inks are unchanged (they are quality tiers, not colours).
+- **Drawn green everywhere:** the design board and the element drawer, the cover-up's old piece (black, by the rule), the flash walls and your own flash, the body (atlas, close-up tiles, shading, halo, aging, gloss), the session canvas, the gallery, the reveal and share cards. The design board stays cream with black lines.
+- No new S fields, no new localStorage keys; the design element shape is unchanged.
+
 ## 0.1.24.0: a longer aim, clearer collectors bar, a clean end to a sitting
 
 Play-test fixes from Kelbo. The sim and its scores are unchanged.

@@ -10,6 +10,10 @@
  *                                                  from its 512 viewBox to Ink's 0..100 box at 1 decimal. Only the d="" strings
  *                                                  are read, nothing in the file is run. The 512x512 background square is dropped.
  *
+ * 0.1.25.0: an element's second part (fill2, its leaves or stems, in its fixed colour2) must parse, close every subpath,
+ * stay inside the element's box, need a main fill, and hardly overlap it (nonzero rule, sampled on a grid; the two parts
+ * must never cancel where they meet, so a black piece's merged fill stays whole). The sheet draws it in colour2 under a red fill.
+ *
  * The sim is loaded the way tools/sim-test.js does it: the src/sim/*.js files in src/manifest.txt order, joined, minus the
  * first <script> line and the last </script> line, run in node's vm. Exit 1 if any check fails.
  * Playwright is preinstalled in the Claude cloud box; elsewhere: npm i -g playwright; NODE_PATH=$(npm root -g) node tools/element-sheet.js --png x.png
@@ -150,7 +154,35 @@ for (const id of STYLE_IDS) {
 for (const [a, s] of Object.entries(STYLES)) for (const b of s.blendsWith || []) if (STYLES[b] && !STYLES[b].blendsWith.includes(a)) err("blendsWith not symmetric: " + a + " -> " + b);
 const seen = new Set(), FIELDS = ["id", "name", "family", "styles", "minSizeMm", "detail", "lineWeightDefault", "colourable", "tags", "unlock", "path", "src"];
 const credits = fs.existsSync(path.join(ROOT, "art", "CREDITS.md")) ? fs.readFileSync(path.join(ROOT, "art", "CREDITS.md"), "utf8") : "";
-let bytes = 0;
+let bytes = 0, nPart2 = 0;
+/* 0.1.25.0: the second part. Overlap = grid points inside both parts / points inside fill2 (PART2_OVERLAP at most) */
+const PART2_OVERLAP = 0.2, PART2_GRID = 120, part2Stats = [];
+function part2Check(e, at) {
+  nPart2++;
+  if (typeof e.fill2 !== "string" || !e.fill2) return err(at + ": fill2 must be a non-empty string");
+  if (!COLOURS[e.colour2]) err(at + ": colour2 '" + e.colour2 + "' is not a COLOURS id");
+  if (!e.fill) err(at + ": a fill2 needs a main fill");
+  if (!e.colourable) err(at + ": a fill2 on an element that can't be coloured");
+  if (e.family !== "motif") err(at + ": fill2 only on motifs (family " + e.family + ")");
+  let segs; try { segs = parsePath(e.fill2); } catch (x) { return err(at + ": fill2 does not parse: " + x.message); }
+  let open = false;
+  for (const g of segs) { if (/[Mm]/.test(g.c)) { if (open) { err(at + ": fill2 has a subpath with no Z"); break; } open = true; } else if (/[Zz]/.test(g.c)) open = false; }
+  if (open) err(at + ": fill2 ends without Z");
+  const box = SIM.elementBox ? SIM.elementBox(e.id) : null, b = bbox(e.fill2);
+  if (box && (b[0] < box.x - 0.05 || b[1] < box.y - 0.05 || b[2] > box.x + box.w + 0.05 || b[3] > box.y + box.h + 0.05))
+    err(at + ": fill2 leaves the element's box (" + b.map(v => v.toFixed(1)).join(" ") + " vs " + [box.x, box.y, box.x + box.w, box.y + box.h].map(v => v.toFixed(1)).join(" ") + ")");
+  if (!SIM.flattenPath || !SIM.insideZone || !e.fill) return;
+  const P = d => SIM.flattenPath(d).map(s => s.pts), F = P(e.fill), F2 = P(e.fill2), U = F.concat(F2);
+  let in2 = 0, both = 0, cancel = 0;
+  for (let i = 0; i < PART2_GRID; i++) for (let j = 0; j < PART2_GRID; j++) {
+    const x = (i + 0.5) * 100 / PART2_GRID, y = (j + 0.5) * 100 / PART2_GRID, a = SIM.insideZone(F, x, y), c = SIM.insideZone(F2, x, y);
+    if (c) in2++; if (a && c) both++; if ((a || c) && !SIM.insideZone(U, x, y)) cancel++;
+  }
+  if (!in2) err(at + ": fill2 has no area");
+  else if (both / in2 > PART2_OVERLAP) err(at + ": fill2 overlaps the fill by " + Math.round(both / in2 * 100) + "% (at most " + PART2_OVERLAP * 100 + "%)");
+  if (cancel) err(at + ": fill and fill2 cancel at " + cancel + " grid points (draw the second part the same way round as the fill)");
+  part2Stats.push(e.id + " " + Math.round(both / Math.max(1, in2) * 100) + "%");
+}
 for (const e of ELEMENTS) {
   const at = "element " + (e && e.id);
   for (const f of FIELDS) if (!(f in e)) err(at + ": missing " + f);
@@ -174,7 +206,8 @@ for (const e of ELEMENTS) {
     try { const b = bbox(e[k]); if (b[0] < -3 || b[1] < -3 || b[2] > 103 || b[3] > 103) err(at + ": " + k + " leaves the 0..100 box (" + b.map(v => v.toFixed(1)).join(" ") + ")"); }
     catch (x) { err(at + ": " + k + " does not parse: " + x.message); }
   }
-  bytes += (e.path || "").length + (e.fill && e.fill !== e.path ? e.fill.length : 0);
+  if (e.fill2 != null) part2Check(e, at);
+  bytes += (e.path || "").length + (e.fill && e.fill !== e.path ? e.fill.length : 0) + (e.fill2 ? e.fill2.length : 0);
   if (e.src !== "original") { if (typeof e.src !== "string" || !credits.includes("`" + e.src + "`")) err(at + ": src '" + e.src + "' has no entry in art/CREDITS.md"); }
 }
 if (typeof SIM.elementById !== "function" || SIM.elementById(ELEMENTS[0].id) !== ELEMENTS[0] || SIM.elementById("no_such") != null) err("SIM.elementById");
@@ -186,6 +219,7 @@ console.log("elements: " + ELEMENTS.length + " (" + src + " sourced, " + (ELEMEN
 console.log("by family: " + FAMILIES.map(f => f + " " + (fam[f] || 0)).join(", "));
 console.log("by style:  " + STYLE_IDS.map(s => s + " " + (sty[s] || 0)).join(", "));
 console.log("unlock:    " + Object.entries(by("unlock")).map(([k, v]) => k + " " + v).join(", "));
+console.log("second part (fill2): " + nPart2 + " elements" + (part2Stats.length ? " (overlap with the fill: " + part2Stats.join(", ") + ")" : ""));
 const file = path.join(SRC, "sim", "elements.js"); console.log("src/sim/elements.js: " + Math.round(fs.statSync(file).size / 1024) + " KB");
 if (errs.length) { console.error("\n" + errs.length + " problem(s):\n  " + errs.join("\n  ")); process.exit(1); }
 console.log("all element checks pass");
@@ -197,8 +231,9 @@ if (args.includes("--png")) {
   const list = keys ? ELEMENTS.filter(e => keys.some(k => e.id.includes(k) || e.family === k || e.styles.includes(k))) : ELEMENTS;
   const sw = lw => (0.7 + lw * 0.22).toFixed(2);       /* liner group -> preview stroke width in the 100 box */
   const cells = list.map(e => {
-    const col = e.colourable && e.styles.includes("watercolour") ? COLOURS[STYLES.watercolour.palette[e.id.length % STYLES.watercolour.palette.length]].hex : "#141210";
-    return `<div class="c"><svg viewBox="-4 -4 108 108"><path d="${e.fill || ""}" fill="${col}" fill-opacity="${col === "#141210" ? 1 : 0.8}"/><path d="${e.path}" fill="none" stroke="#141210" stroke-width="${sw(e.lineWeightDefault)}" stroke-linecap="round" stroke-linejoin="round"/></svg><b>${e.id}</b><i>${e.family} · ${e.styles.join(" ")}${e.src !== "original" ? " · " + e.src : ""}</i></div>`;
+    const col = e.fill2 ? COLOURS.red.hex : e.colourable && e.styles.includes("watercolour") ? COLOURS[STYLES.watercolour.palette[e.id.length % STYLES.watercolour.palette.length]].hex : "#141210";
+    const p2 = e.fill2 ? `<path d="${e.fill2}" fill="${COLOURS[e.colour2].hex}" fill-opacity="0.85"/>` : "";
+    return `<div class="c"><svg viewBox="-4 -4 108 108">${p2}<path d="${e.fill || ""}"fill="${col}" fill-opacity="${col === "#141210" ? 1 : 0.8}"/><path d="${e.path}" fill="none" stroke="#141210" stroke-width="${sw(e.lineWeightDefault)}" stroke-linecap="round" stroke-linejoin="round"/></svg><b>${e.id}</b><i>${e.family} · ${e.styles.join(" ")}${e.src !== "original" ? " · " + e.src : ""}</i></div>`;
   }).join("");
   const html = `<!doctype html><meta charset=utf-8><style>body{margin:0;padding:12px;background:#efe6d2;font:10px/1.2 sans-serif;color:#3a3128;display:grid;grid-template-columns:repeat(10,150px);gap:8px}
 .c{background:#f7f0e0;border:1px solid #d9ccb0;border-radius:4px;padding:6px;text-align:center;overflow:hidden}.c svg{width:132px;height:132px;display:block;margin:auto}.c b{display:block;font-size:11px}.c i{display:block;font-style:normal;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>${cells}`;

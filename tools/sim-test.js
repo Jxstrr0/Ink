@@ -766,6 +766,27 @@ console.log("PR 8: walk-in style share " + JSON.stringify(PR8.share) + "; post "
 console.log("0.1.13.0 rep events: " + REV.f13 + " Friday 13th cards in 30 years; flash day " + JSON.stringify(REV.flash) + "; Kontur " + JSON.stringify(REV.mag) + "; Drawbridge Prize " + JSON.stringify(REV.award));
 console.log("30-year run: " + LONG.clients.length + " clients; advanceWeek at year 30: " + avg30.toFixed(2) + " ms avg, " + max30.toFixed(1) + " ms max");
 
+{ /* 0.1.25.0: an element's second part (fill2: the rose's leaves) is fixed green on a coloured element, black on a black and grey one */
+  const rose = SIM.elementById("rose_trad"), one = (colour, style) => ({ placement: "forearm_r", sizeMm: 85, style: style || "traditional",
+    elements: [{ id: "rose_trad", x: 0.5, y: 0.5, scale: 0.9, rot: 0, lineWeight: 11, fill: 0.8, colour }] });
+  const p2 = SIM.ELEMENTS.filter(e => e.fill2);
+  check("second part (0.1.25.0): six motifs carry a fill2, all fixed green", p2.length === 6 && p2.every(e => e.colour2 === "green"), p2.map(e => e.id).join(" "));
+  check("second part (0.1.25.0): a red traditional rose has green leaves", SIM.fill2Colour(rose, "red", "traditional") === "green");
+  check("second part (0.1.25.0): a black or grey rose keeps its leaves in its own ink", SIM.fill2Colour(rose, null, "traditional") === null && SIM.fill2Colour(rose, "black", "traditional") === "black" && SIM.fill2Colour(rose, "grey", "realism") === "grey");
+  check("second part (0.1.25.0): a style with no green in its palette inks the leaves black", SIM.fill2Colour(rose, "red", "fineline") === null);
+  check("second part (0.1.25.0): an element with no second part says so", SIM.fill2Colour(SIM.elementById("oak_leaf"), "green", "traditional") === undefined);
+  const want = Object.assign({}, TEST_CLIENTS.dmitri, { mustHaves: [{ kind: "colour", v: "green" }] }), fr = SIM.scoreDesign(one("red"), want).fit, fb = SIM.scoreDesign(one(null), want).fit;
+  check("second part (0.1.25.0): a red rose's green leaves meet a must-have for green, a black rose's don't", fr > fb + 0.1, f2(fr) + " vs " + f2(fb));
+  const fade = (c, st) => SIM.age({ design: one(c, st), out: null, heal: null, ink: null, skinTone: 0.3, sun: 0.4 }, 20).fade;
+  const fy = fade("yellow", "neotrad"), f2k = rose.fill2; rose.fill2 = null; const fyAll = fade("yellow", "neotrad"); rose.fill2 = f2k;
+  check("second part (0.1.25.0): a yellow rose's green leaves fade at green's rate (COLOUR_FADE), slower than yellow", fy < fyAll - 0.002, f2(fy) + " vs all yellow " + f2(fyAll));
+  const old = { placement: "forearm_r", sizeMm: 85, style: "traditional", elements: [{ id: "rose_trad", x: 0.5, y: 0.42, scale: 0.72, rot: 0, lineWeight: 14, fill: 0.6, colour: "red" }] };
+  const so = SIM.scoreDesign(JSON.parse(JSON.stringify(old)), TEST_CLIENTS.dmitri);
+  check("second part (0.1.25.0): an old-format design (the same eight element fields) still scores",
+    ["readability", "flow", "balance", "coherence", "fit", "total"].every(k => Number.isFinite(so[k]) && so[k] > 0) && so.price > 0 && so.hours > 0, JSON.stringify({ t: so.total, h: so.hours, p: so.price }));
+  console.log("0.1.25.0 second part: red rose fit for a green must-have " + f2(fr) + " (black rose " + f2(fb) + "); 20-year fade, yellow neo-trad rose " + f2(fy) + " (if its leaves were yellow too " + f2(fyAll) + ")");
+}
+
 /* ---- timing ---- */
 const N = 10000, cl = Object.values(TEST_CLIENTS);
 const t0 = process.hrtime.bigint();

@@ -4,7 +4,7 @@
    the stencil already exist. The artist's own saved designs (S.flash, app/design.js) join the wall over time.
    Every element id must exist in ELEMENTS and every placement in PLACEMENTS (tools/sim-test.js checks). ===== */
 const FLASH=[
-  {id:"fl_sailor_rose",name:"Sailor's rose",note:"A red rose over a banner. The first thing on every wall.",placement:"forearm_l",style:"traditional",sizeMm:95,
+  {id:"fl_sailor_rose",name:"Sailor's rose",note:"A red rose with green leaves over a banner. The first thing on every wall.",placement:"forearm_l",style:"traditional",sizeMm:95,
     elements:[{id:"rose_trad",x:.5,y:.36,scale:.62,rot:0,lineWeight:9,fill:.75,colour:"red"},
               {id:"banner_scroll",x:.5,y:.8,scale:.95,rot:0,lineWeight:9,fill:.35,colour:"yellow"}]},
   {id:"fl_swallows",name:"Swallow pair",note:"Two swallows facing each other: home and back again.",placement:"chest_l",style:"traditional",sizeMm:120,
