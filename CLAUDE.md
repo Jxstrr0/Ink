@@ -1,6 +1,6 @@
 # Notes for Claude
 
-Ink is a tattoo artist career game by Longlight Interactive: start as an apprentice sweeping floors, learn on fake skin, build a client list, open a studio, and end with a two-year waiting list and a body of work that has aged on real people who keep walking back through your door. Phone-first, free, one self-contained page (`index.html`, built from `src/`), live at https://jxstrr0.github.io/Ink/. The build plan is `docs/INK-PLAN.md` (tick its checklist as PRs land); the game as built is described in `docs/DESIGN.md`.
+Ink is a tattoo artist career game by Longlight Interactive: start as an apprentice sweeping floors, learn on fake skin, build a client list, open a studio, and end with a two-year waiting list and a body of work that has aged on real people who keep walking back through your door. Phone-first, free, one self-contained page (`index.html`, built from `src/`), live at https://ink.longlight.games/. The build plan is `docs/INK-PLAN.md` (tick its checklist as PRs land); the game as built is described in `docs/DESIGN.md`.
 
 The stack, build and save-code tooling are lifted from Prairie Engine Works (`github.com/Jxstrr0/350Chev`). When in doubt about a pattern, look at how PEW does it.
 
@@ -8,7 +8,7 @@ The stack, build and save-code tooling are lifted from Prairie Engine Works (`gi
 
 - Plain HTML, CSS and classic (non-module) JavaScript in a few big `<script>` blocks. No package.json, no npm, no bundler, no CI. The node scripts below are the only checks.
 - three.js **r128** from CDN (`three.min.js` from cdnjs). Full/Ultra-only addons (the glTF loader) are in the `INK_LIBS` list in `src/html/body.html`; a Lite phone loads them on demand through `window.__inkLibs()` (since 0.1.18.0 always, for the mannequin). Google Fonts only (Space Grotesk for the UI, Oswald for flash headers). Nothing else external.
-- PWA: `manifest.webmanifest`, `icons/`, and the generated `sw.js`. Installed copies work offline. Every cache name starts with `ink-`: PEW lives on the same origin with `pew-` caches, and each worker only deletes its own prefix.
+- PWA: `manifest.webmanifest`, `icons/`, and the generated `sw.js`. Installed copies work offline. Every cache name starts with `ink-`. Since November 2026 every Longlight game has its own subdomain, so Ink (`ink.longlight.games`) has its own origin: its own localStorage, Cache Storage and storage quota. Saves from before the move stay on the old shared origin, `jxstrr0.github.io` (Kelbo accepted that), where PEW kept `pew-` caches beside Ink's. The prefix rules still apply: use only the `ink-` prefix, each worker only deletes its own prefix, and never clear anything outside it.
 - Node 16 or newer for the scripts (22 is what was last used). Nothing to install.
 
 ## Commands (repo root)
@@ -140,7 +140,7 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 ## Studio catalogue
 
 `LONGLIGHT-STUDIO.md` (repo root) covers every Longlight game: looks, names
-already taken, storage and cache prefixes on the shared origin, a reuse map and
+already taken, storage and cache prefixes (kept apart from the old shared origin), a reuse map and
 improvement ideas. Read it before pitching new ideas, names or looks, and
 before building a system another Longlight game may already have. This file
 wins where the two disagree. Don't edit the copy here: the master is

@@ -194,8 +194,9 @@ function buRestore(text,err){
   if(!buWrite(r.data)){say("store");return;}
   closeSheet();applyLoaded(r.data.save,"Backup restored");buPersist();}
 
-/* ---- backup files and keep-my-storage (from PEW 1.76.66). Every Longlight game lives at jxstrr0.github.io and shares
-   one storage pot, which a phone short on space may clear all at once. buPersist() asks the browser to keep it;
+/* ---- backup files and keep-my-storage (from PEW 1.76.66). The game lives at its own address (ink.longlight.games), so it
+   has its own storage pot; saves from before the move stay on the old shared jxstrr0.github.io origin, and the ink- prefix
+   keeps them apart from the other games there. A phone short on space may clear the pot all at once. buPersist() asks the browser to keep it;
    buFileSave() puts the same INK1: code in a text file; buFileLoad() runs a file through the Restore checks. ---- */
 const BU_FILE_MAX=4e6;
 let buPersistAsked=false;
