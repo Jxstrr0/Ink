@@ -22,6 +22,14 @@ html[data-theme=light]{
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 var(--ui);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+/* Phone touch: no double-tap zoom and no hold-to-highlight anywhere in the game.
+   touch-action isn't inherited, so it goes on every element (* has the lowest
+   specificity, so any rule that sets touch-action:none or pan-y still wins).
+   Pinch zoom still works. Text boxes stay selectable so names, search and
+   backup codes can still be typed, copied and pasted. */
+*{touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,pre,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--red2)}
 h1,h2,h3{margin:0;font-weight:700}

@@ -41,6 +41,14 @@ html[data-theme=light]{
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 var(--ui);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+/* Phone touch: no double-tap zoom and no hold-to-highlight anywhere in the game.
+   touch-action isn't inherited, so it goes on every element (* has the lowest
+   specificity, so any rule that sets touch-action:none or pan-y still wins).
+   Pinch zoom still works. Text boxes stay selectable so names, search and
+   backup codes can still be typed, copied and pasted. */
+*{touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,pre,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--red2)}
 h1,h2,h3{margin:0;font-weight:700}
@@ -7866,7 +7874,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.25.1";
+const VERSION="0.1.25.2";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
