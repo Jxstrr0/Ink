@@ -2,6 +2,16 @@
 
 This file describes what is actually in the game today (the plan for what comes next is `docs/INK-PLAN.md`). Update it in the same PR as the feature.
 
+## 0.1.24.0: a longer aim, clearer collectors bar, a clean end to a sitting
+
+Play-test fixes from Kelbo. The sim and its scores are unchanged.
+
+- **A longer aim.** The hold before the machine starts in the chair is now 1.2 seconds (`SE_ARM.ms` 1200, was 900), and 0.6 seconds when you carry on a line or zone you've already started (`SE_ARM.rearm` 600, was 450). The switch pulse is the same.
+- **The collectors bar names both numbers.** Under the collectors bar on the Career tab it now reads "At 60: a waiting list. At 90: your own legacy studio (or wait for 2018)" instead of saying Act 4 opens at 60. Since 0.1.20.0 the shortcut to Act 4 is collectors 90 (`LEGACY_NEED.collectors`); the waiting_list number stays 60 and the 2018 date is unchanged. All three numbers are read from the tables; past 60 the bar names the next thing, and the 90 shortcut until it is reached, 2018 comes or Act 4 opens.
+- **No error at the end of a sitting.** Finishing the last line or zone moved the close-up camera, and its redraw came about a quarter of a second later, after the results had already cleared the sitting: a page error ("Cannot read properties of null (reading 'design')") on every finished sitting. The chair now stops everything it scheduled (the camera move, the aim timer, the End and Restart confirmations, the frame loop, the resize watcher) when it closes (`seHalt` in `app/session.js`), and the redraw checks there is still a sitting.
+- **Save to booking moves the Next line on.** On the Design tab, saving a design to a booking now changes the Next line to "… is in the chair this week and the design is ready" with its Start button at once, instead of still saying "Press Save to booking".
+- No new S fields, no new localStorage keys.
+
 ## 0.1.23.0: the shop sounds like a shop
 
 Ambience, sound effects and a shop radio, all made by Kelbo with ElevenLabs. The sim is unchanged.
@@ -26,9 +36,9 @@ Kelbo: "the starting isn't working right when live tattooing, it's coming on for
 
 Kelbo asked for a moment to see where you're starting before the needle goes in. App only: the sim, its scores and the session traces are unchanged.
 
-- **Aim first.** A finger on the skin now aims instead of inking. For about a second (`SE_ARM.ms` 900 ms in `app/session.js`) the machine follows your finger as a hollow dashed outline, its tip ring dashed, while a teal ring fills round the needle tip. Nothing is laid, the buzz is quiet and the line's pace marker waits; the start dot still lights up when the tip is near it, so you can line it up. With **Needle under finger** a dashed crosshair reticle at your fingertip does the same job.
+- **Aim first.** A finger on the skin now aims instead of inking. For about a second (`SE_ARM.ms` 900 ms in `app/session.js`; 1200 ms since 0.1.24.0) the machine follows your finger as a hollow dashed outline, its tip ring dashed, while a teal ring fills round the needle tip. Nothing is laid, the buzz is quiet and the line's pace marker waits; the start dot still lights up when the tip is near it, so you can line it up. With **Needle under finger** a dashed crosshair reticle at your fingertip does the same job.
 - **Then it starts.** When the ring is full the machine switches on: a short teal pulse, the solid pen, the buzz spinning up from a low hum (`BUZZ.spin`, about 0.16 s), and the line starts from where the tip is (if it's already on the dot) or the moment you slide it there, exactly as before. Zones start inking where you are.
-- **Carrying on is quicker.** Lift mid-line (or mid-zone) and touch again: the aim is half as long (`SE_ARM.rearm` 450 ms).
+- **Carrying on is quicker.** Lift mid-line (or mid-zone) and touch again: the aim is half as long (`SE_ARM.rearm` 450 ms; 600 ms since 0.1.24.0).
 - **A quick tap inks nothing.** Lift before the ring fills and nothing happens to the skin; the line under the canvas says "Hold still a moment: the machine starts after a beat." A two-finger pinch during the aim still switches the view and cancels the aim.
 - **Reduced motion.** The ring is a static dashed circle with no fill and no pulse; the wait is the same.
 - No new S fields, no new localStorage keys, no new setting.
