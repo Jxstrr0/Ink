@@ -83,6 +83,7 @@ function crNext(){
   const st0=S.studio&&S.studio.stage;
   const res=INK_SIM.nextStop(S);CR.last=res;
   if(typeof evAfterLog==="function")evAfterLog(res.log);
+  if((res.log||[]).some(l=>l.k==="walkin"||l.k==="return"||l.k==="referral"))setTimeout(()=>INK_SOUND.sfx("door"),150);   // 0.1.23.0: someone comes in
   if(res.line){CR.lines.unshift(res.line);if(CR.lines.length>CR.LINES)CR.lines.length=CR.LINES;}
   crAfter(st0);}
 /* after the clock moved (Next or a chore): tidy the board, save, redraw, and show any scene */

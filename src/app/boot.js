@@ -15,7 +15,8 @@ function showTab(t){if(!TABS.includes(t))t="studio";const pn=$("panel");tabScrol
   if(typeof helpSoon==="function")helpSoon();}
 function renderTab(t){({studio:renderStudio,design:renderDesign,session:renderSession,clients:renderClients,career:renderCareer})[t]();}
 function renderHeader(){$("whenLbl").textContent=`Week ${S.week}, ${S.year}`;$("cashLbl").textContent=fmtMoney(S.cash);
-  const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;}
+  const st=(S.studio&&S.studio.stage)||"apprentice";$("stageLbl").textContent=typeof STAGE_NAMES!=="undefined"&&STAGE_NAMES[st]||st;
+  if(typeof stAmb==="function")stAmb();}
 function renderAll(){renderHeader();renderTab(curTab);}
 
 /* ---- the sheet ---- */
@@ -36,7 +37,9 @@ ${setRow("Effects",segHtml("setReduced",[["0","On"],["1","Reduced"]],st.reduced?
 <section class="setS"><h3>Graphics</h3>${setRow("Tier",segHtml("setGfx",[["","Auto"],["lite","Lite"],["full","Full"],["ultra","Ultra"]],st.gfx||""))}
 ${setRow("Auto-adjust",segHtml("setGfxAuto",[["1","On"],["0","Off"]],st.gfxAuto===false?0:1),"Steps down a tier if the studio stutters")}
 <p class="hint">Lite is the phone default.</p></section>
-<section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"The machine buzz and taps")}</section>
+<section class="setS"><h3>Sound</h3>${setRow("Sound",segHtml("setSound",[["1","On"],["0","Off"]],st.sound===false?0:1),"Everything: the machine buzz, taps, the room and the radio")}
+${setRow("Ambience",segHtml("setAmb",[["1","On"],["0","Off"]],st.ambience===false?0:1),"The room's own sound: machines, voices, rain in the wet weeks")}
+${setRow("Radio",segHtml("setRadio",[["0","Off"],["1","On"]],st.radio===true?1:0),"Quiet music on the shop radio")}</section>
 <section class="setS"><h3>Session</h3>${setRow("Your hand",segHtml("setHand",[["right","Right"],["left","Left"]],st.handed==="left"?"left":"right"),"Break, Numb and Chat go on your free hand's side, and the machine leans that way")}
 ${setRow("Assist",segHtml("setAssist",[["0","Off"],["1","On"]],st.assist?1:0),"A slower marker and a wider steady band, from the next sitting")}
 ${setRow("Stencil",segHtml("setFlat",[["0","On the body"],["1","Flat"]],st.flatStencil?1:0),"Where you place the stencil before a sitting")}
@@ -50,7 +53,7 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
 <p class="hint" id="pwaIos" hidden>On iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</p></section>
 <section><h3>About</h3><p class="hint" style="margin-top:0">Ink ${VERSION}. © ${new Date().getFullYear()} Kelbo / Longlight Interactive.</p>
 <p class="hint">Some design elements are icons by Lorc and Delapouite from <a href="https://game-icons.net/" target="_blank" rel="noopener">game-icons.net</a>, licensed <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a> and reshaped for tattoo flash. Full list: <a href="https://github.com/Jxstrr0/Ink/blob/main/art/CREDITS.md" target="_blank" rel="noopener">art/CREDITS.md</a>.</p>
-<p class="hint">On Full and Ultra graphics the shop uses CC0 textures from <a href="https://polyhaven.com/" target="_blank" rel="noopener">Poly Haven</a> (Herringbone Parquet by Jenelle van Heerden and Sergej Majboroda; Painted Plaster Wall and Dark Wooden Planks by Amal Kumar). Its furniture, the machines on the tray and the client mannequin are original, made in Blender for Ink; the sign's letters are from the Inter typeface by Rasmus Andersson (SIL Open Font License). UI sounds: Interface Sounds by <a href="https://kenney.nl/" target="_blank" rel="noopener">Kenney</a>, CC0. Lists: <a href="https://github.com/Jxstrr0/Ink/blob/main/models/CREDITS.md" target="_blank" rel="noopener">models/CREDITS.md</a>, <a href="https://github.com/Jxstrr0/Ink/blob/main/sounds/CREDITS.md" target="_blank" rel="noopener">sounds/CREDITS.md</a>.</p></section>`);
+<p class="hint">On Full and Ultra graphics the shop uses CC0 textures from <a href="https://polyhaven.com/" target="_blank" rel="noopener">Poly Haven</a> (Herringbone Parquet by Jenelle van Heerden and Sergej Majboroda; Painted Plaster Wall and Dark Wooden Planks by Amal Kumar). Its furniture, the machines on the tray and the client mannequin are original, made in Blender for Ink; the sign's letters are from the Inter typeface by Rasmus Andersson (SIL Open Font License). UI sounds: Interface Sounds by <a href="https://kenney.nl/" target="_blank" rel="noopener">Kenney</a>, CC0. Ambience, sound effects and radio: made by Kelbo with ElevenLabs. Lists: <a href="https://github.com/Jxstrr0/Ink/blob/main/models/CREDITS.md" target="_blank" rel="noopener">models/CREDITS.md</a>, <a href="https://github.com/Jxstrr0/Ink/blob/main/sounds/CREDITS.md" target="_blank" rel="noopener">sounds/CREDITS.md</a>.</p></section>`);
   const seg=(id,fn)=>$(id).addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;
     $(id).querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});fn(b.dataset.v);save();});
   seg("setTheme",v=>{st.theme=v;applyTheme();});
@@ -59,7 +62,9 @@ ${typeof slHtml==="function"?`<h3 style="margin-top:14px">Save slots</h3>${slHtm
   seg("setGfxAuto",v=>{st.gfxAuto=v==="1";PERF.dropped=PERF.manual=false;perfReset(true);});
   seg("setHand",v=>{st.handed=v==="left"?"left":"right";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setAssist",v=>{st.assist=v==="1";});
-  seg("setSound",v=>{st.sound=v==="1";INK_SOUND.setOn(st.sound);});
+  seg("setSound",v=>{st.sound=v==="1";if(st.sound)INK_SOUND.init();INK_SOUND.setOn(st.sound);});
+  seg("setAmb",v=>{st.ambience=v==="1";if(st.ambience&&st.sound!==false)INK_SOUND.init();INK_SOUND.setAmbience(st.ambience);});
+  seg("setRadio",v=>{st.radio=v==="1";if(st.radio&&st.sound!==false)INK_SOUND.init();INK_SOUND.setRadio(st.radio);});
   seg("setFlat",v=>{st.flatStencil=v==="1";});
   seg("setNeedle",v=>{st.needle=v==="1"?"direct":"offset";if(typeof seNeedleChanged==="function")seNeedleChanged();});
   seg("setTips",v=>{st.tips=v==="1";if(!st.tips&&typeof helpOff==="function")helpOff();});
