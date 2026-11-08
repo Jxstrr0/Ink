@@ -7790,7 +7790,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.23.0";
+const VERSION="0.1.24.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -9085,7 +9085,7 @@ const SE_PEN={dy:68,dx:24,pad:10,near:3};
    in direct mode; pinch = the spread (or squeeze) ratio that switches views */
 /* aim before the machine starts (0.1.21.0), ms: a touch aims for ms (rearm when the current line or zone is already under
    way, so lifting and carrying on is quicker), then the machine arms; go = how long the switch pulse shows */
-const SE_ARM={ms:900,rearm:450,go:320};
+const SE_ARM={ms:1200,rearm:600,go:320};   // 0.1.24.0: was 900 / 450
 const SE_RESTART={ms:2600};   // ms: the second tap that confirms Restart must come this soon after the first
 const SE_ZOOM={max:3,minMm:16,minShare:0.3,padMm:4,anim:260,top:52,pinch:1.25};
 const SE_CHAT=["They tell you the bridges went up before they could get home last night. Two hours on the wrong bank.",
@@ -9206,7 +9206,7 @@ function renderSession(){
   const L=seLive();
   if(L){if(SE.sess!==L){SE.sess=INK_SIM.sessionResume(L);SE.place=null;}
     return L.phase==="place"?seRenderPlace():seRenderChair();}
-  SE.sess=null;
+  if(SE.sess)seHalt();SE.sess=null;
   if(SE.result)return seRenderResult();
   seRenderLobby();}
 
@@ -9360,7 +9360,7 @@ function seLayout(){
   SE.dirty=[];SE.minDt=1000/(SE_FPS[tier]||30)-2;
   const f=seFrameTarget();SE.s=f.s;SE.ox=f.ox;SE.oy=f.oy;
   seDrawAll();seZoomSync();}
-function seDrawAll(){const c=SE.c&&SE.c.over;if(!c)return;c.clearRect(0,0,SE.cw,SE.ch);SE.dirty=[];seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
+function seDrawAll(){const c=SE.c&&SE.c.over;if(!c||!SE.sess)return;c.clearRect(0,0,SE.cw,SE.ch);SE.dirty=[];seDrawBase();seDrawFills();seDrawInkAll();seDrawOver(performance.now());seDot();}
 /* the camera: the current line or zone (or, zoomed out, the whole sitting) fitted into the reachable part of the skin */
 function seItemBox(sess){
   const it=INK_SIM.sessionItem(sess);if(!it)return null;
@@ -9389,7 +9389,7 @@ function seRefit(anim){
 function seAnimDone(skip){
   const a=SE.anim;if(!a)return;clearTimeout(a.timer);SE.anim=null;
   const cam=$("seCam");if(cam){cam.style.transition="none";cam.style.transform="none";}
-  SE.s=a.t.s;SE.ox=a.t.ox;SE.oy=a.t.oy;if(!skip)seDrawAll();}
+  SE.s=a.t.s;SE.ox=a.t.ox;SE.oy=a.t.oy;if(!skip&&SE.sess&&cam)seDrawAll();}
 function seZoomLbl(){return SE.zoomOut?`${SE_ICON.zoomIn}<span>Close up</span>`:`${SE_ICON.zoomOut}<span>Whole</span>`;}
 function seZoomSync(){const b=$("seZoom");if(!b)return;const html=seZoomLbl();if(b._h!==html){b._h=html;b.innerHTML=html;}b.setAttribute("aria-pressed",SE.zoomOut);
   b.setAttribute("aria-label",SE.zoomOut?"Close up on the current line":"See the whole design");}
@@ -9703,9 +9703,18 @@ function seRestartTap(){
   INK_SOUND.tick();save();
   toast(sess.kind==="practice"?"A clean pad. Start again.":refund>0?`Back to the start of the sitting. The numbing cream is refunded (${fmtMoney(refund)}).`:"Back to the start of the sitting.");
   seRenderChair();}
-function seCancelChair(){const sess=SE.sess;seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
+function seCancelChair(){const sess=SE.sess;seHalt();seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
 
 /* ---- the end of a sitting ---- */
+/* 0.1.24.0: the chair is going away (the results, the pad back on the shelf, the lobby): stop everything the sitting
+   scheduled so nothing runs after SE.sess is gone. The close-up camera's move (seRefit, SE.anim) used to redraw the skin
+   ~280 ms after the last line or zone, by which time seEnd had cleared the sitting ("reading 'design'" of null) */
+function seHalt(){
+  if(SE.anim){clearTimeout(SE.anim.timer);SE.anim=null;}
+  if(SE.aim){clearTimeout(SE.aim.timer);SE.aim=null;}
+  SE.hold=null;SE.resArm=0;clearTimeout(SE.resT);SE.stopArm=0;clearTimeout(SE.stopT);
+  seStopLoop();if(SE.ro){SE.ro.disconnect();SE.ro=null;}
+  for(const id of ["sePen","seAim"]){const e=$(id);if(e)clearTimeout(e._go);}}
 const SE_STOP_TEXT={pain:"They couldn't take any more today.",fatigue:"They're worn out. Time to stop.",artist:"You called it there.",done:""};
 function seEnd(){
   const sess=SE.sess;if(!sess||SE.down||SE.ending)return;SE.ending=true;
@@ -9716,7 +9725,7 @@ function seEnd(){
       bodyShape:sess.bodyShape,msg:SE_STOP_TEXT[res.stop]||"",part:sess.part,partsTotal:sess.partsTotal,item:null};
     if(sess.kind==="booked")seFinishBooked(sess,res,R);
     else if(sess.kind==="sample")seFinishSample(sess,res,R);
-    seSlot().live=null;SE.sess=null;SE.result=R;
+    seHalt();seSlot().live=null;SE.sess=null;SE.result=R;
     save();renderHeader();
     if(!INK_SOUND.sfx("tray"))INK_SOUND.tick();if(R.paid>0)setTimeout(()=>INK_SOUND.sfx("till"),450);   // 0.1.23.0: machine down, then the till
     renderSession();$("panel").scrollTop=0;
@@ -9923,7 +9932,7 @@ function clBookingWire(){
   const s=$("clBkSave"),o=$("clBkOff");
   if(s)s.addEventListener("click",()=>{const q=S.queue.find(x=>x.id===S.board.item),c=clReal(S.board.client);if(!q||!c)return;
     const d=dzToDesign();if(!d.elements.length){toast("Put something on the board first");return;}
-    q.design=d;dzStore();toast(`Saved to ${c.first}'s booking`);INK_SOUND.tick();});
+    q.design=d;dzStore();toast(`Saved to ${c.first}'s booking`);INK_SOUND.tick();if(typeof nxRender==="function")nxRender();});   // 0.1.24.0: the Next line moves on to "Start the sitting"
   if(o)o.addEventListener("click",()=>{S.board.item=null;S.board.client=DZ_SAMPLE_CLIENTS[0].id;const s0=DZ_SAMPLE_CLIENTS[0];S.board.bodyShape=s0.bodyShape;S.board.skinTone=s0.skinTone;
     DZ.m=Object.assign(dzFromDesign(dzToDesign()),{fsig:DZ.m.fsig});save();renderDesign();});}
 
@@ -10056,18 +10065,32 @@ const CR_SEG={walk_in:"walk-ins off the street",first_timer:"first-timers",stude
   waiting_list:"a waiting list",magazine:"a magazine feature",guest_spot:"guest spots",convention:"conventions",award:"awards"};
 /* the next thing a track opens. Segments all bring walk-ins; every REP_TRACKS event is in the game (0.1.13.0: flash days,
    Friday the 13th, Kontur and the Drawbridge Prize are sim/events.js REP_EVENTS), so each bar names what really comes next */
-const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list (Act 4, in your own studio)",
+const CR_LIVE={flash_day:"flash days (with 3 sheets of your own flash)",friday_13:"the Friday 13th flash special",waiting_list:"a waiting list",
   magazine:"a feature in Kontur (with a healed portfolio)",guest_spot:"guest spot invitations",convention:"the big convention in the capital",award:"the Drawbridge Prize, every winter"};
+/* 0.1.24.0: the collectors bar also names Act 4's own shortcut (sim/career.js LEGACY_NEED.collectors, 90 since 0.1.20.0),
+   which is not the waiting_list event's number (60); it shows until the date gate (ACTS.legacy, 2018) or Act 4 itself.
+   crLegacyAt gives {at, year} or null, crLegacyTxt the words, both read from the tables */
+function crLegacyAt(){const L=INK_SIM.LEGACY_NEED,A=INK_SIM.ACTS&&INK_SIM.ACTS.legacy;if(!L||!A)return null;
+  const year=2000+A.years[0]-2;if(S.year>=year||(S.studio&&S.studio.stage)==="legacy")return null;return{at:L.collectors,year};}
+function crLegacyTxt(l){return`your own legacy studio (or wait for ${l.year})`;}
 function crRepNext(k){const t=INK_SIM.REP_TRACKS[k],v=(S.rep&&+S.rep[k])||0;let best=null;
   const try1=(id,at,kind)=>{if(at>v&&(!best||at<best.at))best={id,at,kind};};
   for(const id in t.unlocks)try1(id,t.unlocks[id],"segment");
   for(const id in t.events||{})if(CR_LIVE[id])try1(id,t.events[id],"event");
+  const lg=k==="collectors"?crLegacyAt():null;if(lg)try1("legacy",lg.at,"legacy");
   return best;}
+/* the words under a bar: "At 25: collectors"; on the collectors bar the waiting list also names the legacy shortcut after it */
+function crRepNextTxt(k,n){if(!n)return"Everything open";
+  const lg=k==="collectors"?crLegacyAt():null;
+  if(n.kind==="legacy")return`At ${n.at}: ${crLegacyTxt(lg)}`;
+  let s=`At ${n.at}: ${n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," ")}`;
+  if(n.id==="waiting_list"&&lg&&lg.at>n.at)s+=`. At ${lg.at}: ${crLegacyTxt(lg)}`;
+  return s;}
 function crRep(){
   const T=INK_SIM.REP_TRACKS;if(!T)return"";
   return`<h3 class="crRepH">Reputation</h3><div class="crRep">${Object.keys(T).map(k=>{const raw=(S.rep&&+S.rep[k])||0,v=Math.round(raw),shown=raw>0&&raw<10?raw.toFixed(1):String(v),n=crRepNext(k);
     return`<div class="crRepR"><span class="crRepN"><b>${esc(T[k].name)}</b><span class="clMeta">${esc(T[k].says.split(":")[0])}</span></span><span class="crRepB" role="img" aria-label="${esc(T[k].name)} ${shown} out of 100"><i style="width:${Math.min(100,raw).toFixed(1)}%"></i></span><b class="crRepV">${shown}</b>
-<span class="clMeta crRepX">${n?`At ${n.at}: ${esc(n.kind==="event"?CR_LIVE[n.id]:CR_SEG[n.id]||n.id.replace(/_/g," "))}`:"Everything open"}</span></div>`;}).join("")}</div>`;}
+<span class="clMeta crRepX">${esc(crRepNextTxt(k,n))}</span></div>`;}).join("")}</div>`;}
 function crNext(){
   if(INK_SIM.careerOver(S))return;
   if(typeof seLive==="function"){const L=seLive();if(L&&L.kind==="booked"){toast("Finish the sitting in the chair first");showTab("session");return;}}

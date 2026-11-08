@@ -145,7 +145,7 @@ function clBookingWire(){
   const s=$("clBkSave"),o=$("clBkOff");
   if(s)s.addEventListener("click",()=>{const q=S.queue.find(x=>x.id===S.board.item),c=clReal(S.board.client);if(!q||!c)return;
     const d=dzToDesign();if(!d.elements.length){toast("Put something on the board first");return;}
-    q.design=d;dzStore();toast(`Saved to ${c.first}'s booking`);INK_SOUND.tick();});
+    q.design=d;dzStore();toast(`Saved to ${c.first}'s booking`);INK_SOUND.tick();if(typeof nxRender==="function")nxRender();});   // 0.1.24.0: the Next line moves on to "Start the sitting"
   if(o)o.addEventListener("click",()=>{S.board.item=null;S.board.client=DZ_SAMPLE_CLIENTS[0].id;const s0=DZ_SAMPLE_CLIENTS[0];S.board.bodyShape=s0.bodyShape;S.board.skinTone=s0.skinTone;
     DZ.m=Object.assign(dzFromDesign(dzToDesign()),{fsig:DZ.m.fsig});save();renderDesign();});}
 
