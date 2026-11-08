@@ -150,7 +150,7 @@ function seRender(design,skin,out,bodyShape){
 function seBegin(sess){
   const slot=seSlot();slot.live=sess;SE.sess=sess;SE.result=null;SE.status="";SE.place=null;SE.laid=null;
   if(sess.kind==="practice")INK_SIM.sessionStart(sess);
-  save();INK_SOUND.init();
+  save();INK_SOUND.init();INK_SOUND.sfx("glove");   // 0.1.23.0: gloves on
   if(curTab!=="session")showTab("session");else renderSession();
   $("panel").scrollTop=0;}
 function seBusy(){const L=seLive();if(!L)return false;toast("Finish the sitting in the chair first");if(curTab!=="session")showTab("session");return true;}
@@ -256,7 +256,7 @@ ${(P&&P.creases||[]).map(c=>`<line class="seCrease" x1="0" x2="${W}" y1="${dzR2(
 ${can3d?`<button class="btn sm" id="seFlat" aria-pressed="${!in3d}">${in3d?"Flat view":"3D view"}</button>`:""}</div>
 <div class="seChk" id="seChk">${seChkHtml(chk)}</div>
 <div class="row"><button class="btn pri" id="seGo">${INK_SIM.sessionItem(sess)&&INK_SIM.sessionItem(sess).k==="line"?"Start lining":"Start"}</button><button class="btn" id="seCancel">Not now</button></div></div></div>`;
-  $("seGo").addEventListener("click",()=>{INK_SIM.sessionStart(sess);save();INK_SOUND.tick();renderSession();});
+  $("seGo").addEventListener("click",()=>{INK_SIM.sessionStart(sess);save();if(!INK_SOUND.sfx("peel"))INK_SOUND.tick();renderSession();});   // the stencil paper comes off
   $("seCancel").addEventListener("click",seCancel);
   host.querySelectorAll("[data-serot]").forEach(b=>b.addEventListener("click",()=>{SE.place=INK_SIM.sessionRotate(sess,+b.dataset.serot);save();INK_SOUND.tick();
     if(in3d){seChkUpdate();se3dStencil(sess);}else seRenderPlace();}));
@@ -510,6 +510,7 @@ function seStatus(t){SE.status=t;const e=$("seStatus");if(e&&e.textContent!==t)e
 function seAfterItem(){
   const sess=SE.sess;
   SE.laid=null;seRefit(true);SE.status="";
+  {const it=INK_SIM.sessionItem(sess);if(it&&it.k==="colour"&&!sess.stop)INK_SOUND.sfx("ink");}   // 0.1.23.0: a colour zone opens a cap
   const p=$("seProg");if(p){const cnt=seItemCounts(sess);p.textContent=seProgText(sess,INK_SIM.sessionItem(sess),sess.next-sess.start,sess.end-sess.start,cnt);}
   seRenderUnder();
   if(sess.stop)seEnd();}
@@ -661,7 +662,7 @@ function seAction(k){
   if(k==="numb"){const cost=Math.round(INK_SIM.NUMB.price*INK_SIM.priceIndex(sess.year)/10)*10;if(sess.m.numbs<INK_SIM.NUMB.max&&(S.cash||0)<cost){toast(`Numbing cream is ${fmtMoney(cost)}. Not enough cash.`);return;}}
   const r=INK_SIM.sessionAction(sess,k);
   if(!r.ok){toast(r.why);return;}
-  INK_SOUND.tick();
+  if(!(k==="break"&&INK_SOUND.sfx("wipe")))INK_SOUND.tick();   // 0.1.23.0: a break wipes down
   if(k==="break")toast(r.eff>0.6?"A cigarette on the back step. They come back steadier.":"Another break. It helps less each time.");
   if(k==="numb"){S.cash-=r.cost;renderHeader();toast(`Numbing cream on: ${fmtMoney(r.cost)}. It takes the edge off for a couple of hours.`);}
   if(k==="chat"){const line=SE_CHAT[(sess.m.chats+((sess.client&&sess.client.name)||"").length)%SE_CHAT.length];
@@ -710,7 +711,8 @@ function seEnd(){
     else if(sess.kind==="sample")seFinishSample(sess,res,R);
     seSlot().live=null;SE.sess=null;SE.result=R;
     save();renderHeader();
-    INK_SOUND.tick();renderSession();$("panel").scrollTop=0;
+    if(!INK_SOUND.sfx("tray"))INK_SOUND.tick();if(R.paid>0)setTimeout(()=>INK_SOUND.sfx("till"),450);   // 0.1.23.0: machine down, then the till
+    renderSession();$("panel").scrollTop=0;
   }finally{SE.ending=false;}}
 function seAddXp(xp){
   const sk=S.skills||(S.skills={styles:{}});

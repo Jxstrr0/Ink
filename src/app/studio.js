@@ -7,6 +7,7 @@
    Reveal; drag the view to look round (Lite allows less). stMount() puts the one WebGL canvas back in the Studio view
    (the Session tab borrows it for 3D stencil placement). 0.1.15.0: stRoom() tells the 3D shop which room (stShop: Arkady's
    front room or the shop across town for a rented chair), the kit's machine (stMachine) and your flash for its walls (stFlash).
+   0.1.23.0: stAmb() gives INK_SOUND the room for its ambience (from renderHeader); using or buying an ink clicks a cap open.
    The kit build panel (PR 4, plan Q9): S.kit is a machine, a tray of needle groupings (up to KIT_TRAY_MAX), an ink tier,
    voltage and stroke. A summary shows what the kit gives the session (INK_SIM.kitBands: the steady band, the line weights
    the tray lays, shading speed, skin trauma, ink fade); every option shows ▲/▼ deltas against the kit you have now
@@ -49,6 +50,9 @@ function stShop(){return(S.studio&&S.studio.stage)==="chair"&&S.career&&S.career
 /* 0.1.15.0: your flash for the 3D walls, newest first, as the curated elements the board saved */
 function stFlash(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setFlash!=="function")return;
   try{INK_VIS.setFlash((S.flash||[]).slice().reverse().filter(f=>f&&f.design).map(f=>({name:f.name,sizeMm:f.design.sizeMm,elements:f.design.elements})));}catch(e){}}
+/* 0.1.23.0: the room's ambience (INK_SOUND AMB_ROOMS: the stage, or "sedov"), and the week for the rain. Cheap and
+   idempotent, so renderHeader calls it after every load, Next and stage change */
+function stAmb(){if(typeof INK_SOUND==="undefined"||!INK_SOUND.room||!S)return;INK_SOUND.room(stShop()||(S.studio&&S.studio.stage)||"apprentice",S.week);}
 /* the room for the current stage: which shop, the kit's machine, your flash */
 function stRoom(){if(typeof INK_VIS==="undefined"||typeof INK_VIS.setStudio!=="function")return;
   try{INK_VIS.setStudio((S.studio&&S.studio.stage)||"apprentice",stShop());}catch(e){}stMachine();stFlash();}
@@ -144,7 +148,7 @@ function kpRender(){
   host.innerHTML=`<h2>Your kit</h2>${live?`<p class="hint" style="margin-top:0">There's a sitting in the chair: changes count from the next one.</p>`:""}${kpSummary(kit)}
 ${segHtml("kpSeg",[["machine","Machine"],["needles","Needles"],["ink","Ink"],["tune","Tune"]],KP.sec)}<div class="kpBody">${body}</div>`;
   $("kpSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;KP.sec=b.dataset.v;INK_SOUND.tick();kpRender();});
-  host.querySelectorAll("[data-use]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.use.split(":");kpKit()[k]=id;kpDone(`${k==="machine"?INK_SIM.MACHINES[id].name:INK_SIM.INKS[id].name+" ink"} in use`);}));
+  host.querySelectorAll("[data-use]").forEach(b=>b.addEventListener("click",()=>{const [k,id]=b.dataset.use.split(":");kpKit()[k]=id;kpDone(`${k==="machine"?INK_SIM.MACHINES[id].name:INK_SIM.INKS[id].name+" ink"} in use`,k==="ink"?"ink":null);}));
   host.querySelectorAll("[data-tray]").forEach(b=>b.addEventListener("click",()=>{const id=b.dataset.tray,k=kpKit();
     if(k.needles.includes(id)){if(k.needles.length<=1)return;k.needles=k.needles.filter(x=>x!==id);}else{if(k.needles.length>=INK_SIM.KIT_TRAY_MAX)return;k.needles.push(id);}
     kpDone();}));
@@ -156,7 +160,7 @@ ${segHtml("kpSeg",[["machine","Machine"],["needles","Needles"],["ink","Ink"],["t
   const r=$("kpReset");if(r)r.addEventListener("click",()=>{const k=kpKit(),d0=INK_SIM.kitDefault();k.voltage=d0.voltage;k.stroke=d0.stroke;kpDone("Back to the usual tune");});}
 /* deltas from kit a to kit b (the Tune view compares against the default sliders) */
 function kpDeltaFrom(a,b){const keep=S.kit;S.kit=a;try{return kpDelta(b);}finally{S.kit=keep;}}
-function kpDone(msg){S.kit=INK_SIM.kitClean(S.kit);stMachine();save();INK_SOUND.tick();if(msg)toast(msg);kpRender();}
+function kpDone(msg,snd){S.kit=INK_SIM.kitClean(S.kit);stMachine();save();if(!(snd&&INK_SOUND.sfx(snd)))INK_SOUND.tick();if(msg)toast(msg);kpRender();}
 function kpBuy(kind,id){
   const price=INK_SIM.kitPrice(kind,id,S.year),k=kpKit(),o=k.owned;
   if((S.cash||0)<price){toast("Not enough cash");return;}
@@ -166,5 +170,5 @@ function kpBuy(kind,id){
   if(kind==="machine"){o.machines.push(id);k.machine=id;}
   else if(kind==="ink"){o.inks.push(id);k.ink=id;}
   else{o.needles.push(id);if(k.needles.length<INK_SIM.KIT_TRAY_MAX)k.needles.push(id);}
-  renderHeader();kpDone(`Bought: ${it.name}${kind==="ink"?" ink":""} (${fmtMoney(price)})`);
+  renderHeader();kpDone(`Bought: ${it.name}${kind==="ink"?" ink":""} (${fmtMoney(price)})`,kind==="ink"?"ink":null);
   const c=$("studioBody").querySelector(".kv dd:last-child");if(c)c.textContent=fmtMoney(S.cash);}

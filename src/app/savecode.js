@@ -83,6 +83,7 @@ function buSaveOk(o){
   if(buObj(o.settings)&&"flatStencil" in o.settings&&typeof o.settings.flatStencil!=="boolean")return false;   // PR 6
   if(buObj(o.settings)&&"tips" in o.settings&&typeof o.settings.tips!=="boolean")return false;   // PR 9
   if(buObj(o.settings)&&"needle" in o.settings&&o.settings.needle!=="offset"&&o.settings.needle!=="direct")return false;   // 0.1.16.0
+  if(buObj(o.settings))for(const k of ["ambience","radio"])if(k in o.settings&&typeof o.settings[k]!=="boolean")return false;   // 0.1.23.0
   if("help" in o&&o.help!=null&&!buObj(o.help))return false;   // PR 9: tip id -> {w, y}
   for(const k of ["week","year","cash","seed"])if(k in o&&!buNum(o[k]))return false;
   for(const k of ["clients","pieces","queue","flash"])if(k in o&&!Array.isArray(o[k]))return false;

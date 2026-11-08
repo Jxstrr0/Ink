@@ -492,7 +492,7 @@ function dzSaveFlash(){
   let k=1;while(S.flash.some(f=>f.id==="mf"+k))k++;
   const d=dzToDesign();d.flash=null;
   S.flash.push({id:"mf"+k,name:names.join(" and "),design:d,w:S.week,y:S.year});save();if(typeof stFlash==="function")stFlash();
-  toast("Saved to your flash");}
+  INK_SOUND.sfx("paper");toast("Saved to your flash");}
 function dzFlashCard(f,mine){
   const m=dzFromDesign(f.design||f),sc=INK_SIM.scoreDesign(Object.assign({},f.design||f,{flash:f.id,placement:DZ.m.placement}),dzClient(),S.skills,{year:S.year,rate:S.rate>0?S.rate:undefined});
   const st=INK_SIM.STYLES[(f.design||f).style];

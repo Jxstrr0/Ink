@@ -153,6 +153,8 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
   const bad = [
     { v: 1, save: game({ settings: "dark" }), slots: [] },                          // settings not an object
     { v: 1, save: game({ settings: { needle: "sideways" } }), slots: [] },         // 0.1.16.0: needle not offset or direct
+    { v: 1, save: game({ settings: { ambience: "loud" } }), slots: [] },           // 0.1.23.0: ambience not true or false
+    { v: 1, save: game({ settings: { radio: 1 } }), slots: [] },                   // 0.1.23.0: radio not true or false
     { v: 1, save: game(), slots: [null, null, null, null] },                         // too many slots
     { v: 1, save: game(), slots: ["slot"] },                                         // slot not an object
     { v: 1, save: game({ cash: "lots" }), slots: [] },                               // cash not a number
@@ -225,6 +227,11 @@ check("hydrate fills in fields a save doesn't have yet", () => {
   assert.strictEqual(t.settings.needle, "offset", "0.1.16.0: an older save holds the machine offset");
   assert(a.hydrate({ week: 6, settings: { needle: "direct" } })); assert.strictEqual(plain(a.__get()).settings.needle, "direct", "direct mode is kept");
   assert(a.hydrate({ week: 6, settings: { needle: 3 } })); assert.strictEqual(plain(a.__get()).settings.needle, "offset", "an odd needle setting goes back to offset");
+  assert.strictEqual(t.settings.ambience, true, "0.1.23.0: an older save has the room's ambience on"); assert.strictEqual(t.settings.radio, false, "and the radio off");
+  assert(a.hydrate({ week: 6, settings: { ambience: false, radio: true } })); const sn = plain(a.__get()).settings;
+  assert.strictEqual(sn.ambience, false); assert.strictEqual(sn.radio, true, "ambience off and radio on are kept");
+  assert(a.hydrate({ week: 6, settings: { ambience: "x", radio: "on" } })); const so = plain(a.__get()).settings;
+  assert.strictEqual(so.ambience, true); assert.strictEqual(so.radio, false, "odd sound settings go back to the defaults");
   assert(a.hydrate({ week: 6, help: [1], settings: { tips: false } })); const h = plain(a.__get());
   assert.deepStrictEqual(h.help, {}, "a help field that isn't an object is dropped"); assert.strictEqual(h.settings.tips, false);
   assert(a.hydrate({ week: 7, kit: {} }), "an older save's kit:{} becomes the starter kit");
