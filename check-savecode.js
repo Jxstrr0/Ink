@@ -172,6 +172,8 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
     { v: 1, save: game({ session: "chair" }), slots: [] },                           // session not an object
     { v: 1, save: game({ session: { live: { next: 2, design: null } } }), slots: [] },   // a sitting without a design
     { v: 1, save: game({ session: { live: { next: "a", design: { elements: [] } } } }), slots: [] },   // a sitting with no position
+    { v: 1, save: game({ session: { live: { next: 2, design: { elements: [] }, base: "start" } } }), slots: [] },   // 0.1.22.0: a restart copy that isn't a sitting
+    { v: 1, save: game({ session: { live: { next: 2, design: { elements: [] }, base: { next: 0, design: null } } } }), slots: [] },   // a restart copy without a design
     { v: 1, save: game({ reveals: "p1" }), slots: [] },                             // reveals not a list
     { v: 1, save: game({ reveals: [1, 2] }), slots: [] },                            // reveals that aren't piece ids
     { v: 1, save: game({ rep: [10, 20, 30] }), slots: [] },                          // rep not an object
@@ -186,6 +188,8 @@ check("a well-formed code with a broken save inside is refused and nothing is wr
   const sessOk = { live: { next: 3, kind: "practice", design: { elements: [] }, m: { pain: 0 } }, next: null };
   assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: kitOk, session: sessOk }), slots: [] })), "ok", "a kit and a sitting in progress pass");
   assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ kit: {}, session: null }), slots: [] })), "ok", "an older save's empty kit passes");
+  const sessBase = { live: Object.assign({}, sessOk.live, { base: { next: 0, kind: "practice", design: { elements: [] }, m: { pain: 0 } } }), next: null };
+  assert.strictEqual(msg(a, pack(a, { v: 1, save: game({ session: sessBase }), slots: [] })), "ok", "a sitting with its restart copy (0.1.22.0) passes");
   const healed = game({ reveals: ["p1"], rep: { walkins: 12.5, collectors: 3, peers: 40 }, pieces: [Object.assign({}, game().pieces[0], { heal: "crisp", healW: 16, healY: 2003, portfolio: true })] });
   assert.strictEqual(msg(a, pack(a, { v: 1, save: healed, slots: [] })), "ok", "a save with heals, reveals, rep and a portfolio piece passes");
   assert.deepStrictEqual(a.localStorage.dump(), before);

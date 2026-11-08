@@ -51,6 +51,11 @@
      SIM.sessionFinish(sess) -> {done, early, stop, out, sitting, progress, part, partsTotal, sessionsUsed}   (pure)
      SIM.sessionXp(result, sess, skills) -> {linework, shading, colour, speed, styles:{id:+x}}   SKILL_XP
      SIM.sessionPainRate(sess) -> pain per hour now;  SIM.sessionSynth(sess, opts) -> contacts for tests
+     SIM.sessionRestart(sess) -> bool (0.1.22.0) put the sitting back to sess.base, the copy taken when its work began
+       (sessionStart leaving placement, or sessionNew for a sitting that carries on from progress): this sitting's ink,
+       zone saturation, line progress, meters, clock, breaks, numbing and chats; earlier sittings live in base too, so
+       they stay. Refused while the pen is down or without a base (a sitting saved before 0.1.22.0).
+       SIM.sessionCanRestart(sess) says whether it would work; SIM.sessionFresh(sess) whether nothing has changed yet
    Private helpers start with ss. ===== */
 
 /* the stencil */
@@ -293,6 +298,7 @@ function sessionNew(o){
   if(pr){sess.next=clamp(pr.next|0,0,plan.items.length);sess.acc=Object.assign(ssEmptyAcc(),pr.acc||{});sess.cur=pr.cur||null;
     if(sess.next>0||sess.cur)sess.phase="work";}
   ssStartSitting(sess);
+  if(sess.phase==="work")ssMark(sess);
   return sess;
 }
 function ssStartSitting(sess){
@@ -604,7 +610,19 @@ function sessionTrace(sess,contacts){let last=null;
     for(let i=1;i<c.length;i++)penMove(sess,c[i][0],c[i][1],c[i][2]);last=penUp(sess,c[c.length-1][0]);}
   return last;}
 function sessionResume(sess){sess.pen=null;return sess;}
-function sessionStart(sess){if(sess.phase==="place")sess.phase="work";return sess;}
+function sessionStart(sess){if(sess.phase==="place"){sess.phase="work";ssMark(sess);}return sess;}
+/* restart (0.1.22.0): sess.base is a deep copy of every field but base and pen, taken once when the sitting's work begins;
+   sessionRestart copies it back (dropping fields added since, such as lastStroke), so the sitting is exactly as it began */
+const SS_NOBASE={base:1,pen:1};
+function ssMark(sess){const o={};for(const k in sess)if(!SS_NOBASE[k])o[k]=sess[k];sess.base=JSON.parse(JSON.stringify(o));}
+function sessionCanRestart(sess){return!!(sess&&sess.base&&typeof sess.base==="object"&&sess.phase==="work"&&!sess.pen);}
+function sessionFresh(sess){const b=sess&&sess.base;if(!b)return true;
+  const k=s=>JSON.stringify([s.next,s.cur,s.zsat,s.m,s.liner]);return k(sess)===k(b);}
+function sessionRestart(sess){
+  if(!sessionCanRestart(sess))return false;
+  const b=JSON.parse(JSON.stringify(sess.base));
+  for(const k of Object.keys(sess))if(!SS_NOBASE[k]&&!(k in b))delete sess[k];
+  Object.assign(sess,b);sess.pen=null;return true;}
 
 SIM.STENCIL=STENCIL;SIM.PACE=PACE;SIM.ACC=ACC;SIM.DEPTH=DEPTH;SIM.BLOW=BLOW;SIM.JOIN=JOIN;SIM.LW_FIT=LW_FIT;SIM.ZONE=ZONE;
 SIM.COLOUR_PACK=COLOUR;SIM.TRAUMA=TRAUMA;SIM.PAIN=PAIN;SIM.FATIGUE=FATIGUE;SIM.BREAK=BREAK;SIM.NUMB=NUMB;SIM.CHAT=CHAT;SIM.SKILL_XP=SKILL_XP;
@@ -612,4 +630,4 @@ SIM.flattenPath=ssFlatten;SIM.sessionNew=sessionNew;SIM.sessionPlan=ssPlan;SIM.s
 SIM.stencilCheck=stencilCheck;SIM.sessionItem=sessionItem;SIM.sessionStart=sessionStart;SIM.sessionResume=sessionResume;
 SIM.penDown=penDown;SIM.penMove=penMove;SIM.penUp=penUp;SIM.sessionSetLiner=sessionSetLiner;SIM.sessionNextItem=sessionNextItem;
 SIM.sessionAction=sessionAction;SIM.sessionFinish=sessionFinish;SIM.sessionXp=sessionXp;SIM.sessionPainRate=sessionPainRate;
-SIM.sessionSynth=sessionSynth;SIM.sessionTrace=sessionTrace;SIM.pointAt=ssPointAt;SIM.insideZone=ssInside;SIM.zoneArea=ssZoneArea;
+SIM.sessionSynth=sessionSynth;SIM.sessionRestart=sessionRestart;SIM.sessionCanRestart=sessionCanRestart;SIM.sessionFresh=sessionFresh;SIM.sessionTrace=sessionTrace;SIM.pointAt=ssPointAt;SIM.insideZone=ssInside;SIM.zoneArea=ssZoneArea;
