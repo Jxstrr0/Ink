@@ -21,6 +21,8 @@
    go round the limb, so the piece is not marked down for being wider than the wrap.
    An optional design.pos {x,y} (0..1 in the placement box) says where the piece's centre sits; default the middle.
    client.traits.pain is read as pain TOLERANCE (1 = sits like a rock, 0 = can't sit still).
+   0.1.25.0: an element's second part (fill2, the leaves, its colour by SIM.fill2Colour) counts at its share of the fill
+   (dzPart2Share): contrast, the palette check, colour must-haves, the colour share (hours, price) and pale_on_dark.
    Private helpers start with dz. Nothing here is random: the same design always scores the same. ===== */
 
 /* line width on skin (mm) for each liner grouping in LINE_WEIGHTS */
@@ -184,6 +186,26 @@ function dzShape(def){
   if(k!=null)dzShapeCache[k]=r;
   return r;
 }
+/* 0.1.25.0: an element's second part (fill2, its leaves) is this share of its filled area (fill2 / (fill + fill2), by the
+   nonzero rule through the session's own flattener), cached per element; 0 when it has none */
+const dzPart2Cache={};
+function dzPart2Share(def){
+  const k=def.id;if(k!=null&&dzPart2Cache[k]!==undefined)return dzPart2Cache[k];
+  let r=0;
+  if(def.fill&&def.fill2&&SIM.flattenPath&&SIM.zoneArea){try{
+    const A=d=>SIM.zoneArea(SIM.flattenPath(d).map(s=>s.pts)),a=A(def.fill),b=A(def.fill2);r=a+b>0?b/(a+b):0;}catch(x){r=0;}}
+  if(k!=null)dzPart2Cache[k]=r;
+  return r;
+}
+/* the second part as it is inked here: {id, col, light, p} when it is drawn in another colour from the element's own,
+   else null (no fill2, no fill, or a black and grey element whose leaves stay in its ink). SIM.fill2Colour has the rule. */
+function dzPart2(def,colour,style,fill){
+  if(!def.fill2||!(fill>0)||!SIM.fill2Colour)return null;
+  const c=SIM.fill2Colour(def,colour||null,style),id=c||"black";
+  if(id===(colour||"black"))return null;
+  const p=dzPart2Share(def);if(!(p>0))return null;
+  const col=dzColour(id);return{id,col,light:col.light!=null?col.light:0.5,p};
+}
 const DZ_UNKNOWN={name:"element",family:"motif",styles:[],minSizeMm:15,detail:0.5,lineWeightDefault:7,colourable:true,tags:[]};
 function dzDef(id){return(SIM.elementById&&SIM.elementById(id))||Object.assign({},DZ_UNKNOWN,{id,name:String(id)});}
 /* an element's name as it reads mid-sentence: "Rose" -> "rose", "Script: Family" -> '"Family" script' */
@@ -232,8 +254,10 @@ function dzElems(design){
     const fill=clamp(el.fill||0,0,1),lineMm=dzLineMm(rl),area=L*Sh*sh.ink;
     const styles=def.styles||[],best=dzBestStyle(styles,style,rl);
     const colShare=colourId==="black"||COLOUR_LINES[style]||fill<=0?1:fill/(fill+lineMm/1.7*0.6+0.15);
-    const lightMix=lerp(dzColour("black").light!=null?dzColour("black").light:0.06,light,colShare);
-    els.push({colShare,lightMix,el,def,id:el.id,name:dzName(def),fam,sh,x,y,scale,mm:scale*S0,rl,lineMm,colourId,col,light,fill,
+    /* the second part: its share of the fill takes its own colour; lightF is the fill's light over both parts */
+    const pt2=dzPart2(def,el.colour,style,fill),lightF=pt2?lerp(light,pt2.light,pt2.p):light;
+    const lightMix=lerp(dzColour("black").light!=null?dzColour("black").light:0.06,lightF,colShare);
+    els.push({colShare,lightMix,lightF,colourId2:pt2?pt2.id:null,col2:pt2?pt2.col:null,light2:pt2?pt2.light:null,p2:pt2?pt2.p:0,el,def,id:el.id,name:dzName(def),fam,sh,x,y,scale,mm:scale*S0,rl,lineMm,colourId,col,light,fill,
       detail:def.detail!=null?def.detail:0.5,minMm:def.minSizeMm||10,styles,best,tags,axis,elong:round?0.1:sh.elong,area,
       w:area*(fill+lineMm/1.7*0.6+0.15)*(1-0.75*lightMix)});
   }
@@ -252,7 +276,8 @@ function dzElemRead(e,tone,wear,tol){
   const ratio=e.mm/(e.minMm*(1-(tol||0)));
   const sizeF=ratio>=1?1:Math.pow(Math.max(0,ratio),READ.sizeExp);
   const gapF=Math.max(dzGap(e,sp,bl),e.fam==="lettering"?0:READ.shapeHold*Math.pow(1-clamp(e.detail,0,1),READ.shapeExp));
-  const con0=e.colShare>=1?dzContrast(e.light,tone):lerp(dzContrast(dzColour("black").light||0.06,tone),dzContrast(e.light,tone),e.colShare);
+  const lf=e.colourId2?lerp(dzContrast(e.light,tone),dzContrast(e.light2,tone),e.p2):dzContrast(e.light,tone);
+  const con0=e.colShare>=1?lf:lerp(dzContrast(dzColour("black").light||0.06,tone),lf,e.colShare);
   const con=con0*(1-READ.fadeHit*fd);
   let lineV=1;
   if(e.lineMm<READ.lineOk){
@@ -354,6 +379,7 @@ function dzCoherence(E,design,lvl){
     const imp=Math.sqrt(Math.max(1e-6,e.w));sw+=imp;s+=imp*m;
     lo=Math.min(lo,e.rl);hi=Math.max(hi,e.rl);
     if(st&&st.palette&&e.colourId!=="black"&&st.palette.indexOf(e.colourId)<0)pal*=COHERENCE.paletteHit;
+    if(st&&st.palette&&e.colourId2&&e.colourId2!=="black"&&st.palette.indexOf(e.colourId2)<0)pal*=COHERENCE.paletteHit;
   }
   if(!sw)return 0;
   const lwF=1-COHERENCE.lwHit*clamp((hi-lo-COHERENCE.lwGapFrom)/(COHERENCE.lwGapTo-COHERENCE.lwGapFrom),0,1);
@@ -366,11 +392,12 @@ function dzHas(E,design,m){
   if(m.kind==="tag")return E.els.some(e=>e.tags.indexOf(m.v)>=0);
   if(m.kind==="element")return E.els.some(e=>e.id===m.v);
   if(m.kind==="style")return design.style===m.v;
-  if(m.kind==="colour")return E.els.some(e=>e.colourId===m.v);
+  if(m.kind==="colour")return E.els.some(e=>e.colourId===m.v||e.colourId2===m.v);
   return false;
 }
 function dzColourShare(E){
-  let sw=0,c=0;for(const e of E.els){sw+=e.w+1e-6;if(e.colourId!=="black"&&e.colourId!=="grey")c+=e.w+1e-6;}
+  const isC=id=>id!=="black"&&id!=="grey";
+  let sw=0,c=0;for(const e of E.els){sw+=e.w+1e-6;const k=e.colourId2?(isC(e.colourId)?1-e.p2:0)+(isC(e.colourId2)?e.p2:0):isC(e.colourId)?1:0;c+=k*(e.w+1e-6);}
   return sw?c/sw:0;
 }
 /* how much a piece shows: the spot's visibility, less for a piece that is small next to the spot (a watch hides it) */
@@ -442,7 +469,7 @@ const COMBOS=[
   {id:"pale_on_dark",text:"{adj}{colour} {name} on this skin tone: {verdict}",
     test:ctx=>{
       const seen={},out=[];
-      for(const e of ctx.E.els){
+      for(const e0 of ctx.E.els)for(const e of e0.colourId2?[e0,{name:e0.name,light:e0.light2,colourId:e0.colourId2,col:e0.col2}]:[e0]){
         if(e.light<0.5||seen[e.colourId]||ctx.tone<0.45)continue;
         const c=dzContrast(e.light,ctx.tone);if(c>=0.45)continue;seen[e.colourId]=1;
         out.push({adj:e.light>=0.8?"pale ":"",colour:dzColName(e),name:e.name,verdict:c<0.2?"won't read at all":"will read faintly, outline it or go darker",sev:c<0.2?3:2});

@@ -303,7 +303,7 @@ function seTopHtml(sess){
 ${practice?"":`<div class="seMeters">${seMeterHtml("pain","Pain",sess.m.pain)}${seMeterHtml("fatigue","Fatigue",sess.m.fatigue)}</div>`}</div>`;}
 function seProgText(sess,it,done,tot,cnt){
   if(!it)return`${tot} of ${tot} done`;
-  const k=it.k==="line"?"Line":it.k==="shade"?"Shading":"Colour";
+  const k=it.k==="line"?"Line":it.zone&&it.zone.part===2?"Leaves":it.k==="shade"?"Shading":"Colour";
   return`${k} · ${done+1} of ${tot} · ${(sess.m.clock).toFixed(1)} h`;}
 function seMeterHtml(k,label,v){v=clamp(v||0,0,1);
   return`<div class="seMeter ${k}${v>=0.75?" hi":""}" id="seM_${k}" role="meter" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(v*100)}">
@@ -500,7 +500,7 @@ function seRenderUnder(){
     if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Hold anywhere on the skin, slide the needle onto the dot, follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace."));}
   else{
     const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
-    g.innerHTML=`<div class="seZone"><span class="seGL">${col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
+    g.innerHTML=`<div class="seZone"><span class="seGL">${z.part===2?"Leaves":col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
 <i id="seZoneBar" style="width:${(clamp(s/top,0,1)*100).toFixed(1)}%;background:${seColHex(z.colour)}"></i><b class="tgt" style="left:${(z.target/top*100).toFixed(1)}%"></b><b class="over" style="left:${((z.target+INK_SIM.ZONE.slack)/top*100).toFixed(1)}%"></b></div><span class="seGL" id="seZoneV">${Math.round(s/z.target*100)}%</span></div>`;
     const cnt=seItemCounts(sess),left=sess.end-sess.next;
     tools.innerHTML=`<div class="row"><button class="btn sm${s>=z.target?" pri":""}" id="seNextZ">${left>1?"Next zone":"Finish"}</button><span class="hint">${cnt.shade+cnt.colour>0?`${left} zone${left>1?"s":""} left`:""}</span></div>`;
