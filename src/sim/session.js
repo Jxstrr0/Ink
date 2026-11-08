@@ -8,7 +8,8 @@
    piece's pos on the box, the element's x/y in the footprint, its scale and rot) and resampled every STENCIL.stepMm into a
    stroke. Strokes are split into STENCIL.segMm segments for scoring. Elements with fill > 0 give a zone from their fill path
    (nonzero rule like every renderer, so overlapping parts are one zone and a hole drawn the other way round stays bare):
-   black or grey fills are shading zones, coloured fills are colour zones. The work list is every stroke, then every
+   black or grey fills are shading zones, coloured fills are colour zones. An element's second part (fill2, its leaves, in
+   its fixed colour by SIM.fill2Colour) is a zone of its own (part:2), after every main zone; in the element's own ink it joins its zone. The work list is every stroke, then every
    shading zone, then every colour zone; each item carries a share of the piece's hours (scoreDesign hours less setup) by its
    length or its area x fill. A piece of N sittings (scoreDesign sessions, or the booking's) splits that list at 1/N, 2/N...
    of the hours, so the first sitting is mostly linework; a zone worth more than a sitting is cut into bands (ssSplitZone). A sitting that ends early leaves the rest to the next one.
@@ -208,7 +209,7 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
   const P=SIM.PLACEMENTS[design.placement]||null;
   const box=P?SIM.placementBox(design.placement,bodyShape):{wrapMm:120,lengthMm:240};
   const sz=design.sizeMm||50,pos=design.pos||{x:0.5,y:0.5},fp=SIM.footprintOf(design);
-  const strokes=[],zones=[];let dots=0;
+  const strokes=[],zones=[],zones2=[];let dots=0;
   (design.elements||[]).forEach((el,ei)=>{
     const def=SIM.elementById(el.id);if(!def)return;
     const b=SIM.elementBox(el.id),k=((el.scale!=null?el.scale:0.5)*sz)/Math.max(b.w,b.h,1e-6),bcx=b.x+b.w/2,bcy=b.y+b.h/2;
@@ -224,15 +225,22 @@ function ssPlanFor(design,bodyShape,client,skills,parts){
       strokes.push({el:ei,lw,colour:lineCol,pts:r.pts,cum:r.cum,len:r.len,segs,closed:sp.closed,detail:def.detail||0.5});
     }
     if(def.fill&&el.fill>0){
-      const polys=ssFlatten(def.fill).map(sp=>tf(sp.pts));
-      const area=ssZoneArea(polys);
-      if(area>=STENCIL.minZoneMm2){
+      /* 0.1.25.0: the second part (fill2, the leaves) in its own colour (SIM.fill2Colour) is its own zone, kept in zones2 and
+         put after every main zone so the zone and item numbers of a piece in progress don't move; in the element's own ink
+         (a black and grey rose) it joins the main zone */
+      const c2=def.fill2?SIM.fill2Colour(def,colour,design.style):undefined,same=c2!==undefined&&(c2||"black")===(colour||"black");
+      const mk=(d,cc,list,part)=>{
+        const polys=ssFlatten(d).map(sp=>tf(sp.pts)),area=ssZoneArea(polys);
+        if(area<STENCIL.minZoneMm2)return;
         let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of polys)for(let i=0;i<p.length;i+=2){x0=Math.min(x0,p[i]);x1=Math.max(x1,p[i]);y0=Math.min(y0,p[i+1]);y1=Math.max(y1,p[i+1]);}
-        const col=colour&&colour!=="black"&&colour!=="grey";
-        zones.push({el:ei,kind:col?"colour":"shade",colour:colour||"black",target:clamp(el.fill,0.05,1),polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2});
-      }
+        const col=cc&&cc!=="black"&&cc!=="grey",z={el:ei,kind:col?"colour":"shade",colour:cc||"black",target:clamp(el.fill,0.05,1),polys,area,box:[x0,y0,x1,y1],cx:(x0+x1)/2,cy:(y0+y1)/2};
+        if(part)z.part=2;list.push(z);
+      };
+      mk(same?def.fill+def.fill2:def.fill,colour,zones,0);
+      if(c2!==undefined&&!same)mk(def.fill2,c2,zones2,2);
     }
   });
+  zones.push(...zones2);
   const sc=SIM.scoreDesign(design,client||null,skills||{});
   const nParts=Math.max(1,parts||sc.sessions);
   if(nParts>1){
