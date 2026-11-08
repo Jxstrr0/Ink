@@ -5,7 +5,7 @@
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.22.0";
+const VERSION="0.1.23.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -54,8 +54,9 @@ function freshState(){return{
                      // and the sample walk-in it is scored against (DZ_SAMPLE_CLIENTS id until PR 3 brings real clients)
   flash:[],          // your own flash: designs saved from the board, {id, name, design, w, y}; FLASH_MINE_CAP of them (PR 2)
   seed:(Date.now()>>>0)%2147483647||1,   // the career's rng seed (INK_SIM.rng); the only Date-based value in the game
-  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true,needle:"offset"},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9);
-                     // needle (0.1.16.0): "offset" holds the machine with its needle above your finger, "direct" puts the needle under it
+  settings:{theme:"dark",gfx:null,gfxAuto:true,sound:true,reduced:false,handed:"right",assist:false,flatStencil:false,tips:true,needle:"offset",ambience:true,radio:false},   // handed and assist: the session (PR 4); flatStencil: the flat placement view (PR 6); tips: help overlays on (PR 9);
+                     // needle (0.1.16.0): "offset" holds the machine with its needle above your finger, "direct" puts the needle under it;
+                     // ambience and radio (0.1.23.0): the room's sound bed (on) and the shop radio (off) in Settings › Sound
   help:{},           // help overlays already seen (PR 9, app/help.js HELP_TIPS): tip id -> {w, y}; a new career starts with none
   bkAt:0             // when the last backup code or file was made (app/savecode.js)
 };}
@@ -93,6 +94,7 @@ function hydrate(o){
     kit:Object.assign(f.kit,ok,{owned:Object.assign(f.kit.owned,ok.owned&&typeof ok.owned==="object"?ok.owned:{})})});
   if(!Array.isArray(S.flash))S.flash=[];
   if(S.settings.needle!=="direct")S.settings.needle="offset";   // 0.1.16.0: older saves (and anything odd) hold the machine offset
+  if(typeof S.settings.ambience!=="boolean")S.settings.ambience=true;if(typeof S.settings.radio!=="boolean")S.settings.radio=false;   // 0.1.23.0
   if(!S.help||typeof S.help!=="object"||Array.isArray(S.help))S.help={};   // PR 9
   S.reveals=Array.isArray(S.reveals)?S.reveals.filter(x=>typeof x==="string"):[];   // PR 5
   if(!S.rep||typeof S.rep!=="object"||Array.isArray(S.rep))S.rep=freshState().rep;
@@ -117,11 +119,13 @@ function applyLoaded(o,msg){if(!hydrate(o)){toast("That save couldn't be loaded"
 function applyTheme(){const t=S.settings.theme||"dark";const eff=t==="auto"?(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;
   document.documentElement.setAttribute("data-theme",eff);
   const m=document.querySelector("meta[name=theme-color]");if(m)m.setAttribute("content",eff==="light"?"#f4efe6":"#17130f");}
-function applySettings(){applyTheme();document.documentElement.classList.toggle("noanim",!!S.settings.reduced);INK_SOUND.setOn(S.settings.sound!==false);applyGfx();}
+function applySettings(){applyTheme();document.documentElement.classList.toggle("noanim",!!S.settings.reduced);INK_SOUND.setOn(S.settings.sound!==false);
+  if(INK_SOUND.setAmbience){INK_SOUND.setAmbience(S.settings.ambience!==false);INK_SOUND.setRadio(S.settings.radio===true);}applyGfx();}
 
 /* ---- toast ---- */
 /* toast(msg, kind): kind names why it matters. Only the kinds in TOAST_CHIME play the chime (0.1.13.0); every other toast
    (a hint, a confirmation, "Saved to slot 2") shows silently */
 const TOAST_CHIME={goal:1,event:1,heal:1,reveal:1,piece:1,money:1,milestone:1,warn:1};
 function toast(msg,kind){const t=$("toast");if(!t)return;t.textContent=msg;t.classList.add("on");
-  if(kind&&TOAST_CHIME[kind]&&typeof INK_SOUND!=="undefined")INK_SOUND.chime();clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
+  if(kind&&TOAST_CHIME[kind]&&typeof INK_SOUND!=="undefined"&&!(kind==="goal"&&INK_SOUND.sfx&&INK_SOUND.sfx("goal")))INK_SOUND.chime();   // 0.1.23.0: a goal plays its sting instead
+  clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}

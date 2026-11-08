@@ -123,8 +123,10 @@ ${rv?`<div class="rvRev"><span class="clK">${c.guest?"They left a review":`${esc
 <div class="rvAsk">${g==="infected"?`<div class="row"><button class="btn pri" data-rv="done">${left>0?"Next one":"Done"}</button></div>`
 :`<p><b>Put it in your portfolio?</b> <span class="hint">Collectors look at it.</span></p><div class="row"><button class="btn${g==="crisp"||g==="soft"?" pri":""}" data-rv="yes">Add to portfolio</button><button class="btn${g==="crisp"||g==="soft"?"":" pri"}" data-rv="no">Not this one</button></div><p class="clMeta rvPost">${typeof evPostBtn==="function"&&evPostBtn(p)?`Or share it: <button class="btn sm" data-rv="post">Post it</button> `:""}${typeof shPieceCard==="function"?`<button class="btn sm shBtn" data-rv="card">${SH_ICON}Share card</button>`:""}</p>`}</div>
 </article>`;}
+let rvHeard=null;   // 0.1.23.0: the piece whose reveal last played its sound, so a redraw doesn't play it again
 function rvWire(after){
   const card=$("rvCard");if(!card)return;
+  {const p=rvPending();if(p&&p.id!==rvHeard){rvHeard=p.id;INK_SOUND.sfx("reveal");}}
   card.addEventListener("click",e=>{const b=e.target.closest("button[data-rv]");if(!b)return;
     const p=rvPending();if(!p)return;
     if(b.dataset.rv==="post"){if(typeof evPost==="function")evPost(p.id);b.disabled=true;return;}   // PR 8: posting doesn't close the reveal
