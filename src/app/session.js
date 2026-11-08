@@ -45,6 +45,20 @@
                   flow from there (a line still starts once the tip is on the dot; the buzz spins up, sound/synth.js
                   BUZZ.spin). A lift before that inks nothing and says so; a two-finger pinch cancels the aim. With reduced
                   motion the ring is a static dashed circle and there is no pulse; the timer is the same.
+   0.1.22.0, the hold is the phone's long press: holding a finger still for the aim is what Android and iOS read as a
+                  long press, and they can take the touch away (a context menu or drag on Android; the callout, loupe or
+                  haptic touch on iOS), which ends the stroke with a pointercancel moments after the machine arms: a dot
+                  of ink and a dead machine. seGuard stops that at the source: touchstart and touchmove on the skin are
+                  cancelled (no long press, no callout, no selection) and contextmenu, selectstart and dragstart in the
+                  chair are refused; CSS adds -webkit-touch-callout:none. Should a cancel still come, it ends the stroke
+                  like a lift with its own message, and a lost pointer capture is taken back while the finger is down.
+                  seEvT keeps every sample on the clock seArm uses (the timer arms at performance.now()), and a sample the
+                  sim didn't score (no later than the last one) is no longer drawn.
+                  Restart (seRestartTap): a rail button that puts this sitting back as it began (INK_SIM.sessionRestart,
+                  sess.base): this sitting's ink, line progress, zones, meters, clock, breaks, numbing and chats go;
+                  earlier sittings stay. Tap it twice (the End button's pattern: a toast, then a second tap within
+                  SE_RESTART.ms), never while the needle is down; numbing cream bought this sitting is refunded, and
+                  nothing is paid or learnt until the sitting's results, so a restart can't earn anything twice.
    S.session = {live: the sitting in progress (the sim's object: numbers and short strings, saved at every finger lift and
    every action, so a reload resumes it), next: a sample piece waiting for its next sitting}. A finished piece gets heal:null
    and healDue {w, y} SE_HEAL_WEEKS on (PR 5 shows the heal). window.__inkSessFps() reports the loop's frame rate. */
@@ -65,6 +79,7 @@ const SE_PEN={dy:68,dx:24,pad:10,near:3};
 /* aim before the machine starts (0.1.21.0), ms: a touch aims for ms (rearm when the current line or zone is already under
    way, so lifting and carrying on is quicker), then the machine arms; go = how long the switch pulse shows */
 const SE_ARM={ms:900,rearm:450,go:320};
+const SE_RESTART={ms:2600};   // ms: the second tap that confirms Restart must come this soon after the first
 const SE_ZOOM={max:3,minMm:16,minShare:0.3,padMm:4,anim:260,top:52,pinch:1.25};
 const SE_CHAT=["They tell you the bridges went up before they could get home last night. Two hours on the wrong bank.",
   "Talk turns to the canal ice. Nobody on the embankment trusts it before January.",
@@ -79,6 +94,7 @@ const SE_ICON={
   numb:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M7 13h10"/></svg>',
   chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>',
+  restart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4 3.5v4.5h4.5"/></svg>',
   needle:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20 15 9"/><path d="M13 7l4 4"/><path d="M16 4l4 4-2 2-4-4z"/></svg>',
   zoomOut:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   zoomIn:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M11 8v6M8 11h6"/></svg>'};
@@ -98,7 +114,7 @@ function seMachineSvg(kind,left){
 const SE_RETICLE=`<svg viewBox="-26 -26 52 52" width="52" height="52" style="left:-26px;top:-26px" aria-hidden="true"><circle class="ringW" r="12"/><circle class="ring" r="12"/>
 <path class="ringW" d="M0-6v-12M0 6v12M-6 0h-12M6 0h12"/><path class="ring" d="M0-6v-12M0 6v12M-6 0h-12M6 0h12"/><circle class="armT" r="19"/><circle class="arm" r="19" pathLength="100" transform="rotate(-90)"/><circle class="goR" r="12"/></svg>`;
 const SE={sess:null,result:null,pick:"",place:null,c:null,v:null,s:1,ox:0,oy:0,dpr:1,down:null,q:[],fillDirty:false,baseDirty:false,
-  raf:0,lastF:0,frames:0,fpsT:0,fpsN:0,dirty:[],r:0,rushed:false,live:null,stopArm:0,stopT:0,status:"",ro:null,
+  raf:0,lastF:0,frames:0,fpsT:0,fpsN:0,dirty:[],r:0,rushed:false,live:null,stopArm:0,stopT:0,resArm:0,resT:0,status:"",ro:null,
   hold:null,aim:null,laid:null,zoomOut:false,anim:null,R:null,tox:0,toy:0,ptrs:new Map(),pinch:null};
 
 /* ---- small helpers ---- */
@@ -295,13 +311,14 @@ function seMeterHtml(k,label,v){v=clamp(v||0,0,1);
 function seRenderChair(){
   const sess=SE.sess,host=$("sessionBody"),practice=sess.kind==="practice",hand=S.settings.handed==="left"?"left":"right";
   const numbCost=Math.round(INK_SIM.NUMB.price*INK_SIM.priceIndex(sess.year)/10)*10;
-  const rail=practice?`<button class="seAct" id="seStop" aria-label="End practice">${SE_ICON.stop}<span>End</span></button>`
+  const restart=INK_SIM.sessionCanRestart&&sess.base?`<button class="seAct seRes" id="seRestart" aria-label="Restart this sitting">${SE_ICON.restart}<span>Restart</span></button>`:"";
+  const rail=practice?`${restart}<button class="seAct" id="seStop" aria-label="End practice">${SE_ICON.stop}<span>End</span></button>`
     :`<button class="seAct" id="seBreak" aria-label="Break">${SE_ICON.breakB}<span>Break</span></button>
 <button class="seAct" id="seNumb" aria-label="Numbing cream, ${fmtMoney(numbCost)}">${SE_ICON.numb}<span>Numb</span><em>${fmtMoney(numbCost)}</em></button>
-<button class="seAct" id="seChat" aria-label="Chat">${SE_ICON.chat}<span>Chat</span></button>
+<button class="seAct" id="seChat" aria-label="Chat">${SE_ICON.chat}<span>Chat</span></button>${restart}
 <button class="seAct" id="seStop" aria-label="End the sitting">${SE_ICON.stop}<span>End</span></button>`;
   host.innerHTML=`<div class="se" data-hand="${hand}">${seTopHtml(sess)}
-<div class="seStage"><div class="seRail" role="group" aria-label="Client care">${rail}</div>
+<div class="seStage"><div class="seRail${practice||!restart?"":" five"}" role="group" aria-label="Client care">${rail}</div>
 <div class="seWrap" id="seWrap" data-needle="${seOffset()?"offset":"direct"}"><div class="seCam" id="seCam"><canvas id="seBase"></canvas><canvas id="seFill"></canvas><canvas id="seInk"></canvas><canvas id="seOver" aria-label="${seOffset()?"Skin: hold the machine and bring the needle onto the dot":"Skin: trace the stencil"}" role="img"></canvas>
 <div class="seDot" id="seDot" aria-hidden="true"></div></div>
 <button type="button" class="seZoomB" id="seZoom" aria-pressed="${SE.zoomOut}">${seZoomLbl()}</button>
@@ -309,9 +326,10 @@ function seRenderChair(){
 <div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div></div></div>
 <div class="seUnder"><div id="seGauge"></div><p class="seStatus" id="seStatus" role="status" aria-live="polite"></p><div class="seTools" id="seTools"></div></div></div>`;
   const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
-  on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);
+  on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);on("seRestart",seRestartTap);
   on("seZoom",()=>seZoomToggle());SE.ptrs.clear();SE.pinch=null;SE.hold=null;if(SE.aim){clearTimeout(SE.aim.timer);SE.aim=null;}
-  seLayout();seRenderUnder();seWireCanvas();
+  SE.resArm=0;clearTimeout(SE.resT);
+  seLayout();seRenderUnder();seWireCanvas();seRestartSync();
   const wrap=$("seWrap");
   if(window.ResizeObserver){if(SE.ro)SE.ro.disconnect();let w0=wrap.clientWidth;SE.ro=new ResizeObserver(()=>{if(Math.abs(wrap.clientWidth-w0)>2&&$("seWrap")===wrap){w0=wrap.clientWidth;seLayout();}});SE.ro.observe(wrap);}
   if(sess.stop)setTimeout(()=>{if(SE.sess===sess&&!SE.down)seEnd();},400);}
@@ -497,6 +515,9 @@ function seAfterItem(){
   if(sess.stop)seEnd();}
 /* pointer input -> the sim, in mm on the placement box, with the event's own timestamps. In offset mode every position
    is the needle tip's (the finger plus SE.tox, SE.toy); a line starts the moment the tip reaches the dot */
+/* the event's time on performance.now()'s clock (seArm's timer uses that one); an engine whose timeStamp is on another
+   clock gets now instead */
+function seEvT(ev){const n=performance.now(),t=ev&&ev.timeStamp;return t>0&&Math.abs(n-t)<5000?t:n;}
 function sePx(ev){const w=$("seWrap"),r=w.getBoundingClientRect();return[ev.clientX-r.left-w.clientLeft,ev.clientY-r.top-w.clientTop];}
 function seTipPx(f){return[f[0]+SE.tox,f[1]+SE.toy];}
 function seMm(p){return[(p[0]-SE.ox)/SE.s+SE.v.x0,(p[1]-SE.oy)/SE.s+SE.v.y0];}
@@ -517,11 +538,13 @@ function seAimStart(sess,it,id,f,t,over){
   if(off){sePenAt(f);sePenShow(true);seAimLook($("sePen"),true,ms);}
   else{const a=$("seAim");if(a){seAimAt(f);a.hidden=false;seAimLook(a,true,ms);}}
   if(it.k==="line"){const m=seMm(off?seTipPx(f):f);seNear(sess,it,m[0],m[1]);}
+  seRestartSync();
   seStatus(it.k==="line"?(off?"Aim the needle at the dot. The machine starts in a beat.":"Aim at the dot. The machine starts in a beat."):"Aim inside the zone. The machine starts in a beat.");}
-function seAimCancel(){const a=SE.aim;if(!a)return;clearTimeout(a.timer);SE.aim=null;sePenShow(false);
+function seAimCancel(){const a=SE.aim;if(!a)return;clearTimeout(a.timer);SE.aim=null;sePenShow(false);seRestartSync();
   const r=$("seAim");if(r){seAimLook(r,false);r.hidden=true;}const dt=$("seDot");if(dt)dt.classList.remove("near");}
 /* the machine arms: penDown at the tip where it is now (t: the event's time, or now from the timer), then the old flow */
-function seArm(t){
+function seArm(t){seArmGo(t);seRestartSync();}
+function seArmGo(t){
   const a=SE.aim;if(!a)return;clearTimeout(a.timer);SE.aim=null;
   const sess=SE.sess;if(a.sess!==sess||$("seOver")!==a.over||sess.stop||sess.phase!=="work"){sePenShow(false);const r=$("seAim");if(r)r.hidden=true;return;}
   const it=INK_SIM.sessionItem(sess);if(!it){sePenShow(false);const r=$("seAim");if(r)r.hidden=true;return;}
@@ -538,6 +561,8 @@ function seStrokeStart(sess,it,id,t,live,x,y){
   const pen=$("sePen");if(pen){pen.classList.add("on");pen.classList.remove("near","aim","still");}
   const dt=$("seDot");if(dt)dt.classList.remove("near");
   if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
+  else seStatus(it.k==="colour"?"Swipe back and forth inside the zone to pack the colour in.":"Sweep inside the zone. Fill it to the line, no further.");
+  seRestartSync();
   if(it.k==="line")INK_SOUND.buzzStart(INK_SIM.sessionBands(sess).buzz);else INK_SOUND.buzzStart(Object.assign({},INK_SIM.sessionBands(sess).buzz,{hz:INK_SIM.sessionBands(sess).buzz.hz*0.9}));
   seDot();seKick();}
 /* the tip on its way to the dot: light the dot (and the ring) up when it's close */
@@ -554,7 +579,8 @@ function seWireCanvas(){
   const pinchStart=()=>{const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1];SE.pinch={d0:Math.hypot(b[0]-a[0],b[1]-a[1])||1,done:false};
     if(SE.hold){SE.hold=null;sePenShow(false);}
     if(SE.aim)seAimCancel();
-    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}};
+    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}
+    seRestartSync();};
   over.addEventListener("pointerdown",ev=>{
     if(sess.stop||sess.phase!=="work")return;ev.preventDefault();
     const f=sePx(ev);SE.ptrs.set(ev.pointerId,f);
@@ -567,7 +593,7 @@ function seWireCanvas(){
     if(SE.anim)seAnimDone(false);
     try{over.setPointerCapture(ev.pointerId);}catch(e){}
     /* 0.1.21.0: the touch aims first; seArm (the timer, or a move past the time) starts the machine */
-    seAimStart(sess,it,ev.pointerId,f,ev.timeStamp||performance.now(),over);});
+    seAimStart(sess,it,ev.pointerId,f,seEvT(ev),over);});
   over.addEventListener("pointermove",ev=>{
     if(SE.ptrs.has(ev.pointerId))SE.ptrs.set(ev.pointerId,sePx(ev));
     if(SE.pinch){if(SE.ptrs.size>=2&&!SE.pinch.done){const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1],r=Math.hypot(b[0]-a[0],b[1]-a[1])/SE.pinch.d0;
@@ -575,7 +601,7 @@ function seWireCanvas(){
     const A=SE.aim;
     if(A&&ev.pointerId===A.id){ev.preventDefault();const f=sePx(ev);A.f=f;
       if(seOffset())sePenAt(f);else seAimAt(f);
-      const t=ev.timeStamp||performance.now();
+      const t=seEvT(ev);
       if(t-A.t0>=A.ms){seArm(t);return;}
       const it=INK_SIM.sessionItem(sess);if(it&&it.k==="line"){const m=seMm(seOffset()?seTipPx(f):f);seNear(sess,it,m[0],m[1]);}
       return;}
@@ -584,13 +610,14 @@ function seWireCanvas(){
     if(SE.down?ev.pointerId!==SE.down.id:!holding)return;
     ev.preventDefault();
     const evs=ev.getCoalescedEvents?ev.getCoalescedEvents():[];
-    for(const e of (evs.length?evs:[ev])){const [x,y]=tipMm(e),t=e.timeStamp||performance.now();
+    for(const e of (evs.length?evs:[ev])){const [x,y]=tipMm(e),t=seEvT(e);
       if(!SE.down){const it=INK_SIM.sessionItem(sess);if(!it)return;
         const live=INK_SIM.penDown(sess,t,x,y);
         if(live.ok)seStrokeStart(sess,it,ev.pointerId,t,live,x,y);else seNear(sess,it,x,y);
         continue;}
       const d=SE.down;
       const live=INK_SIM.penMove(sess,t,x,y);if(!live.ok)continue;
+      if(live.u==null&&live.sat==null)continue;   // no later than the last sample (a coalesced move from before the timer armed): not scored, so not drawn
       if(live.r!=null){SE.r=live.r;SE.rushed=!!live.rushed;}
       if(live.sat!=null){SE.fillDirty=true;SE.rushed=false;if(live.over&&!SE.overTold){SE.overTold=true;seStatus("Overworking the skin: move on.");}}
       else SE.q.push([d.x,d.y,x,y,live.blow?"blow":live.rushed?"rush":""]);
@@ -599,22 +626,35 @@ function seWireCanvas(){
       d.x=x;d.y=y;}
     if(SE.down){const pen=$("sePen");if(pen)pen.classList.toggle("rush",!!SE.rushed);INK_SOUND.buzzSet(SE.r,SE.rushed);seKick();}},{passive:false});
   const up=ev=>{
+    const cancel=ev.type==="pointercancel";
     SE.ptrs.delete(ev.pointerId);
     if(SE.pinch){if(!SE.ptrs.size)SE.pinch=null;return;}
-    if(SE.aim&&ev.pointerId===SE.aim.id){seAimCancel();seStatus("Hold still a moment: the machine starts after a beat.");return;}
+    if(SE.aim&&ev.pointerId===SE.aim.id){seAimCancel();seStatus(cancel?"The phone took the touch. Put the needle down again.":"Hold still a moment: the machine starts after a beat.");return;}
     const h=SE.hold,mine=!!(h&&ev.pointerId===h.id);
     if(mine){SE.hold=null;sePenShow(false);const dt=$("seDot");if(dt)dt.classList.remove("near");}
     const d=SE.down;
-    if(!d){if(mine&&curK()==="line")seStatus("The line starts when the needle reaches the dot.");return;}
+    if(!d){if(mine&&curK()==="line")seStatus("The line starts when the needle reaches the dot.");seRestartSync();return;}
     if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
     seFlushInk();SE.down=null;
-    const live=INK_SIM.penUp(sess,ev.timeStamp||performance.now());
+    const live=INK_SIM.penUp(sess,seEvT(ev));seRestartSync();
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
     saveSoon();
     if(live.lineDone){const ls=sess.lastStroke;SE.status="";seAfterItem();
       if(ls&&!sess.stop)seStatus(`Line done: ${Math.round(ls.q*100)}% clean${ls.blowouts?`, ${ls.blowouts} blowout${ls.blowouts>1?"s":""}`:""}${ls.joins?`, ${ls.joins} join${ls.joins>1?"s":""}`:""}.`);}
-    else{seDot();if(sess.stop)seEnd();else if(curK()==="line")seStatus(seOffset()?"Lifted. Bring the needle back onto the dot.":"Lifted. Carry on from the dot.");}};
-  over.addEventListener("pointerup",up);over.addEventListener("pointercancel",up);}
+    else{seDot();if(sess.stop)seEnd();else if(cancel)seStatus("The phone took the touch. Carry on from the dot.");else if(curK()==="line")seStatus(seOffset()?"Lifted. Bring the needle back onto the dot.":"Lifted. Carry on from the dot.");}};
+  over.addEventListener("pointerup",up);over.addEventListener("pointercancel",up);
+  /* 0.1.22.0: a capture lost while that finger is still down (the canvas still there) is taken back */
+  over.addEventListener("lostpointercapture",ev=>{const id=ev.pointerId;
+    if(!SE.ptrs.has(id)||!over.isConnected)return;
+    if((SE.aim&&SE.aim.id===id)||(SE.hold&&SE.hold.id===id)||(SE.down&&SE.down.id===id))try{over.setPointerCapture(id);}catch(e){}});
+  seGuard(over);}
+/* 0.1.22.0: the still hold before the machine arms is a long press to the phone. Cancelling touchstart/touchmove on the skin
+   (the pointer events still come) keeps Android and iOS from taking the touch for a context menu, drag, callout, loupe or
+   selection; contextmenu, selectstart and dragstart in the chair are refused too (the view button keeps its click) */
+function seGuard(over){
+  const no=e=>{if(e.cancelable)e.preventDefault();};
+  over.addEventListener("touchstart",no,{passive:false});over.addEventListener("touchmove",no,{passive:false});
+  const w=$("seWrap");if(w)for(const k of ["contextmenu","selectstart","dragstart"])w.addEventListener(k,no);}
 /* Break, Numb, Chat */
 function seAction(k){
   const sess=SE.sess;if(!sess||SE.down)return;
@@ -633,6 +673,28 @@ function seStopTap(){
   if(!SE.stopArm){SE.stopArm=1;clearTimeout(SE.stopT);toast(sess.kind==="practice"?"Tap End again to stop practising":"Tap End again to finish the sitting here");
     SE.stopT=setTimeout(()=>{SE.stopArm=0;},2600);return;}
   SE.stopArm=0;clearTimeout(SE.stopT);seEnd();}
+/* Restart (0.1.22.0): tap twice; the sitting goes back to how it began (INK_SIM.sessionRestart), never while the needle is
+   down. Only the numbing cream bought this sitting changed S, so it is refunded; money and XP only come with the results */
+function seRestartSync(){const b=$("seRestart");if(!b)return;const sess=SE.sess;
+  const busy=!!(SE.down||SE.aim||SE.hold),fresh=!sess||INK_SIM.sessionFresh(sess),off=busy||fresh||!INK_SIM.sessionCanRestart(sess);
+  if(off&&SE.resArm){SE.resArm=0;clearTimeout(SE.resT);}
+  b.disabled=off;b.classList.toggle("arm",!!SE.resArm);
+  b.setAttribute("aria-label",SE.resArm?"Tap again to restart this sitting":fresh?"Restart this sitting (nothing to undo yet)":"Restart this sitting");
+  const l=b.querySelector("span");if(l)l.textContent=SE.resArm?"Sure?":"Restart";}
+function seRestartTap(){
+  const sess=SE.sess;if(!sess||SE.down||SE.aim||SE.hold||!INK_SIM.sessionCanRestart(sess)||INK_SIM.sessionFresh(sess))return;
+  if(!SE.resArm){SE.resArm=1;clearTimeout(SE.resT);INK_SOUND.tick();
+    toast(sess.kind==="practice"?"Tap Restart again to wipe the pad and start this practice over":"Tap Restart again to start this sitting over: today's ink comes off");
+    SE.resT=setTimeout(()=>{SE.resArm=0;seRestartSync();},SE_RESTART.ms);seRestartSync();return;}
+  SE.resArm=0;clearTimeout(SE.resT);
+  const numbs=Math.max(0,(sess.m.numbs|0)-((sess.base.m&&sess.base.m.numbs)|0));
+  if(!INK_SIM.sessionRestart(sess))return;
+  const refund=numbs*Math.round(INK_SIM.NUMB.price*INK_SIM.priceIndex(sess.year)/10)*10;
+  if(refund>0){S.cash=(S.cash||0)+refund;renderHeader();}
+  SE.laid=null;SE.q.length=0;SE.status="";SE.r=0;SE.rushed=false;SE.overTold=false;SE.stopArm=0;clearTimeout(SE.stopT);
+  INK_SOUND.tick();save();
+  toast(sess.kind==="practice"?"A clean pad. Start again.":refund>0?`Back to the start of the sitting. The numbing cream is refunded (${fmtMoney(refund)}).`:"Back to the start of the sitting.");
+  seRenderChair();}
 function seCancelChair(){const sess=SE.sess;seSlot().live=null;SE.sess=null;save();toast(sess.kind==="practice"?"Pad back on the shelf":"Not now. The booking stays.");renderSession();}
 
 /* ---- the end of a sitting ---- */

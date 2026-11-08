@@ -33,8 +33,14 @@
 .seAct em{font-style:normal;font-size:9.5px;color:var(--mute);font-weight:500}
 .seAct:hover{border-color:var(--faint)}
 .seAct:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+/* 0.1.22.0: Restart, armed for the second tap (a red edge and "Sure?"), greyed while the needle is down or nothing is done yet; five buttons sit a little shorter */
+.seRail.five .seAct{min-height:52px}
+.seAct:disabled{opacity:.4;cursor:default}
+.seAct:disabled:hover{border-color:var(--line)}
+.seAct.arm{border-color:var(--red2);color:var(--red2);box-shadow:inset 0 0 0 1px var(--red2)}
+html[data-theme=light] .seAct.arm{border-color:var(--red);color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
 #seStop{margin-top:auto;color:var(--red2)}
-.seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none}
+.seWrap{position:relative;flex:1 1 auto;min-width:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#d9a982;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 .seWrap canvas{position:absolute;left:0;top:0;display:block}
 /* 0.1.16.0: the camera round the canvases (moved by a CSS transform between lines), the view button and the machine */
 .seCam{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:0 0}

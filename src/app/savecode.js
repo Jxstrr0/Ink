@@ -114,7 +114,8 @@ function buSaveOk(o){
     if("owned" in k){if(!buObj(k.owned))return false;for(const f of ["machines","needles","inks"])if(f in k.owned&&!Array.isArray(k.owned[f]))return false;}}
   if("session" in o&&o.session!=null){const s=o.session;if(!buObj(s))return false;   // PR 4: the chair, numbers only
     for(const f of ["live","next"])if(s[f]!=null&&(!buObj(s[f])||!buObj(s[f].design)||!Array.isArray(s[f].design.elements)))return false;
-    if(s.live&&!buNum(s.live.next))return false;}
+    if(s.live&&!buNum(s.live.next))return false;
+    if(s.live&&s.live.base!=null&&(!buObj(s.live.base)||!buObj(s.live.base.design)||!Array.isArray(s.live.base.design.elements)||!buNum(s.live.base.next)))return false;}   // 0.1.22.0: the restart copy
   return buTry(o);}
 /* load a copy the way the game would (hydrate), then put the running game back exactly as it was */
 function buTry(o){const keepS=S;let ok=false;
