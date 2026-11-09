@@ -37,7 +37,7 @@ Run all of them before every commit. To play a local copy: `python3 -m http.serv
 
 ## Deploy
 
-GitHub Pages serves the repo root from `main` (`.nojekyll` keeps Jekyll out of it). There is no workflow file: merging into `main` is the deploy. Allow a minute or two, then reload the live site. Installed copies show the "New version ready" bar because the service worker's cache name carries the version and a content hash.
+GitHub Pages serves the repo root from `main` (`.nojekyll` keeps Jekyll out of it). No deploy workflow: merging into `main` is the deploy. (`.github/workflows/publish-release.yml` only publishes a GitHub Release for each new `VERSION`, which is where the studio site gets this game's version number; free, no keys.) Allow a minute or two, then reload the live site. Installed copies show the "New version ready" bar because the service worker's cache name carries the version and a content hash.
 
 ## Versions
 
