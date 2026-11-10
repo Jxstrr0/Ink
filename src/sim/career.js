@@ -77,7 +77,10 @@ const CHORES=[
   {id:"counter",name:"Mind the front counter",xp:{consult:0.04},text:"You talk to people who come in to look. Most of them only want to look."},
   {id:"autoclave",name:"Run the autoclave and set up stations",xp:{shading:0.012},text:"Bags, wraps, the autoclave log. The boring part that keeps people safe."}
 ];
+/* briefs: the FIRST friend asks only from these, small designs of short strokes built from the starting elements
+   (playtest, November 2026: a first friend asking for a "date" or a long curvy line left testers stuck) */
 const FRIENDS={max:3,sizes:["tiny","small"],loyalty:0.55,
+  briefs:["first_sparkle","match_friend","first_hide","first_small","pet_paw","tr_swallow"],
   lines:["You've been promising me one for months. Something small. I'll bring the beer.","I trust you. Mostly. Something little, somewhere I can hide it.","Practise on me. I mean it. Just keep it small."]};
 /* the share of your takings (sittings and deposits) the shop keeps: Arkady's cut while you apprentice, a chair's split after */
 const CHAIR_SPLIT={apprentice:0.65,mentor:0.3,standard:0.4};
@@ -283,13 +286,15 @@ function friendBooking(S){
   const C=careerEnsure(S);if(caStage(S)!=="apprentice"||C.friends.length>=FRIENDS.max)return null;
   if(S.queue.some(q=>q.friend))return null;
   const r=rng(S.seed).fork("friend:"+C.friends.length);
-  const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:"apprentice",sizes:FRIENDS.sizes,src:"friend",badIdea:false});
+  const first=!C.friends.length;
+  const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:"apprentice",sizes:FRIENDS.sizes,src:"friend",badIdea:false,
+    briefId:first?r.pick(FRIENDS.briefs):undefined});
   c.brief=r.pick(FRIENDS.lines);c.loyalty=Math.max(c.loyalty,FRIENDS.loyalty);
   clientLog(c,{w:S.week,y:S.year,kind:"note",text:"a friend: a free piece while you apprentice"});
   S.clients.push(c);C.friends.push(c.id);
   const est=clEstimate(c.ask,c,S.skills||{});
   const item={id:queueId(S),kind:"session",client:c.id,w:S.week,y:S.year,hours:Math.max(0.5,Math.round(est.hours*4)/4),sessionNo:1,sessions:1,
-    price:0,deposit:0,paid:0,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0,friend:true};
+    price:0,deposit:0,paid:0,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0,friend:true,first:first||undefined};
   S.queue.push(item);return item;}
 /* the practice counter (the app calls this when a fake-skin sitting ends) */
 function notePractice(S){const C=careerEnsure(S);C.practice++;if(caStage(S)==="apprentice")caGoodwill(S,MENTOR.goodwill.practice);}

@@ -74,6 +74,8 @@ const KIT_TUNE={
 };
 /* Assist (Settings): a wider pace band and stencil tolerance, a slower marker */
 const ASSIST={band:1.6,acc:1.4,slow:0.75};
+/* the first sitting on real skin (the first friend's piece): a wider margin before a stroke counts as off the line */
+const FIRST_SITTING={acc:1.5};
 /* the apprentice's starter kit (freshState in app/state.js writes the same literal) */
 const KIT_DEFAULT={machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,
   owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}};
@@ -119,7 +121,7 @@ function kitBands(kit,skills,settings,opts){
   const shade=shade0*(1+T.shadeS*ds)*(1+T.shadeV*dv)*machineShade;
   return{
     paceBand:T.paceBase*m.band*narrow*(1+T.skillBand*sk("linework"))*(assist?ASSIST.band:1),
-    accFrac:T.accBase*Math.sqrt(m.band)*Math.sqrt(narrow)*(1+T.skillAcc*sk("linework"))*(assist?ASSIST.acc:1),
+    accFrac:T.accBase*Math.sqrt(m.band)*Math.sqrt(narrow)*(1+T.skillAcc*sk("linework"))*(assist?ASSIST.acc:1)*(settings&&settings.first?FIRST_SITTING.acc:1),
     pace:(1+T.paceV*dv)*(1+T.paceS*ds)*(assist?ASSIST.slow:1),
     hit:(1+T.hitV*dv)*(1+T.hitS*ds),
     depthTol:T.depthTol*m.depth*(1+T.skillDepth*sk("linework")),
@@ -144,5 +146,5 @@ function kitPrice(kind,id,year){
   return Math.round(it.price*pi/50)*50;
 }
 SIM.MACHINES=MACHINES;SIM.NEEDLES=NEEDLES;SIM.INKS=INKS;SIM.INK_TIERS=INKS;SIM.VOLTAGE=VOLTAGE;SIM.STROKE=STROKE;
-SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
+SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.FIRST_SITTING=FIRST_SITTING;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
 SIM.kitBands=kitBands;SIM.kitDeltas=kitDeltas;SIM.kitPrice=kitPrice;SIM.kitClean=kitClean;SIM.kitDefault=()=>ktCopy(KIT_DEFAULT);
