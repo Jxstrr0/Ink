@@ -108,7 +108,7 @@ function seMachineKind(sess){const k=sess&&sess.kit,m=k&&INK_SIM.MACHINES[k.mach
 function seMachineSvg(kind,left){
   return`<svg viewBox="-34 -22 68 182" width="68" height="182" style="left:-34px;top:-22px"${left?' class="lh"':""} aria-hidden="true"><g class="kind">${SE_MACHINE[kind]||SE_MACHINE.coil}</g>
 <path class="noz" d="M-3 15h6l3 15h-12z"/><path class="ndl" d="M0 3v12"/>
-<circle class="ringW" r="11"/><circle class="ring" r="11"/><path class="ring" d="M0-14v-6M-14 0h-6M14 0h6"/><circle class="tip" r="1.6"/>
+<circle class="ringW" r="11"/><circle class="ring" r="11"/><path class="ring" d="M0-14v-6M-14 0h-6M14 0h6"/><circle class="tip" r="2.4"/>
 <circle class="armT" r="17"/><circle class="arm" r="17" pathLength="100" transform="rotate(-90)"/><circle class="goR" r="11"/></svg>`;}
 /* the aim reticle for "Needle under finger": a hollow crosshair at the fingertip with the same filling ring */
 const SE_RETICLE=`<svg viewBox="-26 -26 52 52" width="52" height="52" style="left:-26px;top:-26px" aria-hidden="true"><circle class="ringW" r="12"/><circle class="ring" r="12"/>
@@ -121,6 +121,13 @@ const SE={sess:null,result:null,pick:"",place:null,c:null,v:null,s:1,ox:0,oy:0,d
 function seSlot(){if(!S.session||typeof S.session!=="object")S.session={live:null,next:null};return S.session;}
 function seLive(){return S.session&&S.session.live||null;}
 function seOffset(){return S.settings.needle!=="direct";}
+/* 0.1.26.0 (playtest: testers couldn't find the needle): on the very first practice sitting and the first friend's
+   piece, a label points at the needle tip while you aim, until the first line starts */
+function seTeachWant(sess){if(!seOffset())return false;const C=S.career||{};
+  if(sess.kind==="practice")return!C.practice;
+  const q=sess.itemId&&S.queue.find(i=>i.id===sess.itemId);return!!(q&&q.first);}
+/* the "Machine running" tag over the skin, on while the needle is inking */
+function seRunTag(on){const e=$("seRun");if(e)e.hidden=!on;}
 function seReduced(){return!!S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);}
 function seRgb(c){return`rgb(${c.map(Math.round).join(",")})`;}
 function seSkinRgb(t,practice){if(practice)return SE_FAKE;t=clamp(t==null?0.3:t,0,1);
@@ -149,6 +156,7 @@ function seRender(design,skin,out,bodyShape){
 /* ---- starting a sitting ---- */
 function seBegin(sess){
   const slot=seSlot();slot.live=sess;SE.sess=sess;SE.result=null;SE.status="";SE.place=null;SE.laid=null;
+  SE.teach=seTeachWant(sess);
   if(sess.kind==="practice")INK_SIM.sessionStart(sess);
   save();INK_SOUND.init();INK_SOUND.sfx("glove");   // 0.1.23.0: gloves on
   if(curTab!=="session")showTab("session");else renderSession();
@@ -160,7 +168,8 @@ function sessionStartBooked(q){
   if(L){if(L.itemId===q.id){showTab("session");return;}seBusy();return;}
   if(!seHasDesign(q.design)){toast("Design it first");return;}
   const c=INK_SIM.findClient(S,q.client);if(!c){toast("That client isn't on your books");return;}
-  const sess=INK_SIM.sessionNew(Object.assign(seOpts(),{design:q.design,client:c,kind:"booked",itemId:q.id,part:q.sessionNo||1,partsTotal:q.sessions||1,
+  const o=seOpts();if(q.first)o.settings.first=true;   // the first friend's piece: a wider margin (FIRST_SITTING)
+  const sess=INK_SIM.sessionNew(Object.assign(o,{design:q.design,client:c,kind:"booked",itemId:q.id,part:q.sessionNo||1,partsTotal:q.sessions||1,
     progress:q.progress||null,bodyShape:c.bodyShape||"neutral",skinTone:c.skinTone!=null?c.skinTone:0.3}));
   seBegin(sess);}
 /* "Tattoo this" on the board: the booking it's designing for, or else a sample walk-in */
@@ -323,7 +332,9 @@ function seRenderChair(){
 <div class="seDot" id="seDot" aria-hidden="true"></div></div>
 <button type="button" class="seZoomB" id="seZoom" aria-pressed="${SE.zoomOut}">${seZoomLbl()}</button>
 <div class="seAim" id="seAim" hidden aria-hidden="true">${SE_RETICLE}</div>
-<div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div></div></div>
+<div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div>
+<div class="seTeach" id="seTeach" hidden aria-hidden="true"><span>Needle tip: put it on the dot</span></div>
+<div class="seRun" id="seRun" hidden><i aria-hidden="true"></i>Machine running</div></div></div>
 <div class="seUnder"><div id="seGauge"></div><p class="seStatus" id="seStatus" role="status" aria-live="polite"></p><div class="seTools" id="seTools"></div></div></div>`;
   const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
   on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);on("seRestart",seRestartTap);
@@ -523,8 +534,9 @@ function sePx(ev){const w=$("seWrap"),r=w.getBoundingClientRect();return[ev.clie
 function seTipPx(f){return[f[0]+SE.tox,f[1]+SE.toy];}
 function seMm(p){return[(p[0]-SE.ox)/SE.s+SE.v.x0,(p[1]-SE.oy)/SE.s+SE.v.y0];}
 function sePenAt(f){const pen=$("sePen");if(!pen)return;const t=seTipPx(f),a=Math.atan2(-(f[0]-t[0]),f[1]-t[1])*180/Math.PI;
-  pen.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px) rotate(${a.toFixed(1)}deg)`;}
-function sePenShow(on){const pen=$("sePen");if(!pen)return;pen.hidden=!on;if(!on){pen.classList.remove("on","rush","near","aim","go","still");clearTimeout(pen._go);}}
+  pen.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px) rotate(${a.toFixed(1)}deg)`;
+  const tc=$("seTeach");if(tc){tc.hidden=!SE.teach||pen.hidden;tc.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px)`;}}
+function sePenShow(on){const pen=$("sePen");if(!pen)return;pen.hidden=!on;const tc=$("seTeach");if(tc)tc.hidden=!on||!SE.teach;if(!on){pen.classList.remove("on","rush","near","aim","go","still");clearTimeout(pen._go);}}
 /* aiming (0.1.21.0): the hollow needle or reticle follows the finger while the ring fills; seArm starts the machine */
 function seAimAt(f){const a=$("seAim");if(a)a.style.transform=`translate(${f[0].toFixed(1)}px,${f[1].toFixed(1)}px)`;}
 function seStarted(sess,it){return it.k==="line"?!!(sess.cur&&sess.cur.u>0):(sess.zsat[it.i]||0)>0;}
@@ -560,6 +572,8 @@ function seArmGo(t){
 function seStrokeStart(sess,it,id,t,live,x,y){
   SE.down={id,t0:t,u0:live.u||0,x,y,item:it.idx};SE.r=0;SE.rushed=false;
   const pen=$("sePen");if(pen){pen.classList.add("on");pen.classList.remove("near","aim","still");}
+  SE.teach=false;const tc=$("seTeach");if(tc)tc.hidden=true;
+  seRunTag(true);if(!seReduced()&&navigator.vibrate)try{navigator.vibrate(25);}catch(e){}   // the machine starts: a tag and a short buzz
   const dt=$("seDot");if(dt)dt.classList.remove("near");
   if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
   else seStatus(it.k==="colour"?"Swipe back and forth inside the zone to pack the colour in.":"Sweep inside the zone. Fill it to the line, no further.");
@@ -580,7 +594,7 @@ function seWireCanvas(){
   const pinchStart=()=>{const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1];SE.pinch={d0:Math.hypot(b[0]-a[0],b[1]-a[1])||1,done:false};
     if(SE.hold){SE.hold=null;sePenShow(false);}
     if(SE.aim)seAimCancel();
-    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}
+    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seRunTag(false);seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}
     seRestartSync();};
   over.addEventListener("pointerdown",ev=>{
     if(sess.stop||sess.phase!=="work")return;ev.preventDefault();
@@ -635,7 +649,7 @@ function seWireCanvas(){
     if(mine){SE.hold=null;sePenShow(false);const dt=$("seDot");if(dt)dt.classList.remove("near");}
     const d=SE.down;
     if(!d){if(mine&&curK()==="line")seStatus("The line starts when the needle reaches the dot.");seRestartSync();return;}
-    if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
+    if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();seRunTag(false);
     seFlushInk();SE.down=null;
     const live=INK_SIM.penUp(sess,seEvT(ev));seRestartSync();
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();

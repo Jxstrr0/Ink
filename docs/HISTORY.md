@@ -2,8 +2,10 @@
 
 The full version-by-version log, moved out of `CLAUDE.md` (which loads on every Claude turn) so it's read only when needed. Newest entries go at the top, the same way they did in `CLAUDE.md`. `CLAUDE.md` keeps a short current status.
 
-## Current status (0.1.25.3, November 2026)
+## Current status (0.1.26.0, November 2026)
 
+
+- 0.1.26.0 built (Round 3 of the first-time playtest, the first minutes; Kelbo's picks): the needle stays offset but is louder: a bigger tip, thicker ring and needle; a "Machine running" tag over the skin while the needle inks (`#seRun`, `seRunTag`), a short vibration where the phone allows it; on the very first practice sitting and the first friend's piece a label over the tip, "Needle tip: put it on the dot", until the first line starts (`#seTeach`, `seTeachWant`, `SE.teach`). The first friend asks only from `FRIENDS.briefs` (six small designs of short strokes built from starting elements; `friendBooking` in `sim/career.js`), and that booking carries `first: true`, whose sitting gets a wider margin before a stroke counts as off the line (`FIRST_SITTING.acc` 1.5 in `sim/kit.js`, `settings.first` in `sessionNew`). Scoring and sim-test unchanged.
 
 - 0.1.25.3 built (quick wins from the first-time playtest; sim and tests unchanged): the first session hint says press, hold still until the machine starts, then trace; "Tap End again" waits 6 s, not 2.6 s (`seStop` in `app/session.js`); the "Show all (sandbox)" switch in the element drawer only shows with `?sandbox=1` (`dzSandOn` in `app/design.js`).
 
