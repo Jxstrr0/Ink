@@ -497,7 +497,7 @@ function seRenderUnder(){
     tools.innerHTML=`<div class="seLiners" role="group" aria-label="Liner">${L.liners.map(l=>`<button class="seChipL${l.id===sess.liner?" on":""}${alt===l.id?" hint":""}" data-li="${l.id}" aria-pressed="${l.id===sess.liner}">${SE_ICON.needle}<b>${l.id}</b><span>lays ${l.lo}–${l.hi}RL</span></button>`).join("")}</div>
 <p class="seLw ${fits?"ok":"bad"}"><span aria-hidden="true">${fits?"✓":"▲"}</span> This line wants ${lw}RL${fits?"":`: ${alt?`switch to ${alt}`:"nothing on the tray lays it cleanly (add one in Studio)"}`}</p>`;
     tools.querySelectorAll("[data-li]").forEach(bt=>bt.addEventListener("click",()=>{if(INK_SIM.sessionSetLiner(sess,bt.dataset.li)){INK_SOUND.tick();save();seRenderUnder();seDrawInkAll();}}));
-    if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Hold anywhere on the skin, slide the needle onto the dot, follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace."));}
+    if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Press and hold the skin, keep still a beat until the machine starts, then slide the needle onto the dot and follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Press the dot and hold still a beat until the machine starts, then trace the line at the marker's pace."));}
   else{
     const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
     g.innerHTML=`<div class="seZone"><span class="seGL">${z.part===2?"Leaves":col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
@@ -672,7 +672,7 @@ function seStopTap(){
   const sess=SE.sess;if(!sess||SE.down)return;
   if(sess.next===sess.start&&!sess.cur&&!(sess.zsat||[]).some((v,i)=>v>0)){seCancelChair();return;}
   if(!SE.stopArm){SE.stopArm=1;clearTimeout(SE.stopT);toast(sess.kind==="practice"?"Tap End again to stop practising":"Tap End again to finish the sitting here");
-    SE.stopT=setTimeout(()=>{SE.stopArm=0;},2600);return;}
+    SE.stopT=setTimeout(()=>{SE.stopArm=0;},6000);   /* 6 s to confirm: 2.6 s needed a fast double tap (playtest, 0.1.25.3) */return;}
   SE.stopArm=0;clearTimeout(SE.stopT);seEnd();}
 /* Restart (0.1.22.0): tap twice; the sitting goes back to how it began (INK_SIM.sessionRestart), never while the needle is
    down. Only the numbing cream bought this sitting changed S, so it is refunded; money and XP only come with the results */
