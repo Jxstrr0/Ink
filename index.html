@@ -7874,7 +7874,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.25.2";
+const VERSION="0.1.25.3";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -8612,6 +8612,8 @@ function dzBox(pl){return INK_SIM.placementBox(pl||DZ.m.placement,S.board.bodySh
 function dzCap1(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
 /* the element's long axis as scoring sees it (0 upright, 90 across), plus 90 for bands that wrap round the limb */
 function dzAxis(id){const b=dzEB(id),d=dzDef(id);return(b.w>b.h*1.15?90:0)+((d&&d.tags||[]).some(t=>t==="band"||t==="armband"||t==="wrap")?90:0);}
+/* the tester's "Show all" switch only shows with ?sandbox=1 in the address: players took it for a cheat (playtest, 0.1.25.3) */
+function dzSandOn(){try{return DZ.sandbox||/[?&]sandbox=1\b/.test(location.search);}catch(e){return false;}}
 function dzUnlocked(d){if(DZ.sandbox||!d||d.unlock==="start")return true;
   const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");return!!m&&(((S.skills||{}).styles||{})[m[1]]||0)>=+m[2];}
 function dzLockText(d){const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");
@@ -9012,14 +9014,14 @@ function dzOpenDrawer(){
 <label>Style<select id="dzDrS"><option value="">All styles</option>${Object.values(INK_SIM.STYLES).map(s=>`<option value="${s.id}"${s.id===dr.style?" selected":""}>${esc(s.name)}</option>`).join("")}</select></label>
 <label>Tag<select id="dzDrT"><option value="">Any tag</option>${tags.map(t=>`<option value="${t}"${t===dr.tag?" selected":""}>${esc(t.replace(/_/g," "))}</option>`).join("")}</select></label></div>
 <div class="dzDrFam">${segHtml("dzDrFam",[["","All"],["motif","Motifs"],["lettering","Lettering"],["frame","Frames"],["fill","Fills"],["texture","Textures"]],dr.family)}</div>
-<label class="dzSand"><input type="checkbox" id="dzDrSb"${DZ.sandbox?" checked":""}> Show all (sandbox: unlock every element for testing)</label>
+${dzSandOn()?`<label class="dzSand"><input type="checkbox" id="dzDrSb"${DZ.sandbox?" checked":""}> Show all (sandbox: unlock every element for testing)</label>`:""}
 <div class="dzDrG" id="dzDrG"></div>`);
   const grid=()=>dzDrawerGrid();
   $("dzDrS").addEventListener("change",e=>{dr.style=e.target.value;grid();});
   $("dzDrT").addEventListener("change",e=>{dr.tag=e.target.value;grid();});
   $("dzDrFam").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;dr.family=b.dataset.v;
     $("dzDrFam").querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});grid();});
-  $("dzDrSb").addEventListener("change",e=>{DZ.sandbox=e.target.checked;grid();});
+  if($("dzDrSb"))$("dzDrSb").addEventListener("change",e=>{DZ.sandbox=e.target.checked;grid();});
   $("dzDrG").addEventListener("click",e=>{const t=e.target.closest(".dzTile");if(!t)return;const d=dzDef(t.dataset.id);
     if(!dzUnlocked(d)){toast("Unlocks at "+dzLockText(d));return;}closeSheet();dzAddEl(d);});
   grid();}
@@ -9595,7 +9597,7 @@ function seRenderUnder(){
     tools.innerHTML=`<div class="seLiners" role="group" aria-label="Liner">${L.liners.map(l=>`<button class="seChipL${l.id===sess.liner?" on":""}${alt===l.id?" hint":""}" data-li="${l.id}" aria-pressed="${l.id===sess.liner}">${SE_ICON.needle}<b>${l.id}</b><span>lays ${l.lo}–${l.hi}RL</span></button>`).join("")}</div>
 <p class="seLw ${fits?"ok":"bad"}"><span aria-hidden="true">${fits?"✓":"▲"}</span> This line wants ${lw}RL${fits?"":`: ${alt?`switch to ${alt}`:"nothing on the tray lays it cleanly (add one in Studio)"}`}</p>`;
     tools.querySelectorAll("[data-li]").forEach(bt=>bt.addEventListener("click",()=>{if(INK_SIM.sessionSetLiner(sess,bt.dataset.li)){INK_SOUND.tick();save();seRenderUnder();seDrawInkAll();}}));
-    if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Hold anywhere on the skin, slide the needle onto the dot, follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Start on the dot and follow the line at the marker's pace."));}
+    if(!SE.status)seStatus(seOffset()?(sess.cur&&sess.cur.u>0?"Hold the skin, bring the needle back onto the dot.":"Press and hold the skin, keep still a beat until the machine starts, then slide the needle onto the dot and follow the marker."):(sess.cur&&sess.cur.u>0?"Carry on from the dot.":"Press the dot and hold still a beat until the machine starts, then trace the line at the marker's pace."));}
   else{
     const z=it.zone,top=seZoneTop(z),s=sess.zsat[it.i]||0,col=it.k==="colour";
     g.innerHTML=`<div class="seZone"><span class="seGL">${z.part===2?"Leaves":col?"Colour":"Shading"}</span><div class="seZT" role="img" aria-label="Saturation: fill to the line, past the hatching is overworking the skin">
@@ -9770,7 +9772,7 @@ function seStopTap(){
   const sess=SE.sess;if(!sess||SE.down)return;
   if(sess.next===sess.start&&!sess.cur&&!(sess.zsat||[]).some((v,i)=>v>0)){seCancelChair();return;}
   if(!SE.stopArm){SE.stopArm=1;clearTimeout(SE.stopT);toast(sess.kind==="practice"?"Tap End again to stop practising":"Tap End again to finish the sitting here");
-    SE.stopT=setTimeout(()=>{SE.stopArm=0;},2600);return;}
+    SE.stopT=setTimeout(()=>{SE.stopArm=0;},6000);   /* 6 s to confirm: 2.6 s needed a fast double tap (playtest, 0.1.25.3) */return;}
   SE.stopArm=0;clearTimeout(SE.stopT);seEnd();}
 /* Restart (0.1.22.0): tap twice; the sitting goes back to how it began (INK_SIM.sessionRestart), never while the needle is
    down. Only the numbing cream bought this sitting changed S, so it is refunded; money and XP only come with the results */
