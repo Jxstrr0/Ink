@@ -79,7 +79,7 @@ Mostograd, the fictional St Petersburg-like river city shared with Lombard (`git
 - Real design decisions get asked, not guessed. Open questions are listed in `docs/INK-PLAN.md` § 15; ask before the PR they affect.
 - The site and the game use the name Kelbo only, never a real name. Studio name: Longlight Interactive. Credit line: "© year Kelbo / Longlight Interactive".
 
-## Current status (0.1.25.0, November 2026)
+## Current status (0.1.25.3, November 2026)
 
 The full log from PR 0 to 0.1.25.0 (what each version added, the tables,
 S fields and save details it brought) is `docs/HISTORY.md`, newest first.

@@ -2,8 +2,10 @@
 
 The full version-by-version log, moved out of `CLAUDE.md` (which loads on every Claude turn) so it's read only when needed. Newest entries go at the top, the same way they did in `CLAUDE.md`. `CLAUDE.md` keeps a short current status.
 
-## Current status (0.1.25.0, November 2026)
+## Current status (0.1.25.3, November 2026)
 
+
+- 0.1.25.3 built (quick wins from the first-time playtest; sim and tests unchanged): the first session hint says press, hold still until the machine starts, then trace; "Tap End again" waits 6 s, not 2.6 s (`seStop` in `app/session.js`); the "Show all (sandbox)" switch in the element drawer only shows with `?sandbox=1` (`dzSandOn` in `app/design.js`).
 
 - 0.1.25.0 built (Kelbo's green leaves): an element can carry a second part, `fill2`, with a fixed colour `colour2` (`PART2` in `sim/elements.js`: leaves -> green), never the player's choice. Six motifs have one: rose_trad (its leaves split out of the fill), cherries, peony and chrysanthemum (two new leaves each), cherry_blossom (a stem and two leaves), olive_branch (its leaves; the olives stay the fill). `elementBox` ignores `fill2` and no box moved. The black and grey rule is `SIM.fill2Colour(def, colour, style)`: colour null/black/grey keeps the leaves in the same ink; a style whose palette lacks green (fineline, blackwork, lettering, geometric) inks them black; else green; undefined when there is no part. The sim counts the part at its area share (`dzPart2Share`, nonzero through `SIM.flattenPath`/`zoneArea`): contrast (`lightF`, `colourId2`, `p2` in `dzElems`), coherence's palette check, colour must-haves, `dzColourShare` (hours, price, appetite), pale_on_dark, `COLOUR_FADE` in `agWear`. Session: the part is its own zone (`part:2`, labelled "Leaves") appended after every main zone, or merged into the main zone in the same ink; sailor's rose zones c1529,c1981 -> c1271,c1981,c251. Kit unchanged (INKS are tiers). Renderers: `dzFillSvg` (board, session render, `gvEl` gallery/reveal/share), drawer tiles, `vis/decals.js` (`dcPath` f2/fu, every fill pass and the gloss `sil`), `vrFlashPaint` (`stFlash` now passes the style). `tools/element-sheet.js` checks fill2 (closed, inside the box, overlap at most 20%, no nonzero cancelling) and draws it. New sim-test and session-test checks. No new S fields, no new keys, the design element shape unchanged.
 

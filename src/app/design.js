@@ -59,6 +59,8 @@ function dzBox(pl){return INK_SIM.placementBox(pl||DZ.m.placement,S.board.bodySh
 function dzCap1(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1);}
 /* the element's long axis as scoring sees it (0 upright, 90 across), plus 90 for bands that wrap round the limb */
 function dzAxis(id){const b=dzEB(id),d=dzDef(id);return(b.w>b.h*1.15?90:0)+((d&&d.tags||[]).some(t=>t==="band"||t==="armband"||t==="wrap")?90:0);}
+/* the tester's "Show all" switch only shows with ?sandbox=1 in the address: players took it for a cheat (playtest, 0.1.25.3) */
+function dzSandOn(){try{return DZ.sandbox||/[?&]sandbox=1\b/.test(location.search);}catch(e){return false;}}
 function dzUnlocked(d){if(DZ.sandbox||!d||d.unlock==="start")return true;
   const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");return!!m&&(((S.skills||{}).styles||{})[m[1]]||0)>=+m[2];}
 function dzLockText(d){const m=/^style:(\w+):(\d+)$/.exec(d.unlock||"");
@@ -459,14 +461,14 @@ function dzOpenDrawer(){
 <label>Style<select id="dzDrS"><option value="">All styles</option>${Object.values(INK_SIM.STYLES).map(s=>`<option value="${s.id}"${s.id===dr.style?" selected":""}>${esc(s.name)}</option>`).join("")}</select></label>
 <label>Tag<select id="dzDrT"><option value="">Any tag</option>${tags.map(t=>`<option value="${t}"${t===dr.tag?" selected":""}>${esc(t.replace(/_/g," "))}</option>`).join("")}</select></label></div>
 <div class="dzDrFam">${segHtml("dzDrFam",[["","All"],["motif","Motifs"],["lettering","Lettering"],["frame","Frames"],["fill","Fills"],["texture","Textures"]],dr.family)}</div>
-<label class="dzSand"><input type="checkbox" id="dzDrSb"${DZ.sandbox?" checked":""}> Show all (sandbox: unlock every element for testing)</label>
+${dzSandOn()?`<label class="dzSand"><input type="checkbox" id="dzDrSb"${DZ.sandbox?" checked":""}> Show all (sandbox: unlock every element for testing)</label>`:""}
 <div class="dzDrG" id="dzDrG"></div>`);
   const grid=()=>dzDrawerGrid();
   $("dzDrS").addEventListener("change",e=>{dr.style=e.target.value;grid();});
   $("dzDrT").addEventListener("change",e=>{dr.tag=e.target.value;grid();});
   $("dzDrFam").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;dr.family=b.dataset.v;
     $("dzDrFam").querySelectorAll("button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});grid();});
-  $("dzDrSb").addEventListener("change",e=>{DZ.sandbox=e.target.checked;grid();});
+  if($("dzDrSb"))$("dzDrSb").addEventListener("change",e=>{DZ.sandbox=e.target.checked;grid();});
   $("dzDrG").addEventListener("click",e=>{const t=e.target.closest(".dzTile");if(!t)return;const d=dzDef(t.dataset.id);
     if(!dzUnlocked(d)){toast("Unlocks at "+dzLockText(d));return;}closeSheet();dzAddEl(d);});
   grid();}
