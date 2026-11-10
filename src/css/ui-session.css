@@ -57,10 +57,22 @@ html[data-theme=light] .seAct.arm{border-color:var(--red);color:var(--red);box-s
 .sePen .line{fill:none;stroke:rgba(243,236,226,.7);stroke-width:1.2}
 .sePen .cord{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round;opacity:.6}
 .sePen .noz{fill:#9aa1a6;stroke:#16120e;stroke-width:1.2;stroke-linejoin:round}
-.sePen .ndl{stroke:#16120e;stroke-width:1.4;stroke-linecap:round}
+.sePen .ndl{stroke:#16120e;stroke-width:2;stroke-linecap:round}
 .sePen .ringW{fill:none;stroke:rgba(255,255,255,.85);stroke-width:4.5}
-.sePen .ring{fill:none;stroke:#16120e;stroke-width:1.8;stroke-linecap:round}
+.sePen .ring{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round}
 .sePen .tip{fill:#16120e}
+/* 0.1.26.0: the first-sitting label over the needle tip, and the "Machine running" tag */
+.seTeach{position:absolute;left:0;top:0;z-index:3;pointer-events:none;width:0;height:0}
+.seTeach[hidden]{display:none}
+.seTeach span{position:absolute;bottom:22px;left:0;transform:translateX(-50%);white-space:nowrap;padding:6px 10px;border-radius:8px;background:#16120e;color:#f3ece2;font:600 12.5px/1.2 inherit;font-family:inherit}
+.seTeach span::after{content:"";position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#16120e}
+.seRun{position:absolute;top:6px;left:6px;z-index:3;display:flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:16px;background:rgba(20,16,12,.78);color:#f3ece2;font:600 12.5px/1 inherit;font-family:inherit;pointer-events:none}
+.seRun[hidden]{display:none}
+.seRun i{width:8px;height:8px;border-radius:50%;background:#e0503f;animation:seRunP .5s ease-in-out infinite alternate}
+@keyframes seRunP{from{opacity:.45}to{opacity:1}}
+.se[data-hand="left"] .seRun{left:auto;right:6px}
+html[data-theme=light] .seRun{background:rgba(255,253,249,.94);color:#16120e;border:1px solid rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){.seRun i{animation:none}}
 .sePen.on .body{fill:rgba(28,24,22,.22)}
 .sePen.on .cord{opacity:.35}
 .sePen.near .ring{stroke:#2f7f77;stroke-width:2.4}

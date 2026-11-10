@@ -292,7 +292,7 @@ function sessionNew(o){
   const sess={v:1,kind,itemId:o.itemId||null,clientId:cl?cl.id||null:null,
     client:practice||!cl?null:{name:cl.name||"Client",pronouns:cl.pronouns||"",traits:{pain:tr.pain!=null?tr.pain:0.5,talkative:tr.talkative!=null?tr.talkative:0.5,sun:tr.sun!=null?tr.sun:0.4}},
     design,bodyShape:o.bodyShape||(cl&&cl.bodyShape)||"neutral",skinTone:o.skinTone!=null?o.skinTone:(cl&&cl.skinTone!=null?cl.skinTone:0.3),
-    kit:SIM.kitClean(o.kit),settings:{assist:!!(o.settings&&o.settings.assist)},
+    kit:SIM.kitClean(o.kit),settings:{assist:!!(o.settings&&o.settings.assist),first:!!(o.settings&&o.settings.first)},
     skills:{linework:+((o.skills||{}).linework)||0,shading:+((o.skills||{}).shading)||0,colour:+((o.skills||{}).colour)||0,speed:+((o.skills||{}).speed)||0,
       styles:Object.assign({},(o.skills||{}).styles||{})},
     year:o.year||2000,week:o.week||1,part:o.part||1,partsTotal:0,phase:"place",
@@ -325,7 +325,7 @@ function ssBestLiner(sess,lw){
 }
 const ssBandCache=new Map();
 function ssBands(sess){
-  const key=JSON.stringify([sess.kit,sess.skills.linework,sess.skills.shading,sess.skills.colour,sess.settings.assist,sess.liner,sess.view&&sess.view.size]);
+  const key=JSON.stringify([sess.kit,sess.skills.linework,sess.skills.shading,sess.skills.colour,sess.settings.assist,sess.settings.first,sess.liner,sess.view&&sess.view.size]);
   let b=ssBandCache.get(key);if(b)return b;
   b=Object.assign({},SIM.kitBands(sess.kit,sess.skills,sess.settings,{liner:sess.liner}));
   const v=sess.view?sess.view.size:50;

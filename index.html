@@ -559,10 +559,22 @@ html[data-theme=light] .seAct.arm{border-color:var(--red);color:var(--red);box-s
 .sePen .line{fill:none;stroke:rgba(243,236,226,.7);stroke-width:1.2}
 .sePen .cord{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round;opacity:.6}
 .sePen .noz{fill:#9aa1a6;stroke:#16120e;stroke-width:1.2;stroke-linejoin:round}
-.sePen .ndl{stroke:#16120e;stroke-width:1.4;stroke-linecap:round}
+.sePen .ndl{stroke:#16120e;stroke-width:2;stroke-linecap:round}
 .sePen .ringW{fill:none;stroke:rgba(255,255,255,.85);stroke-width:4.5}
-.sePen .ring{fill:none;stroke:#16120e;stroke-width:1.8;stroke-linecap:round}
+.sePen .ring{fill:none;stroke:#16120e;stroke-width:2.4;stroke-linecap:round}
 .sePen .tip{fill:#16120e}
+/* 0.1.26.0: the first-sitting label over the needle tip, and the "Machine running" tag */
+.seTeach{position:absolute;left:0;top:0;z-index:3;pointer-events:none;width:0;height:0}
+.seTeach[hidden]{display:none}
+.seTeach span{position:absolute;bottom:22px;left:0;transform:translateX(-50%);white-space:nowrap;padding:6px 10px;border-radius:8px;background:#16120e;color:#f3ece2;font:600 12.5px/1.2 inherit;font-family:inherit}
+.seTeach span::after{content:"";position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#16120e}
+.seRun{position:absolute;top:6px;left:6px;z-index:3;display:flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:16px;background:rgba(20,16,12,.78);color:#f3ece2;font:600 12.5px/1 inherit;font-family:inherit;pointer-events:none}
+.seRun[hidden]{display:none}
+.seRun i{width:8px;height:8px;border-radius:50%;background:#e0503f;animation:seRunP .5s ease-in-out infinite alternate}
+@keyframes seRunP{from{opacity:.45}to{opacity:1}}
+.se[data-hand="left"] .seRun{left:auto;right:6px}
+html[data-theme=light] .seRun{background:rgba(255,253,249,.94);color:#16120e;border:1px solid rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){.seRun i{animation:none}}
 .sePen.on .body{fill:rgba(28,24,22,.22)}
 .sePen.on .cord{opacity:.35}
 .sePen.near .ring{stroke:#2f7f77;stroke-width:2.4}
@@ -4153,7 +4165,7 @@ function sessionNew(o){
   const sess={v:1,kind,itemId:o.itemId||null,clientId:cl?cl.id||null:null,
     client:practice||!cl?null:{name:cl.name||"Client",pronouns:cl.pronouns||"",traits:{pain:tr.pain!=null?tr.pain:0.5,talkative:tr.talkative!=null?tr.talkative:0.5,sun:tr.sun!=null?tr.sun:0.4}},
     design,bodyShape:o.bodyShape||(cl&&cl.bodyShape)||"neutral",skinTone:o.skinTone!=null?o.skinTone:(cl&&cl.skinTone!=null?cl.skinTone:0.3),
-    kit:SIM.kitClean(o.kit),settings:{assist:!!(o.settings&&o.settings.assist)},
+    kit:SIM.kitClean(o.kit),settings:{assist:!!(o.settings&&o.settings.assist),first:!!(o.settings&&o.settings.first)},
     skills:{linework:+((o.skills||{}).linework)||0,shading:+((o.skills||{}).shading)||0,colour:+((o.skills||{}).colour)||0,speed:+((o.skills||{}).speed)||0,
       styles:Object.assign({},(o.skills||{}).styles||{})},
     year:o.year||2000,week:o.week||1,part:o.part||1,partsTotal:0,phase:"place",
@@ -4186,7 +4198,7 @@ function ssBestLiner(sess,lw){
 }
 const ssBandCache=new Map();
 function ssBands(sess){
-  const key=JSON.stringify([sess.kit,sess.skills.linework,sess.skills.shading,sess.skills.colour,sess.settings.assist,sess.liner,sess.view&&sess.view.size]);
+  const key=JSON.stringify([sess.kit,sess.skills.linework,sess.skills.shading,sess.skills.colour,sess.settings.assist,sess.settings.first,sess.liner,sess.view&&sess.view.size]);
   let b=ssBandCache.get(key);if(b)return b;
   b=Object.assign({},SIM.kitBands(sess.kit,sess.skills,sess.settings,{liner:sess.liner}));
   const v=sess.view?sess.view.size:50;
@@ -4576,6 +4588,8 @@ const KIT_TUNE={
 };
 /* Assist (Settings): a wider pace band and stencil tolerance, a slower marker */
 const ASSIST={band:1.6,acc:1.4,slow:0.75};
+/* the first sitting on real skin (the first friend's piece): a wider margin before a stroke counts as off the line */
+const FIRST_SITTING={acc:1.5};
 /* the apprentice's starter kit (freshState in app/state.js writes the same literal) */
 const KIT_DEFAULT={machine:"coil_used",needles:["3RL","7RL","7M1"],ink:"budget",voltage:7,stroke:3.5,
   owned:{machines:["coil_used"],needles:["3RL","7RL","7M1"],inks:["budget"]}};
@@ -4621,7 +4635,7 @@ function kitBands(kit,skills,settings,opts){
   const shade=shade0*(1+T.shadeS*ds)*(1+T.shadeV*dv)*machineShade;
   return{
     paceBand:T.paceBase*m.band*narrow*(1+T.skillBand*sk("linework"))*(assist?ASSIST.band:1),
-    accFrac:T.accBase*Math.sqrt(m.band)*Math.sqrt(narrow)*(1+T.skillAcc*sk("linework"))*(assist?ASSIST.acc:1),
+    accFrac:T.accBase*Math.sqrt(m.band)*Math.sqrt(narrow)*(1+T.skillAcc*sk("linework"))*(assist?ASSIST.acc:1)*(settings&&settings.first?FIRST_SITTING.acc:1),
     pace:(1+T.paceV*dv)*(1+T.paceS*ds)*(assist?ASSIST.slow:1),
     hit:(1+T.hitV*dv)*(1+T.hitS*ds),
     depthTol:T.depthTol*m.depth*(1+T.skillDepth*sk("linework")),
@@ -4646,7 +4660,7 @@ function kitPrice(kind,id,year){
   return Math.round(it.price*pi/50)*50;
 }
 SIM.MACHINES=MACHINES;SIM.NEEDLES=NEEDLES;SIM.INKS=INKS;SIM.INK_TIERS=INKS;SIM.VOLTAGE=VOLTAGE;SIM.STROKE=STROKE;
-SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
+SIM.KIT_TUNE=KIT_TUNE;SIM.ASSIST=ASSIST;SIM.FIRST_SITTING=FIRST_SITTING;SIM.KIT_DEFAULT=KIT_DEFAULT;SIM.KIT_TRAY_MAX=KIT_TRAY_MAX;
 SIM.kitBands=kitBands;SIM.kitDeltas=kitDeltas;SIM.kitPrice=kitPrice;SIM.kitClean=kitClean;SIM.kitDefault=()=>ktCopy(KIT_DEFAULT);
 /* ===== sim/career.js: the career (PR 7): the four acts, the mentor, money, the studio build-out, staff, the signature,
    skills, conventions and guest spots, Act 4's offers, the soft fail and the Legacy summary =====
@@ -4727,7 +4741,10 @@ const CHORES=[
   {id:"counter",name:"Mind the front counter",xp:{consult:0.04},text:"You talk to people who come in to look. Most of them only want to look."},
   {id:"autoclave",name:"Run the autoclave and set up stations",xp:{shading:0.012},text:"Bags, wraps, the autoclave log. The boring part that keeps people safe."}
 ];
+/* briefs: the FIRST friend asks only from these, small designs of short strokes built from the starting elements
+   (playtest, November 2026: a first friend asking for a "date" or a long curvy line left testers stuck) */
 const FRIENDS={max:3,sizes:["tiny","small"],loyalty:0.55,
+  briefs:["first_sparkle","match_friend","first_hide","first_small","pet_paw","tr_swallow"],
   lines:["You've been promising me one for months. Something small. I'll bring the beer.","I trust you. Mostly. Something little, somewhere I can hide it.","Practise on me. I mean it. Just keep it small."]};
 /* the share of your takings (sittings and deposits) the shop keeps: Arkady's cut while you apprentice, a chair's split after */
 const CHAIR_SPLIT={apprentice:0.65,mentor:0.3,standard:0.4};
@@ -4933,13 +4950,15 @@ function friendBooking(S){
   const C=careerEnsure(S);if(caStage(S)!=="apprentice"||C.friends.length>=FRIENDS.max)return null;
   if(S.queue.some(q=>q.friend))return null;
   const r=rng(S.seed).fork("friend:"+C.friends.length);
-  const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:"apprentice",sizes:FRIENDS.sizes,src:"friend",badIdea:false});
+  const first=!C.friends.length;
+  const c=makeClient(r,{id:clNextId(S),year:S.year,week:S.week,stage:"apprentice",sizes:FRIENDS.sizes,src:"friend",badIdea:false,
+    briefId:first?r.pick(FRIENDS.briefs):undefined});
   c.brief=r.pick(FRIENDS.lines);c.loyalty=Math.max(c.loyalty,FRIENDS.loyalty);
   clientLog(c,{w:S.week,y:S.year,kind:"note",text:"a friend: a free piece while you apprentice"});
   S.clients.push(c);C.friends.push(c.id);
   const est=clEstimate(c.ask,c,S.skills||{});
   const item={id:queueId(S),kind:"session",client:c.id,w:S.week,y:S.year,hours:Math.max(0.5,Math.round(est.hours*4)/4),sessionNo:1,sessions:1,
-    price:0,deposit:0,paid:0,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0,friend:true};
+    price:0,deposit:0,paid:0,ask:c.ask,design:null,booked:{w:S.week,y:S.year},moved:0,friend:true,first:first||undefined};
   S.queue.push(item);return item;}
 /* the practice counter (the app calls this when a fake-skin sitting ends) */
 function notePractice(S){const C=careerEnsure(S);C.practice++;if(caStage(S)==="apprentice")caGoodwill(S,MENTOR.goodwill.practice);}
@@ -7874,7 +7893,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.25.3";
+const VERSION="0.1.26.0";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -9208,7 +9227,7 @@ function seMachineKind(sess){const k=sess&&sess.kit,m=k&&INK_SIM.MACHINES[k.mach
 function seMachineSvg(kind,left){
   return`<svg viewBox="-34 -22 68 182" width="68" height="182" style="left:-34px;top:-22px"${left?' class="lh"':""} aria-hidden="true"><g class="kind">${SE_MACHINE[kind]||SE_MACHINE.coil}</g>
 <path class="noz" d="M-3 15h6l3 15h-12z"/><path class="ndl" d="M0 3v12"/>
-<circle class="ringW" r="11"/><circle class="ring" r="11"/><path class="ring" d="M0-14v-6M-14 0h-6M14 0h6"/><circle class="tip" r="1.6"/>
+<circle class="ringW" r="11"/><circle class="ring" r="11"/><path class="ring" d="M0-14v-6M-14 0h-6M14 0h6"/><circle class="tip" r="2.4"/>
 <circle class="armT" r="17"/><circle class="arm" r="17" pathLength="100" transform="rotate(-90)"/><circle class="goR" r="11"/></svg>`;}
 /* the aim reticle for "Needle under finger": a hollow crosshair at the fingertip with the same filling ring */
 const SE_RETICLE=`<svg viewBox="-26 -26 52 52" width="52" height="52" style="left:-26px;top:-26px" aria-hidden="true"><circle class="ringW" r="12"/><circle class="ring" r="12"/>
@@ -9221,6 +9240,13 @@ const SE={sess:null,result:null,pick:"",place:null,c:null,v:null,s:1,ox:0,oy:0,d
 function seSlot(){if(!S.session||typeof S.session!=="object")S.session={live:null,next:null};return S.session;}
 function seLive(){return S.session&&S.session.live||null;}
 function seOffset(){return S.settings.needle!=="direct";}
+/* 0.1.26.0 (playtest: testers couldn't find the needle): on the very first practice sitting and the first friend's
+   piece, a label points at the needle tip while you aim, until the first line starts */
+function seTeachWant(sess){if(!seOffset())return false;const C=S.career||{};
+  if(sess.kind==="practice")return!C.practice;
+  const q=sess.itemId&&S.queue.find(i=>i.id===sess.itemId);return!!(q&&q.first);}
+/* the "Machine running" tag over the skin, on while the needle is inking */
+function seRunTag(on){const e=$("seRun");if(e)e.hidden=!on;}
 function seReduced(){return!!S.settings.reduced||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);}
 function seRgb(c){return`rgb(${c.map(Math.round).join(",")})`;}
 function seSkinRgb(t,practice){if(practice)return SE_FAKE;t=clamp(t==null?0.3:t,0,1);
@@ -9249,6 +9275,7 @@ function seRender(design,skin,out,bodyShape){
 /* ---- starting a sitting ---- */
 function seBegin(sess){
   const slot=seSlot();slot.live=sess;SE.sess=sess;SE.result=null;SE.status="";SE.place=null;SE.laid=null;
+  SE.teach=seTeachWant(sess);
   if(sess.kind==="practice")INK_SIM.sessionStart(sess);
   save();INK_SOUND.init();INK_SOUND.sfx("glove");   // 0.1.23.0: gloves on
   if(curTab!=="session")showTab("session");else renderSession();
@@ -9260,7 +9287,8 @@ function sessionStartBooked(q){
   if(L){if(L.itemId===q.id){showTab("session");return;}seBusy();return;}
   if(!seHasDesign(q.design)){toast("Design it first");return;}
   const c=INK_SIM.findClient(S,q.client);if(!c){toast("That client isn't on your books");return;}
-  const sess=INK_SIM.sessionNew(Object.assign(seOpts(),{design:q.design,client:c,kind:"booked",itemId:q.id,part:q.sessionNo||1,partsTotal:q.sessions||1,
+  const o=seOpts();if(q.first)o.settings.first=true;   // the first friend's piece: a wider margin (FIRST_SITTING)
+  const sess=INK_SIM.sessionNew(Object.assign(o,{design:q.design,client:c,kind:"booked",itemId:q.id,part:q.sessionNo||1,partsTotal:q.sessions||1,
     progress:q.progress||null,bodyShape:c.bodyShape||"neutral",skinTone:c.skinTone!=null?c.skinTone:0.3}));
   seBegin(sess);}
 /* "Tattoo this" on the board: the booking it's designing for, or else a sample walk-in */
@@ -9423,7 +9451,9 @@ function seRenderChair(){
 <div class="seDot" id="seDot" aria-hidden="true"></div></div>
 <button type="button" class="seZoomB" id="seZoom" aria-pressed="${SE.zoomOut}">${seZoomLbl()}</button>
 <div class="seAim" id="seAim" hidden aria-hidden="true">${SE_RETICLE}</div>
-<div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div></div></div>
+<div class="sePen" id="sePen" hidden aria-hidden="true">${seMachineSvg(seMachineKind(sess),hand==="left")}</div>
+<div class="seTeach" id="seTeach" hidden aria-hidden="true"><span>Needle tip: put it on the dot</span></div>
+<div class="seRun" id="seRun" hidden><i aria-hidden="true"></i>Machine running</div></div></div>
 <div class="seUnder"><div id="seGauge"></div><p class="seStatus" id="seStatus" role="status" aria-live="polite"></p><div class="seTools" id="seTools"></div></div></div>`;
   const on=(id,fn)=>{const e=$(id);if(e)e.addEventListener("click",fn);};
   on("seBreak",()=>seAction("break"));on("seNumb",()=>seAction("numb"));on("seChat",()=>seAction("chat"));on("seStop",seStopTap);on("seRestart",seRestartTap);
@@ -9623,8 +9653,9 @@ function sePx(ev){const w=$("seWrap"),r=w.getBoundingClientRect();return[ev.clie
 function seTipPx(f){return[f[0]+SE.tox,f[1]+SE.toy];}
 function seMm(p){return[(p[0]-SE.ox)/SE.s+SE.v.x0,(p[1]-SE.oy)/SE.s+SE.v.y0];}
 function sePenAt(f){const pen=$("sePen");if(!pen)return;const t=seTipPx(f),a=Math.atan2(-(f[0]-t[0]),f[1]-t[1])*180/Math.PI;
-  pen.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px) rotate(${a.toFixed(1)}deg)`;}
-function sePenShow(on){const pen=$("sePen");if(!pen)return;pen.hidden=!on;if(!on){pen.classList.remove("on","rush","near","aim","go","still");clearTimeout(pen._go);}}
+  pen.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px) rotate(${a.toFixed(1)}deg)`;
+  const tc=$("seTeach");if(tc){tc.hidden=!SE.teach||pen.hidden;tc.style.transform=`translate(${t[0].toFixed(1)}px,${t[1].toFixed(1)}px)`;}}
+function sePenShow(on){const pen=$("sePen");if(!pen)return;pen.hidden=!on;const tc=$("seTeach");if(tc)tc.hidden=!on||!SE.teach;if(!on){pen.classList.remove("on","rush","near","aim","go","still");clearTimeout(pen._go);}}
 /* aiming (0.1.21.0): the hollow needle or reticle follows the finger while the ring fills; seArm starts the machine */
 function seAimAt(f){const a=$("seAim");if(a)a.style.transform=`translate(${f[0].toFixed(1)}px,${f[1].toFixed(1)}px)`;}
 function seStarted(sess,it){return it.k==="line"?!!(sess.cur&&sess.cur.u>0):(sess.zsat[it.i]||0)>0;}
@@ -9660,6 +9691,8 @@ function seArmGo(t){
 function seStrokeStart(sess,it,id,t,live,x,y){
   SE.down={id,t0:t,u0:live.u||0,x,y,item:it.idx};SE.r=0;SE.rushed=false;
   const pen=$("sePen");if(pen){pen.classList.add("on");pen.classList.remove("near","aim","still");}
+  SE.teach=false;const tc=$("seTeach");if(tc)tc.hidden=true;
+  seRunTag(true);if(!seReduced()&&navigator.vibrate)try{navigator.vibrate(25);}catch(e){}   // the machine starts: a tag and a short buzz
   const dt=$("seDot");if(dt)dt.classList.remove("near");
   if(it.k==="line")seStatus(seReduced()?"Keep a steady pace along the highlight.":"Keep up with the marker, not ahead of it.");
   else seStatus(it.k==="colour"?"Swipe back and forth inside the zone to pack the colour in.":"Sweep inside the zone. Fill it to the line, no further.");
@@ -9680,7 +9713,7 @@ function seWireCanvas(){
   const pinchStart=()=>{const pts=[...SE.ptrs.values()],a=pts[0],b=pts[1];SE.pinch={d0:Math.hypot(b[0]-a[0],b[1]-a[1])||1,done:false};
     if(SE.hold){SE.hold=null;sePenShow(false);}
     if(SE.aim)seAimCancel();
-    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}
+    if(SE.down&&curK()!=="line"){INK_SOUND.buzzStop();seRunTag(false);seFlushInk();SE.down=null;INK_SIM.penUp(sess,performance.now());seDrawOver(performance.now());}
     seRestartSync();};
   over.addEventListener("pointerdown",ev=>{
     if(sess.stop||sess.phase!=="work")return;ev.preventDefault();
@@ -9735,7 +9768,7 @@ function seWireCanvas(){
     if(mine){SE.hold=null;sePenShow(false);const dt=$("seDot");if(dt)dt.classList.remove("near");}
     const d=SE.down;
     if(!d){if(mine&&curK()==="line")seStatus("The line starts when the needle reaches the dot.");seRestartSync();return;}
-    if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();
+    if(ev.pointerId!==d.id)return;INK_SOUND.buzzStop();seRunTag(false);
     seFlushInk();SE.down=null;
     const live=INK_SIM.penUp(sess,seEvT(ev));seRestartSync();
     seDrawOver(performance.now());SE.overTold=false;SE.r=0;SE.rushed=false;seUpdateLive();
