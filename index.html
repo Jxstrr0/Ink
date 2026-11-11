@@ -990,14 +990,16 @@ html[data-theme=dark] .rvKey i{border-top-color:#a98bff}
 <div id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="bkFileIn" accept=".txt,text/plain" hidden>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous"></script>
 <script>/* three.js addons the page loads after boot (the glTF loader for the Blender props, PR 10, and since 0.1.18.0 the
    mannequin on every tier). Nothing waits for them at boot; window.__inkLibs() loads them on demand and resolves true once they are in. build.js reads INK_LIBS so the service worker
    precaches every URL (same pattern as Prairie Engine Works' PEW_LIBS). */
 (function(){window.INK_LIBS=["https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"];
+/* integrity fingerprints for the scripts above: a CDN copy that has been changed in any way is refused instead of run */
+window.INK_SRI={"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js":"sha384-fljlqkjWlmSFjkESkQvm77heIZpoWmXEOzlCA7kOpGUH+95Zk0yGfQieWM2q136E"};
 var p=null,ready=function(){return typeof THREE!=="undefined"&&!!THREE.GLTFLoader;};
 window.__inkLibs=function(){if(ready())return Promise.resolve(true);
- if(!p)p=new Promise(function(res){var i=0;(function next(){if(i>=INK_LIBS.length){res(ready());return;}var s=document.createElement("script");s.src=INK_LIBS[i++];s.async=false;s.crossOrigin="anonymous";s.onload=next;s.onerror=function(){p=null;res(false);};document.head.appendChild(s);})();});
+ if(!p)p=new Promise(function(res){var i=0;(function next(){if(i>=INK_LIBS.length){res(ready());return;}var s=document.createElement("script");s.src=INK_LIBS[i];if(INK_SRI[INK_LIBS[i]])s.integrity=INK_SRI[INK_LIBS[i]];i++;s.async=false;s.crossOrigin="anonymous";s.onload=next;s.onerror=function(){p=null;res(false);};document.head.appendChild(s);})();});
  return p;};
 })();</script>
 <script>__ld(.3,"3D library loaded")</script>
@@ -7893,7 +7895,7 @@ window.INK_VIS={
    state.js: VERSION, small helpers ($, esc, fmtMoney, toast), the state object S, save / load / snapshot / hydrate,
    the three save slots and the theme. S is defined ONCE, in freshState() below; later PRs add fields there (and to the
    S map in src/README.md), never inline. localStorage keys: ink-save, ink-slot1 .. ink-slot3 (all inside try/catch). */
-const VERSION="0.1.26.0";
+const VERSION="0.1.26.1";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
