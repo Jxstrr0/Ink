@@ -28,6 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 50 # enough history to find this version's merge commit
+          persist-credentials: false # gh uses GH_TOKEN below; the checkout keeps no token
       - name: Publish a release if this version has none
         env:
           GH_TOKEN: ${{ github.token }}
