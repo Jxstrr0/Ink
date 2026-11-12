@@ -6,7 +6,7 @@
    Every cache name starts with "ink-": the game has its own address now, but Prairie Engine Works shared the old jxstrr0.github.io
    origin with "pew-" caches, so each worker only ever deletes caches with its own prefix. A worker that finds an opaque three.js copy takes over at once instead of waiting. */
 "use strict";
-const CACHE = "ink-shell-v0.1.26.2-b41eeef7af", MEDIA = "ink-media-v1-dbe368cc", LIBS = "ink-libs-v1";
+const CACHE = "ink-shell-v0.1.26.3-43d7fc8ae7", MEDIA = "ink-media-v1-dbe368cc", LIBS = "ink-libs-v1";
 const PRECACHE = ["index.html","manifest.webmanifest","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512-maskable.png","icons/icon-512.png","icons/icon.svg"], CDN = ["https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js","https://static.cloudflareinsights.com/beacon.min.js","https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"], MEDIA_PRE = ["models/ink-mannequin.glb"];
 const LIB_HOSTS = ["cdnjs.cloudflare.com", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com"];
 const BASE = new URL("./", self.location).pathname;
